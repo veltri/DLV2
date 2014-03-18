@@ -19,10 +19,8 @@ This file is part of the ASPCOMP2013 ASP-Core-2 validator (validator in the foll
     along with the validator.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-
 #include "aspcore2_parser.h"
-#include "AspCore2.h"
+#include "input/InputDirector.h"
 
 %}
 
@@ -44,15 +42,15 @@ NUMBER         		([0-9]+)
 		       
 %%
         // Newline is normally skipped, except when explicitly
-		// requested with WANT_NEWLINE. (e.g. by a construct that is
-		// terminated by a newline.)
+	// requested with WANT_NEWLINE. (e.g. by a construct that is
+	// terminated by a newline.)
 	
 <WANT_NEWLINE>{NEWLINE} { 
-			AspCore2::getInstance().onNewLine();
+			InputDirector::getInstance().onNewLine();
 			BEGIN(INITIAL);
 			return NEWLINE;
 			}
-{NEWLINE}	{ AspCore2::getInstance().onNewLine();    }
+{NEWLINE}	{ InputDirector::getInstance().onNewLine();    }
 
 "."			{ return DOT;		}
 
@@ -129,7 +127,7 @@ NUMBER         		([0-9]+)
 					char s[1024];
 					assert(yytext[1]==0);
 					sprintf(s,"Lexical syntax error (%s)",yytext); 
-					AspCore2::getInstance().onError(s);
+					yyerror(s);
 		
                     return ERROR;
 				}

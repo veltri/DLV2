@@ -1,19 +1,19 @@
-/* A Bison parser, made by GNU Bison 3.0.2.  */
+/* A Bison parser, made by GNU Bison 2.5.  */
 
 /* Bison interface for Yacc-like parsers in C
-
-   Copyright (C) 1984, 1989-1990, 2000-2013 Free Software Foundation, Inc.
-
+   
+      Copyright (C) 1984, 1989-1990, 2000-2011 Free Software Foundation, Inc.
+   
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation, either version 3 of the License, or
    (at your option) any later version.
-
+   
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-
+   
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
@@ -26,63 +26,55 @@
    special exception, which will cause the skeleton and the resulting
    Bison output files to be licensed under the GNU General Public
    License without this special exception.
-
+   
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
-#ifndef YY_YY_SRC_ASPCORE2_PARSER_H_INCLUDED
-# define YY_YY_SRC_ASPCORE2_PARSER_H_INCLUDED
-/* Debug traces.  */
-#ifndef YYDEBUG
-# define YYDEBUG 0
-#endif
-#if YYDEBUG
-extern int yydebug;
-#endif
 
-/* Token type.  */
+/* Tokens.  */
 #ifndef YYTOKENTYPE
 # define YYTOKENTYPE
-  enum yytokentype
-  {
-    SYMBOLIC_CONSTANT = 258,
-    NUMBER = 259,
-    VARIABLE = 260,
-    STRING = 261,
-    ERROR = 262,
-    NEWLINE = 263,
-    DOT = 264,
-    SEMICOLON = 265,
-    COLON = 266,
-    CONS = 267,
-    QUERY_MARK = 268,
-    PLUS = 269,
-    TIMES = 270,
-    SLASH = 271,
-    ANON_VAR = 272,
-    PARAM_OPEN = 273,
-    PARAM_CLOSE = 274,
-    SQUARE_OPEN = 275,
-    SQUARE_CLOSE = 276,
-    CURLY_OPEN = 277,
-    CURLY_CLOSE = 278,
-    EQUAL = 279,
-    UNEQUAL = 280,
-    LESS = 281,
-    GREATER = 282,
-    LESS_OR_EQ = 283,
-    GREATER_OR_EQ = 284,
-    DASH = 285,
-    COMMA = 286,
-    NAF = 287,
-    AT = 288,
-    WCONS = 289,
-    VEL = 290,
-    AGGR_COUNT = 291,
-    AGGR_MAX = 292,
-    AGGR_MIN = 293,
-    AGGR_SUM = 294
-  };
+   /* Put the tokens into the symbol table, so that GDB and other debuggers
+      know about them.  */
+   enum yytokentype {
+     SYMBOLIC_CONSTANT = 258,
+     NUMBER = 259,
+     VARIABLE = 260,
+     STRING = 261,
+     ERROR = 262,
+     NEWLINE = 263,
+     DOT = 264,
+     SEMICOLON = 265,
+     COLON = 266,
+     CONS = 267,
+     QUERY_MARK = 268,
+     PLUS = 269,
+     TIMES = 270,
+     SLASH = 271,
+     ANON_VAR = 272,
+     PARAM_OPEN = 273,
+     PARAM_CLOSE = 274,
+     SQUARE_OPEN = 275,
+     SQUARE_CLOSE = 276,
+     CURLY_OPEN = 277,
+     CURLY_CLOSE = 278,
+     EQUAL = 279,
+     UNEQUAL = 280,
+     LESS = 281,
+     GREATER = 282,
+     LESS_OR_EQ = 283,
+     GREATER_OR_EQ = 284,
+     DASH = 285,
+     COMMA = 286,
+     NAF = 287,
+     AT = 288,
+     WCONS = 289,
+     VEL = 290,
+     AGGR_COUNT = 291,
+     AGGR_MAX = 292,
+     AGGR_MIN = 293,
+     AGGR_SUM = 294
+   };
 #endif
 /* Tokens.  */
 #define SYMBOLIC_CONSTANT 258
@@ -123,31 +115,29 @@ extern int yydebug;
 #define AGGR_MIN 293
 #define AGGR_SUM 294
 
-/* Value type.  */
+
+
+
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef union YYSTYPE YYSTYPE;
-union YYSTYPE
+typedef union YYSTYPE
 {
-#line 25 "src/aspcore2.y" /* yacc.c:1909  */
+
+/* Line 2068 of yacc.c  */
+#line 27 "src/aspcore2.y"
 
     char* string;
-    Variable* variable;
-    Term* term;
-    Terms* terms;
-    Atom* atom;
-    Literal* literal;
-    Literals* literals;
-    Rule* rule;
+    int integer;
 
-#line 143 "src/aspcore2_parser.h" /* yacc.c:1909  */
-};
+
+
+/* Line 2068 of yacc.c  */
+#line 135 "src/aspcore2_parser.h"
+} YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
+# define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 #endif
 
-
 extern YYSTYPE yylval;
 
-int yyparse (void);
 
-#endif /* !YY_YY_SRC_ASPCORE2_PARSER_H_INCLUDED  */

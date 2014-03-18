@@ -1,6 +1,6 @@
 %{
 //////////////////////////////////////////////////////////////////////////////
-// AspCore2::getInstance().y
+// aspcore2.y
 
 //////////////////////////////////////////////////////////////////////////////
 /*
@@ -20,26 +20,17 @@ This file is part of the ASPCOMP2013 ASP-Core-2 validator (validator in the foll
     along with the validator.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "input/InputDirector.h"
+
 %}
 %error-verbose
 %union {
     char* string;
-    Variable* variable;
-    Term* term;
-    Terms* terms;
-    Atom* atom;
-    Literal* literal;
-    Literals* literals;
-    Rule* rule;
+    int integer;
 }
 
-%type <rule> rule
-%type <literals> naf_literals conjunction body
-%type <literal> naf_literal naf_literal_aggregate
-%type <atom> atom classic_literal disjunction head
-%type <term> term term_
-%type <terms> terms
-%type <variable> variable_term
+%type <integer> term term_
+%type <integer> terms
 %type <string> identifier
 
 %token <string> SYMBOLIC_CONSTANT NUMBER VARIABLE STRING
@@ -73,30 +64,30 @@ HEAD_SEPARATOR  : VEL;
 program
     : 
     | rules
-    | rules query
-    | error { AspCore2::getInstance().onError("Generic error"); }
+    | rules query { InputDirector::getInstance().getBuilder()->onQuery(); }
+    | error { yyerror("Generic error"); }
     ;
 
 rules
-    : rules rule { AspCore2::getInstance().addRule($2); }
-    | rule { AspCore2::getInstance().addRule($1); }
+    : rules rule {}
+    | rule {}
     ;
 
 rule
-    : head DOT { $$ = AspCore2::getInstance().onRule($1); }
-    | head CONS DOT { $$ = AspCore2::getInstance().onRule($1); }
-    | head CONS body DOT { $$ = AspCore2::getInstance().onRule($1, $3); }
-    | CONS body DOT /*constraint*/ { $$ = AspCore2::getInstance().onRule($2); }
+    : head DOT { InputDirector::getInstance().getBuilder()->onRule(); }
+    | head CONS DOT { InputDirector::getInstance().getBuilder()->onRule(); }
+    | head CONS body DOT { InputDirector::getInstance().getBuilder()->onRule(); }
+    | CONS body DOT /*constraint*/ { InputDirector::getInstance().getBuilder()->onConstraint(); }
     | WCONS body DOT weight_at_levels {}
     ;
 
 head
-    : disjunction { $$ = $1; }
+    : disjunction {}
     | choice_atom {}
     ;       
 
 body
-    : conjunction { $$ = $1; }
+    : conjunction {}
     ;
 
 weight_at_levels : SQUARE_OPEN term SQUARE_CLOSE {}
@@ -109,13 +100,13 @@ levels_and_terms : AT term {}
              ;
           
 disjunction
-    : classic_literal { $$ = $1; }
-    | disjunction HEAD_SEPARATOR classic_literal { $$ = $3; }
+    : classic_literal { InputDirector::getInstance().getBuilder()->addToHead(); }
+    | disjunction HEAD_SEPARATOR classic_literal { InputDirector::getInstance().getBuilder()->addToHead(); }
     ;
 
 conjunction
-    : naf_literal_aggregate { $$ = AspCore2::getInstance().onNafLiterals($1); }
-    | conjunction COMMA naf_literal_aggregate { $$ = AspCore2::getInstance().onNafLiterals($1, $3); }
+    : naf_literal_aggregate { InputDirector::getInstance().getBuilder()->addToBody(); }
+    | conjunction COMMA naf_literal_aggregate { InputDirector::getInstance().getBuilder()->addToBody(); }
     ;
 
 choice_atom : term binop CURLY_OPEN choice_elements CURLY_CLOSE binop term {}
@@ -133,36 +124,36 @@ choice_element : atom {}
                ;
 
 naf_literals
-    : naf_literal { $$ = AspCore2::getInstance().onNafLiterals($1); }
-    | naf_literals COMMA naf_literal { $$ = AspCore2::getInstance().onNafLiterals($1, $3); }
+    : naf_literal {}
+    | naf_literals COMMA naf_literal {}
     ;    
           
 naf_literal
-    : classic_literal { $$ = AspCore2::getInstance().onNafLiteral($1, true); }
-    | NAF classic_literal { $$ = AspCore2::getInstance().onNafLiteral($2, false); }
+    : classic_literal { InputDirector::getInstance().getBuilder()->onNafLiteral(); }
+    | NAF classic_literal { InputDirector::getInstance().getBuilder()->onNafLiteral(true); }
     | builtin_atom {}
     ;
 
 naf_literal_aggregate
-    : naf_literal { $$ = $1; }
+    : naf_literal {}
     | aggregate_atom {}
     | NAF aggregate_atom {}
     ;      
 
 classic_literal
-    : atom { $$ = $1; }
-    | DASH atom { $$ = $2; }
+    : atom { InputDirector::getInstance().getBuilder()->onAtom(); }
+    | DASH atom { InputDirector::getInstance().getBuilder()->onAtom(true); }
     ;  
 
 atom
-    : identifier { $$ = AspCore2::getInstance().onAtom($1); }
-    | identifier PARAM_OPEN terms PARAM_CLOSE { $$ = AspCore2::getInstance().onAtom($1, $3); }
-    | identifier PARAM_OPEN PARAM_CLOSE { $$ = AspCore2::getInstance().onAtom($1); }
+    : identifier { InputDirector::getInstance().getBuilder()->predicateName($1); }
+    | identifier PARAM_OPEN terms PARAM_CLOSE { InputDirector::getInstance().getBuilder()->predicateName($1); }
+    | identifier PARAM_OPEN PARAM_CLOSE { InputDirector::getInstance().getBuilder()->predicateName($1); }
     ;              
          
 terms
-    : term { $$ = AspCore2::getInstance().onTerms($1); }
-    | terms COMMA term { $$ = AspCore2::getInstance().onTerms($1, $3); }
+    : term { $$ = $1; }
+    | terms COMMA term { $$ = $1 + $3; }
     ;
 
 basic_terms : basic_term {}
@@ -190,17 +181,40 @@ arithop   : PLUS     {}
           ;      
 
 term_ 
-    : identifier { $$ = AspCore2::getInstance().onTerm($1); }
-    | NUMBER { $$ = AspCore2::getInstance().onTerm($1); }
-    | ANON_VAR { $$ = AspCore2::getInstance().onTerm("_"); }
-    | identifier PARAM_OPEN terms PARAM_CLOSE { $$ = AspCore2::getInstance().onTerm($1, $3); }
-    | PARAM_OPEN term PARAM_CLOSE { $$ = $2; }
-    | DASH term { $$ = AspCore2::getInstance().onTermDash($2); }
+    : identifier 
+        { 
+            InputDirector::getInstance().getBuilder()->onTerm($1); 
+            $$ = 1; 
+        }
+    | NUMBER 
+        { 
+            InputDirector::getInstance().getBuilder()->onTerm($1); 
+            $$ = 1; 
+        }
+    | ANON_VAR 
+        { 
+            InputDirector::getInstance().getBuilder()->onTerm("_"); 
+            $$ = 1; 
+        }
+    | identifier PARAM_OPEN terms PARAM_CLOSE 
+        { 
+            InputDirector::getInstance().getBuilder()->onFunction($1, $3); 
+            $$ = 1; 
+        }
+    | PARAM_OPEN term PARAM_CLOSE 
+        { 
+            $$ = 1;
+        }
+    | DASH term 
+        { 
+            InputDirector::getInstance().getBuilder()->onTermDash(); 
+            $$ = $2;
+        }
     ;
 
 term
     : term_ { $$ = $1; }
-    | term arithop term_ { $$ = AspCore2::getInstance().onTerm($1, $3); }
+    | term arithop term_ { $$ = 1; }
     ;        
 
 basic_term : ground_term {}
@@ -215,8 +229,8 @@ ground_term
     ;
 
 variable_term 
-    : VARIABLE { $$ = AspCore2::getInstance().onVariableTerm($1); }
-    | ANON_VAR { $$ = AspCore2::getInstance().onVariableTerm(); }
+    : VARIABLE {}
+    | ANON_VAR {}
     ;
          
 identifier
