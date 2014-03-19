@@ -60,6 +60,7 @@ NUMBER         		([0-9]+)
 ";"			{ return SEMICOLON; }
 ":"			{ return COLON; }
 "@"			{ return AT;		}
+"\\E"                    { return EXISTS;        }
 
 "not"       { return NAF;    }
 

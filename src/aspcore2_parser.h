@@ -70,10 +70,11 @@
      AT = 288,
      WCONS = 289,
      VEL = 290,
-     AGGR_COUNT = 291,
-     AGGR_MAX = 292,
-     AGGR_MIN = 293,
-     AGGR_SUM = 294
+     EXISTS = 291,
+     AGGR_COUNT = 292,
+     AGGR_MAX = 293,
+     AGGR_MIN = 294,
+     AGGR_SUM = 295
    };
 #endif
 /* Tokens.  */
@@ -110,10 +111,11 @@
 #define AT 288
 #define WCONS 289
 #define VEL 290
-#define AGGR_COUNT 291
-#define AGGR_MAX 292
-#define AGGR_MIN 293
-#define AGGR_SUM 294
+#define EXISTS 291
+#define AGGR_COUNT 292
+#define AGGR_MAX 293
+#define AGGR_MIN 294
+#define AGGR_SUM 295
 
 
 
@@ -131,7 +133,7 @@ typedef union YYSTYPE
 
 
 /* Line 2068 of yacc.c  */
-#line 135 "src/aspcore2_parser.h"
+#line 137 "src/aspcore2_parser.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

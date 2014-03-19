@@ -51,7 +51,7 @@ This file is part of the ASPCOMP2013 ASP-Core-2 validator (validator in the foll
 
 %token DASH COMMA NAF AT WCONS
 
-%token VEL AGGR_COUNT AGGR_MAX AGGR_MIN AGGR_SUM
+%token VEL EXISTS AGGR_COUNT AGGR_MAX AGGR_MIN AGGR_SUM
 
 %left PLUS DASH
 %left TIMES SLASH
@@ -100,8 +100,22 @@ levels_and_terms : AT term {}
              ;
           
 disjunction
-    : classic_literal { InputDirector::getInstance().getBuilder()->addToHead(); }
-    | disjunction HEAD_SEPARATOR classic_literal { InputDirector::getInstance().getBuilder()->addToHead(); }
+    : classic_literal 
+        { 
+            InputDirector::getInstance().getBuilder()->addToHead(); 
+        }
+    | disjunction HEAD_SEPARATOR classic_literal 
+        { 
+            InputDirector::getInstance().getBuilder()->addToHead(); 
+        }
+    | existential_atom 
+        { 
+            InputDirector::getInstance().getBuilder()->addToHead(); 
+        }
+    | disjunction HEAD_SEPARATOR existential_atom 
+        { 
+            InputDirector::getInstance().getBuilder()->addToHead(); 
+        }
     ;
 
 conjunction
@@ -139,6 +153,12 @@ naf_literal_aggregate
     | aggregate_atom {}
     | NAF aggregate_atom {}
     ;      
+
+existential_atom
+    : EXISTS vars atom 
+        { 
+            InputDirector::getInstance().getBuilder()->onExistentialAtom(); 
+        }
 
 classic_literal
     : atom { InputDirector::getInstance().getBuilder()->onAtom(); }
@@ -232,7 +252,18 @@ variable_term
     : VARIABLE {}
     | ANON_VAR {}
     ;
-         
+
+vars
+    : VARIABLE 
+        { 
+            InputDirector::getInstance().getBuilder()->onExistentialVariable($1); 
+        }
+    | vars COMMA VARIABLE 
+        { 
+            InputDirector::getInstance().getBuilder()->onExistentialVariable($3); 
+        }
+    ;
+
 identifier
     : SYMBOLIC_CONSTANT { $$ = $1; }
     | STRING { $$ = $1; }

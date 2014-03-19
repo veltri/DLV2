@@ -27,7 +27,7 @@
 #include "../data/IntegerConstant.h"
 
 SimpleInputBuilder::SimpleInputBuilder(): 
-    InputBuilder()
+        InputBuilder()
 { 
     program = new Program(); 
     currentRule = NULL;
@@ -114,7 +114,8 @@ SimpleInputBuilder::addToBody()
 }
     
 void 
-SimpleInputBuilder::onNafLiteral( bool naf )
+SimpleInputBuilder::onNafLiteral( 
+    bool naf )
 {
     assert_msg( currentAtom, "Trying to finalize a literal without any atom" );
     if( currentLiteral != NULL )
@@ -131,7 +132,8 @@ SimpleInputBuilder::onNafLiteral( bool naf )
 }
     
 void 
-SimpleInputBuilder::onAtom( bool isStrongNeg )
+SimpleInputBuilder::onAtom( 
+    bool isStrongNeg )
 {
     assert_msg( predName.length() > 0, 
             "Trying to finalize an atom with a null predicate name" );
@@ -145,16 +147,36 @@ SimpleInputBuilder::onAtom( bool isStrongNeg )
     termStack.clear();
     predName = "";
 }
+
+void 
+SimpleInputBuilder::onExistentialAtom()
+{
+    assert_msg( predName.length() > 0, 
+            "Trying to finalize an atom with a null predicate name" );
+    if( currentAtom != NULL )
+    {
+        delete currentAtom;
+        currentAtom = NULL;
+    }
+    currentAtom = new Atom(predName, termStack.size(), 
+            termStack, existVars);
+
+    termStack.clear();
+    existVars.clear();
+    predName = "";
+}
     
 void 
-SimpleInputBuilder::predicateName( char* name )
+SimpleInputBuilder::predicateName( 
+    char* name )
 {
     assert_msg( name, "Trying to create an atom with a null predicate name" );
     predName = string(name);
 }
     
 void 
-SimpleInputBuilder::onTerm( char* value )
+SimpleInputBuilder::onTerm( 
+    char* value )
 {
     if( currentTerm != NULL )
         currentTerm = NULL;
@@ -165,13 +187,13 @@ SimpleInputBuilder::onTerm( char* value )
     {
         // Looking for other instances of 
         // the variable in the current rule
-        for( unsigned i=0; i<localVariables.size(); i++ )
+        for( unsigned i=0; i<localVariables.size() && !currentTerm; i++ )
             if( localVariables[i] == value )
                 currentTerm = new Variable(i);
         if( !currentTerm )
         {
-            localVariables.push_back( string(value) );
             currentTerm = new Variable(localVariables.size());
+            localVariables.push_back( string(value) );
         }   
     }
     else if( value[0] == '_' && strlen(value) == 1 ) // Unknow variable;
@@ -198,7 +220,8 @@ SimpleInputBuilder::onTerm( char* value )
 }
     
 void 
-SimpleInputBuilder::onTerm( int value )
+SimpleInputBuilder::onTerm( 
+    int value )
 {
     if( currentTerm != NULL )
         currentTerm = NULL;
@@ -208,7 +231,9 @@ SimpleInputBuilder::onTerm( int value )
 }
     
 void 
-SimpleInputBuilder::onFunction( char* functionSymbol, int nTerms )
+SimpleInputBuilder::onFunction( 
+    char* functionSymbol, 
+    int nTerms )
 {
     // Pop nTerms elements from the stack and 
     // create a function term with them. 
@@ -243,7 +268,27 @@ SimpleInputBuilder::onTermDash()
 {
 
 }
-    
+  
+void 
+SimpleInputBuilder::onExistentialVariable(
+    char* var )
+{
+    // Looking for other instances of 
+    // the variable in the current rule
+    bool found = false;
+    for( unsigned i=0; i<localVariables.size() && !found; i++ )
+        if( localVariables[i] == var )
+        {
+            existVars.push_back(Variable(i));
+            found = true;
+        }
+    if( !found )
+    {
+        existVars.push_back(Variable(localVariables.size()));
+        localVariables.push_back( string(var) );
+    }       
+}
+
 bool 
 SimpleInputBuilder::isNumeric( 
     const char* pszInput, 

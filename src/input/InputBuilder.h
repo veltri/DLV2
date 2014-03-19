@@ -41,11 +41,13 @@ public:
     virtual void addToBody() = 0;
     virtual void onNafLiteral( bool naf = false ) = 0;
     virtual void onAtom( bool isStrongNeg = false ) = 0;
+    virtual void onExistentialAtom() = 0;
     virtual void predicateName( char* ) = 0;
     virtual void onTerm( char* ) = 0;
     virtual void onTerm( int ) = 0;
     virtual void onFunction( char*, int ) = 0;
     virtual void onTermDash() = 0;
+    virtual void onExistentialVariable( char* ) = 0;
     
     virtual Program& getProgram() = 0;
     

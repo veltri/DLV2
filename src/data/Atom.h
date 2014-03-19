@@ -29,13 +29,14 @@
 
 #include <string>
 #include <vector>
-#include "Term.h"
+#include "Variable.h"
 
 using namespace std;
 
 class Atom {
 public:
     Atom( string, unsigned, vector<Term*>, bool tNeg = false );
+    Atom( string, unsigned, vector<Term*>, vector<Variable> );
     Atom( const Atom& a );
     ~Atom() { }
     
@@ -52,6 +53,7 @@ public:
     vector<Term*> getTerms() const { return terms; }
     bool isTrueNegated() const { return trueNegated; } 
     bool isPropositional() const { return (terms.size() == 0); }
+    bool isExistential() const { return (existentialVars.size() > 0); }
     
 private:
     friend inline ostream& operator<< ( ostream&, const Atom& );
@@ -64,6 +66,7 @@ private:
     unsigned predIndex;
     bool trueNegated;
     vector<Term*> terms;
+    vector<Variable> existentialVars;
 };
 
 ostream& 
@@ -71,6 +74,17 @@ operator<< (
     ostream & out, 
     const Atom& a )
 {
+    if( a.existentialVars.size() > 0 )
+    {
+        out << "\\E ";
+        for( unsigned i=0; i<a.existentialVars.size(); i++ )
+        {
+            out << a.existentialVars[i];
+            if( i < a.existentialVars.size()-1 )
+                out << ",";
+        }
+        out << " ";
+    }
     if( a.trueNegated )
         out << "-";
     out << Atom::getPredicateName(a.predIndex);

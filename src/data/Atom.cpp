@@ -25,23 +25,39 @@ vector<unsigned> Atom::arities;
 vector<string> Atom::stringConstants;
 vector<int> Atom::integerConstants;
 
-Atom::Atom(
+// Classical atoms' constructor
+Atom::Atom(  
     string name, 
     unsigned arity, 
     vector<Term*> termsList,
     bool tNeg ):
-    predIndex(Atom::addPredicateName(name,arity)),
-    trueNegated(tNeg),
-    terms(termsList)    
+        predIndex(Atom::addPredicateName(name,arity)),
+        trueNegated(tNeg),
+        terms(termsList)
+{
+
+}
+
+// Existential atoms' constructor
+Atom::Atom( 
+    string name, 
+    unsigned arity, 
+    vector<Term*> termsList, 
+    vector<Variable> existVars ):
+        predIndex(Atom::addPredicateName(name,arity)),
+        trueNegated(false),
+        terms(termsList),
+        existentialVars(existVars)
 {
 
 }
 
 Atom::Atom( 
     const Atom& a ): 
-    predIndex(a.predIndex), 
-    trueNegated(a.trueNegated), 
-    terms(a.terms) 
+        predIndex(a.predIndex), 
+        trueNegated(a.trueNegated), 
+        terms(a.terms),
+        existentialVars(a.existentialVars)
 {
     
 }

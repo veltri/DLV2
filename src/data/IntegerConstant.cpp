@@ -21,7 +21,7 @@
 
 IntegerConstant::IntegerConstant(
     int i ):
-    Term(Atom::addIntegerConstant(i))
+        Term(Atom::addIntegerConstant(i))
 {
     
 }
