@@ -49,8 +49,6 @@ public:
     virtual void onTermDash() = 0;
     virtual void onExistentialVariable( char* ) = 0;
     
-    virtual Program& getProgram() = 0;
-    
 };
 
 #endif	/* INPUTBUILDER_H */

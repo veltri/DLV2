@@ -46,8 +46,7 @@ public:
     
 protected:
     unsigned index;
-    
-    
+
 };
 
 #endif	/* TERM_H */

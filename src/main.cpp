@@ -15,7 +15,10 @@ int main(int argc, char** argv)
     InputDirector::getInstance().configureBuilder(builder);
     InputDirector::getInstance().parse(argc,argv);
     
-    cout << InputDirector::getInstance().getProgram();
+    SimpleInputBuilder* simpleBuilder = (SimpleInputBuilder*)builder;
+    cout << simpleBuilder->getProgram();
+    if( simpleBuilder->getQuery() )
+        cout << *(simpleBuilder->getQuery()) << "?" << endl;
     
     InputDirector::free();
     delete builder;

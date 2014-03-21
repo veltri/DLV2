@@ -34,15 +34,35 @@ SimpleInputBuilder::SimpleInputBuilder():
     currentLiteral = NULL;
     currentAtom = NULL;
     currentTerm = NULL;
+    varCounter = 0;
+    query = NULL;
 }
 
 SimpleInputBuilder::~SimpleInputBuilder()
 {
+    // Delete all terms of the program, 
+    // because they are instantiated dinamically.
+    for( unsigned i=0; i<allTerms.size(); i++ )
+        delete allTerms[i];
     if( program != NULL )
-    {
         delete program;
-        program = NULL;
-    }
+    if( query != NULL )
+        delete query;
+}
+
+Program&
+SimpleInputBuilder::getProgram()
+{ 
+    // It should be not null;
+    assert_msg( program, "The program is null!" );
+    return *program; 
+}
+
+Atom* 
+SimpleInputBuilder::getQuery() 
+{
+    // It could be null;
+    return query; 
 }
 
 void 
@@ -61,6 +81,7 @@ SimpleInputBuilder::onRule()
     head.clear();
     body.clear();
     localVariables.clear();
+    varCounter = 0;
 }
 
 void 
@@ -79,12 +100,25 @@ SimpleInputBuilder::onConstraint()
     head.clear();
     body.clear();
     localVariables.clear();
+    varCounter = 0;
 }
     
 void 
 SimpleInputBuilder::onQuery()
 {
-    
+    assert_msg( currentAtom, "Trying to adding a null query atom" );
+    if( query != NULL )
+    {
+        cout << "Query " << (*currentAtom) << " replaces " << query << endl;
+        delete query;
+        query = NULL;
+    }
+    query = new Atom(*currentAtom);
+    if( currentAtom )
+    {
+        delete currentAtom;
+        currentAtom = NULL;
+    }
 }
     
 // Finalize an atom; destroy all of its properties.
@@ -144,6 +178,11 @@ SimpleInputBuilder::onAtom(
     }
     currentAtom = new Atom(predName, termStack.size(), 
             termStack, isStrongNeg);
+    // Before emptying the stack, we store its content.
+    // We need these pointers to delete all the terms  
+    // of the program, because they are instantiated
+    // dinamically.
+    allTerms.insert(allTerms.end(),termStack.begin(),termStack.end());
     termStack.clear();
     predName = "";
 }
@@ -160,7 +199,11 @@ SimpleInputBuilder::onExistentialAtom()
     }
     currentAtom = new Atom(predName, termStack.size(), 
             termStack, existVars);
-
+    // Before emptying the stack, we store its content.
+    // We need these pointers to delete all the terms  
+    // of the program, because they are instantiated
+    // dinamically.
+    allTerms.insert(allTerms.end(),termStack.begin(),termStack.end());
     termStack.clear();
     existVars.clear();
     predName = "";
@@ -188,17 +231,20 @@ SimpleInputBuilder::onTerm(
         // Looking for other instances of 
         // the variable in the current rule
         for( unsigned i=0; i<localVariables.size() && !currentTerm; i++ )
-            if( localVariables[i] == value )
-                currentTerm = new Variable(i);
+            if( localVariables[i].varName == value )
+                currentTerm = new Variable(localVariables[i].varIndex);
         if( !currentTerm )
         {
-            currentTerm = new Variable(localVariables.size());
-            localVariables.push_back( string(value) );
+            currentTerm = new Variable(varCounter);
+            VariableIndex ind;
+            ind.varIndex = varCounter++;
+            ind.varName = string(value);
+            localVariables.push_back( ind );
         }   
     }
     else if( value[0] == '_' && strlen(value) == 1 ) // Unknow variable;
     { 
-        currentTerm = new Variable(222);  // FIXME
+        currentTerm = new Variable(varCounter++);  
     }
     else if( (value[0] == '\"' && value[strlen(value)-1] == '\"') ||  
             (value[0] >= 'a' && value[0] <='z') )   // String constant
@@ -277,15 +323,18 @@ SimpleInputBuilder::onExistentialVariable(
     // the variable in the current rule
     bool found = false;
     for( unsigned i=0; i<localVariables.size() && !found; i++ )
-        if( localVariables[i] == var )
+        if( localVariables[i].varName == var )
         {
-            existVars.push_back(Variable(i));
+            existVars.push_back(Variable(localVariables[i].varIndex));
             found = true;
         }
     if( !found )
     {
-        existVars.push_back(Variable(localVariables.size()));
-        localVariables.push_back( string(var) );
+        existVars.push_back(Variable(varCounter));
+        VariableIndex ind;
+        ind.varIndex = varCounter++;
+        ind.varName = string(var);
+        localVariables.push_back( ind );
     }       
 }
 

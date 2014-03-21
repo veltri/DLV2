@@ -569,10 +569,10 @@ static const yytype_uint16 yyrline[] =
      175,   176,   179,   180,   185,   188,   189,   192,   193,   194,
      197,   198,   199,   200,   204,   209,   214,   219,   224,   228,
      236,   237,   240,   241,   245,   246,   247,   248,   252,   253,
-     257,   261,   268,   269,   270,   273,   276,   277,   280,   282,
-     283,   286,   289,   290,   293,   294,   295,   296,   297,   300,
-     301,   304,   305,   308,   311,   312,   316,   319,   320,   321,
-     322
+     257,   261,   268,   269,   270,   273,   279,   280,   283,   285,
+     286,   289,   292,   293,   296,   297,   298,   299,   300,   303,
+     304,   307,   308,   311,   314,   315,   319,   322,   323,   324,
+     325
 };
 #endif
 
@@ -2227,182 +2227,184 @@ yyreduce:
   case 85:
 
 /* Line 1806 of yacc.c  */
-#line 273 "src/aspcore2.y"
-    {}
+#line 274 "src/aspcore2.y"
+    { 
+                InputDirector::getInstance().getBuilder()->onAtom(); 
+            }
     break;
 
   case 86:
 
 /* Line 1806 of yacc.c  */
-#line 276 "src/aspcore2.y"
+#line 279 "src/aspcore2.y"
     {}
     break;
 
   case 87:
 
 /* Line 1806 of yacc.c  */
-#line 277 "src/aspcore2.y"
+#line 280 "src/aspcore2.y"
     {}
     break;
 
   case 88:
 
 /* Line 1806 of yacc.c  */
-#line 280 "src/aspcore2.y"
+#line 283 "src/aspcore2.y"
     {}
     break;
 
   case 90:
 
 /* Line 1806 of yacc.c  */
-#line 283 "src/aspcore2.y"
+#line 286 "src/aspcore2.y"
     {}
     break;
 
   case 91:
 
 /* Line 1806 of yacc.c  */
-#line 286 "src/aspcore2.y"
+#line 289 "src/aspcore2.y"
     {}
     break;
 
   case 92:
 
 /* Line 1806 of yacc.c  */
-#line 289 "src/aspcore2.y"
+#line 292 "src/aspcore2.y"
     {}
     break;
 
   case 93:
 
 /* Line 1806 of yacc.c  */
-#line 290 "src/aspcore2.y"
+#line 293 "src/aspcore2.y"
     {}
     break;
 
   case 94:
 
 /* Line 1806 of yacc.c  */
-#line 293 "src/aspcore2.y"
+#line 296 "src/aspcore2.y"
     {}
     break;
 
   case 95:
 
 /* Line 1806 of yacc.c  */
-#line 294 "src/aspcore2.y"
+#line 297 "src/aspcore2.y"
     {}
     break;
 
   case 96:
 
 /* Line 1806 of yacc.c  */
-#line 295 "src/aspcore2.y"
+#line 298 "src/aspcore2.y"
     {}
     break;
 
   case 97:
 
 /* Line 1806 of yacc.c  */
-#line 296 "src/aspcore2.y"
+#line 299 "src/aspcore2.y"
     {}
     break;
 
   case 98:
 
 /* Line 1806 of yacc.c  */
-#line 297 "src/aspcore2.y"
+#line 300 "src/aspcore2.y"
     {}
     break;
 
   case 99:
 
 /* Line 1806 of yacc.c  */
-#line 300 "src/aspcore2.y"
+#line 303 "src/aspcore2.y"
     {}
     break;
 
   case 100:
 
 /* Line 1806 of yacc.c  */
-#line 301 "src/aspcore2.y"
+#line 304 "src/aspcore2.y"
     {}
     break;
 
   case 101:
 
 /* Line 1806 of yacc.c  */
-#line 304 "src/aspcore2.y"
+#line 307 "src/aspcore2.y"
     {}
     break;
 
   case 102:
 
 /* Line 1806 of yacc.c  */
-#line 305 "src/aspcore2.y"
+#line 308 "src/aspcore2.y"
     {}
     break;
 
   case 103:
 
 /* Line 1806 of yacc.c  */
-#line 308 "src/aspcore2.y"
+#line 311 "src/aspcore2.y"
     {}
     break;
 
   case 104:
 
 /* Line 1806 of yacc.c  */
-#line 311 "src/aspcore2.y"
+#line 314 "src/aspcore2.y"
     {}
     break;
 
   case 105:
 
 /* Line 1806 of yacc.c  */
-#line 312 "src/aspcore2.y"
+#line 315 "src/aspcore2.y"
     {}
     break;
 
   case 106:
 
 /* Line 1806 of yacc.c  */
-#line 316 "src/aspcore2.y"
+#line 319 "src/aspcore2.y"
     {}
     break;
 
   case 107:
 
 /* Line 1806 of yacc.c  */
-#line 319 "src/aspcore2.y"
+#line 322 "src/aspcore2.y"
     {}
     break;
 
   case 108:
 
 /* Line 1806 of yacc.c  */
-#line 320 "src/aspcore2.y"
+#line 323 "src/aspcore2.y"
     {}
     break;
 
   case 109:
 
 /* Line 1806 of yacc.c  */
-#line 321 "src/aspcore2.y"
+#line 324 "src/aspcore2.y"
     {}
     break;
 
   case 110:
 
 /* Line 1806 of yacc.c  */
-#line 322 "src/aspcore2.y"
+#line 325 "src/aspcore2.y"
     {}
     break;
 
 
 
 /* Line 1806 of yacc.c  */
-#line 2406 "src/aspcore2_parser.hpp"
+#line 2408 "src/aspcore2_parser.hpp"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires

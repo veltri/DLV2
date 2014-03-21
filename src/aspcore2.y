@@ -270,7 +270,10 @@ identifier
     | VARIABLE { $$ = $1; }
     ;
                 
-query     : atom QUERY_MARK {}
+query     : atom QUERY_MARK 
+            { 
+                InputDirector::getInstance().getBuilder()->onAtom(); 
+            }
           ; 
 
 compare_aggregate : term compareop aggregate {}

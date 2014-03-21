@@ -31,14 +31,12 @@
 #include "InputBuilder.h"
 
 class InputDirector {
-    public:
+public:
     static InputDirector& getInstance();
     static void free();
     
     void configureBuilder( InputBuilder* );
     InputBuilder* getBuilder() { return builder; }
-    
-    Program& getProgram() { return builder->getProgram(); }
     
     //////////////////////////////////////////////////////////////////////////////
     // Parsing functions

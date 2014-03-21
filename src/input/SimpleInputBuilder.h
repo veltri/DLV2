@@ -49,12 +49,13 @@ public:
     virtual void onFunction( char*, int );
     virtual void onTermDash();
     virtual void onExistentialVariable( char* );
-    
-    virtual Program& getProgram() { return *program; }
-    
+    // Not derived methods
+    Program& getProgram();
+    Atom* getQuery();
+      
     bool isNumeric( const char*, int );
     
-private:
+private:   
     Program* program;
     vector<Atom> head;
     vector<Literal> body;
@@ -63,9 +64,16 @@ private:
     Atom* currentAtom;
     string predName;
     Term* currentTerm;
-    vector<string> localVariables;    
     vector<Term*> termStack; 
+    vector<Term*> allTerms;
     vector<Variable> existVars;
+    struct VariableIndex {
+        string varName;
+        unsigned varIndex;
+    };
+    vector<VariableIndex> localVariables; 
+    unsigned varCounter;
+    Atom* query;
 };
 
 #endif	/* SIMPLEINPUTBUILDER_H */
