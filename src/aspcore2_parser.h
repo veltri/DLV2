@@ -128,12 +128,13 @@ typedef union YYSTYPE
 #line 27 "src/aspcore2.y"
 
     char* string;
+    char singleChar;
     int integer;
 
 
 
 /* Line 2068 of yacc.c  */
-#line 137 "src/aspcore2_parser.h"
+#line 138 "src/aspcore2_parser.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

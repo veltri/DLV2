@@ -26,12 +26,14 @@ This file is part of the ASPCOMP2013 ASP-Core-2 validator (validator in the foll
 %error-verbose
 %union {
     char* string;
+    char singleChar;
     int integer;
 }
 
 %type <integer> term term_
-%type <integer> terms
-%type <string> identifier
+%type <integer> terms 
+%type <singleChar> arithop
+%type <string> identifier 
 
 %token <string> SYMBOLIC_CONSTANT NUMBER VARIABLE STRING
 
@@ -74,11 +76,26 @@ rules
     ;
 
 rule
-    : head DOT { InputDirector::getInstance().getBuilder()->onRule(); }
-    | head CONS DOT { InputDirector::getInstance().getBuilder()->onRule(); }
-    | head CONS body DOT { InputDirector::getInstance().getBuilder()->onRule(); }
-    | CONS body DOT /*constraint*/ { InputDirector::getInstance().getBuilder()->onConstraint(); }
-    | WCONS body DOT weight_at_levels {}
+    : head DOT 
+        { 
+            InputDirector::getInstance().getBuilder()->onRule(); 
+        }
+    | head CONS DOT 
+        {
+            InputDirector::getInstance().getBuilder()->onRule(); 
+        }
+    | head CONS body DOT 
+        { 
+            InputDirector::getInstance().getBuilder()->onRule(); 
+        }
+    | CONS body DOT /*constraint*/ 
+        { 
+            InputDirector::getInstance().getBuilder()->onConstraint(); 
+        }
+    | WCONS body DOT weight_at_levels 
+        { 
+            InputDirector::getInstance().getBuilder()->onWeakConstraint(); 
+        }
     ;
 
 head
@@ -90,14 +107,33 @@ body
     : conjunction {}
     ;
 
-weight_at_levels : SQUARE_OPEN term SQUARE_CLOSE {}
-         | SQUARE_OPEN term levels_and_terms SQUARE_CLOSE {}
-                 ;
+weight_at_levels : 
+      SQUARE_OPEN term SQUARE_CLOSE 
+        {
+            InputDirector::getInstance().getBuilder()->onWeight($2); 
+        }
+    | SQUARE_OPEN term levels_and_terms SQUARE_CLOSE 
+        {
+            InputDirector::getInstance().getBuilder()->onWeight($2); 
+        }
+    ;
 
-levels_and_terms : AT term {} 
-                 | AT term COMMA terms {}
-         | COMMA terms {} 
-             ;
+levels_and_terms : 
+      AT term 
+        {
+            // 0 is the number of terms after the level.
+            InputDirector::getInstance().getBuilder()->onLevelsAndTerms($2,0); 
+        } 
+    | AT term COMMA terms 
+        { 
+            InputDirector::getInstance().getBuilder()->onLevelsAndTerms($2,$4); 
+        }
+    | COMMA terms 
+        { 
+            // The level is omitted.
+            InputDirector::getInstance().getBuilder()->onLevelsAndTerms(0,$2); 
+        } 
+    ;
           
 disjunction
     : classic_literal 
@@ -119,8 +155,14 @@ disjunction
     ;
 
 conjunction
-    : naf_literal_aggregate { InputDirector::getInstance().getBuilder()->addToBody(); }
-    | conjunction COMMA naf_literal_aggregate { InputDirector::getInstance().getBuilder()->addToBody(); }
+    : naf_literal_aggregate 
+        { 
+            InputDirector::getInstance().getBuilder()->addToBody(); 
+        }
+    | conjunction COMMA naf_literal_aggregate 
+        { 
+            InputDirector::getInstance().getBuilder()->addToBody(); 
+        }
     ;
 
 choice_atom : term binop CURLY_OPEN choice_elements CURLY_CLOSE binop term {}
@@ -143,8 +185,14 @@ naf_literals
     ;    
           
 naf_literal
-    : classic_literal { InputDirector::getInstance().getBuilder()->onNafLiteral(); }
-    | NAF classic_literal { InputDirector::getInstance().getBuilder()->onNafLiteral(true); }
+    : classic_literal 
+        { 
+            InputDirector::getInstance().getBuilder()->onNafLiteral(); 
+        }
+    | NAF classic_literal 
+        { 
+            InputDirector::getInstance().getBuilder()->onNafLiteral(true); 
+        }
     | builtin_atom {}
     ;
 
@@ -166,9 +214,18 @@ classic_literal
     ;  
 
 atom
-    : identifier { InputDirector::getInstance().getBuilder()->predicateName($1); }
-    | identifier PARAM_OPEN terms PARAM_CLOSE { InputDirector::getInstance().getBuilder()->predicateName($1); }
-    | identifier PARAM_OPEN PARAM_CLOSE { InputDirector::getInstance().getBuilder()->predicateName($1); }
+    : identifier 
+        { 
+            InputDirector::getInstance().getBuilder()->predicateName($1); 
+        }
+    | identifier PARAM_OPEN terms PARAM_CLOSE 
+        { 
+            InputDirector::getInstance().getBuilder()->predicateName($1); 
+        }
+    | identifier PARAM_OPEN PARAM_CLOSE 
+        { 
+            InputDirector::getInstance().getBuilder()->predicateName($1); 
+        }
     ;              
          
 terms
@@ -194,10 +251,10 @@ binop    : compareop     {}
          | rightwardop       {}
          ;       
          
-arithop   : PLUS     {} 
-          | DASH    {}
-          | TIMES    {}
-          | SLASH      {}
+arithop   : PLUS  { $$ = '+'; } 
+          | DASH  { $$ = '-'; }
+          | TIMES { $$ = '*'; }
+          | SLASH { $$ = '/'; }
           ;      
 
 term_ 
@@ -213,7 +270,11 @@ term_
         }
     | ANON_VAR 
         { 
-            InputDirector::getInstance().getBuilder()->onTerm("_"); 
+            char* anonVar = new char[2];
+            strcpy(anonVar,"_");
+            anonVar[1] = '\0';
+            InputDirector::getInstance().getBuilder()->onTerm(anonVar); 
+            delete anonVar;
             $$ = 1; 
         }
     | identifier PARAM_OPEN terms PARAM_CLOSE 
@@ -223,18 +284,26 @@ term_
         }
     | PARAM_OPEN term PARAM_CLOSE 
         { 
+            InputDirector::getInstance().getBuilder()->onTermParams($2); 
             $$ = 1;
         }
     | DASH term 
         { 
-            InputDirector::getInstance().getBuilder()->onTermDash(); 
-            $$ = $2;
+            InputDirector::getInstance().getBuilder()->onTermDash($2); 
+            $$ = 1;
         }
     ;
 
 term
-    : term_ { $$ = $1; }
-    | term arithop term_ { $$ = 1; }
+    : term_ 
+        { 
+            $$ = $1; 
+        }
+    | term arithop term_ 
+        { 
+            InputDirector::getInstance().getBuilder()->onArithmeticOperation($2); 
+            $$ = 1; 
+        }
     ;        
 
 basic_term : ground_term {}

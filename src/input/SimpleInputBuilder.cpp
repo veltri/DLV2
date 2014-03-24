@@ -104,6 +104,12 @@ SimpleInputBuilder::onConstraint()
 }
     
 void 
+SimpleInputBuilder::onWeakConstraint()
+{
+    // TODO
+}
+
+void 
 SimpleInputBuilder::onQuery()
 {
     assert_msg( currentAtom, "Trying to adding a null query atom" );
@@ -218,6 +224,29 @@ SimpleInputBuilder::predicateName(
 }
     
 void 
+SimpleInputBuilder::onExistentialVariable(
+    char* var )
+{
+    // Looking for other instances of 
+    // the variable in the current rule
+    bool found = false;
+    for( unsigned i=0; i<localVariables.size() && !found; i++ )
+        if( localVariables[i].varName == var )
+        {
+            existVars.push_back(Variable(localVariables[i].varIndex));
+            found = true;
+        }
+    if( !found )
+    {
+        existVars.push_back(Variable(varCounter));
+        VariableIndex ind;
+        ind.varIndex = varCounter++;
+        ind.varName = string(var);
+        localVariables.push_back( ind );
+    }       
+}
+
+void 
 SimpleInputBuilder::onTerm( 
     char* value )
 {
@@ -296,8 +325,9 @@ SimpleInputBuilder::onFunction(
     for( unsigned i=termStack.size()-nTerms; i<termStack.size(); i++ )
     {
         ss << termStack[i]->toString();
-        if( i < termStack.size()-1 )
-            ss << ",";
+        // Before popping #nTerms pointers from the stack
+        // delete the pointed terms.
+        delete termStack[i];
     }
     ss << ")";
     currentTerm = new StringConstant(ss.str());
@@ -310,34 +340,111 @@ SimpleInputBuilder::onFunction(
 }
     
 void 
-SimpleInputBuilder::onTermDash()
+SimpleInputBuilder::onTermDash( 
+    int nTerms )
 {
-
-}
-  
-void 
-SimpleInputBuilder::onExistentialVariable(
-    char* var )
-{
-    // Looking for other instances of 
-    // the variable in the current rule
-    bool found = false;
-    for( unsigned i=0; i<localVariables.size() && !found; i++ )
-        if( localVariables[i].varName == var )
-        {
-            existVars.push_back(Variable(localVariables[i].varIndex));
-            found = true;
-        }
-    if( !found )
+    // Pop nTerms elements from the stack and put "-" in front of them. 
+    // Afterward, push the obtained complex term into the stack.
+    if( currentTerm != NULL )
+        currentTerm = NULL;
+    
+    // FIXME
+    stringstream ss;
+    ss << "-";
+    // Consume nTerms from the stack
+    for( unsigned i=termStack.size()-nTerms; i<termStack.size(); i++ )
     {
-        existVars.push_back(Variable(varCounter));
-        VariableIndex ind;
-        ind.varIndex = varCounter++;
-        ind.varName = string(var);
-        localVariables.push_back( ind );
-    }       
+        ss << termStack[i]->toString();
+        // Before popping #nTerms pointers from the stack
+        // delete the pointed terms.
+        delete termStack[i];
+    }
+    ss << ")";
+    currentTerm = new StringConstant(ss.str());
+    // Consume nTerms from the stack.
+    unsigned newSize = termStack.size()-nTerms;
+    termStack.resize(newSize);
+    // Push the function into the stack.
+    termStack.push_back(currentTerm);
+    currentTerm = NULL;
+}
+    
+void 
+SimpleInputBuilder::onTermParams( 
+    int nTerms )
+{
+    // Pop nTerms elements from the stack and enclose them in parentheses. 
+    // Afterward, push the obtained complex term into the stack.
+    if( currentTerm != NULL )
+        currentTerm = NULL;
+    
+    // FIXME
+    stringstream ss;
+    ss << "(";
+    // Consume nTerms from the stack
+    for( unsigned i=termStack.size()-nTerms; i<termStack.size(); i++ )
+    {
+        ss << termStack[i]->toString();
+        if( i < termStack.size()-1 )
+            ss << ",";
+        // Before popping #nTerms pointers from the stack
+        // delete the pointed terms.
+        delete termStack[i];
+    }
+    ss << ")";
+    currentTerm = new StringConstant(ss.str());
+    // Consume nTerms from the stack.
+    unsigned newSize = termStack.size()-nTerms;
+    termStack.resize(newSize);
+    // Push the function into the stack.
+    termStack.push_back(currentTerm);
+    currentTerm = NULL;
 }
 
+void 
+SimpleInputBuilder::onArithmeticOperation( char arithOperator )
+{
+    // The right and left operands are on top of the stack.
+    Term* rightOperand = termStack.back();
+    termStack.pop_back();
+    Term* leftOperand = termStack.back();
+    termStack.pop_back();
+    // Build a new term by that arithmetic expression.
+    // FIXME
+    stringstream ss;
+    ss << leftOperand->toString();
+    ss << arithOperator;
+    ss << rightOperand->toString();
+    currentTerm = new StringConstant(ss.str());
+    // Push the function into the stack.
+    termStack.push_back(currentTerm);
+    delete leftOperand;
+    delete rightOperand;
+    currentTerm = NULL;
+}
+
+void 
+SimpleInputBuilder::onWeight( 
+    int nTerms )
+{
+    
+}
+    
+void 
+SimpleInputBuilder::onLevel( 
+    int nTerms )
+{
+    
+}
+    
+void 
+SimpleInputBuilder::onLevelsAndTerms( 
+    int nTermsForLevel, 
+    int nTerms )
+{
+    
+}
+    
 bool 
 SimpleInputBuilder::isNumeric( 
     const char* pszInput, 

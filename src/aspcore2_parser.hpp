@@ -212,12 +212,13 @@ typedef union YYSTYPE
 #line 27 "src/aspcore2.y"
 
     char* string;
+    char singleChar;
     int integer;
 
 
 
 /* Line 293 of yacc.c  */
-#line 221 "src/aspcore2_parser.hpp"
+#line 222 "src/aspcore2_parser.hpp"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -229,7 +230,7 @@ typedef union YYSTYPE
 
 
 /* Line 343 of yacc.c  */
-#line 233 "src/aspcore2_parser.hpp"
+#line 234 "src/aspcore2_parser.hpp"
 
 #ifdef short
 # undef short
@@ -561,18 +562,18 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,    62,    62,    64,    66,    67,    68,    72,    73,    77,
-      78,    79,    80,    81,    85,    86,    90,    93,    94,    97,
-      98,    99,   103,   107,   111,   115,   122,   123,   126,   127,
-     128,   129,   132,   133,   136,   137,   141,   142,   146,   147,
-     148,   152,   153,   154,   158,   164,   165,   169,   170,   171,
-     175,   176,   179,   180,   185,   188,   189,   192,   193,   194,
-     197,   198,   199,   200,   204,   209,   214,   219,   224,   228,
-     236,   237,   240,   241,   245,   246,   247,   248,   252,   253,
-     257,   261,   268,   269,   270,   273,   279,   280,   283,   285,
-     286,   289,   292,   293,   296,   297,   298,   299,   300,   303,
-     304,   307,   308,   311,   314,   315,   319,   322,   323,   324,
-     325
+       0,    64,    64,    66,    68,    69,    70,    74,    75,    79,
+      83,    87,    91,    95,   102,   103,   107,   111,   115,   122,
+     127,   131,   139,   143,   147,   151,   158,   162,   168,   169,
+     170,   171,   174,   175,   178,   179,   183,   184,   188,   192,
+     196,   200,   201,   202,   206,   212,   213,   217,   221,   225,
+     232,   233,   236,   237,   242,   245,   246,   249,   250,   251,
+     254,   255,   256,   257,   261,   266,   271,   280,   285,   290,
+     298,   302,   309,   310,   314,   315,   316,   317,   321,   322,
+     326,   330,   337,   338,   339,   342,   348,   349,   352,   354,
+     355,   358,   361,   362,   365,   366,   367,   368,   369,   372,
+     373,   376,   377,   380,   383,   384,   388,   391,   392,   393,
+     394
 };
 #endif
 
@@ -1664,126 +1665,148 @@ yyreduce:
         case 5:
 
 /* Line 1806 of yacc.c  */
-#line 67 "src/aspcore2.y"
+#line 69 "src/aspcore2.y"
     { InputDirector::getInstance().getBuilder()->onQuery(); }
     break;
 
   case 6:
 
 /* Line 1806 of yacc.c  */
-#line 68 "src/aspcore2.y"
+#line 70 "src/aspcore2.y"
     { yyerror("Generic error"); }
     break;
 
   case 7:
 
 /* Line 1806 of yacc.c  */
-#line 72 "src/aspcore2.y"
+#line 74 "src/aspcore2.y"
     {}
     break;
 
   case 8:
 
 /* Line 1806 of yacc.c  */
-#line 73 "src/aspcore2.y"
+#line 75 "src/aspcore2.y"
     {}
     break;
 
   case 9:
 
 /* Line 1806 of yacc.c  */
-#line 77 "src/aspcore2.y"
-    { InputDirector::getInstance().getBuilder()->onRule(); }
+#line 80 "src/aspcore2.y"
+    { 
+            InputDirector::getInstance().getBuilder()->onRule(); 
+        }
     break;
 
   case 10:
 
 /* Line 1806 of yacc.c  */
-#line 78 "src/aspcore2.y"
-    { InputDirector::getInstance().getBuilder()->onRule(); }
+#line 84 "src/aspcore2.y"
+    {
+            InputDirector::getInstance().getBuilder()->onRule(); 
+        }
     break;
 
   case 11:
 
 /* Line 1806 of yacc.c  */
-#line 79 "src/aspcore2.y"
-    { InputDirector::getInstance().getBuilder()->onRule(); }
+#line 88 "src/aspcore2.y"
+    { 
+            InputDirector::getInstance().getBuilder()->onRule(); 
+        }
     break;
 
   case 12:
 
 /* Line 1806 of yacc.c  */
-#line 80 "src/aspcore2.y"
-    { InputDirector::getInstance().getBuilder()->onConstraint(); }
+#line 92 "src/aspcore2.y"
+    { 
+            InputDirector::getInstance().getBuilder()->onConstraint(); 
+        }
     break;
 
   case 13:
 
 /* Line 1806 of yacc.c  */
-#line 81 "src/aspcore2.y"
-    {}
+#line 96 "src/aspcore2.y"
+    { 
+            InputDirector::getInstance().getBuilder()->onWeakConstraint(); 
+        }
     break;
 
   case 14:
 
 /* Line 1806 of yacc.c  */
-#line 85 "src/aspcore2.y"
+#line 102 "src/aspcore2.y"
     {}
     break;
 
   case 15:
 
 /* Line 1806 of yacc.c  */
-#line 86 "src/aspcore2.y"
+#line 103 "src/aspcore2.y"
     {}
     break;
 
   case 16:
 
 /* Line 1806 of yacc.c  */
-#line 90 "src/aspcore2.y"
+#line 107 "src/aspcore2.y"
     {}
     break;
 
   case 17:
 
 /* Line 1806 of yacc.c  */
-#line 93 "src/aspcore2.y"
-    {}
+#line 112 "src/aspcore2.y"
+    {
+            InputDirector::getInstance().getBuilder()->onWeight((yyvsp[(2) - (3)].integer)); 
+        }
     break;
 
   case 18:
 
 /* Line 1806 of yacc.c  */
-#line 94 "src/aspcore2.y"
-    {}
+#line 116 "src/aspcore2.y"
+    {
+            InputDirector::getInstance().getBuilder()->onWeight((yyvsp[(2) - (4)].integer)); 
+        }
     break;
 
   case 19:
 
 /* Line 1806 of yacc.c  */
-#line 97 "src/aspcore2.y"
-    {}
+#line 123 "src/aspcore2.y"
+    {
+            // 0 is the number of terms after the level.
+            InputDirector::getInstance().getBuilder()->onLevelsAndTerms((yyvsp[(2) - (2)].integer),0); 
+        }
     break;
 
   case 20:
 
 /* Line 1806 of yacc.c  */
-#line 98 "src/aspcore2.y"
-    {}
+#line 128 "src/aspcore2.y"
+    { 
+            InputDirector::getInstance().getBuilder()->onLevelsAndTerms((yyvsp[(2) - (4)].integer),(yyvsp[(4) - (4)].integer)); 
+        }
     break;
 
   case 21:
 
 /* Line 1806 of yacc.c  */
-#line 99 "src/aspcore2.y"
-    {}
+#line 132 "src/aspcore2.y"
+    { 
+            // The level is omitted.
+            InputDirector::getInstance().getBuilder()->onLevelsAndTerms(0,(yyvsp[(2) - (2)].integer)); 
+        }
     break;
 
   case 22:
 
 /* Line 1806 of yacc.c  */
-#line 104 "src/aspcore2.y"
+#line 140 "src/aspcore2.y"
     { 
             InputDirector::getInstance().getBuilder()->addToHead(); 
         }
@@ -1792,7 +1815,7 @@ yyreduce:
   case 23:
 
 /* Line 1806 of yacc.c  */
-#line 108 "src/aspcore2.y"
+#line 144 "src/aspcore2.y"
     { 
             InputDirector::getInstance().getBuilder()->addToHead(); 
         }
@@ -1801,7 +1824,7 @@ yyreduce:
   case 24:
 
 /* Line 1806 of yacc.c  */
-#line 112 "src/aspcore2.y"
+#line 148 "src/aspcore2.y"
     { 
             InputDirector::getInstance().getBuilder()->addToHead(); 
         }
@@ -1810,7 +1833,7 @@ yyreduce:
   case 25:
 
 /* Line 1806 of yacc.c  */
-#line 116 "src/aspcore2.y"
+#line 152 "src/aspcore2.y"
     { 
             InputDirector::getInstance().getBuilder()->addToHead(); 
         }
@@ -1819,133 +1842,141 @@ yyreduce:
   case 26:
 
 /* Line 1806 of yacc.c  */
-#line 122 "src/aspcore2.y"
-    { InputDirector::getInstance().getBuilder()->addToBody(); }
+#line 159 "src/aspcore2.y"
+    { 
+            InputDirector::getInstance().getBuilder()->addToBody(); 
+        }
     break;
 
   case 27:
 
 /* Line 1806 of yacc.c  */
-#line 123 "src/aspcore2.y"
-    { InputDirector::getInstance().getBuilder()->addToBody(); }
+#line 163 "src/aspcore2.y"
+    { 
+            InputDirector::getInstance().getBuilder()->addToBody(); 
+        }
     break;
 
   case 28:
 
 /* Line 1806 of yacc.c  */
-#line 126 "src/aspcore2.y"
+#line 168 "src/aspcore2.y"
     {}
     break;
 
   case 29:
 
 /* Line 1806 of yacc.c  */
-#line 127 "src/aspcore2.y"
+#line 169 "src/aspcore2.y"
     {}
     break;
 
   case 30:
 
 /* Line 1806 of yacc.c  */
-#line 128 "src/aspcore2.y"
+#line 170 "src/aspcore2.y"
     {}
     break;
 
   case 31:
 
 /* Line 1806 of yacc.c  */
-#line 129 "src/aspcore2.y"
+#line 171 "src/aspcore2.y"
     {}
     break;
 
   case 32:
 
 /* Line 1806 of yacc.c  */
-#line 132 "src/aspcore2.y"
+#line 174 "src/aspcore2.y"
     {}
     break;
 
   case 33:
 
 /* Line 1806 of yacc.c  */
-#line 133 "src/aspcore2.y"
+#line 175 "src/aspcore2.y"
     {}
     break;
 
   case 34:
 
 /* Line 1806 of yacc.c  */
-#line 136 "src/aspcore2.y"
+#line 178 "src/aspcore2.y"
     {}
     break;
 
   case 35:
 
 /* Line 1806 of yacc.c  */
-#line 137 "src/aspcore2.y"
+#line 179 "src/aspcore2.y"
     {}
     break;
 
   case 36:
 
 /* Line 1806 of yacc.c  */
-#line 141 "src/aspcore2.y"
+#line 183 "src/aspcore2.y"
     {}
     break;
 
   case 37:
 
 /* Line 1806 of yacc.c  */
-#line 142 "src/aspcore2.y"
+#line 184 "src/aspcore2.y"
     {}
     break;
 
   case 38:
 
 /* Line 1806 of yacc.c  */
-#line 146 "src/aspcore2.y"
-    { InputDirector::getInstance().getBuilder()->onNafLiteral(); }
+#line 189 "src/aspcore2.y"
+    { 
+            InputDirector::getInstance().getBuilder()->onNafLiteral(); 
+        }
     break;
 
   case 39:
 
 /* Line 1806 of yacc.c  */
-#line 147 "src/aspcore2.y"
-    { InputDirector::getInstance().getBuilder()->onNafLiteral(true); }
+#line 193 "src/aspcore2.y"
+    { 
+            InputDirector::getInstance().getBuilder()->onNafLiteral(true); 
+        }
     break;
 
   case 40:
 
 /* Line 1806 of yacc.c  */
-#line 148 "src/aspcore2.y"
+#line 196 "src/aspcore2.y"
     {}
     break;
 
   case 41:
 
 /* Line 1806 of yacc.c  */
-#line 152 "src/aspcore2.y"
+#line 200 "src/aspcore2.y"
     {}
     break;
 
   case 42:
 
 /* Line 1806 of yacc.c  */
-#line 153 "src/aspcore2.y"
+#line 201 "src/aspcore2.y"
     {}
     break;
 
   case 43:
 
 /* Line 1806 of yacc.c  */
-#line 154 "src/aspcore2.y"
+#line 202 "src/aspcore2.y"
     {}
     break;
 
   case 44:
 
 /* Line 1806 of yacc.c  */
-#line 159 "src/aspcore2.y"
+#line 207 "src/aspcore2.y"
     { 
             InputDirector::getInstance().getBuilder()->onExistentialAtom(); 
         }
@@ -1954,140 +1985,146 @@ yyreduce:
   case 45:
 
 /* Line 1806 of yacc.c  */
-#line 164 "src/aspcore2.y"
+#line 212 "src/aspcore2.y"
     { InputDirector::getInstance().getBuilder()->onAtom(); }
     break;
 
   case 46:
 
 /* Line 1806 of yacc.c  */
-#line 165 "src/aspcore2.y"
+#line 213 "src/aspcore2.y"
     { InputDirector::getInstance().getBuilder()->onAtom(true); }
     break;
 
   case 47:
 
 /* Line 1806 of yacc.c  */
-#line 169 "src/aspcore2.y"
-    { InputDirector::getInstance().getBuilder()->predicateName((yyvsp[(1) - (1)].string)); }
+#line 218 "src/aspcore2.y"
+    { 
+            InputDirector::getInstance().getBuilder()->predicateName((yyvsp[(1) - (1)].string)); 
+        }
     break;
 
   case 48:
 
 /* Line 1806 of yacc.c  */
-#line 170 "src/aspcore2.y"
-    { InputDirector::getInstance().getBuilder()->predicateName((yyvsp[(1) - (4)].string)); }
+#line 222 "src/aspcore2.y"
+    { 
+            InputDirector::getInstance().getBuilder()->predicateName((yyvsp[(1) - (4)].string)); 
+        }
     break;
 
   case 49:
 
 /* Line 1806 of yacc.c  */
-#line 171 "src/aspcore2.y"
-    { InputDirector::getInstance().getBuilder()->predicateName((yyvsp[(1) - (3)].string)); }
+#line 226 "src/aspcore2.y"
+    { 
+            InputDirector::getInstance().getBuilder()->predicateName((yyvsp[(1) - (3)].string)); 
+        }
     break;
 
   case 50:
 
 /* Line 1806 of yacc.c  */
-#line 175 "src/aspcore2.y"
+#line 232 "src/aspcore2.y"
     { (yyval.integer) = (yyvsp[(1) - (1)].integer); }
     break;
 
   case 51:
 
 /* Line 1806 of yacc.c  */
-#line 176 "src/aspcore2.y"
+#line 233 "src/aspcore2.y"
     { (yyval.integer) = (yyvsp[(1) - (3)].integer) + (yyvsp[(3) - (3)].integer); }
     break;
 
   case 52:
 
 /* Line 1806 of yacc.c  */
-#line 179 "src/aspcore2.y"
+#line 236 "src/aspcore2.y"
     {}
     break;
 
   case 53:
 
 /* Line 1806 of yacc.c  */
-#line 180 "src/aspcore2.y"
+#line 237 "src/aspcore2.y"
     {}
     break;
 
   case 54:
 
 /* Line 1806 of yacc.c  */
-#line 185 "src/aspcore2.y"
+#line 242 "src/aspcore2.y"
     {}
     break;
 
   case 55:
 
 /* Line 1806 of yacc.c  */
-#line 188 "src/aspcore2.y"
+#line 245 "src/aspcore2.y"
     {}
     break;
 
   case 56:
 
 /* Line 1806 of yacc.c  */
-#line 189 "src/aspcore2.y"
+#line 246 "src/aspcore2.y"
     {}
     break;
 
   case 57:
 
 /* Line 1806 of yacc.c  */
-#line 192 "src/aspcore2.y"
+#line 249 "src/aspcore2.y"
     {}
     break;
 
   case 58:
 
 /* Line 1806 of yacc.c  */
-#line 193 "src/aspcore2.y"
+#line 250 "src/aspcore2.y"
     {}
     break;
 
   case 59:
 
 /* Line 1806 of yacc.c  */
-#line 194 "src/aspcore2.y"
+#line 251 "src/aspcore2.y"
     {}
     break;
 
   case 60:
 
 /* Line 1806 of yacc.c  */
-#line 197 "src/aspcore2.y"
-    {}
+#line 254 "src/aspcore2.y"
+    { (yyval.singleChar) = '+'; }
     break;
 
   case 61:
 
 /* Line 1806 of yacc.c  */
-#line 198 "src/aspcore2.y"
-    {}
+#line 255 "src/aspcore2.y"
+    { (yyval.singleChar) = '-'; }
     break;
 
   case 62:
 
 /* Line 1806 of yacc.c  */
-#line 199 "src/aspcore2.y"
-    {}
+#line 256 "src/aspcore2.y"
+    { (yyval.singleChar) = '*'; }
     break;
 
   case 63:
 
 /* Line 1806 of yacc.c  */
-#line 200 "src/aspcore2.y"
-    {}
+#line 257 "src/aspcore2.y"
+    { (yyval.singleChar) = '/'; }
     break;
 
   case 64:
 
 /* Line 1806 of yacc.c  */
-#line 205 "src/aspcore2.y"
+#line 262 "src/aspcore2.y"
     { 
             InputDirector::getInstance().getBuilder()->onTerm((yyvsp[(1) - (1)].string)); 
             (yyval.integer) = 1; 
@@ -2097,7 +2134,7 @@ yyreduce:
   case 65:
 
 /* Line 1806 of yacc.c  */
-#line 210 "src/aspcore2.y"
+#line 267 "src/aspcore2.y"
     { 
             InputDirector::getInstance().getBuilder()->onTerm((yyvsp[(1) - (1)].string)); 
             (yyval.integer) = 1; 
@@ -2107,9 +2144,13 @@ yyreduce:
   case 66:
 
 /* Line 1806 of yacc.c  */
-#line 215 "src/aspcore2.y"
+#line 272 "src/aspcore2.y"
     { 
-            InputDirector::getInstance().getBuilder()->onTerm("_"); 
+            char* anonVar = new char[2];
+            strcpy(anonVar,"_");
+            anonVar[1] = '\0';
+            InputDirector::getInstance().getBuilder()->onTerm(anonVar); 
+            delete anonVar;
             (yyval.integer) = 1; 
         }
     break;
@@ -2117,7 +2158,7 @@ yyreduce:
   case 67:
 
 /* Line 1806 of yacc.c  */
-#line 220 "src/aspcore2.y"
+#line 281 "src/aspcore2.y"
     { 
             InputDirector::getInstance().getBuilder()->onFunction((yyvsp[(1) - (4)].string), (yyvsp[(3) - (4)].integer)); 
             (yyval.integer) = 1; 
@@ -2127,8 +2168,9 @@ yyreduce:
   case 68:
 
 /* Line 1806 of yacc.c  */
-#line 225 "src/aspcore2.y"
+#line 286 "src/aspcore2.y"
     { 
+            InputDirector::getInstance().getBuilder()->onTermParams((yyvsp[(2) - (3)].integer)); 
             (yyval.integer) = 1;
         }
     break;
@@ -2136,59 +2178,64 @@ yyreduce:
   case 69:
 
 /* Line 1806 of yacc.c  */
-#line 229 "src/aspcore2.y"
+#line 291 "src/aspcore2.y"
     { 
-            InputDirector::getInstance().getBuilder()->onTermDash(); 
-            (yyval.integer) = (yyvsp[(2) - (2)].integer);
+            InputDirector::getInstance().getBuilder()->onTermDash((yyvsp[(2) - (2)].integer)); 
+            (yyval.integer) = 1;
         }
     break;
 
   case 70:
 
 /* Line 1806 of yacc.c  */
-#line 236 "src/aspcore2.y"
-    { (yyval.integer) = (yyvsp[(1) - (1)].integer); }
+#line 299 "src/aspcore2.y"
+    { 
+            (yyval.integer) = (yyvsp[(1) - (1)].integer); 
+        }
     break;
 
   case 71:
 
 /* Line 1806 of yacc.c  */
-#line 237 "src/aspcore2.y"
-    { (yyval.integer) = 1; }
+#line 303 "src/aspcore2.y"
+    { 
+            InputDirector::getInstance().getBuilder()->onArithmeticOperation((yyvsp[(2) - (3)].singleChar)); 
+            (yyval.integer) = 1; 
+        }
     break;
 
   case 72:
 
 /* Line 1806 of yacc.c  */
-#line 240 "src/aspcore2.y"
+#line 309 "src/aspcore2.y"
     {}
     break;
 
   case 73:
 
 /* Line 1806 of yacc.c  */
-#line 241 "src/aspcore2.y"
+#line 310 "src/aspcore2.y"
     {}
     break;
 
   case 78:
 
 /* Line 1806 of yacc.c  */
-#line 252 "src/aspcore2.y"
+#line 321 "src/aspcore2.y"
     {}
     break;
 
   case 79:
 
 /* Line 1806 of yacc.c  */
-#line 253 "src/aspcore2.y"
+#line 322 "src/aspcore2.y"
     {}
     break;
 
   case 80:
 
 /* Line 1806 of yacc.c  */
-#line 258 "src/aspcore2.y"
+#line 327 "src/aspcore2.y"
     { 
             InputDirector::getInstance().getBuilder()->onExistentialVariable((yyvsp[(1) - (1)].string)); 
         }
@@ -2197,7 +2244,7 @@ yyreduce:
   case 81:
 
 /* Line 1806 of yacc.c  */
-#line 262 "src/aspcore2.y"
+#line 331 "src/aspcore2.y"
     { 
             InputDirector::getInstance().getBuilder()->onExistentialVariable((yyvsp[(3) - (3)].string)); 
         }
@@ -2206,28 +2253,28 @@ yyreduce:
   case 82:
 
 /* Line 1806 of yacc.c  */
-#line 268 "src/aspcore2.y"
+#line 337 "src/aspcore2.y"
     { (yyval.string) = (yyvsp[(1) - (1)].string); }
     break;
 
   case 83:
 
 /* Line 1806 of yacc.c  */
-#line 269 "src/aspcore2.y"
+#line 338 "src/aspcore2.y"
     { (yyval.string) = (yyvsp[(1) - (1)].string); }
     break;
 
   case 84:
 
 /* Line 1806 of yacc.c  */
-#line 270 "src/aspcore2.y"
+#line 339 "src/aspcore2.y"
     { (yyval.string) = (yyvsp[(1) - (1)].string); }
     break;
 
   case 85:
 
 /* Line 1806 of yacc.c  */
-#line 274 "src/aspcore2.y"
+#line 343 "src/aspcore2.y"
     { 
                 InputDirector::getInstance().getBuilder()->onAtom(); 
             }
@@ -2236,175 +2283,175 @@ yyreduce:
   case 86:
 
 /* Line 1806 of yacc.c  */
-#line 279 "src/aspcore2.y"
+#line 348 "src/aspcore2.y"
     {}
     break;
 
   case 87:
 
 /* Line 1806 of yacc.c  */
-#line 280 "src/aspcore2.y"
+#line 349 "src/aspcore2.y"
     {}
     break;
 
   case 88:
 
 /* Line 1806 of yacc.c  */
-#line 283 "src/aspcore2.y"
+#line 352 "src/aspcore2.y"
     {}
     break;
 
   case 90:
 
 /* Line 1806 of yacc.c  */
-#line 286 "src/aspcore2.y"
+#line 355 "src/aspcore2.y"
     {}
     break;
 
   case 91:
 
 /* Line 1806 of yacc.c  */
-#line 289 "src/aspcore2.y"
+#line 358 "src/aspcore2.y"
     {}
     break;
 
   case 92:
 
 /* Line 1806 of yacc.c  */
-#line 292 "src/aspcore2.y"
+#line 361 "src/aspcore2.y"
     {}
     break;
 
   case 93:
 
 /* Line 1806 of yacc.c  */
-#line 293 "src/aspcore2.y"
+#line 362 "src/aspcore2.y"
     {}
     break;
 
   case 94:
 
 /* Line 1806 of yacc.c  */
-#line 296 "src/aspcore2.y"
+#line 365 "src/aspcore2.y"
     {}
     break;
 
   case 95:
 
 /* Line 1806 of yacc.c  */
-#line 297 "src/aspcore2.y"
+#line 366 "src/aspcore2.y"
     {}
     break;
 
   case 96:
 
 /* Line 1806 of yacc.c  */
-#line 298 "src/aspcore2.y"
+#line 367 "src/aspcore2.y"
     {}
     break;
 
   case 97:
 
 /* Line 1806 of yacc.c  */
-#line 299 "src/aspcore2.y"
+#line 368 "src/aspcore2.y"
     {}
     break;
 
   case 98:
 
 /* Line 1806 of yacc.c  */
-#line 300 "src/aspcore2.y"
+#line 369 "src/aspcore2.y"
     {}
     break;
 
   case 99:
 
 /* Line 1806 of yacc.c  */
-#line 303 "src/aspcore2.y"
+#line 372 "src/aspcore2.y"
     {}
     break;
 
   case 100:
 
 /* Line 1806 of yacc.c  */
-#line 304 "src/aspcore2.y"
+#line 373 "src/aspcore2.y"
     {}
     break;
 
   case 101:
 
 /* Line 1806 of yacc.c  */
-#line 307 "src/aspcore2.y"
+#line 376 "src/aspcore2.y"
     {}
     break;
 
   case 102:
 
 /* Line 1806 of yacc.c  */
-#line 308 "src/aspcore2.y"
+#line 377 "src/aspcore2.y"
     {}
     break;
 
   case 103:
 
 /* Line 1806 of yacc.c  */
-#line 311 "src/aspcore2.y"
+#line 380 "src/aspcore2.y"
     {}
     break;
 
   case 104:
 
 /* Line 1806 of yacc.c  */
-#line 314 "src/aspcore2.y"
+#line 383 "src/aspcore2.y"
     {}
     break;
 
   case 105:
 
 /* Line 1806 of yacc.c  */
-#line 315 "src/aspcore2.y"
+#line 384 "src/aspcore2.y"
     {}
     break;
 
   case 106:
 
 /* Line 1806 of yacc.c  */
-#line 319 "src/aspcore2.y"
+#line 388 "src/aspcore2.y"
     {}
     break;
 
   case 107:
 
 /* Line 1806 of yacc.c  */
-#line 322 "src/aspcore2.y"
+#line 391 "src/aspcore2.y"
     {}
     break;
 
   case 108:
 
 /* Line 1806 of yacc.c  */
-#line 323 "src/aspcore2.y"
+#line 392 "src/aspcore2.y"
     {}
     break;
 
   case 109:
 
 /* Line 1806 of yacc.c  */
-#line 324 "src/aspcore2.y"
+#line 393 "src/aspcore2.y"
     {}
     break;
 
   case 110:
 
 /* Line 1806 of yacc.c  */
-#line 325 "src/aspcore2.y"
+#line 394 "src/aspcore2.y"
     {}
     break;
 
 
 
 /* Line 1806 of yacc.c  */
-#line 2408 "src/aspcore2_parser.hpp"
+#line 2455 "src/aspcore2_parser.hpp"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires

@@ -36,6 +36,7 @@ public:
     
     virtual void onRule() = 0;
     virtual void onConstraint() = 0;
+    virtual void onWeakConstraint() = 0;
     virtual void onQuery() = 0;
     virtual void addToHead() = 0;
     virtual void addToBody() = 0;
@@ -43,11 +44,15 @@ public:
     virtual void onAtom( bool isStrongNeg = false ) = 0;
     virtual void onExistentialAtom() = 0;
     virtual void predicateName( char* ) = 0;
+    virtual void onExistentialVariable( char* ) = 0;
     virtual void onTerm( char* ) = 0;
     virtual void onTerm( int ) = 0;
     virtual void onFunction( char*, int ) = 0;
-    virtual void onTermDash() = 0;
-    virtual void onExistentialVariable( char* ) = 0;
+    virtual void onTermDash( int ) = 0;
+    virtual void onTermParams( int ) = 0;
+    virtual void onArithmeticOperation( char ) = 0;
+    virtual void onWeight( int ) = 0;
+    virtual void onLevelsAndTerms( int, int ) = 0;
     
 };
 

@@ -37,6 +37,7 @@ public:
     
     virtual void onRule();
     virtual void onConstraint();
+    virtual void onWeakConstraint();
     virtual void onQuery();
     virtual void addToHead();
     virtual void addToBody();
@@ -44,11 +45,16 @@ public:
     virtual void onAtom( bool isStrongNeg = false );
     virtual void onExistentialAtom();
     virtual void predicateName( char* );
+    virtual void onExistentialVariable( char* );
     virtual void onTerm( char* );
     virtual void onTerm( int );
     virtual void onFunction( char*, int );
-    virtual void onTermDash();
-    virtual void onExistentialVariable( char* );
+    virtual void onTermDash( int );
+    virtual void onTermParams( int );
+    virtual void onArithmeticOperation( char );
+    virtual void onWeight( int );
+    virtual void onLevel( int );
+    virtual void onLevelsAndTerms( int, int );
     // Not derived methods
     Program& getProgram();
     Atom* getQuery();

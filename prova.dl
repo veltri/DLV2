@@ -1,4 +1,0 @@
-\E Y father(Y,X) :- person(X).
-person(X,Y) :- father(X,_,Y). 
-\E X,Y p(X,Y,Z) | \E K q(K) :- q(Z).
-q(3) ?
