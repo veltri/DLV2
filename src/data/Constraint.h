@@ -49,7 +49,7 @@ operator<< (
     ostream& out,
     const Constraint& c )
 {
-    out << " :- ";
+    out << ":- ";
     for( unsigned i=0; i<c.body.size(); i++ )
     {
         out << c.body[i];

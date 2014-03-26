@@ -77,8 +77,8 @@ SimpleInputBuilder::onRule()
 void 
 SimpleInputBuilder::onConstraint()
 {
-    Rule currentRule(head,body);
-    program->addRule(currentRule);
+    Constraint currentConstraint(body);
+    program->addConstraint(currentConstraint);
     head.clear();
     body.clear();
     localVariables.clear();
@@ -90,7 +90,7 @@ SimpleInputBuilder::onWeakConstraint()
 {
     assert_msg( nTermsForWeight +
             nTermsForLevel +
-            nTermsAfterLevel == 
+            nTermsAfterLevel <= 
             termStack.size(),
             "The terms' stack has not a sufficient number of terms "
             "for building weight, level and terms of the current "
@@ -140,7 +140,6 @@ SimpleInputBuilder::onQuery()
     {
         cout << "Query " << (*currentAtom) << " replaces " << query << endl;
         delete query;
-        query = NULL;
     }
     query = new Atom(*currentAtom);
     if( currentAtom )

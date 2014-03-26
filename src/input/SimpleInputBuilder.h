@@ -66,7 +66,6 @@ private:
     Literal* currentLiteral;
     Atom* currentAtom;
     string predName;
-    Term* currentTerm;
     vector<Term*> termStack; 
     vector<Term*> allTerms;
     vector<Variable> existVars;
