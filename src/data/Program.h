@@ -29,19 +29,25 @@
 
 #include <map>
 #include "Rule.h"
+#include "Constraint.h"
+#include "WeakConstraint.h"
 
 class Program {
 public:
     Program() { }
-    Program( const Program& p ): rules(p.rules) { }
+    Program( const Program& p );
     ~Program() { }
     
-    void addRule( const Rule& r ) { rules.push_back(r); }
+    void addRule( const Rule& r );
+    void addConstraint( const Constraint& c );
+    void addWeakConstraint( const WeakConstraint& wc );
         
 private:
     friend inline ostream& operator<< ( ostream&, const Program& );
             
     vector<Rule> rules;
+    vector<Constraint> constraints;
+    vector<WeakConstraint> weakConstraints;
 };
 
 ostream& 
@@ -52,6 +58,14 @@ operator<< (
     for( unsigned i=0; i<p.rules.size(); i++ )
     {
         out << p.rules[i] << endl;
+    }
+    for( unsigned i=0; i<p.constraints.size(); i++ )
+    {
+        out << p.constraints[i] << endl;
+    }
+    for( unsigned i=0; i<p.weakConstraints.size(); i++ )
+    {
+        out << p.weakConstraints[i] << endl;
     }
     return out;
 }

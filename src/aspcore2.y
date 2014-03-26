@@ -30,7 +30,6 @@ This file is part of the ASPCOMP2013 ASP-Core-2 validator (validator in the foll
     int integer;
 }
 
-%type <integer> term term_
 %type <integer> terms 
 %type <singleChar> arithop
 %type <string> identifier 
@@ -110,28 +109,32 @@ body
 weight_at_levels : 
       SQUARE_OPEN term SQUARE_CLOSE 
         {
-            InputDirector::getInstance().getBuilder()->onWeight($2); 
+            // There is only the weight. No level and terms.
+            InputDirector::getInstance().getBuilder()->onWeightAtLevels(1,0,0); 
         }
     | SQUARE_OPEN term levels_and_terms SQUARE_CLOSE 
         {
-            InputDirector::getInstance().getBuilder()->onWeight($2); 
+            // There are also a level and/or terms.
+            // The finalization has been postponed to "level_and_terms".
         }
     ;
 
 levels_and_terms : 
       AT term 
         {
-            // 0 is the number of terms after the level.
-            InputDirector::getInstance().getBuilder()->onLevelsAndTerms($2,0); 
+            // There is no terms following the level.
+            InputDirector::getInstance().getBuilder()->onWeightAtLevels(1,1,0); 
         } 
     | AT term COMMA terms 
         { 
-            InputDirector::getInstance().getBuilder()->onLevelsAndTerms($2,$4); 
+            InputDirector::getInstance().getBuilder()->onWeightAtLevels(1,1,$4); 
         }
     | COMMA terms 
         { 
             // The level is omitted.
-            InputDirector::getInstance().getBuilder()->onLevelsAndTerms(0,$2); 
+            // Thus, the first term, recognized as the
+            // weight, should be a term of this list.
+            InputDirector::getInstance().getBuilder()->onWeightAtLevels(0,0,$2+1); 
         } 
     ;
           
@@ -229,8 +232,8 @@ atom
     ;              
          
 terms
-    : term { $$ = $1; }
-    | terms COMMA term { $$ = $1 + $3; }
+    : term { $$ = 1; }
+    | terms COMMA term { $$ = $1 + 1; }
     ;
 
 basic_terms : basic_term {}
@@ -261,12 +264,10 @@ term_
     : identifier 
         { 
             InputDirector::getInstance().getBuilder()->onTerm($1); 
-            $$ = 1; 
         }
     | NUMBER 
         { 
             InputDirector::getInstance().getBuilder()->onTerm($1); 
-            $$ = 1; 
         }
     | ANON_VAR 
         { 
@@ -275,34 +276,26 @@ term_
             anonVar[1] = '\0';
             InputDirector::getInstance().getBuilder()->onTerm(anonVar); 
             delete anonVar;
-            $$ = 1; 
         }
     | identifier PARAM_OPEN terms PARAM_CLOSE 
         { 
             InputDirector::getInstance().getBuilder()->onFunction($1, $3); 
-            $$ = 1; 
         }
     | PARAM_OPEN term PARAM_CLOSE 
         { 
-            InputDirector::getInstance().getBuilder()->onTermParams($2); 
-            $$ = 1;
+            InputDirector::getInstance().getBuilder()->onTermParams(); 
         }
     | DASH term 
         { 
-            InputDirector::getInstance().getBuilder()->onTermDash($2); 
-            $$ = 1;
+            InputDirector::getInstance().getBuilder()->onTermDash(); 
         }
     ;
 
 term
-    : term_ 
-        { 
-            $$ = $1; 
-        }
+    : term_ {}
     | term arithop term_ 
         { 
             InputDirector::getInstance().getBuilder()->onArithmeticOperation($2); 
-            $$ = 1; 
         }
     ;        
 

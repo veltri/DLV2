@@ -49,12 +49,10 @@ public:
     virtual void onTerm( char* );
     virtual void onTerm( int );
     virtual void onFunction( char*, int );
-    virtual void onTermDash( int );
-    virtual void onTermParams( int );
+    virtual void onTermDash();
+    virtual void onTermParams();
     virtual void onArithmeticOperation( char );
-    virtual void onWeight( int );
-    virtual void onLevel( int );
-    virtual void onLevelsAndTerms( int, int );
+    virtual void onWeightAtLevels( int, int, int );
     // Not derived methods
     Program& getProgram();
     Atom* getQuery();
@@ -65,7 +63,6 @@ private:
     Program* program;
     vector<Atom> head;
     vector<Literal> body;
-    Rule* currentRule;
     Literal* currentLiteral;
     Atom* currentAtom;
     string predName;
@@ -80,6 +77,9 @@ private:
     vector<VariableIndex> localVariables; 
     unsigned varCounter;
     Atom* query;
+    unsigned nTermsForWeight; 
+    unsigned nTermsForLevel;
+    unsigned nTermsAfterLevel;
 };
 
 #endif	/* SIMPLEINPUTBUILDER_H */

@@ -17,25 +17,29 @@
  *
  */
 
-#include "IntegerConstant.h"
+#include "WeakConstraint.h"
 
-IntegerConstant::IntegerConstant(
-    int i ):
-        Term(Atom::addIntegerConstant(i))
+WeakConstraint::WeakConstraint( 
+    vector<Literal> b,
+    Term* w,
+    Term* l,
+    vector<Term*> t ):
+        body(b),
+        weight(w),
+        level(l),
+        terms(t)
 {
     
 }
 
-IntegerConstant::IntegerConstant(
-    const IntegerConstant& i ): 
-        Term(Atom::addIntegerConstant(i.index)) {
-    
+WeakConstraint::WeakConstraint(
+    const WeakConstraint& wc):
+        body(wc.body),
+        weight(wc.weight),
+        level(wc.level),
+        terms(wc.terms)
+{
+
 }
 
-string 
-IntegerConstant::toString() const
-{ 
-    ostringstream oss;
-    oss << Atom::getIntegerConstant(index);
-    return oss.str();
-}
+    

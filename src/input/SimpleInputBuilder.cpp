@@ -30,10 +30,8 @@ SimpleInputBuilder::SimpleInputBuilder():
         InputBuilder()
 { 
     program = new Program(); 
-    currentRule = NULL;
     currentLiteral = NULL;
     currentAtom = NULL;
-    currentTerm = NULL;
     varCounter = 0;
     query = NULL;
 }
@@ -68,16 +66,8 @@ SimpleInputBuilder::getQuery()
 void 
 SimpleInputBuilder::onRule()
 {
-    if( currentRule != NULL )
-    {
-        delete currentRule;
-        currentRule = NULL;
-    }
-    currentRule = new Rule(head,body);
-    
-    program->addRule(*currentRule);
-    delete currentRule;
-    currentRule = NULL;
+    Rule currentRule(head,body);
+    program->addRule(currentRule);
     head.clear();
     body.clear();
     localVariables.clear();
@@ -87,16 +77,8 @@ SimpleInputBuilder::onRule()
 void 
 SimpleInputBuilder::onConstraint()
 {
-    if( currentRule != NULL )
-    {
-        delete currentRule;
-        currentRule = NULL;
-    }
-    currentRule = new Rule(head,body);
-    
-    program->addRule(*currentRule);
-    delete currentRule;
-    currentRule = NULL;
+    Rule currentRule(head,body);
+    program->addRule(currentRule);
     head.clear();
     body.clear();
     localVariables.clear();
@@ -106,7 +88,48 @@ SimpleInputBuilder::onConstraint()
 void 
 SimpleInputBuilder::onWeakConstraint()
 {
-    // TODO
+    assert_msg( nTermsForWeight +
+            nTermsForLevel +
+            nTermsAfterLevel == 
+            termStack.size(),
+            "The terms' stack has not a sufficient number of terms "
+            "for building weight, level and terms of the current "
+            "weak constraint.");
+    // On top of the terms' stack 
+    // there should be the list of terms 
+    // in the reverse order.
+    vector<Term*> terms;
+    if( nTermsAfterLevel > 0 )
+    {
+        unsigned stackSize = termStack.size();
+        for( unsigned i=0; i<nTermsAfterLevel; i++ )
+        {
+            terms.push_back(termStack[stackSize-nTermsAfterLevel+i]);
+            allTerms.push_back(termStack[stackSize-nTermsAfterLevel+i]);
+        }
+        termStack.resize(stackSize-nTermsAfterLevel);
+    }
+    // Then, we should have the level.
+    Term* level = NULL;
+    if( nTermsForLevel )
+    {
+        level = termStack.back();
+        allTerms.push_back(termStack.back());
+        termStack.pop_back();
+    }
+    // Finally, the weight.
+    Term* weight = NULL;
+    if( nTermsForWeight )
+    {
+        weight = termStack.back();
+        allTerms.push_back(termStack.back());
+        termStack.pop_back();
+    }
+    WeakConstraint wc(body,weight,level,terms);
+    program->addWeakConstraint(wc);
+    body.clear();
+    localVariables.clear();
+    varCounter = 0;
 }
 
 void 
@@ -250,8 +273,7 @@ void
 SimpleInputBuilder::onTerm( 
     char* value )
 {
-    if( currentTerm != NULL )
-        currentTerm = NULL;
+    Term* currentTerm = NULL;
     assert_msg( (value && strlen(value) > 0), 
             "Trying to create a term with a null value" );
 
@@ -289,7 +311,6 @@ SimpleInputBuilder::onTerm(
     if( currentTerm != NULL )
     {
         termStack.push_back(currentTerm);
-        currentTerm = NULL;
     }
     
 }
@@ -298,11 +319,8 @@ void
 SimpleInputBuilder::onTerm( 
     int value )
 {
-    if( currentTerm != NULL )
-        currentTerm = NULL;
-    currentTerm = new IntegerConstant( value );
+    Term* currentTerm = new IntegerConstant( value );
     termStack.push_back(currentTerm);
-    currentTerm = NULL;
 }
     
 void 
@@ -313,8 +331,6 @@ SimpleInputBuilder::onFunction(
     // Pop nTerms elements from the stack and 
     // create a function term with them. 
     // Afterward, push the function into the stack.
-    if( currentTerm != NULL )
-        currentTerm = NULL;
     assert_msg( (functionSymbol && strlen(functionSymbol) > 0), 
             "Trying to create a function with a null symbol" );
     
@@ -330,75 +346,53 @@ SimpleInputBuilder::onFunction(
         delete termStack[i];
     }
     ss << ")";
-    currentTerm = new StringConstant(ss.str());
+    Term* currentTerm = new StringConstant(ss.str());
     // Consume nTerms from the stack.
     unsigned newSize = termStack.size()-nTerms;
     termStack.resize(newSize);
     // Push the function into the stack.
     termStack.push_back(currentTerm);
-    currentTerm = NULL;
 }
     
 void 
-SimpleInputBuilder::onTermDash( 
-    int nTerms )
+SimpleInputBuilder::onTermDash()
 {
     // Pop nTerms elements from the stack and put "-" in front of them. 
     // Afterward, push the obtained complex term into the stack.
-    if( currentTerm != NULL )
-        currentTerm = NULL;
-    
+
     // FIXME
     stringstream ss;
     ss << "-";
-    // Consume nTerms from the stack
-    for( unsigned i=termStack.size()-nTerms; i<termStack.size(); i++ )
-    {
-        ss << termStack[i]->toString();
-        // Before popping #nTerms pointers from the stack
-        // delete the pointed terms.
-        delete termStack[i];
-    }
-    ss << ")";
-    currentTerm = new StringConstant(ss.str());
-    // Consume nTerms from the stack.
-    unsigned newSize = termStack.size()-nTerms;
-    termStack.resize(newSize);
+    ss << termStack.back()->toString();
+    // Before popping the pointer from the stack
+    // delete the pointed term.
+    delete termStack.back();
+    // Consume one term from the stack.
+    termStack.pop_back();
+    Term* currentTerm = new StringConstant(ss.str());
     // Push the function into the stack.
     termStack.push_back(currentTerm);
-    currentTerm = NULL;
 }
     
 void 
-SimpleInputBuilder::onTermParams( 
-    int nTerms )
+SimpleInputBuilder::onTermParams()
 {
-    // Pop nTerms elements from the stack and enclose them in parentheses. 
+    // Pop one element from the stack and enclose it in parentheses. 
     // Afterward, push the obtained complex term into the stack.
-    if( currentTerm != NULL )
-        currentTerm = NULL;
-    
+
     // FIXME
     stringstream ss;
     ss << "(";
-    // Consume nTerms from the stack
-    for( unsigned i=termStack.size()-nTerms; i<termStack.size(); i++ )
-    {
-        ss << termStack[i]->toString();
-        if( i < termStack.size()-1 )
-            ss << ",";
-        // Before popping #nTerms pointers from the stack
-        // delete the pointed terms.
-        delete termStack[i];
-    }
+    ss << termStack.back()->toString();
     ss << ")";
-    currentTerm = new StringConstant(ss.str());
-    // Consume nTerms from the stack.
-    unsigned newSize = termStack.size()-nTerms;
-    termStack.resize(newSize);
+    // Before popping the pointer from the stack
+    // delete the pointed term.
+    delete termStack.back();
+        // Consume one term from the stack.
+    termStack.pop_back();
+    Term* currentTerm = new StringConstant(ss.str());
     // Push the function into the stack.
     termStack.push_back(currentTerm);
-    currentTerm = NULL;
 }
 
 void 
@@ -415,34 +409,22 @@ SimpleInputBuilder::onArithmeticOperation( char arithOperator )
     ss << leftOperand->toString();
     ss << arithOperator;
     ss << rightOperand->toString();
-    currentTerm = new StringConstant(ss.str());
+    Term* currentTerm = new StringConstant(ss.str());
     // Push the function into the stack.
     termStack.push_back(currentTerm);
     delete leftOperand;
     delete rightOperand;
-    currentTerm = NULL;
 }
 
 void 
-SimpleInputBuilder::onWeight( 
+SimpleInputBuilder::onWeightAtLevels( 
+    int nWeight, 
+    int nLevel, 
     int nTerms )
 {
-    
-}
-    
-void 
-SimpleInputBuilder::onLevel( 
-    int nTerms )
-{
-    
-}
-    
-void 
-SimpleInputBuilder::onLevelsAndTerms( 
-    int nTermsForLevel, 
-    int nTerms )
-{
-    
+    nTermsForWeight = nWeight; 
+    nTermsForLevel = nLevel;
+    nTermsAfterLevel = nTerms;
 }
     
 bool 

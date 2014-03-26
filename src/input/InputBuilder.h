@@ -48,11 +48,10 @@ public:
     virtual void onTerm( char* ) = 0;
     virtual void onTerm( int ) = 0;
     virtual void onFunction( char*, int ) = 0;
-    virtual void onTermDash( int ) = 0;
-    virtual void onTermParams( int ) = 0;
+    virtual void onTermDash() = 0;
+    virtual void onTermParams() = 0;
     virtual void onArithmeticOperation( char ) = 0;
-    virtual void onWeight( int ) = 0;
-    virtual void onLevelsAndTerms( int, int ) = 0;
+    virtual void onWeightAtLevels( int, int, int ) = 0;
     
 };
 

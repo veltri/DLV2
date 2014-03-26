@@ -18,58 +18,48 @@
  */
 
 /* 
- * File:   Rule.h
+ * File:   Constraint.h
  * Author: cesco
  *
- * Created on 28 febbraio 2014, 18.00
+ * Created on 25 marzo 2014, 13.54
  */
 
-#ifndef RULE_H
-#define	RULE_H
+#ifndef CONSTRAINT_H
+#define	CONSTRAINT_H
 
 #include <vector>
 #include "Literal.h"
 
-class Rule {
+class Constraint {
 public:
-    Rule( vector<Atom> h, vector<Literal> b ): head(h), body(b) { }
-    Rule( const Rule& r ): head(r.head), body(r.body) { } 
-    ~Rule() { }
+    Constraint( vector<Literal> b ): body(b) { } 
+    Constraint( const Constraint& c ): body(c.body) { }
+    ~Constraint() { }
     
-    void addToHead( const Atom& a ) { head.push_back(a); }
     void addToBody( const Literal& l ) { body.push_back(l); }
     
 private:
-    friend inline ostream& operator<< ( ostream&, const Rule& );
+    friend inline ostream& operator<< ( ostream&, const Constraint& );
     
-    vector<Atom> head;
     vector<Literal> body;
 };
 
 ostream& 
 operator<< ( 
     ostream& out,
-    const Rule& r )
+    const Constraint& c )
 {
-    for( unsigned i=0; i<r.head.size(); i++ )
+    out << " :- ";
+    for( unsigned i=0; i<c.body.size(); i++ )
     {
-        out << r.head[i];
-        if( i<r.head.size()-1 )
-            out << " | ";
-    }
-    if( r.head.size() > 0 && r.body.size() > 0 )
-        out << " :- ";
-    else if( r.body.size() > 0 )
-        out << ":- ";
-    for( unsigned i=0; i<r.body.size(); i++ )
-    {
-        out << r.body[i];
-        if( i<r.body.size()-1 )
+        out << c.body[i];
+        if( i<c.body.size()-1 )
             out << ", ";
     }
     out << ".";
+    
     return out;
 }
 
-#endif	/* RULE_H */
+#endif	/* CONSTRAINT_H */
 
