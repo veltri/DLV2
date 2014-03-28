@@ -27,8 +27,6 @@
 #ifndef INPUTBUILDER_H
 #define	INPUTBUILDER_H
 
-#include "../data/Program.h"
-
 class InputBuilder {
 public:
     InputBuilder() { }
@@ -52,6 +50,12 @@ public:
     virtual void onTermParams() = 0;
     virtual void onArithmeticOperation( char ) = 0;
     virtual void onWeightAtLevels( int, int, int ) = 0;
+    virtual void onChoiceLeftTerm() = 0;
+    virtual void onChoiceRightTerm() = 0;
+    virtual void onChoiceElementAtom() = 0;
+    virtual void onChoiceElementLiteral() = 0;
+    virtual void onChoiceElement() = 0;
+    virtual void onChoiceAtom() = 0;
     
 };
 

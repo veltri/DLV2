@@ -29,6 +29,7 @@
 
 #include <map>
 #include "Rule.h"
+#include "ChoiceRule.h"
 #include "Constraint.h"
 #include "WeakConstraint.h"
 
@@ -41,6 +42,7 @@ public:
     void addRule( const Rule& r );
     void addConstraint( const Constraint& c );
     void addWeakConstraint( const WeakConstraint& wc );
+    void addChoiceRule( const ChoiceRule& cr );
         
 private:
     friend inline ostream& operator<< ( ostream&, const Program& );
@@ -48,6 +50,7 @@ private:
     vector<Rule> rules;
     vector<Constraint> constraints;
     vector<WeakConstraint> weakConstraints;
+    vector<ChoiceRule> choiceRules;
 };
 
 ostream& 
@@ -66,6 +69,10 @@ operator<< (
     for( unsigned i=0; i<p.weakConstraints.size(); i++ )
     {
         out << p.weakConstraints[i] << endl;
+    }
+    for( unsigned i=0; i<p.choiceRules.size(); i++ )
+    {
+        out << p.choiceRules[i] << endl;
     }
     return out;
 }

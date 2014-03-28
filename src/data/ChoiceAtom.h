@@ -1,0 +1,66 @@
+/*
+ *
+ *  Copyright 2014 Mario Alviano, Carmine Dodaro, Francesco Ricca and
+ *                 Pierfrancesco Veltri.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ */
+
+/* 
+ * File:   ChoiceAtom.h
+ * Author: cesco
+ *
+ * Created on 28 marzo 2014, 20.00
+ */
+
+#ifndef CHOICEATOM_H
+#define	CHOICEATOM_H
+
+#include "Term.h"
+#include "ChoiceElement.h"
+
+class ChoiceAtom {
+public:
+    ChoiceAtom( Term*, string, vector<ChoiceElement>, string, Term* );
+    ChoiceAtom( const ChoiceAtom& );
+    ~ChoiceAtom() { }
+private:
+    friend inline ostream& operator<< ( ostream&, const ChoiceAtom& );
+    
+    Term* leftBound;
+    string leftBinop;
+    vector<ChoiceElement> choices;
+    string rightBinop;
+    Term* rightBound;
+};
+
+inline ostream& operator<< ( ostream& out, const ChoiceAtom& ca )
+{
+    if( ca.leftBound )
+        out << ca.leftBound->toString() << " " << ca.leftBinop;
+    out << "{";
+    for( unsigned i=0; i<ca.choices.size(); i++ )
+    {
+        out << ca.choices[i];
+        if( i<ca.choices.size()-1 )
+            out << ";";
+    }
+    out << "}";
+    if( ca.rightBound )
+        out << ca.rightBinop << " " << ca.rightBound->toString();
+    return out;
+}
+
+#endif	/* CHOICEATOM_H */
+

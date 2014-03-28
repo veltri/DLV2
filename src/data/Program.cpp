@@ -4,7 +4,8 @@ Program::Program(
     const Program& p ): 
         rules(p.rules), 
         constraints(p.constraints),
-        weakConstraints(p.weakConstraints) 
+        weakConstraints(p.weakConstraints),
+        choiceRules(p.choiceRules)
 {
     
 }
@@ -28,4 +29,11 @@ Program::addWeakConstraint(
     const WeakConstraint& wc ) 
 { 
     weakConstraints.push_back(wc); 
+}
+
+void 
+Program::addChoiceRule( 
+    const ChoiceRule& cr ) 
+{ 
+    choiceRules.push_back(cr); 
 }

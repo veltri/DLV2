@@ -27,6 +27,7 @@
 #ifndef SIMPLEINPUTBUILDER_H
 #define	SIMPLEINPUTBUILDER_H
 
+#include "../data/Program.h"
 #include "InputBuilder.h"
 #include <vector>
 
@@ -53,6 +54,12 @@ public:
     virtual void onTermParams();
     virtual void onArithmeticOperation( char );
     virtual void onWeightAtLevels( int, int, int );
+    virtual void onChoiceLeftTerm();
+    virtual void onChoiceRightTerm();
+    virtual void onChoiceElementAtom();
+    virtual void onChoiceElementLiteral();
+    virtual void onChoiceElement();
+    virtual void onChoiceAtom();
     // Not derived methods
     Program& getProgram();
     Atom* getQuery();
@@ -79,6 +86,11 @@ private:
     unsigned nTermsForWeight; 
     unsigned nTermsForLevel;
     unsigned nTermsAfterLevel;
+    Term* choiceLeftTerm;
+    Term* choiceRightTerm;
+    ChoiceElement* currentChoiceElement;
+    vector<ChoiceElement> choiceElements;
+    ChoiceAtom* currentChoiceAtom;
 };
 
 #endif	/* SIMPLEINPUTBUILDER_H */

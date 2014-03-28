@@ -106,8 +106,8 @@ body
     : conjunction {}
     ;
 
-weight_at_levels : 
-      SQUARE_OPEN term SQUARE_CLOSE 
+weight_at_levels 
+    : SQUARE_OPEN term SQUARE_CLOSE 
         {
             // There is only the weight. No level and terms.
             InputDirector::getInstance().getBuilder()->onWeightAtLevels(1,0,0); 
@@ -119,8 +119,8 @@ weight_at_levels :
         }
     ;
 
-levels_and_terms : 
-      AT term 
+levels_and_terms 
+    : AT term 
         {
             // There is no terms following the level.
             InputDirector::getInstance().getBuilder()->onWeightAtLevels(1,1,0); 
@@ -168,19 +168,67 @@ conjunction
         }
     ;
 
-choice_atom : term binop CURLY_OPEN choice_elements CURLY_CLOSE binop term {}
-        | term binop CURLY_OPEN choice_elements CURLY_CLOSE {}    
-        | CURLY_OPEN choice_elements CURLY_CLOSE {}    
-        | CURLY_OPEN choice_elements CURLY_CLOSE binop term {}        
-        ;
+choice_atom 
+    : left_term binop CURLY_OPEN choice_elements CURLY_CLOSE binop right_term 
+        {
+            InputDirector::getInstance().getBuilder()->onChoiceAtom();
+        }
+    | left_term binop CURLY_OPEN choice_elements CURLY_CLOSE 
+        {
+            InputDirector::getInstance().getBuilder()->onChoiceAtom();
+        }    
+    | CURLY_OPEN choice_elements CURLY_CLOSE 
+        {
+            InputDirector::getInstance().getBuilder()->onChoiceAtom();
+        }    
+    | CURLY_OPEN choice_elements CURLY_CLOSE binop right_term 
+        {
+            InputDirector::getInstance().getBuilder()->onChoiceAtom();
+        }        
+    ;
 
-choice_elements : choice_elements SEMICOLON choice_element {}
-        | choice_element {}
-                ;
+left_term
+    : term { InputDirector::getInstance().getBuilder()->onChoiceLeftTerm(); } 
+    ;
 
-choice_element : atom {}
-               | atom COLON naf_literals {}
-               ;
+right_term
+    : term { InputDirector::getInstance().getBuilder()->onChoiceRightTerm(); }
+    ;
+
+choice_elements 
+    : choice_elements SEMICOLON choice_element {}
+    | choice_element {}
+    ;
+
+choice_element 
+    : choice_element_atom 
+        {
+            InputDirector::getInstance().getBuilder()->onChoiceElement(); 
+        }
+    | choice_element_atom COLON choice_elements_literals 
+        {
+            InputDirector::getInstance().getBuilder()->onChoiceElement(); 
+        }
+    ;
+
+choice_element_atom 
+    : atom 
+        { 
+            InputDirector::getInstance().getBuilder()->onAtom();
+            InputDirector::getInstance().getBuilder()->onChoiceElementAtom(); 
+        }
+    ;
+
+choice_elements_literals
+    : naf_literal 
+        { 
+            InputDirector::getInstance().getBuilder()->onChoiceElementLiteral(); 
+        }
+    | choice_elements_literals COMMA naf_literal 
+        {
+            InputDirector::getInstance().getBuilder()->onChoiceElementLiteral();
+        }
+    ;    
 
 naf_literals
     : naf_literal {}

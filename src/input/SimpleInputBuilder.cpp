@@ -34,6 +34,10 @@ SimpleInputBuilder::SimpleInputBuilder():
     currentAtom = NULL;
     varCounter = 0;
     query = NULL;
+    choiceLeftTerm = NULL;
+    choiceRightTerm = NULL;
+    currentChoiceElement = NULL;
+    currentChoiceAtom = NULL;
 }
 
 SimpleInputBuilder::~SimpleInputBuilder()
@@ -66,9 +70,19 @@ SimpleInputBuilder::getQuery()
 void 
 SimpleInputBuilder::onRule()
 {
-    Rule currentRule(head,body);
-    program->addRule(currentRule);
-    head.clear();
+    if( currentChoiceAtom != NULL )
+    {
+        ChoiceRule currentRule(*currentChoiceAtom,body);
+        program->addChoiceRule(currentRule);
+        delete currentChoiceAtom;
+        currentChoiceAtom = NULL;
+    }
+    else
+    {
+        Rule currentRule(head,body);
+        program->addRule(currentRule);
+        head.clear();
+    }
     body.clear();
     localVariables.clear();
     varCounter = 0;
@@ -426,6 +440,99 @@ SimpleInputBuilder::onWeightAtLevels(
     nTermsAfterLevel = nTerms;
 }
     
+void 
+SimpleInputBuilder::onChoiceLeftTerm() 
+{
+    // It should be on top of the stack.
+    assert_msg( termStack.size() > 0, 
+            "Trying to create a null choice-left term" );
+    if( choiceLeftTerm )
+    {
+        delete choiceLeftTerm;
+        choiceLeftTerm = NULL;
+    }
+    choiceLeftTerm = termStack.back();
+    allTerms.push_back(choiceLeftTerm);
+    termStack.pop_back();
+}
+
+void 
+SimpleInputBuilder::onChoiceRightTerm() 
+{
+    // It should be on top of the stack.
+    assert_msg( termStack.size() > 0, 
+            "Trying to create a null choice-right term" );
+    if( choiceLeftTerm )
+    {
+        delete choiceRightTerm;
+        choiceRightTerm = NULL;
+    }
+    choiceRightTerm = termStack.back();
+    allTerms.push_back(choiceRightTerm);
+    termStack.pop_back();
+}
+
+void 
+SimpleInputBuilder::onChoiceElementAtom()
+{
+    assert_msg( currentAtom, "Trying to finalize a null choice atom" );
+    if( currentChoiceElement != NULL )
+    {
+        delete currentChoiceElement;
+        currentChoiceElement = NULL;
+    }
+    vector<Literal> lits;
+    currentChoiceElement = new ChoiceElement(*currentAtom,lits);
+    if( currentAtom )
+    {
+        delete currentAtom;
+        currentAtom = NULL;
+    }
+}
+    
+void 
+SimpleInputBuilder::onChoiceElementLiteral()
+{
+    assert_msg( currentChoiceElement, 
+            "Trying to add a literal to a null choice element" );
+    assert_msg( currentLiteral, 
+            "Trying to finalize a null choice literal" );
+    currentChoiceElement->addLiteral(*currentLiteral);
+    if( currentLiteral )
+    {
+        delete currentLiteral;    
+        currentLiteral = NULL;
+    }
+}
+    
+void 
+SimpleInputBuilder::onChoiceElement()
+{
+    assert_msg( currentChoiceElement, 
+            "Trying to finalize a null choice element" );
+    choiceElements.push_back(*currentChoiceElement);
+    if( currentChoiceElement )
+    {
+        delete currentChoiceElement;
+        currentChoiceElement = NULL;
+    }
+}
+
+void 
+SimpleInputBuilder::onChoiceAtom()
+{
+    if( currentChoiceAtom != NULL )
+    {
+        delete currentChoiceAtom;
+        currentChoiceAtom = NULL;
+    }
+    currentChoiceAtom = 
+            new ChoiceAtom(choiceLeftTerm,"",choiceElements,"",choiceRightTerm);
+    choiceLeftTerm = NULL;
+    choiceRightTerm = NULL;
+    choiceElements.clear();
+}
+
 bool 
 SimpleInputBuilder::isNumeric( 
     const char* pszInput, 
