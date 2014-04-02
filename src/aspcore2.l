@@ -81,20 +81,44 @@ NUMBER         		([0-9]+)
 "{"			{ return CURLY_OPEN;	}
 "}"			{ return CURLY_CLOSE;	}
 
-"="			{ return EQUAL;}
-"<>"		|
-"!="		{ return UNEQUAL;}
-"<"		{ return LESS;}
-">"		{ return GREATER;}
-"<="		{ return LESS_OR_EQ;}
-">="		{ return GREATER_OR_EQ;}
-
 "?"		{ return QUERY_MARK;}
 
 "#count"    { return AGGR_COUNT;            }
 "#max"      { return AGGR_MAX;              }
 "#min"      { return AGGR_MIN;              }
 "#sum"      { return AGGR_SUM;              }
+
+"="                             {
+							yylval.string=new char[strlen(yytext)+1];
+							strcpy(yylval.string,yytext);
+							return EQUAL;
+                                                }
+"<>"		|
+"!="                            {
+							yylval.string=new char[strlen(yytext)+1];
+							strcpy(yylval.string,yytext);
+							return UNEQUAL;
+                                                }
+"<"                            {
+							yylval.string=new char[strlen(yytext)+1];
+							strcpy(yylval.string,yytext);
+							return LESS;
+                                                }
+">"                            {
+							yylval.string=new char[strlen(yytext)+1];
+							strcpy(yylval.string,yytext);
+                                                        return GREATER;
+                                                }
+"<="                            {
+							yylval.string=new char[strlen(yytext)+1];
+							strcpy(yylval.string,yytext);
+                                                        return LESS_OR_EQ;
+                                                }
+">="                            {
+							yylval.string=new char[strlen(yytext)+1];
+							strcpy(yylval.string,yytext);
+                                                        return GREATER_OR_EQ;
+                                                }
 
 {SYMBOLIC_CONSTANT}		{
 							yylval.string=new char[strlen(yytext)+1];

@@ -28,6 +28,7 @@
 #define	SIMPLEINPUTBUILDER_H
 
 #include "../data/Program.h"
+#include "../data/AggregateElement.h"
 #include "InputBuilder.h"
 #include <vector>
 
@@ -40,12 +41,12 @@ public:
     virtual void onConstraint();
     virtual void onWeakConstraint();
     virtual void onQuery();
-    virtual void addToHead();
-    virtual void addToBody();
+    virtual void onHeadAtom();
+    virtual void onBodyLiteral();
     virtual void onNafLiteral( bool naf = false );
     virtual void onAtom( bool isStrongNeg = false );
     virtual void onExistentialAtom();
-    virtual void predicateName( char* );
+    virtual void onPredicateName( char* );
     virtual void onExistentialVariable( char* );
     virtual void onTerm( char* );
     virtual void onTerm( int );
@@ -54,15 +55,25 @@ public:
     virtual void onTermParams();
     virtual void onArithmeticOperation( char );
     virtual void onWeightAtLevels( int, int, int );
-    virtual void onChoiceLeftTerm();
-    virtual void onChoiceRightTerm();
+    virtual void onChoiceLowerGuard( char* );
+    virtual void onChoiceUpperGuard( char* );
     virtual void onChoiceElementAtom();
     virtual void onChoiceElementLiteral();
     virtual void onChoiceElement();
     virtual void onChoiceAtom();
+    virtual void onBuiltinAtom( char* );
+    virtual void onAggregateLowerGuard( char* );
+    virtual void onAggregateUpperGuard( char* );
+    virtual void onAggregateFunction( char* );
+    virtual void onAggregateGroundTerm( char*, bool dash = false );
+    virtual void onAggregateVariableTerm( char* );
+    virtual void onAggregateNafLiteral();
+    virtual void onAggregateElement();
+    virtual void onAggregate( bool naf = false );
     // Not derived methods
     Program& getProgram();
     Atom* getQuery();
+    void newTerm( char*, vector<Term*>&, bool dash = false ); 
       
     bool isNumeric( const char*, int );
     
@@ -86,11 +97,17 @@ private:
     unsigned nTermsForWeight; 
     unsigned nTermsForLevel;
     unsigned nTermsAfterLevel;
-    Term* choiceLeftTerm;
-    Term* choiceRightTerm;
+    Term* lowerGuard;
+    Term* upperGuard;
+    string lowerBinop;
+    string upperBinop;
     ChoiceElement* currentChoiceElement;
     vector<ChoiceElement> choiceElements;
     ChoiceAtom* currentChoiceAtom;
+    string aggregateFunction;
+    vector<Term*> aggregateElementTerms;
+    vector<Literal> aggregateElementLiterals;
+    vector<AggregateElement> aggregateElements;
 };
 
 #endif	/* SIMPLEINPUTBUILDER_H */

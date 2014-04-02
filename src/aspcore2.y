@@ -26,15 +26,16 @@ This file is part of the ASPCOMP2013 ASP-Core-2 validator (validator in the foll
 %error-verbose
 %union {
     char* string;
-    char singleChar;
+    char single_char;
     int integer;
 }
 
 %type <integer> terms 
-%type <singleChar> arithop
-%type <string> identifier 
+%type <single_char> arithop
+%type <string> identifier compareop leftwardop rightwardop binop
 
 %token <string> SYMBOLIC_CONSTANT NUMBER VARIABLE STRING
+%token <string> EQUAL UNEQUAL LESS GREATER LESS_OR_EQ GREATER_OR_EQ
 
 %token ERROR NEWLINE   
 
@@ -47,8 +48,6 @@ This file is part of the ASPCOMP2013 ASP-Core-2 validator (validator in the foll
 %token PARAM_OPEN PARAM_CLOSE
 %token SQUARE_OPEN SQUARE_CLOSE
 %token CURLY_OPEN CURLY_CLOSE
-
-%token EQUAL UNEQUAL LESS GREATER LESS_OR_EQ GREATER_OR_EQ
 
 %token DASH COMMA NAF AT WCONS
 
@@ -70,8 +69,8 @@ program
     ;
 
 rules
-    : rules rule {}
-    | rule {}
+    : rules rule
+    | rule
     ;
 
 rule
@@ -98,12 +97,15 @@ rule
     ;
 
 head
-    : disjunction {}
-    | choice_atom {}
+    : disjunction
+    | choice_atom 
+        {
+            InputDirector::getInstance().getBuilder()->onChoiceAtom();
+        }
     ;       
 
 body
-    : conjunction {}
+    : conjunction 
     ;
 
 weight_at_levels 
@@ -114,7 +116,7 @@ weight_at_levels
         }
     | SQUARE_OPEN term levels_and_terms SQUARE_CLOSE 
         {
-            // There are also a level and/or terms.
+            // There are also a level and/or some terms.
             // The finalization has been postponed to "level_and_terms".
         }
     ;
@@ -141,63 +143,59 @@ levels_and_terms
 disjunction
     : classic_literal 
         { 
-            InputDirector::getInstance().getBuilder()->addToHead(); 
+            InputDirector::getInstance().getBuilder()->onHeadAtom(); 
         }
     | disjunction HEAD_SEPARATOR classic_literal 
         { 
-            InputDirector::getInstance().getBuilder()->addToHead(); 
+            InputDirector::getInstance().getBuilder()->onHeadAtom(); 
         }
     | existential_atom 
         { 
-            InputDirector::getInstance().getBuilder()->addToHead(); 
+            InputDirector::getInstance().getBuilder()->onHeadAtom(); 
         }
     | disjunction HEAD_SEPARATOR existential_atom 
         { 
-            InputDirector::getInstance().getBuilder()->addToHead(); 
+            InputDirector::getInstance().getBuilder()->onHeadAtom(); 
         }
     ;
 
 conjunction
     : naf_literal_aggregate 
         { 
-            InputDirector::getInstance().getBuilder()->addToBody(); 
+            InputDirector::getInstance().getBuilder()->onBodyLiteral(); 
         }
     | conjunction COMMA naf_literal_aggregate 
         { 
-            InputDirector::getInstance().getBuilder()->addToBody(); 
+            InputDirector::getInstance().getBuilder()->onBodyLiteral(); 
         }
     ;
 
 choice_atom 
-    : left_term binop CURLY_OPEN choice_elements CURLY_CLOSE binop right_term 
-        {
-            InputDirector::getInstance().getBuilder()->onChoiceAtom();
-        }
-    | left_term binop CURLY_OPEN choice_elements CURLY_CLOSE 
-        {
-            InputDirector::getInstance().getBuilder()->onChoiceAtom();
-        }    
+    : lower_guard CURLY_OPEN choice_elements CURLY_CLOSE upper_guard 
+    | lower_guard CURLY_OPEN choice_elements CURLY_CLOSE 
     | CURLY_OPEN choice_elements CURLY_CLOSE 
-        {
-            InputDirector::getInstance().getBuilder()->onChoiceAtom();
-        }    
-    | CURLY_OPEN choice_elements CURLY_CLOSE binop right_term 
-        {
-            InputDirector::getInstance().getBuilder()->onChoiceAtom();
-        }        
+    | CURLY_OPEN choice_elements CURLY_CLOSE upper_guard 
     ;
 
-left_term
-    : term { InputDirector::getInstance().getBuilder()->onChoiceLeftTerm(); } 
+lower_guard
+    : term binop 
+        { 
+            InputDirector::getInstance().getBuilder()->onChoiceLowerGuard($2); 
+            delete $2;
+        } 
     ;
 
-right_term
-    : term { InputDirector::getInstance().getBuilder()->onChoiceRightTerm(); }
+upper_guard
+    : binop term 
+        { 
+            InputDirector::getInstance().getBuilder()->onChoiceUpperGuard($1); 
+            delete $1;
+        }
     ;
 
 choice_elements 
-    : choice_elements SEMICOLON choice_element {}
-    | choice_element {}
+    : choice_elements SEMICOLON choice_element
+    | choice_element
     ;
 
 choice_element 
@@ -213,8 +211,7 @@ choice_element
 
 choice_element_atom 
     : atom 
-        { 
-            InputDirector::getInstance().getBuilder()->onAtom();
+        {
             InputDirector::getInstance().getBuilder()->onChoiceElementAtom(); 
         }
     ;
@@ -231,26 +228,41 @@ choice_elements_literals
     ;    
 
 naf_literals
-    : naf_literal {}
-    | naf_literals COMMA naf_literal {}
+    : naf_literal
+        {
+            InputDirector::getInstance().getBuilder()->onAggregateNafLiteral();
+        }
+    | naf_literals COMMA naf_literal
+        {
+            InputDirector::getInstance().getBuilder()->onAggregateNafLiteral();
+        }
     ;    
           
 naf_literal
     : classic_literal 
         { 
-            InputDirector::getInstance().getBuilder()->onNafLiteral(); 
+            InputDirector::getInstance().getBuilder()->onNafLiteral();
         }
     | NAF classic_literal 
         { 
-            InputDirector::getInstance().getBuilder()->onNafLiteral(true); 
+            InputDirector::getInstance().getBuilder()->onNafLiteral(true);
         }
-    | builtin_atom {}
+    | builtin_atom 
+        {
+            InputDirector::getInstance().getBuilder()->onNafLiteral();
+        }
     ;
 
 naf_literal_aggregate
-    : naf_literal {}
-    | aggregate_atom {}
-    | NAF aggregate_atom {}
+    : naf_literal
+    | aggregate_atom
+        {
+            InputDirector::getInstance().getBuilder()->onAggregate();
+        }
+    | NAF aggregate_atom
+        {
+            InputDirector::getInstance().getBuilder()->onAggregate(true);
+        }
     ;      
 
 existential_atom
@@ -267,15 +279,18 @@ classic_literal
 atom
     : identifier 
         { 
-            InputDirector::getInstance().getBuilder()->predicateName($1); 
+            InputDirector::getInstance().getBuilder()->onPredicateName($1); 
+            delete $1;
         }
     | identifier PARAM_OPEN terms PARAM_CLOSE 
         { 
-            InputDirector::getInstance().getBuilder()->predicateName($1); 
+            InputDirector::getInstance().getBuilder()->onPredicateName($1); 
+            delete $1;
         }
     | identifier PARAM_OPEN PARAM_CLOSE 
         { 
-            InputDirector::getInstance().getBuilder()->predicateName($1); 
+            InputDirector::getInstance().getBuilder()->onPredicateName($1); 
+            delete $1;
         }
     ;              
          
@@ -284,38 +299,47 @@ terms
     | terms COMMA term { $$ = $1 + 1; }
     ;
 
-basic_terms : basic_term {}
-         | basic_terms COMMA basic_term    {}
-         ;
+basic_terms 
+    : basic_term
+    | basic_terms COMMA basic_term
+    ;
 
+builtin_atom
+    : term binop term 
+        {
+            InputDirector::getInstance().getBuilder()->onBuiltinAtom($2);  
+            delete $2;
+        }
+    ;
 
-
-builtin_atom    : term binop term {}
-                ;
-
-compareop : EQUAL         {} 
-          | UNEQUAL       {}
-          ;       
+compareop 
+    : EQUAL   { $$ = $1; } 
+    | UNEQUAL { $$ = $1; }
+    ;       
          
-binop    : compareop     {} 
-         | leftwardop        {}
-         | rightwardop       {}
-         ;       
+binop    
+    : compareop   { $$ = $1; } 
+    | leftwardop  { $$ = $1; }
+    | rightwardop { $$ = $1; }
+    ;       
          
-arithop   : PLUS  { $$ = '+'; } 
-          | DASH  { $$ = '-'; }
-          | TIMES { $$ = '*'; }
-          | SLASH { $$ = '/'; }
-          ;      
+arithop   
+    : PLUS  { $$ = '+'; } 
+    | DASH  { $$ = '-'; }      
+    | TIMES { $$ = '*'; }
+    | SLASH { $$ = '/'; }
+    ;      
 
 term_ 
     : identifier 
         { 
             InputDirector::getInstance().getBuilder()->onTerm($1); 
+            delete $1;
         }
     | NUMBER 
         { 
             InputDirector::getInstance().getBuilder()->onTerm($1); 
+            delete $1;
         }
     | ANON_VAR 
         { 
@@ -328,6 +352,7 @@ term_
     | identifier PARAM_OPEN terms PARAM_CLOSE 
         { 
             InputDirector::getInstance().getBuilder()->onFunction($1, $3); 
+            delete $1;
         }
     | PARAM_OPEN term PARAM_CLOSE 
         { 
@@ -353,24 +378,53 @@ basic_term : ground_term {}
 
 ground_term 
     : SYMBOLIC_CONSTANT 
-    | STRING
+        {
+            InputDirector::getInstance().getBuilder()->onAggregateGroundTerm($1);
+            delete $1;
+        }
+    | STRING 
+        {
+            InputDirector::getInstance().getBuilder()->onAggregateGroundTerm($1);
+            delete $1;
+        }
     | NUMBER
+        {
+            InputDirector::getInstance().getBuilder()->onAggregateGroundTerm($1);
+            delete $1;
+        }
     | DASH NUMBER
+        {
+            InputDirector::getInstance().getBuilder()->onAggregateGroundTerm($2,true);
+            delete $2;
+        }
     ;
 
 variable_term 
-    : VARIABLE {}
-    | ANON_VAR {}
+    : VARIABLE
+        { 
+            InputDirector::getInstance().getBuilder()->onAggregateVariableTerm($1);
+            delete $1;
+        }
+    | ANON_VAR
+        {
+            char* av = new char[2];
+            strcpy(av,"_");
+            av[1] = '\0';
+            InputDirector::getInstance().getBuilder()->onAggregateVariableTerm(av);
+            delete av;
+        }
     ;
 
 vars
     : VARIABLE 
         { 
             InputDirector::getInstance().getBuilder()->onExistentialVariable($1); 
+            delete $1;
         }
     | vars COMMA VARIABLE 
         { 
-            InputDirector::getInstance().getBuilder()->onExistentialVariable($3); 
+            InputDirector::getInstance().getBuilder()->onExistentialVariable($3);
+            delete $3;
         }
     ;
 
@@ -380,57 +434,150 @@ identifier
     | VARIABLE { $$ = $1; }
     ;
                 
-query     : atom QUERY_MARK 
-            { 
-                InputDirector::getInstance().getBuilder()->onAtom(); 
-            }
-          ; 
+query     
+    : atom QUERY_MARK 
+        { 
+            InputDirector::getInstance().getBuilder()->onAtom(); 
+        }
+    ; 
 
-compare_aggregate : term compareop aggregate {}
-                  | aggregate compareop term {}            
-                  ;
+lower_guard_compare_aggregate
+    : term compareop
+        {
+            InputDirector::getInstance().getBuilder()->onAggregateLowerGuard($2);
+            delete $2;
+        }
+    ;
 
-leftward_left_aggregate  : term leftwardop aggregate {}
-                         ;
-left_aggregate : leftward_left_aggregate
-               | rightward_left_aggregate {}
-               ;
+upper_guard_compare_aggregate
+    : compareop term
+        {
+            InputDirector::getInstance().getBuilder()->onAggregateUpperGuard($1);
+            delete $1;
+        }
+    ;
 
-rightward_left_aggregate  : term rightwardop aggregate {}
-                          ;
-                          
-right_aggregate : aggregate leftwardop term {}
-                |  aggregate rightwardop term {}
-                ;
+compare_aggregate 
+    : lower_guard_compare_aggregate aggregate 
+    | aggregate upper_guard_compare_aggregate
+    ;
 
-aggregate_atom   : left_aggregate {}
-            | right_aggregate {}
-            | compare_aggregate {}
-            | leftward_left_aggregate leftwardop term {}
-            | rightward_left_aggregate rightwardop term {}
-            ;   
+lower_guard_leftward_left_aggregate
+    : term leftwardop
+        {
+            InputDirector::getInstance().getBuilder()->onAggregateLowerGuard($2);
+            delete $2;
+        }
+    ;
 
-leftwardop : LESS {}
-       | LESS_OR_EQ {}
-       ;    
+leftward_left_aggregate  
+    : lower_guard_leftward_left_aggregate aggregate
+    ;
 
-rightwardop : GREATER {}
-        | GREATER_OR_EQ {}
-        ;           
+left_aggregate 
+    : leftward_left_aggregate
+    | rightward_left_aggregate 
+    ;
+
+lower_guard_rightward_left_aggregate
+    : term rightwardop
+        {
+            InputDirector::getInstance().getBuilder()->onAggregateLowerGuard($2);
+            delete $2;
+        }
+    ;
+
+rightward_left_aggregate  
+    : lower_guard_rightward_left_aggregate aggregate
+    ;
+
+upper_guard_leftward_right_aggregate
+    : leftwardop term
+        {
+            InputDirector::getInstance().getBuilder()->onAggregateUpperGuard($1);
+            delete $1;
+        }
+    ;
+
+upper_guard_rightward_right_aggregate
+    : rightwardop term
+        {
+            InputDirector::getInstance().getBuilder()->onAggregateUpperGuard($1);
+            delete $1;
+        }
+    ;
+
+right_aggregate 
+    : aggregate upper_guard_leftward_right_aggregate
+    | aggregate upper_guard_rightward_right_aggregate
+    ;
+
+aggregate_atom
+    : left_aggregate
+    | right_aggregate
+    | compare_aggregate
+    | leftward_left_aggregate upper_guard_leftward_right_aggregate
+    | rightward_left_aggregate upper_guard_rightward_right_aggregate 
+    ;   
+
+leftwardop 
+    : LESS { $$ = $1; }
+    | LESS_OR_EQ { $$ = $1; }
+    ;    
+
+rightwardop 
+    : GREATER { $$ = $1; }
+    | GREATER_OR_EQ { $$ = $1; }
+    ;           
             
-aggregate  : aggregate_function CURLY_OPEN aggregate_elements CURLY_CLOSE {}
-                ;
+aggregate  
+    : aggregate_function CURLY_OPEN aggregate_elements CURLY_CLOSE
+    ;
 
-aggregate_elements : aggregate_elements SEMICOLON aggregate_element {}
-           | aggregate_element {}
-           ;
+aggregate_elements 
+    : aggregate_elements SEMICOLON aggregate_element
+    | aggregate_element
+    ;
         
             
-aggregate_element    : basic_terms COLON naf_literals {}
-                    ;
+aggregate_element 
+    : basic_terms COLON naf_literals
+        {
+            InputDirector::getInstance().getBuilder()->onAggregateElement();
+        }
+    ;
 
-aggregate_function  : AGGR_COUNT {}
-                    | AGGR_MAX {}
-                    | AGGR_MIN {}
-                    | AGGR_SUM {}
-                    ;   
+aggregate_function  
+    : AGGR_COUNT 
+        {
+            char* f = new char[6];
+            strcpy(f,"count");
+            f[5] = '\0';
+            InputDirector::getInstance().getBuilder()->onAggregateFunction(f);
+            delete f;
+        }
+    | AGGR_MAX
+        {
+            char* f = new char[4];
+            strcpy(f,"max");
+            f[5] = '\0';
+            InputDirector::getInstance().getBuilder()->onAggregateFunction(f);
+            delete f;
+        }
+    | AGGR_MIN
+        {
+            char* f = new char[4];
+            strcpy(f,"min");
+            f[5] = '\0';
+            InputDirector::getInstance().getBuilder()->onAggregateFunction(f);
+            delete f;
+        }
+    | AGGR_SUM
+        {
+            char* f = new char[4];
+            strcpy(f,"sum");
+            f[5] = '\0';
+            InputDirector::getInstance().getBuilder()->onAggregateFunction(f);
+            delete f;
+        }
+    ;   

@@ -41,29 +41,29 @@
      NUMBER = 259,
      VARIABLE = 260,
      STRING = 261,
-     ERROR = 262,
-     NEWLINE = 263,
-     DOT = 264,
-     SEMICOLON = 265,
-     COLON = 266,
-     CONS = 267,
-     QUERY_MARK = 268,
-     PLUS = 269,
-     TIMES = 270,
-     SLASH = 271,
-     ANON_VAR = 272,
-     PARAM_OPEN = 273,
-     PARAM_CLOSE = 274,
-     SQUARE_OPEN = 275,
-     SQUARE_CLOSE = 276,
-     CURLY_OPEN = 277,
-     CURLY_CLOSE = 278,
-     EQUAL = 279,
-     UNEQUAL = 280,
-     LESS = 281,
-     GREATER = 282,
-     LESS_OR_EQ = 283,
-     GREATER_OR_EQ = 284,
+     EQUAL = 262,
+     UNEQUAL = 263,
+     LESS = 264,
+     GREATER = 265,
+     LESS_OR_EQ = 266,
+     GREATER_OR_EQ = 267,
+     ERROR = 268,
+     NEWLINE = 269,
+     DOT = 270,
+     SEMICOLON = 271,
+     COLON = 272,
+     CONS = 273,
+     QUERY_MARK = 274,
+     PLUS = 275,
+     TIMES = 276,
+     SLASH = 277,
+     ANON_VAR = 278,
+     PARAM_OPEN = 279,
+     PARAM_CLOSE = 280,
+     SQUARE_OPEN = 281,
+     SQUARE_CLOSE = 282,
+     CURLY_OPEN = 283,
+     CURLY_CLOSE = 284,
      DASH = 285,
      COMMA = 286,
      NAF = 287,
@@ -82,29 +82,29 @@
 #define NUMBER 259
 #define VARIABLE 260
 #define STRING 261
-#define ERROR 262
-#define NEWLINE 263
-#define DOT 264
-#define SEMICOLON 265
-#define COLON 266
-#define CONS 267
-#define QUERY_MARK 268
-#define PLUS 269
-#define TIMES 270
-#define SLASH 271
-#define ANON_VAR 272
-#define PARAM_OPEN 273
-#define PARAM_CLOSE 274
-#define SQUARE_OPEN 275
-#define SQUARE_CLOSE 276
-#define CURLY_OPEN 277
-#define CURLY_CLOSE 278
-#define EQUAL 279
-#define UNEQUAL 280
-#define LESS 281
-#define GREATER 282
-#define LESS_OR_EQ 283
-#define GREATER_OR_EQ 284
+#define EQUAL 262
+#define UNEQUAL 263
+#define LESS 264
+#define GREATER 265
+#define LESS_OR_EQ 266
+#define GREATER_OR_EQ 267
+#define ERROR 268
+#define NEWLINE 269
+#define DOT 270
+#define SEMICOLON 271
+#define COLON 272
+#define CONS 273
+#define QUERY_MARK 274
+#define PLUS 275
+#define TIMES 276
+#define SLASH 277
+#define ANON_VAR 278
+#define PARAM_OPEN 279
+#define PARAM_CLOSE 280
+#define SQUARE_OPEN 281
+#define SQUARE_CLOSE 282
+#define CURLY_OPEN 283
+#define CURLY_CLOSE 284
 #define DASH 285
 #define COMMA 286
 #define NAF 287
@@ -128,7 +128,7 @@ typedef union YYSTYPE
 #line 27 "src/aspcore2.y"
 
     char* string;
-    char singleChar;
+    char single_char;
     int integer;
 
 

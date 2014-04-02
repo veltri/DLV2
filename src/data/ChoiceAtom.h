@@ -38,17 +38,17 @@ public:
 private:
     friend inline ostream& operator<< ( ostream&, const ChoiceAtom& );
     
-    Term* leftBound;
-    string leftBinop;
+    Term* lowerGuard;
+    string lowerBinop;
     vector<ChoiceElement> choices;
-    string rightBinop;
-    Term* rightBound;
+    string upperBinop;
+    Term* upperGuard;
 };
 
 inline ostream& operator<< ( ostream& out, const ChoiceAtom& ca )
 {
-    if( ca.leftBound )
-        out << ca.leftBound->toString() << " " << ca.leftBinop;
+    if( ca.lowerGuard )
+        out << ca.lowerGuard->toString() << ca.lowerBinop;
     out << "{";
     for( unsigned i=0; i<ca.choices.size(); i++ )
     {
@@ -57,8 +57,8 @@ inline ostream& operator<< ( ostream& out, const ChoiceAtom& ca )
             out << ";";
     }
     out << "}";
-    if( ca.rightBound )
-        out << ca.rightBinop << " " << ca.rightBound->toString();
+    if( ca.upperGuard )
+        out << ca.upperBinop << ca.upperGuard->toString();
     return out;
 }
 

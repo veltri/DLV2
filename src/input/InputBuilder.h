@@ -36,12 +36,12 @@ public:
     virtual void onConstraint() = 0;
     virtual void onWeakConstraint() = 0;
     virtual void onQuery() = 0;
-    virtual void addToHead() = 0;
-    virtual void addToBody() = 0;
+    virtual void onHeadAtom() = 0;
+    virtual void onBodyLiteral() = 0;
     virtual void onNafLiteral( bool naf = false ) = 0;
     virtual void onAtom( bool isStrongNeg = false ) = 0;
     virtual void onExistentialAtom() = 0;
-    virtual void predicateName( char* ) = 0;
+    virtual void onPredicateName( char* ) = 0;
     virtual void onExistentialVariable( char* ) = 0;
     virtual void onTerm( char* ) = 0;
     virtual void onTerm( int ) = 0;
@@ -50,13 +50,21 @@ public:
     virtual void onTermParams() = 0;
     virtual void onArithmeticOperation( char ) = 0;
     virtual void onWeightAtLevels( int, int, int ) = 0;
-    virtual void onChoiceLeftTerm() = 0;
-    virtual void onChoiceRightTerm() = 0;
+    virtual void onChoiceLowerGuard( char* ) = 0;
+    virtual void onChoiceUpperGuard( char* ) = 0;
     virtual void onChoiceElementAtom() = 0;
     virtual void onChoiceElementLiteral() = 0;
     virtual void onChoiceElement() = 0;
     virtual void onChoiceAtom() = 0;
-    
+    virtual void onBuiltinAtom( char* ) = 0;
+    virtual void onAggregateLowerGuard( char* ) = 0;
+    virtual void onAggregateUpperGuard( char* ) = 0;
+    virtual void onAggregateFunction( char* ) = 0;
+    virtual void onAggregateGroundTerm( char*, bool dash = false ) = 0;
+    virtual void onAggregateVariableTerm( char* ) = 0;
+    virtual void onAggregateNafLiteral() = 0;
+    virtual void onAggregateElement() = 0;
+    virtual void onAggregate( bool naf = false ) = 0;
 };
 
 #endif	/* INPUTBUILDER_H */

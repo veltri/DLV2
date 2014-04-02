@@ -292,12 +292,12 @@ static yyconst short int yy_accept[74] =
     {   0,
         0,    0,    0,    0,   44,   42,   41,    2,   42,   42,
        42,   42,   40,   18,   19,   16,   14,    4,   15,    3,
-       17,   39,    8,    7,   27,   24,   28,   31,    9,   37,
+       17,   39,    8,    7,   32,   29,   33,   24,    9,   37,
        20,   42,   21,    5,   36,   36,   22,    6,   23,    1,
-       42,   41,    2,   26,    0,   38,    0,    0,    0,   40,
-       39,   12,   13,   29,   25,   30,   37,   10,   36,   36,
-        1,    0,    0,    0,    0,   11,    0,   33,   34,   35,
-        0,   32,    0
+       42,   41,    2,   31,    0,   38,    0,    0,    0,   40,
+       39,   12,   13,   34,   30,   35,   37,   10,   36,   36,
+        1,    0,    0,    0,    0,   11,    0,   26,   27,   28,
+        0,   25,    0
     } ;
 
 static yyconst int yy_ec[256] =
@@ -819,63 +819,87 @@ YY_RULE_SETUP
 case 24:
 YY_RULE_SETUP
 #line 84 "src/aspcore2.l"
-{ return EQUAL;}
+{ return QUERY_MARK;}
 	YY_BREAK
 case 25:
-#line 86 "src/aspcore2.l"
-case 26:
 YY_RULE_SETUP
 #line 86 "src/aspcore2.l"
-{ return UNEQUAL;}
+{ return AGGR_COUNT;            }
+	YY_BREAK
+case 26:
+YY_RULE_SETUP
+#line 87 "src/aspcore2.l"
+{ return AGGR_MAX;              }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 87 "src/aspcore2.l"
-{ return LESS;}
+#line 88 "src/aspcore2.l"
+{ return AGGR_MIN;              }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 88 "src/aspcore2.l"
-{ return GREATER;}
+#line 89 "src/aspcore2.l"
+{ return AGGR_SUM;              }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 89 "src/aspcore2.l"
-{ return LESS_OR_EQ;}
+#line 91 "src/aspcore2.l"
+{
+							yylval.string=new char[strlen(yytext)+1];
+							strcpy(yylval.string,yytext);
+							return EQUAL;
+                                                }
 	YY_BREAK
 case 30:
-YY_RULE_SETUP
-#line 90 "src/aspcore2.l"
-{ return GREATER_OR_EQ;}
-	YY_BREAK
+#line 97 "src/aspcore2.l"
 case 31:
 YY_RULE_SETUP
-#line 92 "src/aspcore2.l"
-{ return QUERY_MARK;}
+#line 97 "src/aspcore2.l"
+{
+							yylval.string=new char[strlen(yytext)+1];
+							strcpy(yylval.string,yytext);
+							return UNEQUAL;
+                                                }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 94 "src/aspcore2.l"
-{ return AGGR_COUNT;            }
+#line 102 "src/aspcore2.l"
+{
+							yylval.string=new char[strlen(yytext)+1];
+							strcpy(yylval.string,yytext);
+							return LESS;
+                                                }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 95 "src/aspcore2.l"
-{ return AGGR_MAX;              }
+#line 107 "src/aspcore2.l"
+{
+							yylval.string=new char[strlen(yytext)+1];
+							strcpy(yylval.string,yytext);
+                                                        return GREATER;
+                                                }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 96 "src/aspcore2.l"
-{ return AGGR_MIN;              }
+#line 112 "src/aspcore2.l"
+{
+							yylval.string=new char[strlen(yytext)+1];
+							strcpy(yylval.string,yytext);
+                                                        return LESS_OR_EQ;
+                                                }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 97 "src/aspcore2.l"
-{ return AGGR_SUM;              }
+#line 117 "src/aspcore2.l"
+{
+							yylval.string=new char[strlen(yytext)+1];
+							strcpy(yylval.string,yytext);
+                                                        return GREATER_OR_EQ;
+                                                }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 99 "src/aspcore2.l"
+#line 123 "src/aspcore2.l"
 {
 							yylval.string=new char[strlen(yytext)+1];
 							strcpy(yylval.string,yytext);
@@ -884,7 +908,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 105 "src/aspcore2.l"
+#line 129 "src/aspcore2.l"
 {
 							yylval.string=new char[strlen(yytext)+1];
 							strcpy(yylval.string,yytext);
@@ -893,7 +917,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 111 "src/aspcore2.l"
+#line 135 "src/aspcore2.l"
 {
 							yylval.string=new char[strlen(yytext)+1];
 							strcpy(yylval.string,yytext);
@@ -902,7 +926,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 117 "src/aspcore2.l"
+#line 141 "src/aspcore2.l"
 { 
 						    yylval.string=new char[strlen(yytext)+1];
 							strcpy(yylval.string,yytext);
@@ -911,17 +935,17 @@ YY_RULE_SETUP
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 123 "src/aspcore2.l"
+#line 147 "src/aspcore2.l"
 { /* Skip comments */	}
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 124 "src/aspcore2.l"
+#line 148 "src/aspcore2.l"
 { /* Skip blanks */	}
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 126 "src/aspcore2.l"
+#line 150 "src/aspcore2.l"
 { // Anything not matching one of the patterns
 				 // given above is considered an error.
 					char s[1024];
@@ -934,10 +958,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 135 "src/aspcore2.l"
+#line 159 "src/aspcore2.l"
 ECHO;
 	YY_BREAK
-#line 941 "src/aspcore2_lexer.hpp"
+#line 965 "src/aspcore2_lexer.hpp"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(WANT_NEWLINE):
 	yyterminate();
@@ -1828,4 +1852,4 @@ int main()
 	return 0;
 	}
 #endif
-#line 135 "src/aspcore2.l"
+#line 159 "src/aspcore2.l"

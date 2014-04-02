@@ -25,11 +25,11 @@ ChoiceAtom::ChoiceAtom(
     vector<ChoiceElement> ce, 
     string ro, 
     Term* rb ) :
-        leftBound(lb),
-        leftBinop(lo),
+        lowerGuard(lb),
+        lowerBinop(lo),
         choices(ce),
-        rightBinop(ro),
-        rightBound(rb)
+        upperBinop(ro),
+        upperGuard(rb)
         
 {
     
@@ -37,11 +37,11 @@ ChoiceAtom::ChoiceAtom(
 
 ChoiceAtom::ChoiceAtom(
     const ChoiceAtom& ca ) :
-        leftBound(ca.leftBound),
-        leftBinop(ca.leftBinop),
+       lowerGuard(ca.lowerGuard),
+       lowerBinop(ca.lowerBinop),
         choices(ca.choices),
-        rightBinop(ca.rightBinop),
-        rightBound(ca.rightBound)
+        upperBinop(ca.upperBinop),
+        upperGuard(ca.upperGuard)
         
 {
     

@@ -34,8 +34,8 @@ SimpleInputBuilder::SimpleInputBuilder():
     currentAtom = NULL;
     varCounter = 0;
     query = NULL;
-    choiceLeftTerm = NULL;
-    choiceRightTerm = NULL;
+    lowerGuard = NULL;
+    upperGuard = NULL;
     currentChoiceElement = NULL;
     currentChoiceAtom = NULL;
 }
@@ -165,7 +165,7 @@ SimpleInputBuilder::onQuery()
     
 // Finalize an atom; destroy all of its properties.
 void 
-SimpleInputBuilder::addToHead() 
+SimpleInputBuilder::onHeadAtom() 
 {
     assert_msg( currentAtom, "Trying to adding a null atom" );
     head.push_back(*currentAtom);
@@ -178,7 +178,7 @@ SimpleInputBuilder::addToHead()
  
 // Finalize a literal; destroy all of its properties.
 void 
-SimpleInputBuilder::addToBody()
+SimpleInputBuilder::onBodyLiteral()
 {
     assert_msg( currentLiteral, "Trying to adding a null literal" );
     body.push_back(*currentLiteral);
@@ -220,9 +220,9 @@ SimpleInputBuilder::onAtom(
     }
     currentAtom = new Atom(predName, termStack.size(), 
             termStack, isStrongNeg);
-    // Before emptying the stack, we store its content.
-    // We need these pointers to delete all the terms  
-    // of the program, because they are instantiated
+    // Before emptying the terms' stack, we store its content.
+    // We need to keep these pointers in memory to delete all the 
+    // terms of the program, because they are instantiated
     // dinamically.
     allTerms.insert(allTerms.end(),termStack.begin(),termStack.end());
     termStack.clear();
@@ -252,7 +252,7 @@ SimpleInputBuilder::onExistentialAtom()
 }
     
 void 
-SimpleInputBuilder::predicateName( 
+SimpleInputBuilder::onPredicateName( 
     char* name )
 {
     assert_msg( name, "Trying to create an atom with a null predicate name" );
@@ -286,46 +286,7 @@ void
 SimpleInputBuilder::onTerm( 
     char* value )
 {
-    Term* currentTerm = NULL;
-    assert_msg( (value && strlen(value) > 0), 
-            "Trying to create a term with a null value" );
-
-    if( value[0] >= 'A' && value[0] <='Z' ) // Variable
-    {
-        // Looking for other instances of 
-        // the variable in the current rule
-        for( unsigned i=0; i<localVariables.size() && !currentTerm; i++ )
-            if( localVariables[i].varName == value )
-                currentTerm = new Variable(localVariables[i].varIndex);
-        if( !currentTerm )
-        {
-            currentTerm = new Variable(varCounter);
-            VariableIndex ind;
-            ind.varIndex = varCounter++;
-            ind.varName = string(value);
-            localVariables.push_back( ind );
-        }   
-    }
-    else if( value[0] == '_' && strlen(value) == 1 ) // Unknow variable;
-    { 
-        currentTerm = new Variable(varCounter++);  
-    }
-    else if( (value[0] == '\"' && value[strlen(value)-1] == '\"') ||  
-            (value[0] >= 'a' && value[0] <='z') )   // String constant
-    {
-        currentTerm = new StringConstant(value);
-    }
-    else if( isNumeric( value, 10 ) ) // Numeric constant
-    {
-        currentTerm = new IntegerConstant( atoi(value) );
-    }
-    
-    // Push currentTerm into the stack.
-    if( currentTerm != NULL )
-    {
-        termStack.push_back(currentTerm);
-    }
-    
+    newTerm(value,termStack);
 }
     
 void 
@@ -441,41 +402,50 @@ SimpleInputBuilder::onWeightAtLevels(
 }
     
 void 
-SimpleInputBuilder::onChoiceLeftTerm() 
+SimpleInputBuilder::onChoiceLowerGuard( 
+    char* binop ) 
 {
     // It should be on top of the stack.
     assert_msg( termStack.size() > 0, 
             "Trying to create a null choice-left term" );
-    if( choiceLeftTerm )
-    {
-        delete choiceLeftTerm;
-        choiceLeftTerm = NULL;
-    }
-    choiceLeftTerm = termStack.back();
-    allTerms.push_back(choiceLeftTerm);
+    lowerGuard = termStack.back();
+    allTerms.push_back(lowerGuard);
     termStack.pop_back();
+    lowerBinop = string(binop);
 }
 
 void 
-SimpleInputBuilder::onChoiceRightTerm() 
+SimpleInputBuilder::onChoiceUpperGuard(
+    char* binop ) 
 {
     // It should be on top of the stack.
     assert_msg( termStack.size() > 0, 
             "Trying to create a null choice-right term" );
-    if( choiceLeftTerm )
-    {
-        delete choiceRightTerm;
-        choiceRightTerm = NULL;
-    }
-    choiceRightTerm = termStack.back();
-    allTerms.push_back(choiceRightTerm);
+    upperGuard = termStack.back();
+    allTerms.push_back(upperGuard);
     termStack.pop_back();
+    upperBinop = string(binop);
 }
 
 void 
 SimpleInputBuilder::onChoiceElementAtom()
 {
-    assert_msg( currentAtom, "Trying to finalize a null choice atom" );
+    assert_msg( predName.length() > 0, 
+            "Trying to finalize an atom with a null predicate name" );
+    if( currentAtom != NULL )
+    {
+        delete currentAtom;
+        currentAtom = NULL;
+    }
+    currentAtom = new Atom(predName, termStack.size(), 
+            termStack, false);
+    // Before emptying the stack, we store its content.
+    // We need these pointers to delete all the terms  
+    // of the program, because they are instantiated
+    // dinamically.
+    allTerms.insert(allTerms.end(),termStack.begin(),termStack.end());
+    termStack.clear();
+    predName = "";
     if( currentChoiceElement != NULL )
     {
         delete currentChoiceElement;
@@ -527,10 +497,144 @@ SimpleInputBuilder::onChoiceAtom()
         currentChoiceAtom = NULL;
     }
     currentChoiceAtom = 
-            new ChoiceAtom(choiceLeftTerm,"",choiceElements,"",choiceRightTerm);
-    choiceLeftTerm = NULL;
-    choiceRightTerm = NULL;
+            new ChoiceAtom(lowerGuard,lowerBinop,choiceElements,
+            upperBinop,upperGuard);
+    lowerGuard = NULL;
+    upperGuard = NULL;
+    lowerBinop = "";
+    upperBinop = "";
     choiceElements.clear();
+}
+
+void 
+SimpleInputBuilder::onBuiltinAtom( 
+    char* binop )
+{
+    // The operands should be on top of the terms' stack.
+    assert_msg( (termStack.size() > 1 && binop != NULL), 
+            "Trying to create an invalid builtin atom" );
+    Term* rightOperand = termStack.back();
+    allTerms.push_back(rightOperand);
+    termStack.pop_back();
+    Term* leftOperand = termStack.back();
+    allTerms.push_back(leftOperand);
+    termStack.pop_back();
+    string op(binop);
+    
+    if( currentAtom != NULL )
+    {
+        delete currentAtom;
+        currentAtom = NULL;
+    }
+    currentAtom = new Atom(leftOperand,op,rightOperand);
+    termStack.clear();
+    predName = "";
+}
+
+void 
+SimpleInputBuilder::onAggregateLowerGuard( 
+    char* op )
+{
+    // It should be on top of the stack.
+    assert_msg( termStack.size() > 0, 
+            "Trying to create a null aggregate lower guard" );
+    lowerGuard = termStack.back();
+    allTerms.push_back(lowerGuard);
+    termStack.pop_back();
+    lowerBinop = string(op);
+}
+
+void 
+SimpleInputBuilder::onAggregateUpperGuard( 
+    char* op )
+{
+    // It should be on top of the stack.
+    assert_msg( termStack.size() > 0, 
+            "Trying to create a null choice-right term" );
+    upperGuard = termStack.back();
+    allTerms.push_back(upperGuard);
+    termStack.pop_back();
+    upperBinop = string(op);
+}
+
+void 
+SimpleInputBuilder::onAggregateFunction( 
+    char* f )
+{
+    assert_msg( f, "Trying to create an aggregate with a null function" );
+    aggregateFunction = string(f);
+}
+
+void 
+SimpleInputBuilder::onAggregateGroundTerm( 
+    char* value, 
+    bool dash )
+{
+    newTerm(value,aggregateElementTerms,dash);
+}
+    
+void 
+SimpleInputBuilder::onAggregateVariableTerm( 
+    char* value )
+{
+    newTerm(value,aggregateElementTerms);
+}
+
+void 
+SimpleInputBuilder::onAggregateNafLiteral()
+{
+    // The current literal should be pointed 
+    // by currentLiteral;
+    assert_msg( currentLiteral, "Trying to adding a null literal" );
+    aggregateElementLiterals.push_back(*currentLiteral);
+    if( currentLiteral )
+    {
+        delete currentLiteral;    
+        currentLiteral = NULL;
+    }
+}
+
+void 
+SimpleInputBuilder::onAggregateElement()
+{
+    assert_msg( (aggregateElementTerms.size() > 0 
+            && aggregateElementLiterals.size() > 0),
+            "Invalid aggregate element.");
+    AggregateElement element(aggregateElementTerms,aggregateElementLiterals);
+    aggregateElements.push_back(element);
+    // Before emptying the terms' stack, we store its content.
+    // We need to keep these pointers in memory to delete all the 
+    // terms of the program, because they are instantiated
+    // dinamically.
+    allTerms.insert(allTerms.end(),aggregateElementTerms.begin(),
+            aggregateElementTerms.end());
+    aggregateElementTerms.clear();
+    aggregateElementLiterals.clear();
+}
+
+void 
+SimpleInputBuilder::onAggregate(
+    bool naf )
+{
+    assert_msg( aggregateFunction.length() > 0, 
+            "Trying to finalize an aggregate with a null function symbol" );
+    assert_msg( aggregateElements.size() > 0, 
+            "Trying to finalize an aggregate without elements" );
+    assert_msg( lowerGuard || upperGuard, 
+            "Trying to finalize an aggregate without any guards" );
+    if( currentLiteral != NULL )
+    {
+        delete currentLiteral;
+        currentLiteral = NULL;
+    }
+    currentLiteral = new Literal(lowerGuard,lowerBinop,upperGuard,upperBinop,
+            aggregateFunction,aggregateElements,naf);
+    aggregateElements.clear();
+    lowerGuard = NULL;
+    lowerBinop = "";
+    upperGuard = NULL;
+    upperBinop = "";
+    aggregateFunction = "";
 }
 
 bool 
@@ -559,4 +663,54 @@ SimpleInputBuilder::isNumeric(
  
     // was all the input successfully consumed/converted?
     return ( iss.rdbuf()->in_avail() == 0 );
+}
+
+void 
+SimpleInputBuilder::newTerm( 
+    char* value,
+    vector<Term*>& target,
+    bool dash )
+{
+    Term* currentTerm = NULL;
+    assert_msg( (value && strlen(value) > 0), 
+            "Trying to create a term with a null value" );
+
+    if( value[0] >= 'A' && value[0] <='Z' ) // Variable
+    {
+        // Looking for other instances of 
+        // the variable in the current rule
+        for( unsigned i=0; i<localVariables.size() && !currentTerm; i++ )
+            if( localVariables[i].varName == value )
+                currentTerm = new Variable(localVariables[i].varIndex);
+        if( !currentTerm )
+        {
+            currentTerm = new Variable(varCounter);
+            VariableIndex ind;
+            ind.varIndex = varCounter++;
+            ind.varName = string(value);
+            localVariables.push_back( ind );
+        }   
+    }
+    else if( value[0] == '_' && strlen(value) == 1 ) // Unknow variable;
+    { 
+        currentTerm = new Variable(varCounter++);  
+    }
+    else if( (value[0] == '\"' && value[strlen(value)-1] == '\"') ||  
+            (value[0] >= 'a' && value[0] <='z') )   // String constant
+    {
+        currentTerm = new StringConstant(value);
+    }
+    else if( isNumeric( value, 10 ) ) // Numeric constant
+    {
+        int val = atoi(value);
+        if( dash )
+            val = 0 - val;
+        currentTerm = new IntegerConstant(val);
+    }
+    
+    // Push currentTerm into the stack.
+    if( currentTerm != NULL )
+    {
+        target.push_back(currentTerm);
+    }
 }

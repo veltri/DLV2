@@ -30,13 +30,16 @@
 #include <string>
 #include <vector>
 #include "Variable.h"
+#include "../util/Assert.h"
 
 using namespace std;
 
 class Atom {
 public:
+    Atom() { }
     Atom( string, unsigned, vector<Term*>, bool tNeg = false );
     Atom( string, unsigned, vector<Term*>, vector<Variable> );
+    Atom( Term* left, string bop, Term* right );
     Atom( const Atom& a );
     ~Atom() { }
     
@@ -67,6 +70,11 @@ private:
     bool trueNegated;
     vector<Term*> terms;
     vector<Variable> existentialVars;
+    
+    bool isBuiltin;
+    Term* bLeft;
+    string binop;
+    Term* bRight;
 };
 
 ostream& 
@@ -74,30 +82,39 @@ operator<< (
     ostream & out, 
     const Atom& a )
 {
-    if( a.existentialVars.size() > 0 )
+    if( a.isBuiltin )
     {
-        out << "\\E ";
-        for( unsigned i=0; i<a.existentialVars.size(); i++ )
-        {
-            out << a.existentialVars[i];
-            if( i < a.existentialVars.size()-1 )
-                out << ",";
-        }
-        out << " ";
+        assert_msg( (a.bLeft != NULL && a.bRight != NULL),
+            "Invalid builtin atom, null terms");
+        out << a.bLeft->toString() << a.binop << a.bRight->toString();
     }
-    if( a.trueNegated )
-        out << "-";
-    out << Atom::getPredicateName(a.predIndex);
-    if( a.terms.size() != 0 ) 
+    else
     {
-        out << "(";
-        for( unsigned i=0; i<a.terms.size(); i++ )
+        if( a.existentialVars.size() > 0 )
         {
-            out << a.terms[i]->toString();
-            if( i < a.terms.size()-1 )
-                out << ",";
+            out << "\\E ";
+            for( unsigned i=0; i<a.existentialVars.size(); i++ )
+            {
+                out << a.existentialVars[i];
+                if( i < a.existentialVars.size()-1 )
+                    out << ",";
+            }
+            out << " ";
         }
-        out << ")";
+        if( a.trueNegated )
+            out << "-";
+        out << Atom::getPredicateName(a.predIndex);
+        if( a.terms.size() != 0 ) 
+        {
+            out << "(";
+            for( unsigned i=0; i<a.terms.size(); i++ )
+            {
+                out << a.terms[i]->toString();
+                if( i < a.terms.size()-1 )
+                    out << ",";
+            }
+            out << ")";
+        }
     }
     return out;
 }

@@ -33,9 +33,13 @@ Atom::Atom(
     bool tNeg ):
         predIndex(Atom::addPredicateName(name,arity)),
         trueNegated(tNeg),
-        terms(termsList)
+        terms(termsList),
+        isBuiltin(false),
+        bLeft(NULL),
+        binop(""),
+        bRight(NULL)
 {
-
+    
 }
 
 // Existential atoms' constructor
@@ -47,7 +51,25 @@ Atom::Atom(
         predIndex(Atom::addPredicateName(name,arity)),
         trueNegated(false),
         terms(termsList),
-        existentialVars(existVars)
+        existentialVars(existVars),
+        isBuiltin(false),
+        bLeft(NULL),
+        binop(""),
+        bRight(NULL)
+{
+
+}
+    
+// Builtin atoms' constructor
+Atom::Atom( 
+    Term* left, 
+    string bop, 
+    Term* right ):
+        trueNegated(false),
+        isBuiltin(true),
+        bLeft(left),
+        binop(bop),
+        bRight(right)
 {
 
 }
@@ -57,7 +79,11 @@ Atom::Atom(
         predIndex(a.predIndex), 
         trueNegated(a.trueNegated), 
         terms(a.terms),
-        existentialVars(a.existentialVars)
+        existentialVars(a.existentialVars),
+        isBuiltin(a.isBuiltin),
+        bLeft(a.bLeft),
+        binop(a.binop),
+        bRight(a.bRight)
 {
     
 }

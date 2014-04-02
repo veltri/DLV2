@@ -29,13 +29,18 @@
 
 #include <iostream>
 #include "Atom.h"
+#include "AggregateElement.h"
 
 using namespace std;
 
+class AggregateElement;
+inline ostream& operator<< ( ostream&, const AggregateElement& );
+
 class Literal {
 public:
-    Literal( Atom a, bool neg ): atom(a), isNegative(neg) { }
-    Literal( const Literal& l ): atom(l.atom), isNegative(l.isNegative) { }
+    Literal( Atom a, bool neg );
+    Literal( Term*, string, Term*, string, string, vector<AggregateElement>, bool );
+    Literal( const Literal& l );
     ~Literal() { }
     
     void setIsNaf( bool isNaf ) { isNegative = isNaf; }
@@ -45,6 +50,14 @@ private:
     
     Atom atom;
     bool isNegative;
+    
+    bool isAggregate;
+    Term* lowerGuard;
+    string lowerBinop;
+    Term* upperGuard;
+    string upperBinop;
+    string aggregateFunction;
+    vector<AggregateElement> aggregateElements;
 };
 
 ostream& 
@@ -53,8 +66,28 @@ operator<< (
     const Literal& l )
 {
     if( l.isNegative )
-        out << "not ";
-    out << l.atom;
+            out << "not ";
+    if( l.isAggregate )
+    {
+        assert_msg( (l.lowerGuard != NULL || l.upperGuard != NULL),
+            "Invalid aggregate literal, null guards");
+        if( l.lowerGuard )
+            out << l.lowerGuard->toString() << l.lowerBinop;
+        out << "#" << l.aggregateFunction << "{";
+        for( unsigned i=0; i<l.aggregateElements.size(); i++ )
+        {
+            out << l.aggregateElements[i];
+            if( i < l.aggregateElements.size()-1 )
+                out << ";";
+        }
+        out << "}";
+        if( l.upperGuard )
+            out << l.upperBinop << l.upperGuard->toString();
+    }
+    else
+    {
+        out << l.atom;
+    }
     return out;
 }
 
