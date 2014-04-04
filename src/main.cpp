@@ -1,17 +1,19 @@
 #include <iostream>
-#include <cstring>
-#include "data/Program.h"
-#include "data/IntegerConstant.h"
-#include "data/StringConstant.h"
-#include "data/Variable.h"
-#include "input/InputDirector.h"
-#include "input/SimpleInputBuilder.h"
+#include "DLV2Facade.h"
+#include "util/Options.h"
 
 using namespace std;
 
 int main(int argc, char** argv)
 {  
-    InputBuilder* builder = new SimpleInputBuilder();
+    dlv2::Options::parse( argc, argv );    
+    DLV2Facade dlv2Facade;
+    dlv2::Options::setOptions(dlv2Facade);
+    dlv2Facade.readInput();
+    dlv2Facade.solve();
+    // FIXME
+    dlv2Facade.free();
+    /*InputBuilder* builder = new SimpleInputBuilder();
     InputDirector::getInstance().configureBuilder(builder);
     InputDirector::getInstance().parse(argc,argv);
     
@@ -21,7 +23,7 @@ int main(int argc, char** argv)
         cout << *(simpleBuilder->getQuery()) << "?" << endl;
     
     InputDirector::free();
-    delete builder;
+    delete builder;*/
         
     return 0;
 }

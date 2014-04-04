@@ -30,6 +30,8 @@
 #include "../util/Assert.h"
 #include "InputBuilder.h"
 
+#include <vector>
+
 class InputDirector {
 public:
     static InputDirector& getInstance();
@@ -40,8 +42,9 @@ public:
     
     //////////////////////////////////////////////////////////////////////////////
     // Parsing functions
-    int parse( int filesSize, char **files );
-    int parse( char* filename, FILE *file );
+    int parse( std::vector<const char*> files);
+    int parse( int filesSize, const char **files );
+    int parse( const char* filename, FILE *file );
     int parse( );
     
     int onError(const char* msg);

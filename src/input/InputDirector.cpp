@@ -22,6 +22,7 @@
 #include <cstring>
 #include <cstdio>
 #include "InputDirector.h"
+#include "../util/ErrorMessage.h"
 #include "../aspcore2_lexer.hpp"
 #include "../aspcore2_parser.hpp"
 #include "../data/Program.h"
@@ -85,8 +86,33 @@ InputDirector::~InputDirector()
 
 int
 InputDirector::parse(
+    vector<const char*> files ) 
+{
+    if( files.size() == 0 )
+        ErrorMessage::errorGeneric( "No input files." );
+    else if( files.size() == 1 && !strcmp(files[0],"--") )
+        return InputDirector::parse();
+    
+    for( unsigned i = 0; i < files.size(); i++) {
+        FILE *file = fopen(files[i], "r");
+        if(file) {
+            int res = parse(files[i], file);
+            fclose(file);
+            if(res != 0)
+                return res;
+        }
+        else {
+            yyerror("Can't open input");
+            return -1;
+        }
+    }
+    return 0;
+}
+
+int
+InputDirector::parse(
     int filesSize,
-    char **files ) 
+    const char **files ) 
 {
     for(int i = 1; i < filesSize; i++) {
         FILE *file = fopen(files[i], "r");
@@ -106,7 +132,7 @@ InputDirector::parse(
 
 int
 InputDirector::parse(
-    char* fileName,
+    const char* fileName,
     FILE *file ) 
 {
     yyin = file;
