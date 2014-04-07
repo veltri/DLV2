@@ -86,6 +86,25 @@ parser: $(SOURCE_DIR)/aspcore2.l $(SOURCE_DIR)/aspcore2.y
 	bison -y -o$(SOURCE_DIR)/aspcore2_parser.hpp $(SOURCE_DIR)/aspcore2.y
 	rm -f $(SOURCE_DIR)/aspcore2_parser.c
 
+TESTS_DIR = tests
+
+TESTS_TESTER = $(TESTS_DIR)/pyregtest.py
+TESTS_COMMAND_dlv = $(BINARY)
+TESTS_CHECKER_dlv = $(TESTS_DIR)/allAnswerSets.checker.py
+
+TESTS_REPORT_text = $(TESTS_DIR)/text.report.py
+
+TESTS_DIR_dlv = $(TESTS_DIR)/dlv/
+TESTS_SRC_dlv = $(sort $(shell find $(TESTS_DIR_dlv) -name '*.test.py'))
+TESTS_OUT_dlv = $(patsubst %.test.py,%.test.py.text, $(TESTS_SRC_dlv))
+
+tests: tests/dlv
+
+tests/dlv: $(TESTS_OUT_dlv)
+
+$(TESTS_OUT_dlv):
+	@$(TESTS_TESTER) "$(TESTS_COMMAND_dlv)" $(patsubst %.test.py.text,%.test.py , $@) $(TESTS_CHECKER_dlv) $(TESTS_REPORT_text)
+
 ########## Clean
 
 clean-dep:
