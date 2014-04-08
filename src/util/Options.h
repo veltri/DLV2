@@ -42,9 +42,7 @@ namespace dlv2
         static void parse( int argc, char* const* argv );
         static void setOptions( DLV2Facade& dlv2Facade );
         
-    private:
-        static void printHelp( const char* );
-        
+    private:      
         static bool aspCore2Strict;
         
         static bool printProgram;

@@ -32,15 +32,16 @@
 
 class Variable : public Term {
 public:
-    Variable( unsigned i ): Term(i) { }
-    Variable( const Variable& v ): Term(v.index) { }
+    Variable( unsigned i, string v ): Term(i), value(v) { }
+    Variable( const Variable& v ): Term(v.index), value(v.value) { }
     ~Variable() { }
 
     Type getType() { return Term::Variable; }
-    string toString() const;
+    string toString() const { return value; }
     
 private:
     friend inline ostream& operator<< ( ostream& out, const Variable& v );
+    string value;
 };
 
 inline ostream& operator<< ( ostream& out, const Variable& v )

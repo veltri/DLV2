@@ -35,7 +35,7 @@ namespace dlv2{
     
 /* INPUT OPTIONS */
 #define OPTIONID_aspcore2strict ( 'z' + 1 )
-#define OPTIONID_testingobjects ( 'z' + 2 )
+#define OPTIONID_inmemory ( 'z' + 2 )
 #define OPTIONID_dlvdb ( 'z' + 3 )    
 
 /* OUTPUT OPTIONS */
@@ -72,7 +72,7 @@ Options::parse(
     {    
         /* INPUT OPTIONS */
         { "aspcore2strict", no_argument, NULL, OPTIONID_aspcore2strict },
-        { "testing-objects", no_argument, NULL, OPTIONID_testingobjects },
+        { "inmemory", no_argument, NULL, OPTIONID_inmemory },
         { "dlv-db", no_argument, NULL, OPTIONID_dlvdb },
 
         /* OUTPUT OPTIONS */
@@ -102,13 +102,12 @@ Options::parse(
                 aspCore2Strict = true;
                 break;
             
-            case OPTIONID_testingobjects:
-                inputPolicy = INPUT_TESTING_OBJECTS;
+            case OPTIONID_inmemory:
+                inputPolicy = INPUT_IN_MEMORY;
                 break;
                 
             case OPTIONID_dlvdb:     
                 inputPolicy = INPUT_DLV_DB;
-                ErrorMessage::errorGeneric( "--dlv-db: Not supported yet! Bye." );
                 break;
                 
             case OPTIONID_silent:
@@ -116,11 +115,12 @@ Options::parse(
                 break;
                 
             case OPTIONID_printprogram:
+                inputPolicy = INPUT_MOCK_OBJECTS;
                 printProgram = true;
                 break;
                 
             case OPTIONID_help:
-                Help::printHelp();
+                Help::printHelp(argv[0]);
                 exit(0);
                 break;
                 

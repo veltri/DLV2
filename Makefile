@@ -89,21 +89,21 @@ parser: $(SOURCE_DIR)/aspcore2.l $(SOURCE_DIR)/aspcore2.y
 TESTS_DIR = tests
 
 TESTS_TESTER = $(TESTS_DIR)/pyregtest.py
-TESTS_COMMAND_dlv = $(BINARY)
-TESTS_CHECKER_dlv = $(TESTS_DIR)/allAnswerSets.checker.py
+TESTS_COMMAND_dlv2_parser = $(BINARY) --printprogram --silent --stdin
+TESTS_CHECKER_dlv2_parser = $(TESTS_DIR)/allAnswerSets.checker.py
 
 TESTS_REPORT_text = $(TESTS_DIR)/text.report.py
 
-TESTS_DIR_dlv = $(TESTS_DIR)/dlv/
-TESTS_SRC_dlv = $(sort $(shell find $(TESTS_DIR_dlv) -name '*.test.py'))
-TESTS_OUT_dlv = $(patsubst %.test.py,%.test.py.text, $(TESTS_SRC_dlv))
+TESTS_DIR_dlv2_parser = $(TESTS_DIR)/parser/
+TESTS_SRC_dlv2_parser = $(sort $(shell find $(TESTS_DIR_dlv2_parser) -name '*.test.py'))
+TESTS_OUT_dlv2_parser = $(patsubst %.test.py,%.test.py.text, $(TESTS_SRC_dlv2_parser))
 
-tests: tests/dlv
+tests: tests/parser
 
-tests/dlv: $(TESTS_OUT_dlv)
+tests/parser: $(TESTS_OUT_dlv2_parser)
 
-$(TESTS_OUT_dlv):
-	@$(TESTS_TESTER) "$(TESTS_COMMAND_dlv)" $(patsubst %.test.py.text,%.test.py , $@) $(TESTS_CHECKER_dlv) $(TESTS_REPORT_text)
+$(TESTS_OUT_dlv2_parser):
+	@$(TESTS_TESTER) "$(TESTS_COMMAND_dlv2_parser)" $(patsubst %.test.py.text,%.test.py , $@) $(TESTS_CHECKER_dlv2_parser) $(TESTS_REPORT_text)
 
 ########## Clean
 

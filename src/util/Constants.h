@@ -28,7 +28,7 @@
 #define	CONSTANTS_H
 
 // Input builder constants
-#define INPUT_TESTING_OBJECTS 0
+#define INPUT_MOCK_OBJECTS 0
 #define INPUT_DLV_DB 1
 #define INPUT_IN_MEMORY 2
 

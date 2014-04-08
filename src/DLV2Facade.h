@@ -16,9 +16,10 @@ class InputBuilder;
 
 class DLV2Facade {
 public:
-    DLV2Facade() : aspCore2Strict(false), printProgram(false) { }
+    DLV2Facade() : outputSilent(false), aspCore2Strict(false), printProgram(false) { }
     ~DLV2Facade() { }
     
+    void greetings();
     void readInput();
     void solve();
     void free();
@@ -26,12 +27,12 @@ public:
     void setAspCore2Strict( bool asp2 ) { aspCore2Strict = asp2; }
     void setPrintProgram( bool pp ) { printProgram = pp; }
     void setInputHandlingPolicy( INPUT_HANDLING_POLICY );
-    void setOutputPolicy( OUTPUT_POLICY ) { /* TODO */ }
+    void setOutputPolicy( OUTPUT_POLICY );
     void setInputFiles( vector<const char*> files ) { inputFiles = files; }
     
 private:
-    InputBuilder* builder;
-    
+
+    bool outputSilent;
     bool aspCore2Strict;
     bool printProgram;
     vector<const char*> inputFiles;

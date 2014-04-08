@@ -9,6 +9,7 @@ int main(int argc, char** argv)
     dlv2::Options::parse( argc, argv );    
     DLV2Facade dlv2Facade;
     dlv2::Options::setOptions(dlv2Facade);
+    dlv2Facade.greetings();
     dlv2Facade.readInput();
     dlv2Facade.solve();
     // FIXME

@@ -26,30 +26,30 @@ using namespace std;
 
 class Help
 {
-    public:
-        static void printHelp()
-        {
-            string separator = "\n---------------------------\n";
+public:
+    static void printHelp( const char* exec )
+    {
+        string separator = "\n---------------------------\n";
 
-            cout << DLV2_STRING << endl;
+        cout << DLV2_STRING << endl;
+        cout << "usage: " << exec << " {OPTIONS} [filename [filename [...]]]" << endl;
+        cout << separator << endl;
 
-            cout << separator << endl;
-
-            cout << "Input options                         " << endl << endl;
-            cout << "--aspcore2strict                       - Enable \"strict\" AspCore2 format as input." << endl;
-            cout << "--testing-objects                      - Enable the input builder for creating simple testing objects." << endl;
-            cout << "--dlv-db                               - Enable the input builder for the DB-based version." << endl;
-            cout << separator << endl;
+        cout << "Input options                         " << endl << endl;
+        cout << "--aspcore2strict                       - Enable \"strict\" AspCore2 format as input." << endl;
+        cout << "--inmemory                             - Enable the input builder for the in-memory version. (default choice)" << endl;
+        cout << "--dlv-db                               - Enable the input builder for the DB-based version." << endl;
+        cout << separator << endl;
             
-            cout << "Output options                         " << endl << endl;
-            cout << "--silent                               - Suppress the startup banner and blank lines." << endl;
-            cout << "--printprogram                         - Print the input program and exit." << endl;
-            cout << separator << endl;
+        cout << "Output options                         " << endl << endl;
+        cout << "--silent                               - Suppress the startup banner and blank lines." << endl;
+        cout << "--printprogram                         - Enable the input builder for mock objects, print the input program and exit." << endl;
+        cout << separator << endl;
 
-            cout << "General options                     " << endl << endl;
-            cout << "--help                                 - Print this guide and exit." << endl;
-            cout << "--stdin                                - Read input from standard input." << endl;
-        }
+        cout << "General options                     " << endl << endl;
+        cout << "--help                                 - Print this guide and exit." << endl;
+        cout << "--stdin                                - Read input from standard input." << endl;
+    }
 };
 
 #endif /* HELP_H */

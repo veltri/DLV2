@@ -269,12 +269,12 @@ SimpleInputBuilder::onExistentialVariable(
     for( unsigned i=0; i<localVariables.size() && !found; i++ )
         if( localVariables[i].varName == var )
         {
-            existVars.push_back(Variable(localVariables[i].varIndex));
+            existVars.push_back(Variable(localVariables[i].varIndex,string(var)));
             found = true;
         }
     if( !found )
     {
-        existVars.push_back(Variable(varCounter));
+        existVars.push_back(Variable(varCounter,string(var)));
         VariableIndex ind;
         ind.varIndex = varCounter++;
         ind.varName = string(var);
@@ -681,10 +681,10 @@ SimpleInputBuilder::newTerm(
         // the variable in the current rule
         for( unsigned i=0; i<localVariables.size() && !currentTerm; i++ )
             if( localVariables[i].varName == value )
-                currentTerm = new Variable(localVariables[i].varIndex);
+                currentTerm = new Variable(localVariables[i].varIndex,string(value));
         if( !currentTerm )
         {
-            currentTerm = new Variable(varCounter);
+            currentTerm = new Variable(varCounter,string(value));
             VariableIndex ind;
             ind.varIndex = varCounter++;
             ind.varName = string(value);
@@ -693,7 +693,7 @@ SimpleInputBuilder::newTerm(
     }
     else if( value[0] == '_' && strlen(value) == 1 ) // Unknow variable;
     { 
-        currentTerm = new Variable(varCounter++);  
+        currentTerm = new Variable(varCounter++,string(value));  
     }
     else if( (value[0] == '\"' && value[strlen(value)-1] == '\"') ||  
             (value[0] >= 'a' && value[0] <='z') )   // String constant
