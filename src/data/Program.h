@@ -62,6 +62,10 @@ operator<< (
     {
         out << p.rules[i] << endl;
     }
+    for( unsigned i=0; i<p.choiceRules.size(); i++ )
+    {
+        out << p.choiceRules[i] << endl;
+    }
     for( unsigned i=0; i<p.constraints.size(); i++ )
     {
         out << p.constraints[i] << endl;
@@ -69,10 +73,6 @@ operator<< (
     for( unsigned i=0; i<p.weakConstraints.size(); i++ )
     {
         out << p.weakConstraints[i] << endl;
-    }
-    for( unsigned i=0; i<p.choiceRules.size(); i++ )
-    {
-        out << p.choiceRules[i] << endl;
     }
     return out;
 }

@@ -90,7 +90,7 @@ TESTS_DIR = tests
 
 TESTS_TESTER = $(TESTS_DIR)/pyregtest.py
 TESTS_COMMAND_dlv2_parser = $(BINARY) --printprogram --silent --stdin
-TESTS_CHECKER_dlv2_parser = $(TESTS_DIR)/allAnswerSets.checker.py
+TESTS_CHECKER_dlv2_parser = $(TESTS_DIR)/dlv2Parser.checker.py
 
 TESTS_REPORT_text = $(TESTS_DIR)/text.report.py
 

@@ -43,9 +43,8 @@ public:
     Atom( const Atom& a );
     ~Atom() { }
     
-    static unsigned addPredicateName( string, unsigned );
+    static unsigned addPredicateName( string );
     static string getPredicateName( unsigned );
-    static unsigned getPredicateArity( unsigned );
     static unsigned addStringConstant( string );
     static string getStringConstant( unsigned );
     static unsigned addIntegerConstant( int );
@@ -53,6 +52,7 @@ public:
     
     string getPredName() const { return Atom::getPredicateName(predIndex); }
     unsigned getIndex() const { return predIndex; }
+    unsigned getPredicateArity( unsigned ) { return arity; }
     vector<Term*> getTerms() const { return terms; }
     bool isTrueNegated() const { return trueNegated; } 
     bool isPropositional() const { return (terms.size() == 0); }
@@ -62,11 +62,11 @@ private:
     friend inline ostream& operator<< ( ostream&, const Atom& );
     
     static vector<string> predicateNames;
-    static vector<unsigned> arities;
     static vector<string> stringConstants;
     static vector<int> integerConstants;
     
     unsigned predIndex;
+    unsigned arity;
     bool trueNegated;
     vector<Term*> terms;
     vector<Variable> existentialVars;

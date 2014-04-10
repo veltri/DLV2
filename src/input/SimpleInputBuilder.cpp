@@ -315,6 +315,8 @@ SimpleInputBuilder::onFunction(
     for( unsigned i=termStack.size()-nTerms; i<termStack.size(); i++ )
     {
         ss << termStack[i]->toString();
+        if( i < termStack.size()-1 )
+            ss << ",";
         // Before popping #nTerms pointers from the stack
         // delete the pointed terms.
         delete termStack[i];

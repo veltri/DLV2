@@ -21,17 +21,17 @@
 #include "../util/Assert.h"
 
 vector<string> Atom::predicateNames;
-vector<unsigned> Atom::arities;
 vector<string> Atom::stringConstants;
 vector<int> Atom::integerConstants;
 
 // Classical atoms' constructor
 Atom::Atom(  
     string name, 
-    unsigned arity, 
+    unsigned arit, 
     vector<Term*> termsList,
     bool tNeg ):
-        predIndex(Atom::addPredicateName(name,arity)),
+        predIndex(Atom::addPredicateName(name)),
+        arity(arit),
         trueNegated(tNeg),
         terms(termsList),
         isBuiltin(false),
@@ -45,10 +45,11 @@ Atom::Atom(
 // Existential atoms' constructor
 Atom::Atom( 
     string name, 
-    unsigned arity, 
+    unsigned arit, 
     vector<Term*> termsList, 
     vector<Variable> existVars ):
-        predIndex(Atom::addPredicateName(name,arity)),
+        predIndex(Atom::addPredicateName(name)),
+        arity(arit),
         trueNegated(false),
         terms(termsList),
         existentialVars(existVars),
@@ -90,8 +91,7 @@ Atom::Atom(
 
 unsigned 
 Atom::addPredicateName( 
-    string name,
-    unsigned arity )
+    string name )
 {
     bool found = false;
     unsigned index;
@@ -104,19 +104,10 @@ Atom::addPredicateName(
     if( !found )
     {
         Atom::predicateNames.push_back(name);
-        Atom::arities.push_back(arity);
         return Atom::predicateNames.size()-1;
     }
     else 
-    {
-        if( Atom::arities[index] != arity )
-            cout << name << ": first used with arity " 
-                    << arities[index]
-                    << ", now seen with arity " 
-                    << arity
-                    << "." << endl;
         return index;
-    }
 }
 
 string 
@@ -126,15 +117,6 @@ Atom::getPredicateName(
     assert_msg( (index >= 0 && index < Atom::predicateNames.size()),
             "The index " << index << " is not valid." );
     return Atom::predicateNames[index];
-}
-
-unsigned 
-Atom::getPredicateArity( 
-    unsigned index )
-{
-    assert_msg( (index >= 0 && index < Atom::predicateNames.size()),
-            "The index " << index << " is not valid." );
-    return Atom::arities[index];
 }
 
 unsigned 
