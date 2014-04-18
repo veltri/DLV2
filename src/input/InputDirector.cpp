@@ -74,7 +74,8 @@ InputDirector::InputDirector():
     parserLine(0),
     parserFile(NULL),
     parserErrors(0),
-    ParserStateInternal(true)   
+    ParserStateInternal(true),
+    builder(NULL)
 {
     
 }

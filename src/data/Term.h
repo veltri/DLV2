@@ -37,7 +37,7 @@ public:
     
     Term( unsigned i ): index(i) { }
     Term( const Term& t ): index(t.index) { }
-    ~Term() { }
+    virtual ~Term() { }
     
     virtual Type getType() = 0;
     virtual string toString() const = 0;

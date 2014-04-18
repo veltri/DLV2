@@ -102,3 +102,8 @@ DLV2Facade::free()
 {
    InputDirector::free();
 }
+
+DLV2Facade::~DLV2Facade()
+{
+    if(builder != NULL) delete builder;
+}

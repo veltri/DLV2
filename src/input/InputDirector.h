@@ -63,8 +63,8 @@ private:
 
     InputDirector();
     InputDirector(const InputDirector&):
-    	builder(0), parserErrors(0), parserFile(0), parserLine(0),
-    	ParserStateInternal(false)
+    	parserLine(0),  parserFile(0), parserErrors(0),
+    	ParserStateInternal(false),builder(0)
     		{ assert(0); }
     
     int parserLine;

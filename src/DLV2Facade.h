@@ -21,7 +21,7 @@ class InputBuilder;
 class DLV2Facade {
 public:
     DLV2Facade() : options(*dlv2::Options::globalOptions()), builder(NULL) { }
-    ~DLV2Facade() { if(builder == NULL) delete builder; }
+    ~DLV2Facade();
     
     void greetings();
     void readInput();
