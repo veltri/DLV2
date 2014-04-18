@@ -54,7 +54,10 @@ private:
     static InputDirector* instance;
 
     InputDirector();
-    InputDirector(const InputDirector&) { assert(0); }
+    InputDirector(const InputDirector&):
+    	builder(0), parserErrors(0), parserFile(0), parserLine(0),
+    	ParserStateInternal(false)
+    		{ assert(0); }
     virtual ~InputDirector();
     
     int parserLine;
