@@ -35,7 +35,7 @@
 class SimpleInputBuilder : public InputBuilder {
 public:
     SimpleInputBuilder();
-    ~SimpleInputBuilder();
+    virtual ~SimpleInputBuilder();
     
     virtual void onRule();
     virtual void onConstraint();

@@ -26,18 +26,14 @@
 #include "../data/StringConstant.h"
 #include "../data/IntegerConstant.h"
 
-SimpleInputBuilder::SimpleInputBuilder(): 
-        InputBuilder()
+SimpleInputBuilder::SimpleInputBuilder() :
+    program(new Program()), currentLiteral(NULL),
+    currentAtom(NULL), varCounter(0), query(NULL),
+    nTermsForWeight(0), nTermsForLevel(0), nTermsAfterLevel(0),
+    lowerGuard(NULL), upperGuard(NULL),
+    currentChoiceElement(NULL),currentChoiceAtom(NULL)
+
 { 
-    program = new Program(); 
-    currentLiteral = NULL;
-    currentAtom = NULL;
-    varCounter = 0;
-    query = NULL;
-    lowerGuard = NULL;
-    upperGuard = NULL;
-    currentChoiceElement = NULL;
-    currentChoiceAtom = NULL;
 }
 
 SimpleInputBuilder::~SimpleInputBuilder()

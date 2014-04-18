@@ -30,7 +30,7 @@
 class InputBuilder {
 public:
     InputBuilder() { }
-    ~InputBuilder() { }
+    virtual ~InputBuilder() { }
     
     virtual void onRule() = 0;
     virtual void onConstraint() = 0;
