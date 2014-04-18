@@ -41,7 +41,7 @@ namespace dlv2
     class Options{
     public:
 
-        void parse( int argc, char* const* argv );
+        void init( int argc, char* const* argv );
 
         static Options* globalOptions() {
         	if( instance == NULL )
@@ -53,22 +53,11 @@ namespace dlv2
 
         bool isAspCore2Strict() const { return aspCore2Strict; }
 
-        void setAspCore2Strict(bool strict) { aspCore2Strict = strict;	}
-
-
         const vector<const char*>& getInputFiles() const { return inputFiles; }
-
-        void setInputFiles(const vector<const char*>& inFiles) { inputFiles = inFiles; }
-
 
         INPUT_BUILDER_POLICY inputBuilderPolicy() const { return inputPolicy; }
 
-        void setInputBuilderPolicy(INPUT_BUILDER_POLICY inPolicy) { inputPolicy = inPolicy; }
-
-
         OUTPUT_POLICY getOutputPolicy() const { return outputPolicy; }
-
-        void setOutputPolicy(OUTPUT_POLICY outPolicy) { outputPolicy = outPolicy; }
 
         ~Options() { if (instance != NULL) delete instance; }
 
@@ -84,6 +73,14 @@ namespace dlv2
         		    printProgram(o.printProgram),
                     inputPolicy( o.inputPolicy),
                     outputPolicy( o.outputPolicy) {}
+
+        void setOutputPolicy(OUTPUT_POLICY outPolicy) { outputPolicy = outPolicy; }
+
+        void setInputBuilderPolicy(INPUT_BUILDER_POLICY inPolicy) { inputPolicy = inPolicy; }
+
+        void setInputFiles(const vector<const char*>& inFiles) { inputFiles = inFiles; }
+
+        void setAspCore2Strict(bool strict) { aspCore2Strict = strict;	}
 
         vector< const char* > inputFiles;
 

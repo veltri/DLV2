@@ -14,7 +14,6 @@ DLV2Facade::greetings()
         cout << DLV2_STRING << endl;
 }
 
-
 void 
 DLV2Facade::readInput()
 {

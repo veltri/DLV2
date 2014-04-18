@@ -6,7 +6,7 @@ using namespace std;
 
 int main(int argc, char** argv)
 {  
-    dlv2::Options::globalOptions()->parse( argc, argv );
+    dlv2::Options::globalOptions()->init( argc, argv );
 
     DLV2Facade dlv2Facade;
 

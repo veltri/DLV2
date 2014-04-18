@@ -50,7 +50,7 @@ namespace dlv2{
 Options* Options::instance = NULL;
 
 void
-Options::parse(
+Options::init(
     int argc,
     char* const* argv )
 {
