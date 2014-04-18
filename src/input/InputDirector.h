@@ -32,11 +32,18 @@
 
 #include <vector>
 
+// TODO: why should this be a singleton?
+
 class InputDirector {
 public:
-    static InputDirector& getInstance();
+
+    ~InputDirector();
+
     static void free();
-    
+
+    static InputDirector& getInstance();
+
+
     void configureBuilder( InputBuilder* );
     InputBuilder* getBuilder() { return builder; }
     
@@ -50,6 +57,7 @@ public:
     int onError(const char* msg);
     void onNewLine() { parserLine++; }
     
+
 private:
     static InputDirector* instance;
 
@@ -58,7 +66,6 @@ private:
     	builder(0), parserErrors(0), parserFile(0), parserLine(0),
     	ParserStateInternal(false)
     		{ assert(0); }
-    virtual ~InputDirector();
     
     int parserLine;
     const char* parserFile;

@@ -81,7 +81,6 @@ InputDirector::InputDirector():
 
 InputDirector::~InputDirector()
 {
-    
 }
 
 int

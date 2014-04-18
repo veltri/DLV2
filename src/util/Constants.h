@@ -28,9 +28,10 @@
 #define	CONSTANTS_H
 
 // Input builder constants
-#define INPUT_MOCK_OBJECTS 0
-#define INPUT_DLV_DB 1
-#define INPUT_IN_MEMORY 2
+#define BUILDER_MOCK_OBJECTS 0
+#define BUILDER_DLV_DB 1
+#define BUILDER_IN_MEMORY 2
+#define BUILDER_SELECTOR 3
 
 // Output builder constants
 #define OUTPUT_ASPCORE2 0
@@ -46,7 +47,7 @@
 #define ERRORGENERICCODE 110
 
 // New types
-typedef unsigned int INPUT_HANDLING_POLICY;
+typedef unsigned int INPUT_BUILDER_POLICY;
 typedef unsigned int OUTPUT_POLICY;
 
 #endif	/* CONSTANTS_H */

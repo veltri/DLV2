@@ -39,20 +39,62 @@ namespace dlv2
 
     class Options{
     public:
-        static void parse( int argc, char* const* argv );
-        static void setOptions( DLV2Facade& dlv2Facade );
+
+        void parse( int argc, char* const* argv );
+
+        static Options* globalOptions() {
+        	if( instance == NULL )
+        	{
+        		instance = new Options();
+        	}
+        	return instance;
+        }
+
+        bool isAspCore2Strict() const { return aspCore2Strict; }
+
+        void setAspCore2Strict(bool strict) { aspCore2Strict = strict;	}
+
+
+        const vector<const char*>& getInputFiles() const { return inputFiles; }
+
+        void setInputFiles(const vector<const char*>& inFiles) { inputFiles = inFiles; }
+
+
+        INPUT_BUILDER_POLICY inputBuilderPolicy() const { return inputPolicy; }
+
+        void setInputBuilderPolicy(INPUT_BUILDER_POLICY inPolicy) { inputPolicy = inPolicy; }
+
+
+        OUTPUT_POLICY getOutputPolicy() const { return outputPolicy; }
+
+        void setOutputPolicy(OUTPUT_POLICY outPolicy) { outputPolicy = outPolicy; }
+
+        ~Options() { if (instance != NULL) delete instance; }
+
+    private:
+
+        static Options* instance;
+
+        Options() : aspCore2Strict(false), printProgram(false),
+                    inputPolicy( BUILDER_IN_MEMORY),
+                    outputPolicy( OUTPUT_ASPCORE2) {}
+
+        Options(const Options& o) : aspCore2Strict(o.aspCore2Strict),
+        		    printProgram(o.printProgram),
+                    inputPolicy( o.inputPolicy),
+                    outputPolicy( o.outputPolicy) {}
+
+        vector< const char* > inputFiles;
+
+        bool aspCore2Strict;
         
-    private:      
-        static bool aspCore2Strict;
+        bool printProgram;
         
-        static bool printProgram;
+        INPUT_BUILDER_POLICY inputPolicy;
         
-        static INPUT_HANDLING_POLICY inputPolicy;
+        OUTPUT_POLICY outputPolicy;
         
-        static OUTPUT_POLICY outputPolicy;
-        
-        static vector< const char* > inputFiles;
-    };
-};
+    }; // class
+}; // namespace
 
 #endif	/* OPTIONS_H */

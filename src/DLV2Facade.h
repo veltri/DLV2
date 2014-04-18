@@ -9,33 +9,44 @@
 #define	DLV2FACADE_H
 
 #include "util/Constants.h"
+#include "util/Options.h"
+
 #include <vector>
 using namespace std;
 
 class InputBuilder;
 
+// TODO: discuss the issue of options and facade methods
+
 class DLV2Facade {
 public:
-    DLV2Facade() : outputSilent(false), aspCore2Strict(false), printProgram(false) { }
-    ~DLV2Facade() { }
+    DLV2Facade() : options(*dlv2::Options::globalOptions()), builder(NULL) { }
+    ~DLV2Facade() { if(builder == NULL) delete builder; }
     
     void greetings();
     void readInput();
     void solve();
     void free();
     
-    void setAspCore2Strict( bool asp2 ) { aspCore2Strict = asp2; }
-    void setPrintProgram( bool pp ) { printProgram = pp; }
-    void setInputHandlingPolicy( INPUT_HANDLING_POLICY );
-    void setOutputPolicy( OUTPUT_POLICY );
-    void setInputFiles( vector<const char*> files ) { inputFiles = files; }
+    dlv2::Options& getOptions() { return options; }
+
+//    void setAspCore2Strict( bool asp2 ) { aspCore2Strict = asp2; }
+//    void setPrintProgram( bool pp ) { printProgram = pp; }
+//    void setInputHandlingPolicy( INPUT_HANDLING_POLICY );
+//    void setOutputPolicy( OUTPUT_POLICY );
+//    void setInputFiles( vector<const char*> files ) { inputFiles = files; }
     
 private:
 
-    bool outputSilent;
+    dlv2::Options& options;
+
+    InputBuilder* builder;
+
+/*    bool outputSilent;
     bool aspCore2Strict;
     bool printProgram;
     vector<const char*> inputFiles;
+    */
 };
 
 #endif	/* DLV2FACADE_H */

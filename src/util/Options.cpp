@@ -41,20 +41,13 @@ namespace dlv2{
 /* OUTPUT OPTIONS */
 #define OPTIONID_silent ( 'z' + 10 )
 #define OPTIONID_printprogram ( 'z' + 11 )
+#define OPTIONID_selector ( 'z' + 12 )
     
 /* GENERIC OPTIONS */
 #define OPTIONID_stdin ( 'z' + 20 )
 
-// Initialize static fields.
-bool Options::aspCore2Strict = false;    
-    
-bool Options::printProgram = false;
-
-INPUT_HANDLING_POLICY Options::inputPolicy = INPUT_IN_MEMORY;
-
-OUTPUT_POLICY Options::outputPolicy = OUTPUT_ASPCORE2;
-
-vector< const char* > Options::inputFiles;
+// Initialize singleton
+Options* Options::instance = NULL;
 
 void
 Options::parse(
@@ -78,6 +71,7 @@ Options::parse(
         /* OUTPUT OPTIONS */
         { "silent", no_argument, NULL, OPTIONID_silent },
         { "printprogram", no_argument, NULL, OPTIONID_printprogram },
+        { "selector", no_argument, NULL, OPTIONID_selector },
 
         /* GENERIC OPTIONS */
         { "help", no_argument, NULL, OPTIONID_help },
@@ -103,11 +97,11 @@ Options::parse(
                 break;
             
             case OPTIONID_inmemory:
-                inputPolicy = INPUT_IN_MEMORY;
+                inputPolicy = BUILDER_IN_MEMORY;
                 break;
                 
             case OPTIONID_dlvdb:     
-                inputPolicy = INPUT_DLV_DB;
+                inputPolicy = BUILDER_DLV_DB;
                 break;
                 
             case OPTIONID_silent:
@@ -115,10 +109,15 @@ Options::parse(
                 break;
                 
             case OPTIONID_printprogram:
-                inputPolicy = INPUT_MOCK_OBJECTS;
+                inputPolicy = BUILDER_MOCK_OBJECTS;
                 printProgram = true;
                 break;
                 
+            case OPTIONID_selector:
+                inputPolicy = BUILDER_SELECTOR;
+                printProgram = true;
+                break;
+
             case OPTIONID_help:
                 Help::printHelp(argv[0]);
                 exit(0);
@@ -139,17 +138,6 @@ Options::parse(
     {
         inputFiles.push_back( argv[ i ] );
     }
-}
-
-void
-Options::setOptions(
-    DLV2Facade& dlv2Facade )
-{
-    dlv2Facade.setAspCore2Strict( aspCore2Strict );
-    dlv2Facade.setPrintProgram( printProgram );
-    dlv2Facade.setInputHandlingPolicy( inputPolicy );
-    dlv2Facade.setOutputPolicy( outputPolicy );
-    dlv2Facade.setInputFiles( inputFiles );
 }
 
 };

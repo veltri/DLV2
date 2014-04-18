@@ -1,14 +1,16 @@
 #include "DLV2Facade.h"
 #include "util/Assert.h"
 #include "util/ErrorMessage.h"
+#include "util/Options.h"
 #include "input/InputDirector.h"
 #include "input/SimpleInputBuilder.h"
+#include "input/SelectorBuilder.h"
 
 void
 DLV2Facade::greetings()
 {
     // FIXME
-    if( !outputSilent )
+    if( !getOptions().getOutputPolicy() == OUTPUT_SILENT )
         cout << DLV2_STRING << endl;
 }
 
@@ -16,67 +18,87 @@ DLV2Facade::greetings()
 void 
 DLV2Facade::readInput()
 {
-    assert_msg( InputDirector::getInstance().getBuilder() != NULL, 
+	switch( getOptions().inputBuilderPolicy() )
+	{
+
+	case BUILDER_SELECTOR:
+		builder = new SelectorBuilder();
+        break;
+
+	case BUILDER_MOCK_OBJECTS:
+		builder = new SimpleInputBuilder();
+        break;
+
+    case BUILDER_DLV_DB:
+        // TODO
+        ErrorMessage::errorGeneric( "--dlv-db: Not supported yet! Bye." );
+        break;
+
+    case BUILDER_IN_MEMORY:
+    	// TODO
+        ErrorMessage::errorGeneric( "--inmemory: Not supported yet! Bye." );
+        break;
+
+	default:
+		ErrorMessage::errorGeneric( "WARNING: No such builder available!" );
+	}
+
+    assert_msg( InputDirector::getInstance().getBuilder() == NULL,
             "Null input-builder, cannot start the parsing process.");
-    InputDirector::getInstance().parse(inputFiles);
+
+	InputDirector::getInstance().configureBuilder(builder);
+    InputDirector::getInstance().parse(getOptions().getInputFiles());
 }
 
 void
 DLV2Facade::solve()
 {
-    // FIXME
-    if( printProgram )
-    {
-        assert_msg( InputDirector::getInstance().getBuilder() != NULL, 
-                "Null input-builder, cannot start the solving process." );
-        SimpleInputBuilder* simpleBuilder = 
-                (SimpleInputBuilder*)InputDirector::getInstance().getBuilder();
+	// FIXME: this switch should be done differently else.
+
+	switch( getOptions().inputBuilderPolicy() )
+	{
+
+	case BUILDER_SELECTOR:
+	{
+		SelectorBuilder* selectorBuilder = static_cast<SelectorBuilder*>(builder);
+
+		int ecode = selectorBuilder->getSolverToCall();
+        delete selectorBuilder;
+        free();
+
+        exit(ecode);
+
+	}
+        break;
+
+	case BUILDER_MOCK_OBJECTS:
+	{
+		SimpleInputBuilder* simpleBuilder = static_cast<SimpleInputBuilder*>(builder);
         cout << simpleBuilder->getProgram();
         if( simpleBuilder->getQuery() )
             cout << *(simpleBuilder->getQuery()) << "?" << endl;
-    }
-    else
-        // TODO 
+        delete simpleBuilder;
+	}
+        break;
+
+    case BUILDER_DLV_DB:
+        // TODO
         ErrorMessage::errorGeneric( "No solver available! Bye" );
+        break;
+
+    case BUILDER_IN_MEMORY:
+    	// TODO
+        ErrorMessage::errorGeneric( "No solver available! Bye" );
+        break;
+
+	default:
+		ErrorMessage::errorGeneric( "No solver available! Bye" );
+	}
+
 }
 
 void
 DLV2Facade::free()
 {
-    if( InputDirector::getInstance().getBuilder() )
-        delete InputDirector::getInstance().getBuilder();
-    InputDirector::free();
-}
-
-void 
-DLV2Facade::setInputHandlingPolicy( 
-    INPUT_HANDLING_POLICY inputPolicy )
-{
-    switch( inputPolicy )
-    {
-        case INPUT_MOCK_OBJECTS:
-            InputDirector::getInstance().configureBuilder(new SimpleInputBuilder());
-            break;
-        case INPUT_DLV_DB:
-            // TODO
-            ErrorMessage::errorGeneric( "--dlv-db: Not supported yet! Bye." );
-            break;
-        case INPUT_IN_MEMORY:
-            // TODO
-            ErrorMessage::errorGeneric( "--inmemory: Not supported yet! Bye." );
-            break;
-    }
-}
-
-void 
-DLV2Facade::setOutputPolicy( 
-    OUTPUT_POLICY outputPolicy )
-{ 
-    // FIXME
-    switch( outputPolicy )
-    {
-        case OUTPUT_SILENT:
-            outputSilent = true;
-            break;
-    }
+   InputDirector::free();
 }
