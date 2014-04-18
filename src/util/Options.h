@@ -28,6 +28,7 @@
 #define	OPTIONS_H
 
 #include <vector>
+#include <stddef.h>
 
 #include "Constants.h"
 using namespace std; 
