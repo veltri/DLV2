@@ -84,7 +84,7 @@ SelectorBuilder::onRule()
 		{
 			unsigned from = addPredicateInHash(it->predname);
 			unsigned to = addPredicateInHash(*ith);
-			if(it->sign == 0)
+			if(it->sign == 0 && from != to)
 				addArc(from,to);
 		}
 	}
