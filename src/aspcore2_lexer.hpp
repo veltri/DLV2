@@ -631,6 +631,7 @@ static int input (void );
 			buf[n] = (char) c; \
 		if ( c == '\n' ) \
 			buf[n++] = (char) c; \
+		if (c != EOF) cout << buf; \
 		if ( c == EOF && ferror( yyin ) ) \
 			YY_FATAL_ERROR( "input in flex scanner failed" ); \
 		result = n; \
@@ -648,6 +649,7 @@ static int input (void );
 			errno=0; \
 			clearerr(yyin); \
 			} \
+			if(result > 0) cout << buf; \
 		}\
 \
 
