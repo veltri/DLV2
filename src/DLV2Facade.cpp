@@ -5,6 +5,14 @@
 #include "input/InputDirector.h"
 #include "input/SimpleInputBuilder.h"
 #include "input/SelectorBuilder.h"
+#include "input/Buffer.h"
+
+extern Buffer theBuffer;
+
+#include <fstream>
+#include <sstream>
+using namespace std;
+
 
 void
 DLV2Facade::greetings()
@@ -61,23 +69,37 @@ DLV2Facade::solve()
 	{
 		SelectorBuilder* selectorBuilder = static_cast<SelectorBuilder*>(builder);
 
+
 		int ecode = selectorBuilder->getSolverToCall();
 
-		/*if(ecode == 0)
+		if(ecode == 0)
 		{
-			cerr << "WASP" << endl;
-			system("cat - < /tmp/wasppipe");
+			//cerr << "WASP" << endl;
+			cout<<"0"<<endl;
+
 		}
 		else{
-			cerr << "DLV" << endl;
-			system("cat - < /tmp/wasppipe");
-		}*/
+			//cerr << "DLV" << endl;
+			cout<<"1"<<endl;
+			//system("cat - < /tmp/wasppipe");
+		}
+		cout.flush();
 
+		ostringstream s;
+		s << "/tmp/wasppipe_" << getOptions().getNamedpipe();
+
+		fstream o(s.str(), std::ios::out);
+
+		//cerr << "scrivo" << endl;
+		theBuffer.flushOn(o);
+		o.flush();
+		//cerr << "finito" << endl;
+		o.close();
 
         delete selectorBuilder;
-        free();
+        //free();
 
-        exit(ecode);
+        //exit(ecode);
 
 	}
         break;

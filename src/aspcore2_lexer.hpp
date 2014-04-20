@@ -21,6 +21,9 @@
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
+#include "input/Buffer.h"
+
+Buffer theBuffer;
 
 /* end standard C headers. */
 
@@ -631,7 +634,7 @@ static int input (void );
 			buf[n] = (char) c; \
 		if ( c == '\n' ) \
 			buf[n++] = (char) c; \
-		if (c != EOF) cout << buf; \
+		if (c != EOF) theBuffer.addBlock(buf,n); \
 		if ( c == EOF && ferror( yyin ) ) \
 			YY_FATAL_ERROR( "input in flex scanner failed" ); \
 		result = n; \
@@ -649,7 +652,7 @@ static int input (void );
 			errno=0; \
 			clearerr(yyin); \
 			} \
-			if(result > 0) cout << buf; \
+			if(result > 0) theBuffer.addBlock(buf,result); \
 		}\
 \
 

@@ -1,0 +1,20 @@
+#!/bin/bash
+
+set -o pipefail
+
+PIPE=$1
+MAXINT=$2
+MAX_NESTING_LEVEL=$3
+OUTP="$4"
+SCRIPTDIR=`dirname $0`
+
+read line
+if [ $line -eq 0 ]; then
+  #"Gringo+WASP2"
+  $SCRIPTDIR/runWasp2 $MAXINT $MAX_NESTING_LEVEL $OUTP  < $PIPE
+else
+  #"DLV+WASP1"
+  $SCRIPTDIR/runWasp1 $MAXINT $MAX_NESTING_LEVEL $OUTP  < $PIPE
+fi
+
+rm $PIPE

@@ -59,6 +59,8 @@ namespace dlv2
 
         OUTPUT_POLICY getOutputPolicy() const { return outputPolicy; }
 
+        unsigned getNamedpipe() const { return namedpipe; }
+
         ~Options() { if (instance != NULL) delete instance; }
 
     private:
@@ -67,12 +69,12 @@ namespace dlv2
 
         Options() : aspCore2Strict(false), printProgram(false),
                     inputPolicy( BUILDER_IN_MEMORY),
-                    outputPolicy( OUTPUT_ASPCORE2) {}
+                    outputPolicy( OUTPUT_ASPCORE2), namedpipe(0) {}
 
         Options(const Options& o) : aspCore2Strict(o.aspCore2Strict),
         		    printProgram(o.printProgram),
                     inputPolicy( o.inputPolicy),
-                    outputPolicy( o.outputPolicy) {}
+                    outputPolicy( o.outputPolicy), namedpipe(o.namedpipe) {}
 
         void setOutputPolicy(OUTPUT_POLICY outPolicy) { outputPolicy = outPolicy; }
 
@@ -88,6 +90,8 @@ namespace dlv2
         
         bool printProgram;
         
+        unsigned namedpipe;
+
         INPUT_BUILDER_POLICY inputPolicy;
         
         OUTPUT_POLICY outputPolicy;

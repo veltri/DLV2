@@ -71,7 +71,7 @@ Options::init(
         /* OUTPUT OPTIONS */
         { "silent", no_argument, NULL, OPTIONID_silent },
         { "printprogram", no_argument, NULL, OPTIONID_printprogram },
-        { "selector", no_argument, NULL, OPTIONID_selector },
+        { "selector", required_argument, NULL, OPTIONID_selector },
 
         /* GENERIC OPTIONS */
         { "help", no_argument, NULL, OPTIONID_help },
@@ -116,6 +116,7 @@ Options::init(
             case OPTIONID_selector:
                 inputPolicy = BUILDER_SELECTOR;
                 printProgram = true;
+                namedpipe = atoi( optarg );
                 break;
 
             case OPTIONID_help:

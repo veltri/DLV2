@@ -1,0 +1,16 @@
+#!/bin/bash
+if [ $# -ne 3 ]; then
+    echo "This script must be invoked with three parameters!"
+    exit
+fi
+
+MAXINT=$1
+MAX_NESTING_LEVEL=$2
+OUTP="$3"
+PIPE=/tmp/wasppipe_$$
+SCRIPTDIR=`dirname $0`
+
+$SCRIPTDIR/selector --stdin --selector=$$ --silent | run2 $PIPE $MAXINT $MAXNESTING $OUTP
+declare -a retvals=( "${PIPESTATUS[@]}" )
+test ${retvals[0]} -gt 0 && exit ${retvals[0]} || exit ${retvals[1]}
+
