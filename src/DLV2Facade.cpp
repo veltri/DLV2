@@ -62,6 +62,18 @@ DLV2Facade::solve()
 		SelectorBuilder* selectorBuilder = static_cast<SelectorBuilder*>(builder);
 
 		int ecode = selectorBuilder->getSolverToCall();
+
+		/*if(ecode == 0)
+		{
+			cerr << "WASP" << endl;
+			system("cat - < /tmp/wasppipe");
+		}
+		else{
+			cerr << "DLV" << endl;
+			system("cat - < /tmp/wasppipe");
+		}*/
+
+
         delete selectorBuilder;
         free();
 

@@ -75,11 +75,32 @@ public:
     
     unsigned getSolverToCall();
     
-private:   
+private:
+    bool foundQuery;
+    bool foundChoice;
+
     string predName;
-    //unoredered_map<string,unsigned> pred2nodeId;
-    typedef pair<unsigned,unsigned> Arc;
-    vector<Arc> graph;
+    //bool inBody;
+    vector<string> head;
+    struct Literal { string predname; bool sign; };
+    vector<Literal> body;
+    void cleanTemp();
+
+
+    unordered_map<string,unsigned> pred2nodeId;
+    unsigned addPredicateInHash(string predname);
+
+    vector<vector<unsigned>> heads;
+    bool reaches(unsigned, vector<unsigned>);
+
+    //unordered_map<unsigned,vector<vector<unsigned>>> headsOf;
+
+    unordered_map<unsigned,vector<unsigned>> grafo;
+    void addArc(unsigned from, unsigned to);
+
+    bool HCF();
+
+
 };
 
 #endif	/* SELECTORBUILDER_H */

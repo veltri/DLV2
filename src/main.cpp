@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include "DLV2Facade.h"
 #include "util/Options.h"
 
@@ -12,9 +13,11 @@ int main(int argc, char** argv)
 
     dlv2Facade.greetings();
     dlv2Facade.readInput();
+
     dlv2Facade.solve();
     // FIXME
     dlv2Facade.free();
+
     /*InputBuilder* builder = new SimpleInputBuilder();
     InputDirector::getInstance().configureBuilder(builder);
     InputDirector::getInstance().parse(argc,argv);
