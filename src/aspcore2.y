@@ -39,7 +39,7 @@ This file is part of the ASPCOMP2013 ASP-Core-2 validator (validator in the foll
 
 %token ERROR NEWLINE   
 
-%token DOT SEMICOLON COLON CONS QUERY_MARK
+%token DOT DDOT SEMICOLON COLON CONS QUERY_MARK
 
 %token PLUS TIMES SLASH
 
@@ -330,13 +330,19 @@ arithop
     | SLASH { $$ = '/'; }
     ;      
 
+ddt
+    : 
+    |
+    DDOT NUMBER
+    ;
+    
 term_ 
     : identifier 
         { 
             InputDirector::getInstance().getBuilder()->onTerm($1); 
             delete $1;
         }
-    | NUMBER 
+    | NUMBER ddt 
         { 
             InputDirector::getInstance().getBuilder()->onTerm($1); 
             delete $1;

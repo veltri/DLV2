@@ -53,6 +53,7 @@ NUMBER         		([0-9]+)
 {NEWLINE}	{ InputDirector::getInstance().onNewLine();    }
 
 "."			{ return DOT;		}
+".."		{ return DDOT;		}
 
 ","			{ return COMMA;		}
 "_"			{ return ANON_VAR; }
