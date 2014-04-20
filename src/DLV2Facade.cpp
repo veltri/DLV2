@@ -14,7 +14,7 @@ DLV2Facade::greetings()
         cout << DLV2_STRING << endl;
 }
 
-void 
+int
 DLV2Facade::readInput()
 {
 	switch( getOptions().inputBuilderPolicy() )
@@ -46,7 +46,7 @@ DLV2Facade::readInput()
             "Null input-builder, cannot start the parsing process.");
 
 	InputDirector::getInstance().configureBuilder(builder);
-    InputDirector::getInstance().parse(getOptions().getInputFiles());
+    return InputDirector::getInstance().parse(getOptions().getInputFiles());
 }
 
 void
@@ -116,5 +116,4 @@ DLV2Facade::free()
 
 DLV2Facade::~DLV2Facade()
 {
-    if(builder != NULL) delete builder;
 }

@@ -563,7 +563,7 @@ YY_MALLOC_DECL
 			if(result > 0) cout << buf; \
 		}
 #endif
-
+//if(result > 0) cout << buf;
 /* No semi-colon after return; correct usage is to write "yyterminate();" -
  * we don't want an extra ';' after the "return" because that will cause
  * some compilers to complain about unreachable statements.

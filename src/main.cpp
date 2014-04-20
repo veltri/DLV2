@@ -12,9 +12,12 @@ int main(int argc, char** argv)
     DLV2Facade dlv2Facade;
 
     dlv2Facade.greetings();
-    dlv2Facade.readInput();
-
-    dlv2Facade.solve();
+    int parserExit = dlv2Facade.readInput();
+    //cout << parserExit << endl;
+    if(parserExit == 0)
+    {
+    	dlv2Facade.solve();
+    }
     // FIXME
     dlv2Facade.free();
 
@@ -30,5 +33,5 @@ int main(int argc, char** argv)
     InputDirector::free();
     delete builder;*/
         
-    return 0;
+    return parserExit;
 }

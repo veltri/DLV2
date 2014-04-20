@@ -24,7 +24,7 @@ public:
     ~DLV2Facade();
     
     void greetings();
-    void readInput();
+    int readInput();
     void solve();
     void free();
     
