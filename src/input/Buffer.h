@@ -7,6 +7,7 @@
 
 #include<vector>
 #include<ostream>
+#include<cstring>
 
 using namespace std;
 

@@ -90,12 +90,12 @@ namespace dlv2
         
         bool printProgram;
         
-        unsigned namedpipe;
-
         INPUT_BUILDER_POLICY inputPolicy;
         
         OUTPUT_POLICY outputPolicy;
         
+        unsigned namedpipe;
+
     }; // class
 }; // namespace
 
