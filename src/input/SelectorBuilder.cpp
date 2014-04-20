@@ -19,6 +19,7 @@
 
 #include <cstring>
 #include <cstdlib>
+#include <algorithm>
 #include "SelectorBuilder.h"
 #include "../util/Assert.h"
 
@@ -93,7 +94,6 @@ SelectorBuilder::onRule()
 	/*
 	for(vector<unsigned>::iterator it = headInt.begin(); it != headInt.end(); ++it)
 		cout << "HH"<< *it << endl;
-	/*
 	for(vector<unsigned>::iterator it = headInt.begin(); it != headInt.end(); ++it)
 	{
 		vector<vector<unsigned>>& heads = headsOf[*it];
@@ -327,7 +327,7 @@ SelectorBuilder::reaches(unsigned start, vector<unsigned> goal)
 		daVisitare.pop_back();
 
 		vector<unsigned> figli = grafo[v];
-		for(int i = 0; i < figli.size(); i++)
+		for(unsigned i = 0; i < figli.size(); i++)
 		{
 			if(std::find(goal.begin(), goal.end(), figli[i]) != goal.end())
 				return true;
