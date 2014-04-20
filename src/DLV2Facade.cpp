@@ -69,6 +69,9 @@ DLV2Facade::solve()
 	{
 		SelectorBuilder* selectorBuilder = static_cast<SelectorBuilder*>(builder);
 
+		ostringstream s1;
+		s1 << "mkfifo /tmp/wasppipe_" << getOptions().getNamedpipe();
+        system(s1.str().c_str());
 
 		int ecode = selectorBuilder->getSolverToCall();
 
