@@ -14,7 +14,7 @@ Buffer::Buffer() : blocks(20), lastBlockSize(0){
 }
 
 void Buffer::addBlock(char* b, int size) {
-        lastBlockSize = size;
+    lastBlockSize = size;
 	char* bc = new char[size];
 	memcpy(bc,b,size*sizeof(char));
 	blocks.push_back(bc); 
@@ -24,7 +24,7 @@ void Buffer::lastBlock()
   if(blocks.size())
   {
     blocks.back()[lastBlockSize] = '\0';
-    blocks.back()[--lastBlockSize] = '\0';
+    //blocks.back()[--lastBlockSize] = '\0';
   }
 }
 
