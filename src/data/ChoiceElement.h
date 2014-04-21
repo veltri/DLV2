@@ -32,7 +32,7 @@
 
 class ChoiceElement {
 public:
-    ChoiceElement( Atom a, vector<Literal> lits ): at(a), literals(lits) { }
+    ChoiceElement( const Atom& a, vector<Literal> lits ): at(a), literals(lits) { }
     ChoiceElement( const ChoiceElement& ce ): at(ce.at), literals(ce.literals) { }
     ~ChoiceElement() { }
     

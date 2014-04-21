@@ -343,11 +343,8 @@ term_
         }
     | ANON_VAR 
         { 
-            char* anonVar = new char[2];
-            strcpy(anonVar,"_");
-            anonVar[1] = '\0';
-            InputDirector::getInstance().getBuilder()->onTerm(anonVar); 
-            delete anonVar;
+            InputDirector::getInstance().getBuilder()->onTerm($1); 
+            delete $1;
         }
     | identifier PARAM_OPEN terms PARAM_CLOSE 
         { 
@@ -407,11 +404,8 @@ variable_term
         }
     | ANON_VAR
         {
-            char* av = new char[2];
-            strcpy(av,"_");
-            av[1] = '\0';
-            InputDirector::getInstance().getBuilder()->onAggregateVariableTerm(av);
-            delete av;
+            InputDirector::getInstance().getBuilder()->onAggregateVariableTerm($1);
+            delete $1;
         }
     ;
 
@@ -550,34 +544,22 @@ aggregate_element
 aggregate_function  
     : AGGR_COUNT 
         {
-            char* f = new char[6];
-            strcpy(f,"count");
-            f[5] = '\0';
-            InputDirector::getInstance().getBuilder()->onAggregateFunction(f);
-            delete f;
+            InputDirector::getInstance().getBuilder()->onAggregateFunction($1);
+            delete $1;
         }
     | AGGR_MAX
         {
-            char* f = new char[4];
-            strcpy(f,"max");
-            f[5] = '\0';
-            InputDirector::getInstance().getBuilder()->onAggregateFunction(f);
-            delete f;
+            InputDirector::getInstance().getBuilder()->onAggregateFunction($1);
+            delete $1;
         }
     | AGGR_MIN
         {
-            char* f = new char[4];
-            strcpy(f,"min");
-            f[5] = '\0';
-            InputDirector::getInstance().getBuilder()->onAggregateFunction(f);
-            delete f;
+            InputDirector::getInstance().getBuilder()->onAggregateFunction($1);
+            delete $1;
         }
     | AGGR_SUM
         {
-            char* f = new char[4];
-            strcpy(f,"sum");
-            f[5] = '\0';
-            InputDirector::getInstance().getBuilder()->onAggregateFunction(f);
-            delete f;
+            InputDirector::getInstance().getBuilder()->onAggregateFunction($1);
+            delete $1;
         }
     ;   

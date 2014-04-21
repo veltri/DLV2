@@ -34,7 +34,7 @@ class ChoiceAtom {
 public:
     ChoiceAtom( Term*, string, vector<ChoiceElement>, string, Term* );
     ChoiceAtom( const ChoiceAtom& );
-    ~ChoiceAtom() { }
+    ~ChoiceAtom();
 private:
     friend inline ostream& operator<< ( ostream&, const ChoiceAtom& );
     
@@ -48,7 +48,7 @@ private:
 inline ostream& operator<< ( ostream& out, const ChoiceAtom& ca )
 {
     if( ca.lowerGuard )
-        out << ca.lowerGuard->toString() << ca.lowerBinop;
+        out << *(ca.lowerGuard) << ca.lowerBinop;
     out << "{";
     for( unsigned i=0; i<ca.choices.size(); i++ )
     {
@@ -58,7 +58,7 @@ inline ostream& operator<< ( ostream& out, const ChoiceAtom& ca )
     }
     out << "}";
     if( ca.upperGuard )
-        out << ca.upperBinop << ca.upperGuard->toString();
+        out << ca.upperBinop << *(ca.upperGuard);
     return out;
 }
 

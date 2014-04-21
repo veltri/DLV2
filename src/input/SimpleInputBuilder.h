@@ -73,7 +73,7 @@ public:
     // Not derived methods
     Program& getProgram();
     Atom* getQuery();
-    void newTerm( char*, vector<Term*>&, bool dash = false ); 
+    void newTerm( char*, vector<Term>&, bool dash = false ); 
       
     bool isNumeric( const char*, int );
     
@@ -84,9 +84,8 @@ private:
     Literal* currentLiteral;
     Atom* currentAtom;
     string predName;
-    vector<Term*> termStack; 
-    vector<Term*> allTerms;
-    vector<Variable> existVars;
+    vector<Term> termStack; 
+    vector<Term> existVars;
     struct VariableIndex {
         string varName;
         unsigned varIndex;
@@ -105,7 +104,7 @@ private:
     vector<ChoiceElement> choiceElements;
     ChoiceAtom* currentChoiceAtom;
     string aggregateFunction;
-    vector<Term*> aggregateElementTerms;
+    vector<Term> aggregateElementTerms;
     vector<Literal> aggregateElementLiterals;
     vector<AggregateElement> aggregateElements;
 };

@@ -32,9 +32,9 @@
 
 class WeakConstraint {
 public:
-    WeakConstraint( vector<Literal> b, Term* w, Term* l, vector<Term*> t );
+    WeakConstraint( vector<Literal> b, Term* w, Term* l, vector<Term> t );
     WeakConstraint( const WeakConstraint& wc );
-    ~WeakConstraint() { }
+    ~WeakConstraint();
     
     void addToBody( const Literal& l ) { body.push_back(l); }
     
@@ -44,7 +44,7 @@ private:
     vector<Literal> body;
     Term* weight;
     Term* level;
-    vector<Term*> terms;
+    vector<Term> terms;
 };
 
 ostream& 
@@ -65,14 +65,14 @@ operator<< (
     {
         out << " [";
         if( wc.weight )
-            out << wc.weight->toString();
+            out << *(wc.weight);
         if( wc.level )
-            out << "@" << wc.level->toString();
+            out << "@" << *(wc.level);
         for( unsigned i=0; i<wc.terms.size(); i++ )
         {
             if( (i == 0 && wc.weight) || i > 0 )
                 out << ",";
-            out << wc.terms[i]->toString();
+            out << wc.terms[i];
         }
         out << "]";
     }

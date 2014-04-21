@@ -25,24 +25,40 @@ ChoiceAtom::ChoiceAtom(
     vector<ChoiceElement> ce, 
     string ro, 
     Term* rb ) :
-        lowerGuard(lb),
         lowerBinop(lo),
         choices(ce),
-        upperBinop(ro),
-        upperGuard(rb)
-        
+        upperBinop(ro)        
 {
-    
+    if( lb != NULL )
+        lowerGuard = new Term(*lb);
+    else
+        lowerGuard = NULL;
+    if( rb != NULL )
+        upperGuard = new Term(*rb);
+    else
+        upperGuard = NULL;
 }
 
 ChoiceAtom::ChoiceAtom(
     const ChoiceAtom& ca ) :
-       lowerGuard(ca.lowerGuard),
-       lowerBinop(ca.lowerBinop),
+        lowerBinop(ca.lowerBinop),
         choices(ca.choices),
-        upperBinop(ca.upperBinop),
-        upperGuard(ca.upperGuard)
-        
+        upperBinop(ca.upperBinop)        
 {
-    
+    if( ca.lowerGuard != NULL )
+        lowerGuard = new Term(*ca.lowerGuard);
+    else
+        lowerGuard = NULL;
+    if( ca.upperGuard != NULL )
+        upperGuard = new Term(*ca.upperGuard);
+    else
+        upperGuard = NULL;
+}
+
+ChoiceAtom::~ChoiceAtom()
+{
+    if( lowerGuard )
+        delete lowerGuard;
+    if( upperGuard )
+        delete upperGuard;
 }

@@ -38,17 +38,20 @@ inline ostream& operator<< ( ostream&, const AggregateElement& );
 
 class Literal {
 public:
-    Literal( Atom a, bool neg );
+    // Classic literal constructor
+    Literal( const Atom& a, bool neg );
+    // Aggregate constructor
     Literal( Term*, string, Term*, string, string, vector<AggregateElement>, bool );
+    // Copy constructor
     Literal( const Literal& l );
-    ~Literal() { }
+    ~Literal();
     
     void setIsNaf( bool isNaf ) { isNegative = isNaf; }
     
 private:
     friend inline ostream& operator<< ( ostream&, const Literal& );
     
-    Atom atom;
+    Atom* atom;
     bool isNegative;
     
     bool isAggregate;
@@ -72,7 +75,7 @@ operator<< (
         assert_msg( (l.lowerGuard != NULL || l.upperGuard != NULL),
             "Invalid aggregate literal, null guards");
         if( l.lowerGuard )
-            out << l.lowerGuard->toString() << l.lowerBinop;
+            out << *(l.lowerGuard) << l.lowerBinop;
         out << "#" << l.aggregateFunction << "{";
         for( unsigned i=0; i<l.aggregateElements.size(); i++ )
         {
@@ -82,11 +85,11 @@ operator<< (
         }
         out << "}";
         if( l.upperGuard )
-            out << l.upperBinop << l.upperGuard->toString();
+            out << l.upperBinop << *(l.upperGuard);
     }
     else
     {
-        out << l.atom;
+        out << *(l.atom);
     }
     return out;
 }

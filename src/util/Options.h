@@ -43,19 +43,13 @@ namespace dlv2
 
         void init( int argc, char* const* argv );
 
-        static Options* globalOptions() {
-        	if( instance == NULL )
-        	{
-        		instance = new Options();
-        	}
-        	return instance;
-        }
+        static Options* globalOptions();
 
         bool isAspCore2Strict() const { return aspCore2Strict; }
 
         const vector<const char*>& getInputFiles() const { return inputFiles; }
 
-        INPUT_BUILDER_POLICY inputBuilderPolicy() const { return inputPolicy; }
+        INPUT_BUILDER_POLICY getInputBuilderPolicy() const { return inputPolicy; }
 
         OUTPUT_POLICY getOutputPolicy() const { return outputPolicy; }
 
@@ -65,14 +59,9 @@ namespace dlv2
 
         static Options* instance;
 
-        Options() : aspCore2Strict(false), printProgram(false),
-                    inputPolicy( BUILDER_IN_MEMORY),
-                    outputPolicy( OUTPUT_ASPCORE2) {}
+        Options();
 
-        Options(const Options& o) : aspCore2Strict(o.aspCore2Strict),
-        		    printProgram(o.printProgram),
-                    inputPolicy( o.inputPolicy),
-                    outputPolicy( o.outputPolicy) {}
+        Options(const Options& o);
 
         void setOutputPolicy(OUTPUT_POLICY outPolicy) { outputPolicy = outPolicy; }
 

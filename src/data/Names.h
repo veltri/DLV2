@@ -18,38 +18,36 @@
  */
 
 /* 
- * File:   StringConstant.h
+ * File:   Names.h
  * Author: cesco
  *
- * Created on 28 febbraio 2014, 16.12
+ * Created on 19 aprile 2014, 16.06
  */
 
-#ifndef STRINGCONSTANT_H
-#define	STRINGCONSTANT_H
+#ifndef NAMES_H
+#define	NAMES_H
 
-#include "Atom.h"
 #include <string>
+#include <vector>
 
 using namespace std;
 
-class StringConstant : public Term {
+class Names {
 public:
-    StringConstant( string n ): Term(Atom::addStringConstant(n)) { }
-    StringConstant( const StringConstant& s ): Term(s.index) { }
-    ~StringConstant() { }
+    static unsigned addPredicateName( string );
+    static string getPredicateName( unsigned );
+    static unsigned addStringConstant( string );
+    static string getStringConstant( unsigned );
+    static unsigned addIntegerConstant( int );
+    static int getIntegerConstant( unsigned );
     
-    Type getType() { return Term::String; }
-    string toString() const { return Atom::getStringConstant(index); }
-
 private:
-    friend inline ostream& operator<< ( ostream&, const StringConstant& );
+    Names() { }
+    
+    static vector<string> predicateNames;
+    static vector<string> stringConstants;
+    static vector<int> integerConstants;
 };
 
-inline ostream& operator<< ( ostream& out, const StringConstant& s )
-{
-    out << s.toString();
-    return out;
-}
-
-#endif	/* STRINGCONSTANT_H */
+#endif	/* NAMES_H */
 

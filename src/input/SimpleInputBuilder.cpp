@@ -22,30 +22,43 @@
 #include <cstdlib>
 #include "SimpleInputBuilder.h"
 #include "../util/Assert.h"
-#include "../data/Variable.h"
-#include "../data/StringConstant.h"
-#include "../data/IntegerConstant.h"
+#include "../data/Term.h"
 
-SimpleInputBuilder::SimpleInputBuilder() :
-    program(new Program()), currentLiteral(NULL),
-    currentAtom(NULL), varCounter(0), query(NULL),
-    nTermsForWeight(0), nTermsForLevel(0), nTermsAfterLevel(0),
-    lowerGuard(NULL), upperGuard(NULL),
-    currentChoiceElement(NULL),currentChoiceAtom(NULL)
-
+SimpleInputBuilder::SimpleInputBuilder():
+        program(new Program()), 
+        currentLiteral(NULL),
+        currentAtom(NULL), 
+        varCounter(0), 
+        query(NULL),
+        nTermsForWeight(0), 
+        nTermsForLevel(0), 
+        nTermsAfterLevel(0),
+        lowerGuard(NULL), 
+        upperGuard(NULL),
+        currentChoiceElement(NULL),
+        currentChoiceAtom(NULL)
 { 
+    
 }
 
 SimpleInputBuilder::~SimpleInputBuilder()
 {
-    // Delete all terms of the program, 
-    // because they are instantiated dinamically.
-    for( unsigned i=0; i<allTerms.size(); i++ )
-        delete allTerms[i];
     if( program != NULL )
         delete program;
     if( query != NULL )
         delete query;
+    if( currentLiteral != NULL )
+        delete currentLiteral;
+    if( currentAtom != NULL )
+        delete currentAtom;
+    if( lowerGuard != NULL )
+        delete lowerGuard;
+    if( upperGuard != NULL )
+        delete upperGuard;
+    if( currentChoiceElement != NULL )
+        delete currentChoiceElement;
+    if( currentChoiceAtom != NULL )
+        delete currentChoiceAtom;
 }
 
 Program&
@@ -108,31 +121,28 @@ SimpleInputBuilder::onWeakConstraint()
     // On top of the terms' stack 
     // there should be the list of terms 
     // in the reverse order.
-    vector<Term*> terms;
+    vector<Term> terms;
     if( nTermsAfterLevel > 0 )
     {
         unsigned stackSize = termStack.size();
         for( unsigned i=0; i<nTermsAfterLevel; i++ )
         {
             terms.push_back(termStack[stackSize-nTermsAfterLevel+i]);
-            allTerms.push_back(termStack[stackSize-nTermsAfterLevel+i]);
         }
-        termStack.resize(stackSize-nTermsAfterLevel);
+        termStack.erase(termStack.begin()+(stackSize-nTermsAfterLevel),termStack.end());
     }
     // Then, we should have the level.
     Term* level = NULL;
     if( nTermsForLevel )
     {
-        level = termStack.back();
-        allTerms.push_back(termStack.back());
+        level = new Term(termStack.back());
         termStack.pop_back();
     }
     // Finally, the weight.
     Term* weight = NULL;
     if( nTermsForWeight )
     {
-        weight = termStack.back();
-        allTerms.push_back(termStack.back());
+        weight = new Term(termStack.back());
         termStack.pop_back();
     }
     WeakConstraint wc(body,weight,level,terms);
@@ -140,6 +150,10 @@ SimpleInputBuilder::onWeakConstraint()
     body.clear();
     localVariables.clear();
     varCounter = 0;
+    if( weight != NULL )
+        delete weight;
+    if( level != NULL )
+        delete level;
 }
 
 void 
@@ -216,11 +230,6 @@ SimpleInputBuilder::onAtom(
     }
     currentAtom = new Atom(predName, termStack.size(), 
             termStack, isStrongNeg);
-    // Before emptying the terms' stack, we store its content.
-    // We need to keep these pointers in memory to delete all the 
-    // terms of the program, because they are instantiated
-    // dinamically.
-    allTerms.insert(allTerms.end(),termStack.begin(),termStack.end());
     termStack.clear();
     predName = "";
 }
@@ -237,11 +246,6 @@ SimpleInputBuilder::onExistentialAtom()
     }
     currentAtom = new Atom(predName, termStack.size(), 
             termStack, existVars);
-    // Before emptying the stack, we store its content.
-    // We need these pointers to delete all the terms  
-    // of the program, because they are instantiated
-    // dinamically.
-    allTerms.insert(allTerms.end(),termStack.begin(),termStack.end());
     termStack.clear();
     existVars.clear();
     predName = "";
@@ -265,12 +269,12 @@ SimpleInputBuilder::onExistentialVariable(
     for( unsigned i=0; i<localVariables.size() && !found; i++ )
         if( localVariables[i].varName == var )
         {
-            existVars.push_back(Variable(localVariables[i].varIndex,string(var)));
+            existVars.push_back(Term(localVariables[i].varIndex,string(var)));
             found = true;
         }
     if( !found )
     {
-        existVars.push_back(Variable(varCounter,string(var)));
+        existVars.push_back(Term(varCounter,string(var)));
         VariableIndex ind;
         ind.varIndex = varCounter++;
         ind.varName = string(var);
@@ -289,8 +293,7 @@ void
 SimpleInputBuilder::onTerm( 
     int value )
 {
-    Term* currentTerm = new IntegerConstant( value );
-    termStack.push_back(currentTerm);
+    termStack.push_back(Term(value));
 }
     
 void 
@@ -310,20 +313,16 @@ SimpleInputBuilder::onFunction(
     // Consume nTerms from the stack
     for( unsigned i=termStack.size()-nTerms; i<termStack.size(); i++ )
     {
-        ss << termStack[i]->toString();
+        ss << termStack[i];
         if( i < termStack.size()-1 )
             ss << ",";
-        // Before popping #nTerms pointers from the stack
-        // delete the pointed terms.
-        delete termStack[i];
     }
     ss << ")";
-    Term* currentTerm = new StringConstant(ss.str());
     // Consume nTerms from the stack.
     unsigned newSize = termStack.size()-nTerms;
-    termStack.resize(newSize);
+    termStack.erase(termStack.begin()+newSize,termStack.end());
     // Push the function into the stack.
-    termStack.push_back(currentTerm);
+    termStack.push_back(Term(ss.str()));
 }
     
 void 
@@ -335,15 +334,11 @@ SimpleInputBuilder::onTermDash()
     // FIXME
     stringstream ss;
     ss << "-";
-    ss << termStack.back()->toString();
-    // Before popping the pointer from the stack
-    // delete the pointed term.
-    delete termStack.back();
+    ss << termStack.back();
     // Consume one term from the stack.
     termStack.pop_back();
-    Term* currentTerm = new StringConstant(ss.str());
     // Push the function into the stack.
-    termStack.push_back(currentTerm);
+    termStack.push_back(Term(ss.str()));
 }
     
 void 
@@ -355,37 +350,30 @@ SimpleInputBuilder::onTermParams()
     // FIXME
     stringstream ss;
     ss << "(";
-    ss << termStack.back()->toString();
+    ss << termStack.back();
     ss << ")";
-    // Before popping the pointer from the stack
-    // delete the pointed term.
-    delete termStack.back();
-        // Consume one term from the stack.
+    // Consume one term from the stack.
     termStack.pop_back();
-    Term* currentTerm = new StringConstant(ss.str());
     // Push the function into the stack.
-    termStack.push_back(currentTerm);
+    termStack.push_back(Term(ss.str()));
 }
 
 void 
 SimpleInputBuilder::onArithmeticOperation( char arithOperator )
 {
     // The right and left operands are on top of the stack.
-    Term* rightOperand = termStack.back();
+    Term rightOperand(termStack.back());
     termStack.pop_back();
-    Term* leftOperand = termStack.back();
+    Term leftOperand(termStack.back());
     termStack.pop_back();
     // Build a new term by that arithmetic expression.
     // FIXME
     stringstream ss;
-    ss << leftOperand->toString();
+    ss << leftOperand;
     ss << arithOperator;
-    ss << rightOperand->toString();
-    Term* currentTerm = new StringConstant(ss.str());
+    ss << rightOperand;
     // Push the function into the stack.
-    termStack.push_back(currentTerm);
-    delete leftOperand;
-    delete rightOperand;
+    termStack.push_back(Term(ss.str()));
 }
 
 void 
@@ -406,8 +394,7 @@ SimpleInputBuilder::onChoiceLowerGuard(
     // It should be on top of the stack.
     assert_msg( termStack.size() > 0, 
             "Trying to create a null choice-left term" );
-    lowerGuard = termStack.back();
-    allTerms.push_back(lowerGuard);
+    lowerGuard = new Term(termStack.back());
     termStack.pop_back();
     lowerBinop = string(binop);
 }
@@ -419,8 +406,7 @@ SimpleInputBuilder::onChoiceUpperGuard(
     // It should be on top of the stack.
     assert_msg( termStack.size() > 0, 
             "Trying to create a null choice-right term" );
-    upperGuard = termStack.back();
-    allTerms.push_back(upperGuard);
+    upperGuard = new Term(termStack.back());
     termStack.pop_back();
     upperBinop = string(binop);
 }
@@ -437,11 +423,6 @@ SimpleInputBuilder::onChoiceElementAtom()
     }
     currentAtom = new Atom(predName, termStack.size(), 
             termStack, false);
-    // Before emptying the stack, we store its content.
-    // We need these pointers to delete all the terms  
-    // of the program, because they are instantiated
-    // dinamically.
-    allTerms.insert(allTerms.end(),termStack.begin(),termStack.end());
     termStack.clear();
     predName = "";
     if( currentChoiceElement != NULL )
@@ -449,8 +430,7 @@ SimpleInputBuilder::onChoiceElementAtom()
         delete currentChoiceElement;
         currentChoiceElement = NULL;
     }
-    vector<Literal> lits;
-    currentChoiceElement = new ChoiceElement(*currentAtom,lits);
+    currentChoiceElement = new ChoiceElement(*currentAtom,vector<Literal>());
     if( currentAtom )
     {
         delete currentAtom;
@@ -497,8 +477,17 @@ SimpleInputBuilder::onChoiceAtom()
     currentChoiceAtom = 
             new ChoiceAtom(lowerGuard,lowerBinop,choiceElements,
             upperBinop,upperGuard);
-    lowerGuard = NULL;
-    upperGuard = NULL;
+    
+    if( lowerGuard )
+    {
+        delete lowerGuard;
+        lowerGuard = NULL;
+    }
+    if( upperGuard )
+    {
+        delete upperGuard;
+        upperGuard = NULL;
+    }
     lowerBinop = "";
     upperBinop = "";
     choiceElements.clear();
@@ -511,11 +500,9 @@ SimpleInputBuilder::onBuiltinAtom(
     // The operands should be on top of the terms' stack.
     assert_msg( (termStack.size() > 1 && binop != NULL), 
             "Trying to create an invalid builtin atom" );
-    Term* rightOperand = termStack.back();
-    allTerms.push_back(rightOperand);
+    Term* rightOperand = new Term(termStack.back());
     termStack.pop_back();
-    Term* leftOperand = termStack.back();
-    allTerms.push_back(leftOperand);
+    Term* leftOperand = new Term(termStack.back());
     termStack.pop_back();
     string op(binop);
     
@@ -527,6 +514,10 @@ SimpleInputBuilder::onBuiltinAtom(
     currentAtom = new Atom(leftOperand,op,rightOperand);
     termStack.clear();
     predName = "";
+    if( leftOperand )
+        delete leftOperand;
+    if( rightOperand )
+        delete rightOperand;
 }
 
 void 
@@ -536,8 +527,7 @@ SimpleInputBuilder::onAggregateLowerGuard(
     // It should be on top of the stack.
     assert_msg( termStack.size() > 0, 
             "Trying to create a null aggregate lower guard" );
-    lowerGuard = termStack.back();
-    allTerms.push_back(lowerGuard);
+    lowerGuard = new Term(termStack.back());
     termStack.pop_back();
     lowerBinop = string(op);
 }
@@ -549,8 +539,7 @@ SimpleInputBuilder::onAggregateUpperGuard(
     // It should be on top of the stack.
     assert_msg( termStack.size() > 0, 
             "Trying to create a null choice-right term" );
-    upperGuard = termStack.back();
-    allTerms.push_back(upperGuard);
+    upperGuard = new Term(termStack.back());
     termStack.pop_back();
     upperBinop = string(op);
 }
@@ -600,12 +589,6 @@ SimpleInputBuilder::onAggregateElement()
             "Invalid aggregate element.");
     AggregateElement element(aggregateElementTerms,aggregateElementLiterals);
     aggregateElements.push_back(element);
-    // Before emptying the terms' stack, we store its content.
-    // We need to keep these pointers in memory to delete all the 
-    // terms of the program, because they are instantiated
-    // dinamically.
-    allTerms.insert(allTerms.end(),aggregateElementTerms.begin(),
-            aggregateElementTerms.end());
     aggregateElementTerms.clear();
     aggregateElementLiterals.clear();
 }
@@ -628,9 +611,17 @@ SimpleInputBuilder::onAggregate(
     currentLiteral = new Literal(lowerGuard,lowerBinop,upperGuard,upperBinop,
             aggregateFunction,aggregateElements,naf);
     aggregateElements.clear();
-    lowerGuard = NULL;
+    if( lowerGuard )
+    {
+        delete lowerGuard;
+        lowerGuard = NULL;
+    }
     lowerBinop = "";
-    upperGuard = NULL;
+    if( upperGuard )
+    {
+        delete upperGuard;
+        upperGuard = NULL;
+    }
     upperBinop = "";
     aggregateFunction = "";
 }
@@ -666,7 +657,7 @@ SimpleInputBuilder::isNumeric(
 void 
 SimpleInputBuilder::newTerm( 
     char* value,
-    vector<Term*>& target,
+    vector<Term>& target,
     bool dash )
 {
     Term* currentTerm = NULL;
@@ -679,10 +670,10 @@ SimpleInputBuilder::newTerm(
         // the variable in the current rule
         for( unsigned i=0; i<localVariables.size() && !currentTerm; i++ )
             if( localVariables[i].varName == value )
-                currentTerm = new Variable(localVariables[i].varIndex,string(value));
+                currentTerm = new Term(localVariables[i].varIndex,string(value));
         if( !currentTerm )
         {
-            currentTerm = new Variable(varCounter,string(value));
+            currentTerm = new Term(varCounter,string(value));
             VariableIndex ind;
             ind.varIndex = varCounter++;
             ind.varName = string(value);
@@ -691,24 +682,25 @@ SimpleInputBuilder::newTerm(
     }
     else if( value[0] == '_' && strlen(value) == 1 ) // Unknow variable;
     { 
-        currentTerm = new Variable(varCounter++,string(value));  
+        currentTerm = new Term(varCounter++,string(value));  
     }
     else if( (value[0] == '\"' && value[strlen(value)-1] == '\"') ||  
             (value[0] >= 'a' && value[0] <='z') )   // String constant
     {
-        currentTerm = new StringConstant(value);
+        currentTerm = new Term(value);
     }
     else if( isNumeric( value, 10 ) ) // Numeric constant
     {
         int val = atoi(value);
         if( dash )
             val = 0 - val;
-        currentTerm = new IntegerConstant(val);
+        currentTerm = new Term(val);
     }
     
     // Push currentTerm into the stack.
     if( currentTerm != NULL )
     {
-        target.push_back(currentTerm);
+        target.push_back(*currentTerm);
+        delete currentTerm;
     }
 }

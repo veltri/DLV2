@@ -64,13 +64,13 @@ private:
     InputDirector();
     InputDirector(const InputDirector&):
     	parserLine(0),  parserFile(0), parserErrors(0),
-    	ParserStateInternal(false),builder(0)
+    	parserStateInternal(false),builder(0)
     		{ assert(0); }
     
     int parserLine;
     const char* parserFile;
     unsigned parserErrors;
-    bool ParserStateInternal;
+    bool parserStateInternal;
     InputBuilder* builder;
 };
 

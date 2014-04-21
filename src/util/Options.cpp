@@ -49,6 +49,35 @@ namespace dlv2{
 // Initialize singleton
 Options* Options::instance = NULL;
 
+Options* 
+Options::globalOptions() 
+{
+    if( instance == NULL )
+    {
+        instance = new Options();
+    }
+    return instance;
+}
+
+Options::Options(): 
+        aspCore2Strict(false), 
+        printProgram(false),
+        inputPolicy(BUILDER_IN_MEMORY),
+        outputPolicy(OUTPUT_ASPCORE2) 
+{
+
+}
+
+Options::Options(
+    const Options& o):
+        aspCore2Strict(o.aspCore2Strict),
+        printProgram(o.printProgram),
+        inputPolicy(o.inputPolicy),
+        outputPolicy(o.outputPolicy) 
+{
+
+}
+
 void
 Options::init(
     int argc,

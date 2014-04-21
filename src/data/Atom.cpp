@@ -19,18 +19,15 @@
 
 #include "Atom.h"
 #include "../util/Assert.h"
-
-vector<string> Atom::predicateNames;
-vector<string> Atom::stringConstants;
-vector<int> Atom::integerConstants;
+#include <climits>
 
 // Classical atoms' constructor
 Atom::Atom(  
     string name, 
     unsigned arit, 
-    vector<Term*> termsList,
+    vector<Term> termsList,
     bool tNeg ):
-        predIndex(Atom::addPredicateName(name)),
+        predIndex(Names::addPredicateName(name)),
         arity(arit),
         trueNegated(tNeg),
         terms(termsList),
@@ -46,9 +43,9 @@ Atom::Atom(
 Atom::Atom( 
     string name, 
     unsigned arit, 
-    vector<Term*> termsList, 
-    vector<Variable> existVars ):
-        predIndex(Atom::addPredicateName(name)),
+    vector<Term> termsList, 
+    vector<Term> existVars ):
+        predIndex(Names::addPredicateName(name)),
         arity(arit),
         trueNegated(false),
         terms(termsList),
@@ -66,115 +63,53 @@ Atom::Atom(
     Term* left, 
     string bop, 
     Term* right ):
+        predIndex(UINT_MAX),
+        arity(0),
         trueNegated(false),
         isBuiltin(true),
-        bLeft(left),
-        binop(bop),
-        bRight(right)
+        binop(bop)
 {
-
+    if( left != NULL )
+        bLeft = new Term(*left);
+    else
+        bLeft = NULL;
+    if( right != NULL )
+        bRight = new Term(*right);
+    else
+        bRight = NULL;
 }
 
 Atom::Atom( 
     const Atom& a ): 
         predIndex(a.predIndex), 
+        arity(a.arity),
         trueNegated(a.trueNegated), 
         terms(a.terms),
         existentialVars(a.existentialVars),
         isBuiltin(a.isBuiltin),
-        bLeft(a.bLeft),
-        binop(a.binop),
-        bRight(a.bRight)
+        binop(a.binop)
 {
-    
+    if( a.bLeft != NULL )
+        bLeft = new Term(*a.bLeft);
+    else
+        bLeft = NULL;
+    if( a.bRight != NULL )
+        bRight = new Term(*a.bRight);
+    else
+        bRight = NULL;
 }
 
-unsigned 
-Atom::addPredicateName( 
-    string name )
+Atom::~Atom()
 {
-    bool found = false;
-    unsigned index;
-    for( unsigned i=0; i<Atom::predicateNames.size() && !found; i++ )
-        if( Atom::predicateNames[i] == name )
-        {
-            index = i;
-            found = true;
-        }
-    if( !found )
-    {
-        Atom::predicateNames.push_back(name);
-        return Atom::predicateNames.size()-1;
-    }
-    else 
-        return index;
+    if( bLeft )
+        delete bLeft;
+    if( bRight )
+        delete bRight;
 }
 
 string 
-Atom::getPredicateName( 
-    unsigned index )
-{
-    assert_msg( (index >= 0 && index < Atom::predicateNames.size()),
-            "The index " << index << " is not valid." );
-    return Atom::predicateNames[index];
-}
-
-unsigned 
-Atom::addStringConstant( 
-    string constant )
-{
-    unsigned index;
-    bool found = false;
-    for( unsigned i=0; i<Atom::stringConstants.size() && !found; i++ )
-        if( Atom::stringConstants[i] == constant )
-        {
-            index = i;
-            found = true;
-        }
-    if( !found )
-    {
-        Atom::stringConstants.push_back(constant);
-        return Atom::stringConstants.size()-1;
-    }
-    else 
-        return index;
-}
-
-string 
-Atom::getStringConstant( 
-    unsigned index )
-{
-    assert_msg( (index >= 0 && index <Atom::stringConstants.size()),
-            "The index " << index << " is not valid." );
-    return Atom::stringConstants[index];
-}
-
-unsigned 
-Atom::addIntegerConstant( 
-    int constant )
-{
-    unsigned index;
-    bool found = false;
-    for( unsigned i=0; i<Atom::integerConstants.size() && !found; i++ )
-        if( Atom::integerConstants[i] == constant )
-        {
-            index = i;
-            found = true;
-        }
-    if( !found )
-    {
-        Atom::integerConstants.push_back(constant);
-        return Atom::integerConstants.size()-1;
-    }
-    else 
-        return index;
-}
-    
-int
-Atom::getIntegerConstant( 
-    unsigned index )
-{
-    assert_msg( (index >= 0 && index < Atom::integerConstants.size()),
-            "The index " << index << " is not valid." );
-    return Atom::integerConstants[index];
+Atom::getPredName() const 
+{ 
+    assert_msg( !isBuiltin, "This atom is a builtin, it has not a predicate name." );
+    return Names::getPredicateName(predIndex); 
 }

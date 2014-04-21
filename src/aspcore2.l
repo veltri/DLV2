@@ -30,10 +30,10 @@ BLANK       ([ \t]+)
 NEWLINE     \15?\n
 COMMENT     \%.*
 
-SYMBOLIC_CONSTANT 	([a-z][A-Za-z_0-9]*)
-VARIABLE     	    ([A-Z][A-Za-z_0-9]*)
-STRING  			(\"[^\"]*\")
-NUMBER         		([0-9]+)
+SYMBOLIC_CONSTANT   ([a-z][A-Za-z_0-9]*)
+VARIABLE            ([A-Z][A-Za-z_0-9]*)
+STRING              (\"[^\"]*\")
+NUMBER              ([0-9]+)
 
 %START WANT_NEWLINE
 		       //Only in state WANT_NEWLINE a newline
@@ -46,113 +46,145 @@ NUMBER         		([0-9]+)
 	// terminated by a newline.)
 	
 <WANT_NEWLINE>{NEWLINE} { 
-			InputDirector::getInstance().onNewLine();
-			BEGIN(INITIAL);
-			return NEWLINE;
+                            InputDirector::getInstance().onNewLine();
+                            BEGIN(INITIAL);
+                            return NEWLINE;
 			}
-{NEWLINE}	{ InputDirector::getInstance().onNewLine();    }
 
-"."			{ return DOT;		}
+{NEWLINE}               { InputDirector::getInstance().onNewLine(); }
 
-","			{ return COMMA;		}
-"_"			{ return ANON_VAR; }
+"."                     { return DOT; }
+
+","                     { return COMMA; }
+
 "|"                     { return VEL; }
-";"			{ return SEMICOLON; }
-":"			{ return COLON; }
-"@"			{ return AT;		}
-"\\E"                    { return EXISTS;        }
+";"                     { return SEMICOLON; }
+":"                     { return COLON; }
+"@"                     { return AT; }
+"\\E"                   { return EXISTS; }
 
-"not"       { return NAF;    }
+"not"                   { return NAF; }
 
-":-"	    { return CONS;	}
-":~"	    { return WCONS;	}
+":-"                    { return CONS; }
+":~"                    { return WCONS; }
 
-"+"	    { return PLUS;	}
-"-"         { return DASH;  }
-"*"	    { return TIMES;	}
-"/"         { return SLASH; }
+"+"                     { return PLUS; }
+"-"                     { return DASH; }
+"*"                     { return TIMES; }
+"/"                     { return SLASH; }
 
-"("			{ return PARAM_OPEN;	}
-")"			{ return PARAM_CLOSE;	}
+"("                     { return PARAM_OPEN; }
+")"                     { return PARAM_CLOSE; }
 
-"["			{ return SQUARE_OPEN;	}
-"]"			{ return SQUARE_CLOSE;	}
+"["                     { return SQUARE_OPEN; }
+"]"                     { return SQUARE_CLOSE; }
 
-"{"			{ return CURLY_OPEN;	}
-"}"			{ return CURLY_CLOSE;	}
+"{"                     { return CURLY_OPEN; }
+"}"                     { return CURLY_CLOSE; }
 
-"?"		{ return QUERY_MARK;}
+"?"                     { return QUERY_MARK; }
 
-"#count"    { return AGGR_COUNT;            }
-"#max"      { return AGGR_MAX;              }
-"#min"      { return AGGR_MIN;              }
-"#sum"      { return AGGR_SUM;              }
+"_"                     { 
+                            yylval.string=new char[strlen(yytext)+1];
+                            strcpy(yylval.string,yytext);
+                            return ANON_VAR; 
+                        }
 
-"="                             {
-							yylval.string=new char[strlen(yytext)+1];
-							strcpy(yylval.string,yytext);
-							return EQUAL;
-                                                }
-"<>"		|
-"!="                            {
-							yylval.string=new char[strlen(yytext)+1];
-							strcpy(yylval.string,yytext);
-							return UNEQUAL;
-                                                }
-"<"                            {
-							yylval.string=new char[strlen(yytext)+1];
-							strcpy(yylval.string,yytext);
-							return LESS;
-                                                }
-">"                            {
-							yylval.string=new char[strlen(yytext)+1];
-							strcpy(yylval.string,yytext);
-                                                        return GREATER;
-                                                }
-"<="                            {
-							yylval.string=new char[strlen(yytext)+1];
-							strcpy(yylval.string,yytext);
-                                                        return LESS_OR_EQ;
-                                                }
-">="                            {
-							yylval.string=new char[strlen(yytext)+1];
-							strcpy(yylval.string,yytext);
-                                                        return GREATER_OR_EQ;
-                                                }
+"="                     {
+                            yylval.string=new char[strlen(yytext)+1];
+                            strcpy(yylval.string,yytext);
+                            return EQUAL;
+                        }
 
-{SYMBOLIC_CONSTANT}		{
-							yylval.string=new char[strlen(yytext)+1];
-							strcpy(yylval.string,yytext);
-							return SYMBOLIC_CONSTANT;
-						}
+"<>"    |
+"!="                    {
+                            yylval.string=new char[strlen(yytext)+1];
+                            strcpy(yylval.string,yytext);
+                            return UNEQUAL;
+                        }
 
-{VARIABLE}			    {
-							yylval.string=new char[strlen(yytext)+1];
-							strcpy(yylval.string,yytext);
-							return VARIABLE;
-						}
+"<"                     {
+                            yylval.string=new char[strlen(yytext)+1];
+                            strcpy(yylval.string,yytext);
+                            return LESS;
+                        }
 
-{STRING}				{
-							yylval.string=new char[strlen(yytext)+1];
-							strcpy(yylval.string,yytext);
-							return STRING;
-						}
+">"                     {
+                            yylval.string=new char[strlen(yytext)+1];
+                            strcpy(yylval.string,yytext);
+                            return GREATER;
+                        }
 
-{NUMBER}				{ 
-						    yylval.string=new char[strlen(yytext)+1];
-							strcpy(yylval.string,yytext);
-							return NUMBER; 
-						}
+"<="                    {
+                            yylval.string=new char[strlen(yytext)+1];
+                            strcpy(yylval.string,yytext);
+                            return LESS_OR_EQ;
+                        }
+
+">="                    {
+                            yylval.string=new char[strlen(yytext)+1];
+                            strcpy(yylval.string,yytext);
+                            return GREATER_OR_EQ;
+                        }
+
+"#count"                { 
+                            yylval.string=new char[strlen(yytext)+1];
+                            strcpy(yylval.string,yytext);
+                            return AGGR_COUNT;
+                        }
+
+"#max"                  { 
+                            yylval.string=new char[strlen(yytext)+1];
+                            strcpy(yylval.string,yytext);
+                            return AGGR_MAX;
+                        }
+
+"#min"                  { 
+                            yylval.string=new char[strlen(yytext)+1];
+                            strcpy(yylval.string,yytext);
+                            return AGGR_MIN;
+                        }
+
+"#sum"                  { 
+                            yylval.string=new char[strlen(yytext)+1];
+                            strcpy(yylval.string,yytext);
+                            return AGGR_SUM;              
+                        }
+
+{SYMBOLIC_CONSTANT}     {
+                            yylval.string=new char[strlen(yytext)+1];
+                            strcpy(yylval.string,yytext);
+                            return SYMBOLIC_CONSTANT;
+                        }
+
+{VARIABLE}		{
+                            yylval.string=new char[strlen(yytext)+1];
+                            strcpy(yylval.string,yytext);
+                            return VARIABLE;
+                        }
+
+{STRING}                {
+                            yylval.string=new char[strlen(yytext)+1];
+                            strcpy(yylval.string,yytext);
+                            return STRING;
+                        }
+
+{NUMBER}                { 
+                            yylval.string=new char[strlen(yytext)+1];
+                            strcpy(yylval.string,yytext);
+                            return NUMBER; 
+                        }
 							
-\%.*			{ /* Skip comments */	}
-{BLANK}			{ /* Skip blanks */	}
+\%.*			{ /* Skip comments */ }
+{BLANK}			{ /* Skip blanks */ }
 
-.				{ // Anything not matching one of the patterns
-				 // given above is considered an error.
-					char s[1024];
-					assert(yytext[1]==0);
-					sprintf(s,"Lexical syntax error (%s)",yytext); 
-					yyerror(s);
+.                       {   
+                            // Anything not matching one of the patterns
+                            // given above is considered an error.
+                            char s[1024];
+                            assert(yytext[1]==0);
+                            sprintf(s,"Lexical syntax error (%s)",yytext); 
+                            yyerror(s);
 		
-                    return ERROR;
-				}
+                            return ERROR;
+                        }

@@ -35,7 +35,7 @@ inline ostream& operator<< ( ostream&, const Literal& );
 
 class AggregateElement {
 public:
-    AggregateElement( vector<Term*> t, vector<Literal> lits ): terms(t), literals(lits) { }
+    AggregateElement( vector<Term> t, vector<Literal> lits ): terms(t), literals(lits) { }
     AggregateElement( const AggregateElement& ae ): terms(ae.terms), literals(ae.literals) { }
     ~AggregateElement() { }
     
@@ -44,7 +44,7 @@ public:
 private:
     friend inline ostream& operator<< ( ostream&, const AggregateElement& );
     
-    vector<Term*> terms;
+    vector<Term> terms;
     vector<Literal> literals;
 };
 
@@ -52,7 +52,7 @@ inline ostream& operator<< ( ostream& out, const AggregateElement& ae )
 {
     for( unsigned i=0; i<ae.terms.size(); i++ )
     {
-        out << ae.terms[i]->toString();
+        out << ae.terms[i];
         if( i < ae.terms.size()-1 )
             out << ",";
     }

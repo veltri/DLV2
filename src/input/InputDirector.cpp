@@ -74,7 +74,7 @@ InputDirector::InputDirector():
     parserLine(0),
     parserFile(NULL),
     parserErrors(0),
-    ParserStateInternal(true),
+    parserStateInternal(true),
     builder(NULL)
 {
     
@@ -169,7 +169,7 @@ InputDirector::onError(
 {
     parserErrors++;
 
-    if( !ParserStateInternal )
+    if( !parserStateInternal )
         {
         if(parserFile && strlen(parserFile) > 0 )
             cerr << parserFile << ": ";

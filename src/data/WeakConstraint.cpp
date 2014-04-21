@@ -23,23 +23,39 @@ WeakConstraint::WeakConstraint(
     vector<Literal> b,
     Term* w,
     Term* l,
-    vector<Term*> t ):
+    vector<Term> t ):
         body(b),
-        weight(w),
-        level(l),
         terms(t)
 {
-    
+    if( w != NULL )
+        weight = new Term(*w);
+    else
+        weight = NULL;
+    if( l != NULL )
+        level = new Term(*l);
+    else
+        level = NULL;
 }
 
 WeakConstraint::WeakConstraint(
     const WeakConstraint& wc):
         body(wc.body),
-        weight(wc.weight),
-        level(wc.level),
         terms(wc.terms)
 {
-
+    if( wc.weight != NULL )
+        weight = new Term(*wc.weight);
+    else
+        weight = NULL;
+    if( wc.level != NULL )
+        level = new Term(*wc.level);
+    else
+        level = NULL;
 }
 
-    
+WeakConstraint::~WeakConstraint()
+{
+    if( level )
+        delete level;
+    if( weight )
+        delete weight;
+}

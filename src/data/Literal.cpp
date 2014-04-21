@@ -20,9 +20,8 @@
 #include "Literal.h"
 
 Literal::Literal( 
-    Atom a, 
+    const Atom& a, 
     bool neg ): 
-        atom(a), 
         isNegative(neg),
         isAggregate(false),
         lowerGuard(NULL),
@@ -31,7 +30,7 @@ Literal::Literal(
         upperBinop(""),
         aggregateFunction("")
 {
-    
+    atom = new Atom(a);
 }
 
 // Aggregate's constructor
@@ -43,29 +42,53 @@ Literal::Literal(
     string function,
     vector<AggregateElement> aElements,
     bool naf):
+        atom(NULL),
         isNegative(naf),
         isAggregate(true),
-        lowerGuard(lGuard),
         lowerBinop(lOp),
-        upperGuard(uGuard),
         upperBinop(uOp),
         aggregateFunction(function),
         aggregateElements(aElements)
 {
-    
+    if( lGuard != NULL )
+        lowerGuard = new Term(*lGuard);
+    else
+        lowerGuard = NULL;
+    if( uGuard != NULL )
+        upperGuard = new Term(*uGuard);
+    else
+        upperGuard = NULL;
 }
 
 Literal::Literal( 
     const Literal& l ): 
-        atom(l.atom), 
         isNegative(l.isNegative),
         isAggregate(l.isAggregate),
-        lowerGuard(l.lowerGuard),
         lowerBinop(l.lowerBinop),
-        upperGuard(l.upperGuard),
         upperBinop(l.upperBinop),
         aggregateFunction(l.aggregateFunction),
         aggregateElements(l.aggregateElements)
 { 
+    if( l.atom != NULL )
+        atom = new Atom(*l.atom);
+    else 
+        atom = NULL;
+    if( l.lowerGuard != NULL )
+        lowerGuard = new Term(*l.lowerGuard);
+    else
+        lowerGuard = NULL;
+    if( l.upperGuard != NULL )
+        upperGuard = new Term(*l.upperGuard);
+    else
+        upperGuard = NULL;
+}
 
+Literal::~Literal() 
+{
+    if( lowerGuard )
+        delete lowerGuard;
+    if( upperGuard )
+        delete upperGuard;
+    if( atom )
+        delete atom;
 }

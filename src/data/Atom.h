@@ -29,47 +29,36 @@
 
 #include <string>
 #include <vector>
-#include "Variable.h"
+#include "Term.h"
 #include "../util/Assert.h"
 
 using namespace std;
 
 class Atom {
 public:
-    Atom() { }
-    Atom( string, unsigned, vector<Term*>, bool tNeg = false );
-    Atom( string, unsigned, vector<Term*>, vector<Variable> );
+    //Atom() { }
+    Atom( string, unsigned, vector<Term>, bool tNeg = false );
+    Atom( string, unsigned, vector<Term>, vector<Term> );
     Atom( Term* left, string bop, Term* right );
     Atom( const Atom& a );
-    ~Atom() { }
-    
-    static unsigned addPredicateName( string );
-    static string getPredicateName( unsigned );
-    static unsigned addStringConstant( string );
-    static string getStringConstant( unsigned );
-    static unsigned addIntegerConstant( int );
-    static int getIntegerConstant( unsigned );
-    
-    string getPredName() const { return Atom::getPredicateName(predIndex); }
+    ~Atom();
+     
+    string getPredName() const; 
     unsigned getIndex() const { return predIndex; }
     unsigned getPredicateArity( unsigned ) { return arity; }
-    vector<Term*> getTerms() const { return terms; }
+    vector<Term> getTerms() const { return terms; }
     bool isTrueNegated() const { return trueNegated; } 
     bool isPropositional() const { return (terms.size() == 0); }
     bool isExistential() const { return (existentialVars.size() > 0); }
     
 private:
     friend inline ostream& operator<< ( ostream&, const Atom& );
-    
-    static vector<string> predicateNames;
-    static vector<string> stringConstants;
-    static vector<int> integerConstants;
-    
+        
     unsigned predIndex;
     unsigned arity;
     bool trueNegated;
-    vector<Term*> terms;
-    vector<Variable> existentialVars;
+    vector<Term> terms;
+    vector<Term> existentialVars;
     
     bool isBuiltin;
     Term* bLeft;
@@ -86,7 +75,7 @@ operator<< (
     {
         assert_msg( (a.bLeft != NULL && a.bRight != NULL),
             "Invalid builtin atom, null terms");
-        out << a.bLeft->toString() << a.binop << a.bRight->toString();
+        out << *(a.bLeft) << a.binop << *(a.bRight);
     }
     else
     {
@@ -103,13 +92,13 @@ operator<< (
         }
         if( a.trueNegated )
             out << "-";
-        out << Atom::getPredicateName(a.predIndex);
+        out << a.getPredName();
         if( a.terms.size() != 0 ) 
         {
             out << "(";
             for( unsigned i=0; i<a.terms.size(); i++ )
             {
-                out << a.terms[i]->toString();
+                out << a.terms[i];
                 if( i < a.terms.size()-1 )
                     out << ",";
             }

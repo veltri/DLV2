@@ -17,25 +17,41 @@
  *
  */
 
-#include "IntegerConstant.h"
+#include "Term.h"
 
-IntegerConstant::IntegerConstant(
-    int i ):
-        Term(Atom::addIntegerConstant(i))
+Term::Term( 
+    unsigned i ):
+        index(Names::addIntegerConstant(i)),
+        varName(""),
+        type(Integer)
 {
     
 }
 
-IntegerConstant::IntegerConstant(
-    const IntegerConstant& i ): 
-        Term(Atom::addIntegerConstant(i.index)) {
+Term::Term( 
+    string v ):
+        index(Names::addStringConstant(v)),
+        varName(""),
+        type(String)
+{
     
 }
 
-string 
-IntegerConstant::toString() const
-{ 
-    ostringstream oss;
-    oss << Atom::getIntegerConstant(index);
-    return oss.str();
+Term::Term(
+    unsigned i, 
+    string v ):
+        index(i),
+        varName(v),
+        type(Variable)
+{
+    
+}
+    
+Term::Term( 
+    const Term& t ):
+        index(t.index),
+        varName(t.varName),
+        type(t.type)
+{
+    
 }
