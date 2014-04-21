@@ -634,7 +634,7 @@ static int input (void );
 			buf[n] = (char) c; \
 		if ( c == '\n' ) \
 			buf[n++] = (char) c; \
-		if (c != EOF) theBuffer.addBlock(buf,n); \
+		if (c != EOF && n>0 ) theBuffer.addBlock(buf,n); \
 		if ( c == EOF && ferror( yyin ) ) \
 			YY_FATAL_ERROR( "input in flex scanner failed" ); \
 		result = n; \
@@ -652,7 +652,7 @@ static int input (void );
 			errno=0; \
 			clearerr(yyin); \
 			} \
-			if(result > 0) theBuffer.addBlock(buf,result); \
+			if(result > 0 && !ferror(yyin) ) theBuffer.addBlock(buf,result); else theBuffer.lastBlock();\
 		}\
 \
 

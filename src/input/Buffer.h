@@ -21,6 +21,7 @@ class Buffer {
 public:
 	Buffer();
 	void addBlock(char*, int);
+	void lastBlock();
 	void writeBlock(unsigned i, ostream&);
 	void flushOn(ostream& o);
 
@@ -28,6 +29,7 @@ public:
 
 private:
 
+        unsigned lastBlockSize;
 	Buffer(const Buffer&){ exit(122); };
 	vector<char*> blocks;
 
