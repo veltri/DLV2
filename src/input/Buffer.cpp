@@ -24,7 +24,7 @@ void Buffer::lastBlock()
   if(blocks.size())
   {
     blocks.back()[lastBlockSize] = '\0';
-    //blocks.back()[--lastBlockSize] = '\0';
+    blocks.back()[--lastBlockSize] = '\0';
   }
 }
 
