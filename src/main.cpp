@@ -17,8 +17,6 @@ int main(int argc, char** argv)
     {
     	dlv2Facade.solve();
     }
-    // FIXME
-    dlv2Facade.free();
         
     return parserExit;
 }

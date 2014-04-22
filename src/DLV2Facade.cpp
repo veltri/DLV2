@@ -76,11 +76,11 @@ DLV2Facade::readInput()
             ErrorMessage::errorGeneric( "WARNING: No such builder available!" );
     }
 
-    assert_msg( InputDirector::getInstance().getBuilder() == NULL,
+    assert_msg( director.getBuilder() == NULL,
             "Null input-builder, cannot start the parsing process.");
 
-    InputDirector::getInstance().configureBuilder(builder);
-    return InputDirector::getInstance().parse(getOptions().getInputFiles());
+    director.configureBuilder(builder);
+    return director.parse(getOptions().getInputFiles());
 }
 
 void
@@ -158,14 +158,9 @@ DLV2Facade::solve()
     
 }
 
-void
-DLV2Facade::free()
-{
-   InputDirector::free();
-}
-
 DLV2Facade::~DLV2Facade()
 {
+    getOptions().finalizeGlobalOptions();
     if( builder != NULL ) 
         delete builder;
 }

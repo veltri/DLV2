@@ -8,7 +8,7 @@
 #include "Buffer.h"
 #include <iostream>
 
-Buffer::Buffer() : blocks(20), lastBlockSize(0){
+Buffer::Buffer() : lastBlockSize(0), blocks(20){
 	for (unsigned i = 0; i < 20; ++i)
 		blocks[i] = 0;
 }

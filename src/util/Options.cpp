@@ -59,6 +59,14 @@ Options::globalOptions()
     return instance;
 }
 
+void
+Options::finalizeGlobalOptions() 
+{
+    if( instance != NULL )
+        delete instance;
+}
+
+
 Options::Options(): 
         aspCore2Strict(false), 
         printProgram(false),

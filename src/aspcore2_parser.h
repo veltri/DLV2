@@ -127,7 +127,7 @@ typedef union YYSTYPE
 {
 
 /* Line 2068 of yacc.c  */
-#line 27 "src/aspcore2.y"
+#line 29 "src/aspcore2.y"
 
     char* string;
     char single_char;

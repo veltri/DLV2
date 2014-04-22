@@ -36,13 +36,9 @@
 
 class InputDirector {
 public:
-
+    
+    InputDirector();
     ~InputDirector();
-
-    static void free();
-
-    static InputDirector& getInstance();
-
 
     void configureBuilder( InputBuilder* );
     InputBuilder* getBuilder() { return builder; }
@@ -59,14 +55,7 @@ public:
     
 
 private:
-    static InputDirector* instance;
-
-    InputDirector();
-    InputDirector(const InputDirector&):
-    	parserLine(0),  parserFile(0), parserErrors(0),
-    	parserStateInternal(false),builder(0)
-    		{ assert(0); }
-    
+   
     int parserLine;
     const char* parserFile;
     unsigned parserErrors;
@@ -78,8 +67,8 @@ private:
 // Bug Fixes for Various Environments
 
 // BUG-FIX: bison[1.24] fails to prototype its interfaces yylex() and yyerror().
-extern "C" int yylex();
-extern "C" int yyerror(const char*);
+extern "C" int yylex(InputDirector& director);
+extern "C" int yyerror(InputDirector&, const char*);
 
 #endif	/* INPUTDIRECTOR_H */
 

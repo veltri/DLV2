@@ -37,29 +37,10 @@ extern FILE* yyin;     // Where LEX reads its input from
 
 int 
 yyerror( 
+    InputDirector& director,
     const char* msg ) 
 { 
-    return InputDirector::getInstance().onError(msg); 
-}
-
-InputDirector* InputDirector::instance = NULL;
-
-InputDirector&
-InputDirector::getInstance() 
-{
-    if(instance == NULL)
-        instance = new InputDirector();
-    return *instance;
-}
-
-void
-InputDirector::free() 
-{
-    if(instance != NULL) {
-        delete instance;
-        instance = NULL;
-        //yylex_destroy();
-    }
+    return director.onError(msg); 
 }
 
 void 
@@ -82,6 +63,7 @@ InputDirector::InputDirector():
 
 InputDirector::~InputDirector()
 {
+    
 }
 
 int
@@ -102,7 +84,7 @@ InputDirector::parse(
                 return res;
         }
         else {
-            yyerror("Can't open input");
+            yyerror(*this,"Can't open input");
             return -1;
         }
     }
@@ -123,7 +105,7 @@ InputDirector::parse(
                 return res;
         }
         else {
-            yyerror("Can't open input");
+            yyerror(*this,"Can't open input");
             return -1;
         }
     }
@@ -138,7 +120,7 @@ InputDirector::parse(
     yyin = file;
     parserFile = fileName;
     parserLine = 1;
-    yyparse();
+    yyparse(*this);
 
     if( parserErrors > 0 ) {
         cerr << "Aborting due to parser errors." << endl;
@@ -154,7 +136,7 @@ InputDirector::parse( )
     yyin = stdin;
     parserFile = "STDIN";
     parserLine = 1;
-    yyparse();
+    yyparse(*this);
 
     if( parserErrors > 0 ) {
         cerr << "Aborting due to parser errors." << endl;

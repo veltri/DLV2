@@ -29,6 +29,7 @@
 
 #include <vector>
 #include <stddef.h>
+#include <iostream>
 
 #include "Constants.h"
 using namespace std; 
@@ -44,6 +45,8 @@ namespace dlv2
         void init( int argc, char* const* argv );
 
         static Options* globalOptions();
+        
+        static void finalizeGlobalOptions();
 
         bool isAspCore2Strict() const { return aspCore2Strict; }
 
@@ -55,7 +58,7 @@ namespace dlv2
 
         unsigned getNamedpipe() const { return namedpipe; }
 
-        ~Options() { if (instance != NULL) delete instance; }
+        ~Options() { /*if (instance != NULL) delete instance;*/ }
 
     private:
 

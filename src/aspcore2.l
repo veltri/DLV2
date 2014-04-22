@@ -22,6 +22,8 @@ This file is part of the ASPCOMP2013 ASP-Core-2 validator (validator in the foll
 #include "aspcore2_parser.h"
 #include "input/InputDirector.h"
 
+#define YY_DECL int yylex(InputDirector& director)
+
 %}
 
 %option nounput
@@ -46,12 +48,12 @@ NUMBER              ([0-9]+)
 	// terminated by a newline.)
 	
 <WANT_NEWLINE>{NEWLINE} { 
-                            InputDirector::getInstance().onNewLine();
+                            director.onNewLine();
                             BEGIN(INITIAL);
                             return NEWLINE;
 			}
 
-{NEWLINE}               { InputDirector::getInstance().onNewLine(); }
+{NEWLINE}               { director.onNewLine(); }
 "."                     { return DOT; }
 ".."                    { return DDOT; }
 ","                     { return COMMA; }
@@ -182,7 +184,7 @@ NUMBER              ([0-9]+)
                             char s[1024];
                             assert(yytext[1]==0);
                             sprintf(s,"Lexical syntax error (%s)",yytext); 
-                            yyerror(s);
+                            yyerror(director,s);
 		
                             return ERROR;
                         }

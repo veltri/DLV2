@@ -29,6 +29,7 @@
 
 #include "util/Constants.h"
 #include "util/Options.h"
+#include "input/InputDirector.h"
 
 #include <vector>
 using namespace std;
@@ -46,7 +47,6 @@ public:
     void greetings();
     int readInput();
     void solve();
-    void free();
     
     dlv2::Options& getOptions() { return options; }
  
@@ -54,6 +54,7 @@ private:
 
     dlv2::Options& options;
 
+    InputDirector director;
     InputBuilder* builder;
 
 };
