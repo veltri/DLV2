@@ -52,6 +52,7 @@ BUILD_DIR = build/$(BUILD)
 
 BINARY = $(BUILD_DIR)/dlv2
 GCC = g++
+#GCC = g++-fsf-4.8
 CXX = $(GCC)
 CXXFLAGS = $(cxxflags.$(BUILD))
 LINK = $(GCC)

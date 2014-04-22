@@ -24,6 +24,14 @@
 #include "input/InputDirector.h"
 #include "input/SimpleInputBuilder.h"
 #include "input/SelectorBuilder.h"
+#include "input/Buffer.h"
+
+//extern Buffer theBuffer;
+
+#include <fstream>
+#include <sstream>
+using namespace std;
+
 
 void 
 DLV2Facade::parseOptions(
@@ -41,7 +49,7 @@ DLV2Facade::greetings()
         cout << DLV2_STRING << endl;
 }
 
-void 
+int
 DLV2Facade::readInput()
 {
     switch( getOptions().getInputBuilderPolicy() )
@@ -72,25 +80,57 @@ DLV2Facade::readInput()
             "Null input-builder, cannot start the parsing process.");
 
     InputDirector::getInstance().configureBuilder(builder);
-    InputDirector::getInstance().parse(getOptions().getInputFiles());
+    return InputDirector::getInstance().parse(getOptions().getInputFiles());
 }
 
 void
 DLV2Facade::solve()
 {
-    // FIXME: this switch should be done differently else.
+	// FIXME: this switch should be done differently else.
 
-    switch( getOptions().getInputBuilderPolicy() )
-    {
+	switch( getOptions().getInputBuilderPolicy() )
+	{
 
-        case BUILDER_SELECTOR:
-        {
-            SelectorBuilder* selectorBuilder = static_cast<SelectorBuilder*>(builder);
-            int ecode = selectorBuilder->getSolverToCall();
-            delete selectorBuilder;
-            free();
-            exit(ecode);
-        }
+	case BUILDER_SELECTOR:
+	{
+		SelectorBuilder* selectorBuilder = static_cast<SelectorBuilder*>(builder);
+
+		ostringstream s1;
+                s1 << "mkfifo /tmp/wasppipe_" << getOptions().getNamedpipe();
+                system(s1.str().c_str());
+
+                int ecode = selectorBuilder->getSolverToCall();
+
+                if(ecode == 0)
+                {
+                        //cerr << "WASP" << endl;
+                        cout<<"0"<<endl;
+
+                }
+                else{
+			//cerr << "DLV" << endl;
+			cout<<"1"<<endl;
+			//system("cat - < /tmp/wasppipe");
+		}
+		cout.flush();
+
+		ostringstream s;
+		s << "/tmp/wasppipe_" << getOptions().getNamedpipe();
+
+		fstream o(s.str(), std::ios::out);
+
+		//cerr << "scrivo" << endl;
+		//theBuffer.flushOn(o);
+		o.flush();
+		//cerr << "finito" << endl;
+		o.close();
+
+        //delete selectorBuilder;
+        //free();
+
+        //exit(ecode);
+
+	}
         break;
 
         case BUILDER_MOCK_OBJECTS:

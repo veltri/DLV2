@@ -36,14 +36,13 @@ This file is part of the ASPCOMP2013 ASP-Core-2 validator (validator in the foll
 
 %token <string> SYMBOLIC_CONSTANT NUMBER VARIABLE STRING
 %token <string> EQUAL UNEQUAL LESS GREATER LESS_OR_EQ GREATER_OR_EQ
+%token <string> AGGR_COUNT AGGR_MAX AGGR_MIN AGGR_SUM ANON_VAR
 
 %token ERROR NEWLINE   
 
-%token DOT SEMICOLON COLON CONS QUERY_MARK
+%token DOT DDOT SEMICOLON COLON CONS QUERY_MARK
 
 %token PLUS TIMES SLASH
-
-%token ANON_VAR
 
 %token PARAM_OPEN PARAM_CLOSE
 %token SQUARE_OPEN SQUARE_CLOSE
@@ -51,7 +50,7 @@ This file is part of the ASPCOMP2013 ASP-Core-2 validator (validator in the foll
 
 %token DASH COMMA NAF AT WCONS
 
-%token VEL EXISTS AGGR_COUNT AGGR_MAX AGGR_MIN AGGR_SUM
+%token VEL EXISTS
 
 %left PLUS DASH
 %left TIMES SLASH
@@ -98,14 +97,21 @@ rule
 
 head
     : disjunction
+        {
+            InputDirector::getInstance().getBuilder()->onHead();
+        }
     | choice_atom 
         {
             InputDirector::getInstance().getBuilder()->onChoiceAtom();
+            InputDirector::getInstance().getBuilder()->onHead();
         }
     ;       
 
 body
     : conjunction 
+        {
+            InputDirector::getInstance().getBuilder()->onBody();
+        }
     ;
 
 weight_at_levels 
@@ -181,7 +187,7 @@ lower_guard
     : term binop 
         { 
             InputDirector::getInstance().getBuilder()->onChoiceLowerGuard($2); 
-            delete $2;
+            delete[] $2;
         } 
     ;
 
@@ -189,7 +195,7 @@ upper_guard
     : binop term 
         { 
             InputDirector::getInstance().getBuilder()->onChoiceUpperGuard($1); 
-            delete $1;
+            delete[] $1;
         }
     ;
 
@@ -280,17 +286,17 @@ atom
     : identifier 
         { 
             InputDirector::getInstance().getBuilder()->onPredicateName($1); 
-            delete $1;
+            delete[] $1;
         }
     | identifier PARAM_OPEN terms PARAM_CLOSE 
         { 
             InputDirector::getInstance().getBuilder()->onPredicateName($1); 
-            delete $1;
+            delete[] $1;
         }
     | identifier PARAM_OPEN PARAM_CLOSE 
         { 
             InputDirector::getInstance().getBuilder()->onPredicateName($1); 
-            delete $1;
+            delete[] $1;
         }
     ;              
          
@@ -308,7 +314,7 @@ builtin_atom
     : term binop term 
         {
             InputDirector::getInstance().getBuilder()->onBuiltinAtom($2);  
-            delete $2;
+            delete[] $2;
         }
     ;
 
@@ -330,26 +336,32 @@ arithop
     | SLASH { $$ = '/'; }
     ;      
 
+ddt
+    : 
+    |
+    DDOT NUMBER
+    ;
+    
 term_ 
     : identifier 
         { 
             InputDirector::getInstance().getBuilder()->onTerm($1); 
-            delete $1;
+            delete[] $1;
         }
-    | NUMBER 
+    | NUMBER ddt 
         { 
             InputDirector::getInstance().getBuilder()->onTerm($1); 
-            delete $1;
+            delete[] $1;
         }
     | ANON_VAR 
         { 
             InputDirector::getInstance().getBuilder()->onTerm($1); 
-            delete $1;
+            delete[] $1;
         }
     | identifier PARAM_OPEN terms PARAM_CLOSE 
         { 
             InputDirector::getInstance().getBuilder()->onFunction($1, $3); 
-            delete $1;
+            delete[] $1;
         }
     | PARAM_OPEN term PARAM_CLOSE 
         { 
@@ -377,22 +389,22 @@ ground_term
     : SYMBOLIC_CONSTANT 
         {
             InputDirector::getInstance().getBuilder()->onAggregateGroundTerm($1);
-            delete $1;
+            delete[] $1;
         }
     | STRING 
         {
             InputDirector::getInstance().getBuilder()->onAggregateGroundTerm($1);
-            delete $1;
+            delete[] $1;
         }
     | NUMBER
         {
             InputDirector::getInstance().getBuilder()->onAggregateGroundTerm($1);
-            delete $1;
+            delete[] $1;
         }
     | DASH NUMBER
         {
             InputDirector::getInstance().getBuilder()->onAggregateGroundTerm($2,true);
-            delete $2;
+            delete[] $2;
         }
     ;
 
@@ -400,12 +412,12 @@ variable_term
     : VARIABLE
         { 
             InputDirector::getInstance().getBuilder()->onAggregateVariableTerm($1);
-            delete $1;
+            delete[] $1;
         }
     | ANON_VAR
         {
             InputDirector::getInstance().getBuilder()->onAggregateVariableTerm($1);
-            delete $1;
+            delete[] $1;
         }
     ;
 
@@ -413,12 +425,12 @@ vars
     : VARIABLE 
         { 
             InputDirector::getInstance().getBuilder()->onExistentialVariable($1); 
-            delete $1;
+            delete[] $1;
         }
     | vars COMMA VARIABLE 
         { 
             InputDirector::getInstance().getBuilder()->onExistentialVariable($3);
-            delete $3;
+            delete[] $3;
         }
     ;
 
@@ -439,7 +451,7 @@ lower_guard_compare_aggregate
     : term compareop
         {
             InputDirector::getInstance().getBuilder()->onAggregateLowerGuard($2);
-            delete $2;
+            delete[] $2;
         }
     ;
 
@@ -447,7 +459,7 @@ upper_guard_compare_aggregate
     : compareop term
         {
             InputDirector::getInstance().getBuilder()->onAggregateUpperGuard($1);
-            delete $1;
+            delete[] $1;
         }
     ;
 
@@ -460,7 +472,7 @@ lower_guard_leftward_left_aggregate
     : term leftwardop
         {
             InputDirector::getInstance().getBuilder()->onAggregateLowerGuard($2);
-            delete $2;
+            delete[] $2;
         }
     ;
 
@@ -477,7 +489,7 @@ lower_guard_rightward_left_aggregate
     : term rightwardop
         {
             InputDirector::getInstance().getBuilder()->onAggregateLowerGuard($2);
-            delete $2;
+            delete[] $2;
         }
     ;
 
@@ -489,7 +501,7 @@ upper_guard_leftward_right_aggregate
     : leftwardop term
         {
             InputDirector::getInstance().getBuilder()->onAggregateUpperGuard($1);
-            delete $1;
+            delete[] $1;
         }
     ;
 
@@ -497,7 +509,7 @@ upper_guard_rightward_right_aggregate
     : rightwardop term
         {
             InputDirector::getInstance().getBuilder()->onAggregateUpperGuard($1);
-            delete $1;
+            delete[] $1;
         }
     ;
 
@@ -545,21 +557,21 @@ aggregate_function
     : AGGR_COUNT 
         {
             InputDirector::getInstance().getBuilder()->onAggregateFunction($1);
-            delete $1;
+            delete[] $1;
         }
     | AGGR_MAX
         {
             InputDirector::getInstance().getBuilder()->onAggregateFunction($1);
-            delete $1;
+            delete[] $1;
         }
     | AGGR_MIN
         {
             InputDirector::getInstance().getBuilder()->onAggregateFunction($1);
-            delete $1;
+            delete[] $1;
         }
     | AGGR_SUM
         {
             InputDirector::getInstance().getBuilder()->onAggregateFunction($1);
-            delete $1;
+            delete[] $1;
         }
     ;   

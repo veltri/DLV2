@@ -47,34 +47,35 @@
      GREATER = 265,
      LESS_OR_EQ = 266,
      GREATER_OR_EQ = 267,
-     ERROR = 268,
-     NEWLINE = 269,
-     DOT = 270,
-     SEMICOLON = 271,
-     COLON = 272,
-     CONS = 273,
-     QUERY_MARK = 274,
-     PLUS = 275,
-     TIMES = 276,
-     SLASH = 277,
-     ANON_VAR = 278,
-     PARAM_OPEN = 279,
-     PARAM_CLOSE = 280,
-     SQUARE_OPEN = 281,
-     SQUARE_CLOSE = 282,
-     CURLY_OPEN = 283,
-     CURLY_CLOSE = 284,
-     DASH = 285,
-     COMMA = 286,
-     NAF = 287,
-     AT = 288,
-     WCONS = 289,
-     VEL = 290,
-     EXISTS = 291,
-     AGGR_COUNT = 292,
-     AGGR_MAX = 293,
-     AGGR_MIN = 294,
-     AGGR_SUM = 295
+     AGGR_COUNT = 268,
+     AGGR_MAX = 269,
+     AGGR_MIN = 270,
+     AGGR_SUM = 271,
+     ANON_VAR = 272,
+     ERROR = 273,
+     NEWLINE = 274,
+     DOT = 275,
+     DDOT = 276,
+     SEMICOLON = 277,
+     COLON = 278,
+     CONS = 279,
+     QUERY_MARK = 280,
+     PLUS = 281,
+     TIMES = 282,
+     SLASH = 283,
+     PARAM_OPEN = 284,
+     PARAM_CLOSE = 285,
+     SQUARE_OPEN = 286,
+     SQUARE_CLOSE = 287,
+     CURLY_OPEN = 288,
+     CURLY_CLOSE = 289,
+     DASH = 290,
+     COMMA = 291,
+     NAF = 292,
+     AT = 293,
+     WCONS = 294,
+     VEL = 295,
+     EXISTS = 296
    };
 #endif
 /* Tokens.  */
@@ -88,34 +89,35 @@
 #define GREATER 265
 #define LESS_OR_EQ 266
 #define GREATER_OR_EQ 267
-#define ERROR 268
-#define NEWLINE 269
-#define DOT 270
-#define SEMICOLON 271
-#define COLON 272
-#define CONS 273
-#define QUERY_MARK 274
-#define PLUS 275
-#define TIMES 276
-#define SLASH 277
-#define ANON_VAR 278
-#define PARAM_OPEN 279
-#define PARAM_CLOSE 280
-#define SQUARE_OPEN 281
-#define SQUARE_CLOSE 282
-#define CURLY_OPEN 283
-#define CURLY_CLOSE 284
-#define DASH 285
-#define COMMA 286
-#define NAF 287
-#define AT 288
-#define WCONS 289
-#define VEL 290
-#define EXISTS 291
-#define AGGR_COUNT 292
-#define AGGR_MAX 293
-#define AGGR_MIN 294
-#define AGGR_SUM 295
+#define AGGR_COUNT 268
+#define AGGR_MAX 269
+#define AGGR_MIN 270
+#define AGGR_SUM 271
+#define ANON_VAR 272
+#define ERROR 273
+#define NEWLINE 274
+#define DOT 275
+#define DDOT 276
+#define SEMICOLON 277
+#define COLON 278
+#define CONS 279
+#define QUERY_MARK 280
+#define PLUS 281
+#define TIMES 282
+#define SLASH 283
+#define PARAM_OPEN 284
+#define PARAM_CLOSE 285
+#define SQUARE_OPEN 286
+#define SQUARE_CLOSE 287
+#define CURLY_OPEN 288
+#define CURLY_CLOSE 289
+#define DASH 290
+#define COMMA 291
+#define NAF 292
+#define AT 293
+#define WCONS 294
+#define VEL 295
+#define EXISTS 296
 
 
 
@@ -134,7 +136,7 @@ typedef union YYSTYPE
 
 
 /* Line 2068 of yacc.c  */
-#line 138 "src/aspcore2_parser.h"
+#line 140 "src/aspcore2_parser.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

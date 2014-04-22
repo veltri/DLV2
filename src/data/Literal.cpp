@@ -85,10 +85,10 @@ Literal::Literal(
 
 Literal::~Literal() 
 {
-    if( lowerGuard )
+    if( lowerGuard != NULL )
         delete lowerGuard;
-    if( upperGuard )
+    if( upperGuard != NULL )
         delete upperGuard;
-    if( atom )
+    if( atom != NULL )
         delete atom;
 }

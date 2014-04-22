@@ -44,7 +44,7 @@ public:
     
     void parseOptions( int, char* const* );
     void greetings();
-    void readInput();
+    int readInput();
     void solve();
     void free();
     

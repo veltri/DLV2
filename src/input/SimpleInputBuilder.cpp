@@ -394,6 +394,11 @@ SimpleInputBuilder::onChoiceLowerGuard(
     // It should be on top of the stack.
     assert_msg( termStack.size() > 0, 
             "Trying to create a null choice-left term" );
+    if( lowerGuard != NULL )
+    {
+        delete lowerGuard;
+        lowerGuard = NULL;
+    }
     lowerGuard = new Term(termStack.back());
     termStack.pop_back();
     lowerBinop = string(binop);
@@ -406,6 +411,11 @@ SimpleInputBuilder::onChoiceUpperGuard(
     // It should be on top of the stack.
     assert_msg( termStack.size() > 0, 
             "Trying to create a null choice-right term" );
+    if( upperGuard != NULL )
+    {
+        delete upperGuard;
+        upperGuard = NULL;
+    }
     upperGuard = new Term(termStack.back());
     termStack.pop_back();
     upperBinop = string(binop);
@@ -431,7 +441,7 @@ SimpleInputBuilder::onChoiceElementAtom()
         currentChoiceElement = NULL;
     }
     currentChoiceElement = new ChoiceElement(*currentAtom,vector<Literal>());
-    if( currentAtom )
+    if( currentAtom != NULL )
     {
         delete currentAtom;
         currentAtom = NULL;
@@ -514,9 +524,9 @@ SimpleInputBuilder::onBuiltinAtom(
     currentAtom = new Atom(leftOperand,op,rightOperand);
     termStack.clear();
     predName = "";
-    if( leftOperand )
+    if( leftOperand != NULL )
         delete leftOperand;
-    if( rightOperand )
+    if( rightOperand != NULL )
         delete rightOperand;
 }
 
@@ -527,6 +537,11 @@ SimpleInputBuilder::onAggregateLowerGuard(
     // It should be on top of the stack.
     assert_msg( termStack.size() > 0, 
             "Trying to create a null aggregate lower guard" );
+    if( lowerGuard != NULL )
+    {
+        delete lowerGuard;
+        lowerGuard = NULL;
+    }
     lowerGuard = new Term(termStack.back());
     termStack.pop_back();
     lowerBinop = string(op);
@@ -539,6 +554,11 @@ SimpleInputBuilder::onAggregateUpperGuard(
     // It should be on top of the stack.
     assert_msg( termStack.size() > 0, 
             "Trying to create a null choice-right term" );
+    if( upperGuard != NULL )
+    {
+        delete upperGuard;
+        upperGuard = NULL;
+    }
     upperGuard = new Term(termStack.back());
     termStack.pop_back();
     upperBinop = string(op);

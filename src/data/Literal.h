@@ -76,7 +76,7 @@ operator<< (
             "Invalid aggregate literal, null guards");
         if( l.lowerGuard )
             out << *(l.lowerGuard) << l.lowerBinop;
-        out << "#" << l.aggregateFunction << "{";
+        out << l.aggregateFunction << "{";
         for( unsigned i=0; i<l.aggregateElements.size(); i++ )
         {
             out << l.aggregateElements[i];
@@ -89,6 +89,7 @@ operator<< (
     }
     else
     {
+        assert_msg( l.atom != NULL, "Invalid literal: null atom!");
         out << *(l.atom);
     }
     return out;

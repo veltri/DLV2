@@ -57,8 +57,8 @@ ChoiceAtom::ChoiceAtom(
 
 ChoiceAtom::~ChoiceAtom()
 {
-    if( lowerGuard )
+    if( lowerGuard != NULL )
         delete lowerGuard;
-    if( upperGuard )
+    if( upperGuard != NULL )
         delete upperGuard;
 }

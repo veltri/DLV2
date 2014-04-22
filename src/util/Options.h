@@ -53,6 +53,8 @@ namespace dlv2
 
         OUTPUT_POLICY getOutputPolicy() const { return outputPolicy; }
 
+        unsigned getNamedpipe() const { return namedpipe; }
+
         ~Options() { if (instance != NULL) delete instance; }
 
     private:
@@ -81,6 +83,8 @@ namespace dlv2
         
         OUTPUT_POLICY outputPolicy;
         
+        unsigned namedpipe;
+
     }; // class
 }; // namespace
 

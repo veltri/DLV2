@@ -54,8 +54,8 @@ WeakConstraint::WeakConstraint(
 
 WeakConstraint::~WeakConstraint()
 {
-    if( level )
+    if( level != NULL )
         delete level;
-    if( weight )
+    if( weight != NULL )
         delete weight;
 }

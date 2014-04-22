@@ -42,7 +42,9 @@ public:
     virtual void onWeakConstraint();
     virtual void onQuery();
     virtual void onHeadAtom();
+    virtual void onHead() { }
     virtual void onBodyLiteral();
+    virtual void onBody() { }
     virtual void onNafLiteral( bool naf = false );
     virtual void onAtom( bool isStrongNeg = false );
     virtual void onExistentialAtom();

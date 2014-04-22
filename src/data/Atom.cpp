@@ -101,9 +101,9 @@ Atom::Atom(
 
 Atom::~Atom()
 {
-    if( bLeft )
+    if( bLeft != NULL )
         delete bLeft;
-    if( bRight )
+    if( bRight != NULL )
         delete bRight;
 }
 

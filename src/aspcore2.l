@@ -52,11 +52,9 @@ NUMBER              ([0-9]+)
 			}
 
 {NEWLINE}               { InputDirector::getInstance().onNewLine(); }
-
 "."                     { return DOT; }
-
+".."                    { return DDOT; }
 ","                     { return COMMA; }
-
 "|"                     { return VEL; }
 ";"                     { return SEMICOLON; }
 ":"                     { return COLON; }
