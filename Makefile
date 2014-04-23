@@ -81,11 +81,11 @@ static: $(OBJS) $(DEPS)
 run: $(BINARY)
 	./$(BINARY)
 
-parser: $(SOURCE_DIR)/aspcore2.l $(SOURCE_DIR)/aspcore2.y
-	flex -o$(SOURCE_DIR)/aspcore2_lexer.hpp $(SOURCE_DIR)/aspcore2.l
-	bison -y -d -o$(SOURCE_DIR)/aspcore2_parser.c $(SOURCE_DIR)/aspcore2.y
-	bison -y -o$(SOURCE_DIR)/aspcore2_parser.hpp $(SOURCE_DIR)/aspcore2.y
-	rm -f $(SOURCE_DIR)/aspcore2_parser.c
+parser: $(SOURCE_DIR)/input/aspcore2.l $(SOURCE_DIR)/input/aspcore2.y
+	flex -o$(SOURCE_DIR)/input/aspcore2_lexer.hpp $(SOURCE_DIR)/input/aspcore2.l
+	bison -y -d -o$(SOURCE_DIR)/input/aspcore2_parser.c $(SOURCE_DIR)/input/aspcore2.y
+	bison -y -o$(SOURCE_DIR)/input/aspcore2_parser.hpp $(SOURCE_DIR)/input/aspcore2.y
+	rm -f $(SOURCE_DIR)/input/aspcore2_parser.c
 
 TESTS_DIR = tests
 

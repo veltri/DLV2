@@ -27,48 +27,50 @@
 #ifndef INPUTDIRECTOR_H
 #define INPUTDIRECTOR_H
 
-#include "../util/Assert.h"
 #include "InputBuilder.h"
-
 #include <vector>
+#include <cstdio>
 
-// TODO: why should this be a singleton?
+namespace DLV2
+{
+    
+    class InputDirector {
+    public:
 
-class InputDirector {
-public:
-    
-    InputDirector();
-    ~InputDirector();
+        InputDirector();
+        ~InputDirector();
 
-    void configureBuilder( InputBuilder* );
-    InputBuilder* getBuilder() { return builder; }
-    
-    //////////////////////////////////////////////////////////////////////////////
-    // Parsing functions
-    int parse( std::vector<const char*> files);
-    int parse( int filesSize, const char **files );
-    int parse( const char* filename, FILE *file );
-    int parse( );
-    
-    int onError(const char* msg);
-    void onNewLine() { parserLine++; }
-    
+        void configureBuilder( InputBuilder* );
+        InputBuilder* getBuilder() { return builder; }
 
-private:
-   
-    int parserLine;
-    const char* parserFile;
-    unsigned parserErrors;
-    bool parserStateInternal;
-    InputBuilder* builder;
+        //////////////////////////////////////////////////////////////////////////////
+        // Parsing functions
+        int parse( std::vector<const char*> files);
+        int parse( int filesSize, const char **files );
+        int parse( const char* filename, FILE *file );
+        int parse( );
+
+        int onError(const char* msg);
+        void onNewLine() { parserLine++; }
+
+
+    private:
+
+        int parserLine;
+        const char* parserFile;
+        unsigned parserErrors;
+        bool parserStateInternal;
+        InputBuilder* builder;
+    };
+    
 };
 
 //////////////////////////////////////////////////////////////////////////////
 // Bug Fixes for Various Environments
 
 // BUG-FIX: bison[1.24] fails to prototype its interfaces yylex() and yyerror().
-extern "C" int yylex(InputDirector& director);
-extern "C" int yyerror(InputDirector&, const char*);
+extern "C" int yylex(DLV2::InputDirector& director);
+extern "C" int yyerror(DLV2::InputDirector&, const char*);
 
 #endif	/* INPUTDIRECTOR_H */
 

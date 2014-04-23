@@ -30,37 +30,42 @@
 #include "Term.h"
 #include "ChoiceElement.h"
 
-class ChoiceAtom {
-public:
-    ChoiceAtom( Term*, string, vector<ChoiceElement>, string, Term* );
-    ChoiceAtom( const ChoiceAtom& );
-    ~ChoiceAtom();
-private:
-    friend inline ostream& operator<< ( ostream&, const ChoiceAtom& );
-    
-    Term* lowerGuard;
-    string lowerBinop;
-    vector<ChoiceElement> choices;
-    string upperBinop;
-    Term* upperGuard;
-};
-
-inline ostream& operator<< ( ostream& out, const ChoiceAtom& ca )
+namespace DLV2
 {
-    if( ca.lowerGuard )
-        out << *(ca.lowerGuard) << ca.lowerBinop;
-    out << "{";
-    for( unsigned i=0; i<ca.choices.size(); i++ )
+    
+    class ChoiceAtom {
+    public:
+        ChoiceAtom( Term*, string, vector<ChoiceElement>, string, Term* );
+        ChoiceAtom( const ChoiceAtom& );
+        ~ChoiceAtom();
+    private:
+        friend inline ostream& operator<< ( ostream&, const ChoiceAtom& );
+
+        Term* lowerGuard;
+        string lowerBinop;
+        vector<ChoiceElement> choices;
+        string upperBinop;
+        Term* upperGuard;
+    };
+
+    inline ostream& operator<< ( ostream& out, const ChoiceAtom& ca )
     {
-        out << ca.choices[i];
-        if( i<ca.choices.size()-1 )
-            out << ";";
+        if( ca.lowerGuard )
+            out << *(ca.lowerGuard) << ca.lowerBinop;
+        out << "{";
+        for( unsigned i=0; i<ca.choices.size(); i++ )
+        {
+            out << ca.choices[i];
+            if( i<ca.choices.size()-1 )
+                out << ";";
+        }
+        out << "}";
+        if( ca.upperGuard )
+            out << ca.upperBinop << *(ca.upperGuard);
+        return out;
     }
-    out << "}";
-    if( ca.upperGuard )
-        out << ca.upperBinop << *(ca.upperGuard);
-    return out;
-}
+
+};
 
 #endif	/* CHOICEATOM_H */
 

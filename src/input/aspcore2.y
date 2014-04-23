@@ -20,11 +20,11 @@ This file is part of the ASPCOMP2013 ASP-Core-2 validator (validator in the foll
     along with the validator.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "input/InputDirector.h"
+#include "InputDirector.h"
 
 %}
-%lex-param {InputDirector& director}
-%parse-param {InputDirector& director}
+%lex-param {DLV2::InputDirector& director}
+%parse-param {DLV2::InputDirector& director}
 %error-verbose
 %union {
     char* string;

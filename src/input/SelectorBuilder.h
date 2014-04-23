@@ -34,74 +34,79 @@
 
 using namespace std;
 
-class SelectorBuilder : public InputBuilder {
-public:
-    SelectorBuilder();
-    virtual ~SelectorBuilder();
-    
-    virtual void onRule();
-    virtual void onConstraint();
-    virtual void onWeakConstraint();
-    virtual void onQuery();
-    virtual void onHeadAtom();    
-    virtual void onHead() { }
-    virtual void onBodyLiteral();
-    virtual void onBody() { }
-    virtual void onNafLiteral( bool naf = false );
-    virtual void onAtom( bool isStrongNeg = false );
-    virtual void onExistentialAtom();
-    virtual void onPredicateName( char* );
-    virtual void onExistentialVariable( char* );
-    virtual void onTerm( char* );
-    virtual void onTerm( int );
-    virtual void onFunction( char*, int );
-    virtual void onTermDash();
-    virtual void onTermParams();
-    virtual void onArithmeticOperation( char );
-    virtual void onWeightAtLevels( int, int, int );
-    virtual void onChoiceLowerGuard( char* );
-    virtual void onChoiceUpperGuard( char* );
-    virtual void onChoiceElementAtom();
-    virtual void onChoiceElementLiteral();
-    virtual void onChoiceElement();
-    virtual void onChoiceAtom();
-    virtual void onBuiltinAtom( char* );
-    virtual void onAggregateLowerGuard( char* );
-    virtual void onAggregateUpperGuard( char* );
-    virtual void onAggregateFunction( char* );
-    virtual void onAggregateGroundTerm( char*, bool dash = false );
-    virtual void onAggregateVariableTerm( char* );
-    virtual void onAggregateNafLiteral();
-    virtual void onAggregateElement();
-    virtual void onAggregate( bool naf = false );
-    
-    unsigned getSolverToCall();
-    
-private:
-    bool foundQuery;
-    bool foundChoice;
+namespace DLV2
+{
 
-    string predName;
-    //bool inBody;
-    vector<string> head;
-    struct Literal { string predname; bool sign; };
-    vector<Literal> body;
-    void cleanTemp();
+    class SelectorBuilder : public InputBuilder {
+    public:
+        SelectorBuilder();
+        virtual ~SelectorBuilder();
+
+        virtual void onRule();
+        virtual void onConstraint();
+        virtual void onWeakConstraint();
+        virtual void onQuery();
+        virtual void onHeadAtom();    
+        virtual void onHead() { }
+        virtual void onBodyLiteral();
+        virtual void onBody() { }
+        virtual void onNafLiteral( bool naf = false );
+        virtual void onAtom( bool isStrongNeg = false );
+        virtual void onExistentialAtom();
+        virtual void onPredicateName( char* );
+        virtual void onExistentialVariable( char* );
+        virtual void onTerm( char* );
+        virtual void onTerm( int );
+        virtual void onFunction( char*, int );
+        virtual void onTermDash();
+        virtual void onTermParams();
+        virtual void onArithmeticOperation( char );
+        virtual void onWeightAtLevels( int, int, int );
+        virtual void onChoiceLowerGuard( char* );
+        virtual void onChoiceUpperGuard( char* );
+        virtual void onChoiceElementAtom();
+        virtual void onChoiceElementLiteral();
+        virtual void onChoiceElement();
+        virtual void onChoiceAtom();
+        virtual void onBuiltinAtom( char* );
+        virtual void onAggregateLowerGuard( char* );
+        virtual void onAggregateUpperGuard( char* );
+        virtual void onAggregateFunction( char* );
+        virtual void onAggregateGroundTerm( char*, bool dash = false );
+        virtual void onAggregateVariableTerm( char* );
+        virtual void onAggregateNafLiteral();
+        virtual void onAggregateElement();
+        virtual void onAggregate( bool naf = false );
+
+        unsigned getSolverToCall();
+
+    private:
+        bool foundQuery;
+        bool foundChoice;
+
+        string predName;
+        //bool inBody;
+        vector<string> head;
+        struct Literal { string predname; bool sign; };
+        vector<Literal> body;
+        void cleanTemp();
 
 
-    unordered_map<string,unsigned> pred2nodeId;
-    unsigned addPredicateInHash(string predname);
+        unordered_map<string,unsigned> pred2nodeId;
+        unsigned addPredicateInHash(string predname);
 
-    vector<vector<unsigned>> heads;
-    bool reaches(unsigned, vector<unsigned>);
+        vector<vector<unsigned>> heads;
+        bool reaches(unsigned, vector<unsigned>);
 
-    //unordered_map<unsigned,vector<vector<unsigned>>> headsOf;
+        //unordered_map<unsigned,vector<vector<unsigned>>> headsOf;
 
-    unordered_map<unsigned,vector<unsigned>> grafo;
-    void addArc(unsigned from, unsigned to);
+        unordered_map<unsigned,vector<unsigned>> grafo;
+        void addArc(unsigned from, unsigned to);
 
-    bool HCF();
+        bool HCF();
 
+
+    };
 
 };
 

@@ -19,6 +19,9 @@
 
 #include "Term.h"
 
+namespace DLV2
+{
+
 Term::Term( 
     unsigned i ):
         index(Names::addIntegerConstant(i)),
@@ -55,3 +58,5 @@ Term::Term(
 {
     
 }
+
+};

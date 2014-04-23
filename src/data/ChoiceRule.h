@@ -30,38 +30,43 @@
 #include <vector>
 #include "ChoiceAtom.h"
 
-class ChoiceRule {
-public:
-    ChoiceRule( const ChoiceAtom& ca, vector<Literal> b ): head(ca), body(b) { }
-    ChoiceRule( const ChoiceRule& cr ): head(cr.head), body(cr.body) { }
-    ~ChoiceRule() { }
-    
-    void addToBody( const Literal& l ) { body.push_back(l); }
-        
-private:
-    friend inline ostream& operator<< ( ostream&, const ChoiceRule& );
-    
-    ChoiceAtom head;
-    vector<Literal> body;
-};
-
-ostream& 
-operator<< ( 
-    ostream& out,
-    const ChoiceRule& r )
+namespace DLV2
 {
-    out << r.head;
-    if( r.body.size() > 0 )
-        out << " :- ";
-    for( unsigned i=0; i<r.body.size(); i++ )
+    
+    class ChoiceRule {
+    public:
+        ChoiceRule( const ChoiceAtom& ca, vector<Literal> b ): head(ca), body(b) { }
+        ChoiceRule( const ChoiceRule& cr ): head(cr.head), body(cr.body) { }
+        ~ChoiceRule() { }
+
+        void addToBody( const Literal& l ) { body.push_back(l); }
+
+    private:
+        friend inline ostream& operator<< ( ostream&, const ChoiceRule& );
+
+        ChoiceAtom head;
+        vector<Literal> body;
+    };
+
+    ostream& 
+    operator<< ( 
+        ostream& out,
+        const ChoiceRule& r )
     {
-        out << r.body[i];
-        if( i<r.body.size()-1 )
-            out << ", ";
+        out << r.head;
+        if( r.body.size() > 0 )
+            out << " :- ";
+        for( unsigned i=0; i<r.body.size(); i++ )
+        {
+            out << r.body[i];
+            if( i<r.body.size()-1 )
+                out << ", ";
+        }
+        out << ".";
+        return out;
     }
-    out << ".";
-    return out;
-}
+    
+};
 
 #endif	/* CHOICERULE_H */
 

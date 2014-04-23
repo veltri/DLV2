@@ -23,6 +23,9 @@
 #include "SelectorBuilder.h"
 #include "../util/Assert.h"
 
+namespace DLV2
+{
+
 SelectorBuilder::SelectorBuilder():
         InputBuilder(), foundQuery(false), foundChoice(false),
         predName("") //, inBody(false)
@@ -359,4 +362,4 @@ SelectorBuilder::~SelectorBuilder()
 	*/
 }
 
-
+};

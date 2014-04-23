@@ -19,6 +19,9 @@
 
 #include "ChoiceAtom.h"
 
+namespace DLV2
+{
+    
 ChoiceAtom::ChoiceAtom(
     Term* lb, 
     string lo, 
@@ -62,3 +65,5 @@ ChoiceAtom::~ChoiceAtom()
     if( upperGuard != NULL )
         delete upperGuard;
 }
+
+};

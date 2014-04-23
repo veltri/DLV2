@@ -26,7 +26,7 @@
 #include <getopt.h>
 #include <cstdlib>
 
-namespace dlv2{
+namespace DLV2{
   
 // Options with a short alias.
 #define OPTIONID_help 'h'

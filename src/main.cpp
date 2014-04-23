@@ -7,7 +7,7 @@ using namespace std;
 
 int main(int argc, char** argv)
 {  
-    DLV2Facade dlv2Facade;
+    DLV2::DLV2Facade dlv2Facade;
 
     dlv2Facade.parseOptions(argc,argv);
     dlv2Facade.greetings();

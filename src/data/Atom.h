@@ -34,79 +34,84 @@
 
 using namespace std;
 
-class Atom {
-public:
-    //Atom() { }
-    Atom( string, unsigned, vector<Term>, bool tNeg = false );
-    Atom( string, unsigned, vector<Term>, vector<Term> );
-    Atom( Term* left, string bop, Term* right );
-    Atom( const Atom& a );
-    ~Atom();
-     
-    string getPredName() const; 
-    unsigned getIndex() const { return predIndex; }
-    unsigned getPredicateArity( unsigned ) { return arity; }
-    vector<Term> getTerms() const { return terms; }
-    bool isTrueNegated() const { return trueNegated; } 
-    bool isPropositional() const { return (terms.size() == 0); }
-    bool isExistential() const { return (existentialVars.size() > 0); }
-    
-private:
-    friend inline ostream& operator<< ( ostream&, const Atom& );
-        
-    unsigned predIndex;
-    unsigned arity;
-    bool trueNegated;
-    vector<Term> terms;
-    vector<Term> existentialVars;
-    
-    bool isBuiltin;
-    Term* bLeft;
-    string binop;
-    Term* bRight;
-};
-
-ostream& 
-operator<< ( 
-    ostream & out, 
-    const Atom& a )
+namespace DLV2
 {
-    if( a.isBuiltin )
+
+    class Atom {
+    public:
+        //Atom() { }
+        Atom( string, unsigned, vector<Term>, bool tNeg = false );
+        Atom( string, unsigned, vector<Term>, vector<Term> );
+        Atom( Term* left, string bop, Term* right );
+        Atom( const Atom& a );
+        ~Atom();
+
+        string getPredName() const; 
+        unsigned getIndex() const { return predIndex; }
+        unsigned getPredicateArity( unsigned ) { return arity; }
+        vector<Term> getTerms() const { return terms; }
+        bool isTrueNegated() const { return trueNegated; } 
+        bool isPropositional() const { return (terms.size() == 0); }
+        bool isExistential() const { return (existentialVars.size() > 0); }
+
+    private:
+        friend inline ostream& operator<< ( ostream&, const Atom& );
+
+        unsigned predIndex;
+        unsigned arity;
+        bool trueNegated;
+        vector<Term> terms;
+        vector<Term> existentialVars;
+
+        bool isBuiltin;
+        Term* bLeft;
+        string binop;
+        Term* bRight;
+    };
+
+    ostream& 
+    operator<< ( 
+        ostream & out, 
+        const Atom& a )
     {
-        assert_msg( (a.bLeft != NULL && a.bRight != NULL),
-            "Invalid builtin atom, null terms");
-        out << *(a.bLeft) << a.binop << *(a.bRight);
-    }
-    else
-    {
-        if( a.existentialVars.size() > 0 )
+        if( a.isBuiltin )
         {
-            out << "\\E ";
-            for( unsigned i=0; i<a.existentialVars.size(); i++ )
-            {
-                out << a.existentialVars[i];
-                if( i < a.existentialVars.size()-1 )
-                    out << ",";
-            }
-            out << " ";
+            assert_msg( (a.bLeft != NULL && a.bRight != NULL),
+                "Invalid builtin atom, null terms");
+            out << *(a.bLeft) << a.binop << *(a.bRight);
         }
-        if( a.trueNegated )
-            out << "-";
-        out << a.getPredName();
-        if( a.terms.size() != 0 ) 
+        else
         {
-            out << "(";
-            for( unsigned i=0; i<a.terms.size(); i++ )
+            if( a.existentialVars.size() > 0 )
             {
-                out << a.terms[i];
-                if( i < a.terms.size()-1 )
-                    out << ",";
+                out << "\\E ";
+                for( unsigned i=0; i<a.existentialVars.size(); i++ )
+                {
+                    out << a.existentialVars[i];
+                    if( i < a.existentialVars.size()-1 )
+                        out << ",";
+                }
+                out << " ";
             }
-            out << ")";
+            if( a.trueNegated )
+                out << "-";
+            out << a.getPredName();
+            if( a.terms.size() != 0 ) 
+            {
+                out << "(";
+                for( unsigned i=0; i<a.terms.size(); i++ )
+                {
+                    out << a.terms[i];
+                    if( i < a.terms.size()-1 )
+                        out << ",";
+                }
+                out << ")";
+            }
         }
+        return out;
     }
-    return out;
-}
+
+}; 
 
 #endif	/* ATOM_H */
 

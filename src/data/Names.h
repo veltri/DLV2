@@ -32,21 +32,26 @@
 
 using namespace std;
 
-class Names {
-public:
-    static unsigned addPredicateName( string );
-    static string getPredicateName( unsigned );
-    static unsigned addStringConstant( string );
-    static string getStringConstant( unsigned );
-    static unsigned addIntegerConstant( int );
-    static int getIntegerConstant( unsigned );
+namespace DLV2
+{
     
-private:
-    Names() { }
-    
-    static vector<string> predicateNames;
-    static vector<string> stringConstants;
-    static vector<int> integerConstants;
+    class Names {
+    public:
+        static unsigned addPredicateName( string );
+        static string getPredicateName( unsigned );
+        static unsigned addStringConstant( string );
+        static string getStringConstant( unsigned );
+        static unsigned addIntegerConstant( int );
+        static int getIntegerConstant( unsigned );
+
+    private:
+        Names() { }
+
+        static vector<string> predicateNames;
+        static vector<string> stringConstants;
+        static vector<int> integerConstants;
+    };
+
 };
 
 #endif	/* NAMES_H */

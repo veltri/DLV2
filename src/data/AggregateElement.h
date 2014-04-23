@@ -30,42 +30,47 @@
 #include <vector>
 #include "Literal.h"
 
-class Literal;
-inline ostream& operator<< ( ostream&, const Literal& );
-
-class AggregateElement {
-public:
-    AggregateElement( vector<Term> t, vector<Literal> lits ): terms(t), literals(lits) { }
-    AggregateElement( const AggregateElement& ae ): terms(ae.terms), literals(ae.literals) { }
-    ~AggregateElement() { }
-    
-    void addLiteral( const Literal& l ) { literals.push_back(l); }
-    
-private:
-    friend inline ostream& operator<< ( ostream&, const AggregateElement& );
-    
-    vector<Term> terms;
-    vector<Literal> literals;
-};
-
-inline ostream& operator<< ( ostream& out, const AggregateElement& ae )
+namespace DLV2
 {
-    for( unsigned i=0; i<ae.terms.size(); i++ )
+
+    class Literal;
+    inline ostream& operator<< ( ostream&, const Literal& );
+    
+    class AggregateElement {
+    public:
+        AggregateElement( vector<Term> t, vector<Literal> lits ): terms(t), literals(lits) { }
+        AggregateElement( const AggregateElement& ae ): terms(ae.terms), literals(ae.literals) { }
+        ~AggregateElement() { }
+
+        void addLiteral( const Literal& l ) { literals.push_back(l); }
+
+    private:
+        friend inline ostream& operator<< ( ostream&, const AggregateElement& );
+
+        vector<Term> terms;
+        vector<Literal> literals;
+    };
+
+    inline ostream& operator<< ( ostream& out, const AggregateElement& ae )
     {
-        out << ae.terms[i];
-        if( i < ae.terms.size()-1 )
-            out << ",";
+        for( unsigned i=0; i<ae.terms.size(); i++ )
+        {
+            out << ae.terms[i];
+            if( i < ae.terms.size()-1 )
+                out << ",";
+        }
+        if( ae.literals.size() > 0 )
+            out << ":";
+        for( unsigned i=0; i<ae.literals.size(); i++ )
+        {
+            out << ae.literals[i];
+            if( i < ae.literals.size()-1 )
+                out << ",";
+        }
+        return out;
     }
-    if( ae.literals.size() > 0 )
-        out << ":";
-    for( unsigned i=0; i<ae.literals.size(); i++ )
-    {
-        out << ae.literals[i];
-        if( i < ae.literals.size()-1 )
-            out << ",";
-    }
-    return out;
-}
+
+};
 
 #endif	/* AGGREGATEELEMENT_H */
 

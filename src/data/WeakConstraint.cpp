@@ -19,6 +19,9 @@
 
 #include "WeakConstraint.h"
 
+namespace DLV2
+{
+
 WeakConstraint::WeakConstraint( 
     vector<Literal> b,
     Term* w,
@@ -59,3 +62,5 @@ WeakConstraint::~WeakConstraint()
     if( weight != NULL )
         delete weight;
 }
+
+};

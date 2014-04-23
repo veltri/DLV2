@@ -20,6 +20,9 @@
 #include "Names.h"
 #include "../util/Assert.h"
 
+namespace DLV2
+{
+
 vector<string> Names::predicateNames;
 vector<string> Names::stringConstants;
 vector<int> Names::integerConstants;
@@ -113,3 +116,5 @@ Names::getIntegerConstant(
             "The index " << index << " is not valid." );
     return Names::integerConstants[index];
 }
+
+};

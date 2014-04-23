@@ -127,7 +127,7 @@ typedef union YYSTYPE
 {
 
 /* Line 2068 of yacc.c  */
-#line 29 "src/aspcore2.y"
+#line 29 "src/input/aspcore2.y"
 
     char* string;
     char single_char;
@@ -136,7 +136,7 @@ typedef union YYSTYPE
 
 
 /* Line 2068 of yacc.c  */
-#line 140 "src/aspcore2_parser.h"
+#line 140 "src/input/aspcore2_parser.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

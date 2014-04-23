@@ -20,9 +20,9 @@ This file is part of the ASPCOMP2013 ASP-Core-2 validator (validator in the foll
 */
 
 #include "aspcore2_parser.h"
-#include "input/InputDirector.h"
+#include "InputDirector.h"
 
-#define YY_DECL int yylex(InputDirector& director)
+#define YY_DECL int yylex(DLV2::InputDirector& director)
 
 %}
 

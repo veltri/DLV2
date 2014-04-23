@@ -30,36 +30,41 @@
 #include <vector>
 #include "Literal.h"
 
-class Constraint {
-public:
-    Constraint( vector<Literal> b ): body(b) { } 
-    Constraint( const Constraint& c ): body(c.body) { }
-    ~Constraint() { }
-    
-    void addToBody( const Literal& l ) { body.push_back(l); }
-    
-private:
-    friend inline ostream& operator<< ( ostream&, const Constraint& );
-    
-    vector<Literal> body;
-};
-
-ostream& 
-operator<< ( 
-    ostream& out,
-    const Constraint& c )
+namespace DLV2
 {
-    out << ":- ";
-    for( unsigned i=0; i<c.body.size(); i++ )
+
+    class Constraint {
+    public:
+        Constraint( vector<Literal> b ): body(b) { } 
+        Constraint( const Constraint& c ): body(c.body) { }
+        ~Constraint() { }
+
+        void addToBody( const Literal& l ) { body.push_back(l); }
+
+    private:
+        friend inline ostream& operator<< ( ostream&, const Constraint& );
+
+        vector<Literal> body;
+    };
+
+    ostream& 
+    operator<< ( 
+        ostream& out,
+        const Constraint& c )
     {
-        out << c.body[i];
-        if( i<c.body.size()-1 )
-            out << ", ";
+        out << ":- ";
+        for( unsigned i=0; i<c.body.size(); i++ )
+        {
+            out << c.body[i];
+            if( i<c.body.size()-1 )
+                out << ", ";
+        }
+        out << ".";
+
+        return out;
     }
-    out << ".";
-    
-    return out;
-}
+
+};
 
 #endif	/* CONSTRAINT_H */
 

@@ -22,7 +22,9 @@
 #include <cstdlib>
 #include "SimpleInputBuilder.h"
 #include "../util/Assert.h"
-#include "../data/Term.h"
+
+namespace DLV2
+{
 
 SimpleInputBuilder::SimpleInputBuilder():
         program(new Program()), 
@@ -724,3 +726,5 @@ SimpleInputBuilder::newTerm(
         delete currentTerm;
     }
 }
+
+};

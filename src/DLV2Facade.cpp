@@ -20,8 +20,6 @@
 #include "DLV2Facade.h"
 #include "util/Assert.h"
 #include "util/ErrorMessage.h"
-#include "util/Options.h"
-#include "input/InputDirector.h"
 #include "input/SimpleInputBuilder.h"
 #include "input/SelectorBuilder.h"
 #include "input/Buffer.h"
@@ -32,6 +30,8 @@
 #include <sstream>
 using namespace std;
 
+namespace DLV2
+{
 
 void 
 DLV2Facade::parseOptions(
@@ -164,3 +164,5 @@ DLV2Facade::~DLV2Facade()
     if( builder != NULL ) 
         delete builder;
 }
+
+};

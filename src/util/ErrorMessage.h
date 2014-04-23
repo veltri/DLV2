@@ -27,30 +27,35 @@ using namespace std;
 
 #include "Constants.h"
 
-class ErrorMessage
+namespace DLV2
 {
-    public:
-        static void errorDuringParsing( const string& errorMessage )
-        {
-            errorDuringParsing( errorMessage.c_str() );
-        }
-        
-        static void errorDuringParsing( const char* errorMessage )
-        {
-            cerr << ERRORPARSING << ": " << errorMessage << endl;
-            exit( ERRORPARSINGCODE );
-        }
-        
-        static void errorGeneric( const string& errorMessage )
-        {
-            errorGeneric( errorMessage.c_str() );
-        }
-        
-        static void errorGeneric( const char* errorMessage )
-        {
-            cerr << ERRORGENERIC << ": " << errorMessage << endl;
-            exit( ERRORGENERICCODE );
-        }
+
+    class ErrorMessage
+    {
+        public:
+            static void errorDuringParsing( const string& errorMessage )
+            {
+                errorDuringParsing( errorMessage.c_str() );
+            }
+
+            static void errorDuringParsing( const char* errorMessage )
+            {
+                cerr << ERRORPARSING << ": " << errorMessage << endl;
+                exit( ERRORPARSINGCODE );
+            }
+
+            static void errorGeneric( const string& errorMessage )
+            {
+                errorGeneric( errorMessage.c_str() );
+            }
+
+            static void errorGeneric( const char* errorMessage )
+            {
+                cerr << ERRORGENERIC << ": " << errorMessage << endl;
+                exit( ERRORGENERICCODE );
+            }
+    };
+
 };
 
 #endif	/* ERRORMESSAGE_H */

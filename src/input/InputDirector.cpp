@@ -20,12 +20,11 @@
 #include <iostream>
 #include <string>
 #include <cstring>
-#include <cstdio>
 #include "InputDirector.h"
+#include "../util/Assert.h"
 #include "../util/ErrorMessage.h"
-#include "../aspcore2_lexer.hpp"
-#include "../aspcore2_parser.hpp"
-#include "../data/Program.h"
+#include "aspcore2_lexer.hpp"
+#include "aspcore2_parser.hpp"
 
 using namespace std;
 
@@ -37,12 +36,15 @@ extern FILE* yyin;     // Where LEX reads its input from
 
 int 
 yyerror( 
-    InputDirector& director,
+    DLV2::InputDirector& director,
     const char* msg ) 
 { 
     return director.onError(msg); 
 }
 
+namespace DLV2
+{
+    
 void 
 InputDirector::configureBuilder( 
     InputBuilder* b )
@@ -166,3 +168,5 @@ InputDirector::onError(
 
     return 0;
 }
+
+};

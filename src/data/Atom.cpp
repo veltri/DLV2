@@ -21,6 +21,9 @@
 #include "../util/Assert.h"
 #include <climits>
 
+namespace DLV2
+{
+
 // Classical atoms' constructor
 Atom::Atom(  
     string name, 
@@ -113,3 +116,5 @@ Atom::getPredName() const
     assert_msg( !isBuiltin, "This atom is a builtin, it has not a predicate name." );
     return Names::getPredicateName(predIndex); 
 }
+
+};

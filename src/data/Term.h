@@ -32,42 +32,47 @@
 
 using namespace std;
 
-class Term {
-public:
-    enum Type{ Variable, Integer, String };
-    
-    // Integer constructor
-    Term( unsigned );
-    // String constructor
-    Term( string );
-    // Variable construtor
-    Term( unsigned, string );
-    // Copy constructor
-    Term( const Term& t );
-    ~Term() { }
-    
-    Type getType() const { return type; }
-    unsigned getIndex() const { return index; }
-    
-protected:
-    friend inline ostream& operator<< ( ostream&, const Term& );
-    
-    unsigned index;
-    string varName;
-    Type type;
-};
-
-inline ostream& operator<< ( ostream& out, const Term& t )
+namespace DLV2
 {
-    if( t.getType() == Term::Integer )
-        out << Names::getIntegerConstant(t.index);
-    else if( t.getType() == Term::String )
-        out << Names::getStringConstant(t.index);
-    else
-        out << t.varName;
-    return out;
     
-}
+    class Term {
+    public:
+        enum Type{ Variable, Integer, String };
+
+        // Integer constructor
+        Term( unsigned );
+        // String constructor
+        Term( string );
+        // Variable construtor
+        Term( unsigned, string );
+        // Copy constructor
+        Term( const Term& t );
+        ~Term() { }
+
+        Type getType() const { return type; }
+        unsigned getIndex() const { return index; }
+
+    protected:
+        friend inline ostream& operator<< ( ostream&, const Term& );
+
+        unsigned index;
+        string varName;
+        Type type;
+    };
+
+    inline ostream& operator<< ( ostream& out, const Term& t )
+    {
+        if( t.getType() == Term::Integer )
+            out << Names::getIntegerConstant(t.index);
+        else if( t.getType() == Term::String )
+            out << Names::getStringConstant(t.index);
+        else
+            out << t.varName;
+        return out;
+
+    }
+    
+};
 
 #endif	/* TERM_H */
 

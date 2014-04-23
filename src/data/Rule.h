@@ -30,46 +30,51 @@
 #include <vector>
 #include "Literal.h"
 
-class Rule {
-public:
-    Rule( vector<Atom> h, vector<Literal> b ): head(h), body(b) { }
-    Rule( const Rule& r ): head(r.head), body(r.body) { } 
-    ~Rule() { }
-    
-    void addToHead( const Atom& a ) { head.push_back(a); }
-    void addToBody( const Literal& l ) { body.push_back(l); }
-    
-private:
-    friend inline ostream& operator<< ( ostream&, const Rule& );
-    
-    vector<Atom> head;
-    vector<Literal> body;
-};
-
-ostream& 
-operator<< ( 
-    ostream& out,
-    const Rule& r )
+namespace DLV2
 {
-    for( unsigned i=0; i<r.head.size(); i++ )
+    
+    class Rule {
+    public:
+        Rule( vector<Atom> h, vector<Literal> b ): head(h), body(b) { }
+        Rule( const Rule& r ): head(r.head), body(r.body) { } 
+        ~Rule() { }
+
+        void addToHead( const Atom& a ) { head.push_back(a); }
+        void addToBody( const Literal& l ) { body.push_back(l); }
+
+    private:
+        friend inline ostream& operator<< ( ostream&, const Rule& );
+
+        vector<Atom> head;
+        vector<Literal> body;
+    };
+
+    ostream& 
+    operator<< ( 
+        ostream& out,
+        const Rule& r )
     {
-        out << r.head[i];
-        if( i<r.head.size()-1 )
-            out << " | ";
+        for( unsigned i=0; i<r.head.size(); i++ )
+        {
+            out << r.head[i];
+            if( i<r.head.size()-1 )
+                out << " | ";
+        }
+        if( r.head.size() > 0 && r.body.size() > 0 )
+            out << " :- ";
+        else if( r.body.size() > 0 )
+            out << ":- ";
+        for( unsigned i=0; i<r.body.size(); i++ )
+        {
+            out << r.body[i];
+            if( i<r.body.size()-1 )
+                out << ", ";
+        }
+        out << ".";
+        return out;
     }
-    if( r.head.size() > 0 && r.body.size() > 0 )
-        out << " :- ";
-    else if( r.body.size() > 0 )
-        out << ":- ";
-    for( unsigned i=0; i<r.body.size(); i++ )
-    {
-        out << r.body[i];
-        if( i<r.body.size()-1 )
-            out << ", ";
-    }
-    out << ".";
-    return out;
-}
+
+};
 
 #endif	/* RULE_H */
 

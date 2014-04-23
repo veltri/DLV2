@@ -30,55 +30,60 @@
 #include <vector>
 #include "Literal.h"
 
-class WeakConstraint {
-public:
-    WeakConstraint( vector<Literal> b, Term* w, Term* l, vector<Term> t );
-    WeakConstraint( const WeakConstraint& wc );
-    ~WeakConstraint();
-    
-    void addToBody( const Literal& l ) { body.push_back(l); }
-    
-private:
-    friend inline ostream& operator<< ( ostream&, const WeakConstraint& );
-    
-    vector<Literal> body;
-    Term* weight;
-    Term* level;
-    vector<Term> terms;
-};
-
-ostream& 
-operator<< ( 
-    ostream& out,
-    const WeakConstraint& wc )
+namespace DLV2
 {
-    out << ":~ ";
-    for( unsigned i=0; i<wc.body.size(); i++ )
+
+    class WeakConstraint {
+    public:
+        WeakConstraint( vector<Literal> b, Term* w, Term* l, vector<Term> t );
+        WeakConstraint( const WeakConstraint& wc );
+        ~WeakConstraint();
+
+        void addToBody( const Literal& l ) { body.push_back(l); }
+
+    private:
+        friend inline ostream& operator<< ( ostream&, const WeakConstraint& );
+
+        vector<Literal> body;
+        Term* weight;
+        Term* level;
+        vector<Term> terms;
+    };
+
+    ostream& 
+    operator<< ( 
+        ostream& out,
+        const WeakConstraint& wc )
     {
-        out << wc.body[i];
-        if( i<wc.body.size()-1 )
-            out << ", ";
-    }
-    out << ".";
-    
-    if( wc.weight || wc.level || wc.terms.size() > 0 )
-    {
-        out << " [";
-        if( wc.weight )
-            out << *(wc.weight);
-        if( wc.level )
-            out << "@" << *(wc.level);
-        for( unsigned i=0; i<wc.terms.size(); i++ )
+        out << ":~ ";
+        for( unsigned i=0; i<wc.body.size(); i++ )
         {
-            if( (i == 0 && wc.weight) || i > 0 )
-                out << ",";
-            out << wc.terms[i];
+            out << wc.body[i];
+            if( i<wc.body.size()-1 )
+                out << ", ";
         }
-        out << "]";
+        out << ".";
+
+        if( wc.weight || wc.level || wc.terms.size() > 0 )
+        {
+            out << " [";
+            if( wc.weight )
+                out << *(wc.weight);
+            if( wc.level )
+                out << "@" << *(wc.level);
+            for( unsigned i=0; i<wc.terms.size(); i++ )
+            {
+                if( (i == 0 && wc.weight) || i > 0 )
+                    out << ",";
+                out << wc.terms[i];
+            }
+            out << "]";
+        }
+
+        return out;
     }
 
-    return out;
-}
+};
 
 #endif	/* WEAKCONSTRAINT_H */
 

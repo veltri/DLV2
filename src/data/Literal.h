@@ -33,67 +33,71 @@
 
 using namespace std;
 
-class AggregateElement;
-inline ostream& operator<< ( ostream&, const AggregateElement& );
-
-class Literal {
-public:
-    // Classic literal constructor
-    Literal( const Atom& a, bool neg );
-    // Aggregate constructor
-    Literal( Term*, string, Term*, string, string, vector<AggregateElement>, bool );
-    // Copy constructor
-    Literal( const Literal& l );
-    ~Literal();
-    
-    void setIsNaf( bool isNaf ) { isNegative = isNaf; }
-    
-private:
-    friend inline ostream& operator<< ( ostream&, const Literal& );
-    
-    Atom* atom;
-    bool isNegative;
-    
-    bool isAggregate;
-    Term* lowerGuard;
-    string lowerBinop;
-    Term* upperGuard;
-    string upperBinop;
-    string aggregateFunction;
-    vector<AggregateElement> aggregateElements;
-};
-
-ostream& 
-operator<< ( 
-    ostream& out, 
-    const Literal& l )
+namespace DLV2
 {
-    if( l.isNegative )
-            out << "not ";
-    if( l.isAggregate )
+    class AggregateElement;
+    inline ostream& operator<< ( ostream&, const AggregateElement& );
+
+    class Literal {
+    public:
+        // Classic literal constructor
+        Literal( const Atom& a, bool neg );
+        // Aggregate constructor
+        Literal( Term*, string, Term*, string, string, vector<AggregateElement>, bool );
+        // Copy constructor
+        Literal( const Literal& l );
+        ~Literal();
+
+        void setIsNaf( bool isNaf ) { isNegative = isNaf; }
+
+    private:
+        friend inline ostream& operator<< ( ostream&, const Literal& );
+
+        Atom* atom;
+        bool isNegative;
+
+        bool isAggregate;
+        Term* lowerGuard;
+        string lowerBinop;
+        Term* upperGuard;
+        string upperBinop;
+        string aggregateFunction;
+        vector<AggregateElement> aggregateElements;
+    };
+
+    ostream& 
+    operator<< ( 
+        ostream& out, 
+        const Literal& l )
     {
-        assert_msg( (l.lowerGuard != NULL || l.upperGuard != NULL),
-            "Invalid aggregate literal, null guards");
-        if( l.lowerGuard )
-            out << *(l.lowerGuard) << l.lowerBinop;
-        out << l.aggregateFunction << "{";
-        for( unsigned i=0; i<l.aggregateElements.size(); i++ )
+        if( l.isNegative )
+                out << "not ";
+        if( l.isAggregate )
         {
-            out << l.aggregateElements[i];
-            if( i < l.aggregateElements.size()-1 )
-                out << ";";
+            assert_msg( (l.lowerGuard != NULL || l.upperGuard != NULL),
+                "Invalid aggregate literal, null guards");
+            if( l.lowerGuard )
+                out << *(l.lowerGuard) << l.lowerBinop;
+            out << l.aggregateFunction << "{";
+            for( unsigned i=0; i<l.aggregateElements.size(); i++ )
+            {
+                out << l.aggregateElements[i];
+                if( i < l.aggregateElements.size()-1 )
+                    out << ";";
+            }
+            out << "}";
+            if( l.upperGuard )
+                out << l.upperBinop << *(l.upperGuard);
         }
-        out << "}";
-        if( l.upperGuard )
-            out << l.upperBinop << *(l.upperGuard);
+        else
+        {
+            assert_msg( l.atom != NULL, "Invalid literal: null atom!");
+            out << *(l.atom);
+        }
+        return out;
     }
-    else
-    {
-        assert_msg( l.atom != NULL, "Invalid literal: null atom!");
-        out << *(l.atom);
-    }
-    return out;
-}
+
+};
 
 #endif	/* LITERAL_H */
 

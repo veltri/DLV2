@@ -27,37 +27,35 @@
 #ifndef DLV2FACADE_H
 #define	DLV2FACADE_H
 
-#include "util/Constants.h"
 #include "util/Options.h"
 #include "input/InputDirector.h"
 
-#include <vector>
-using namespace std;
+namespace DLV2
+{
+    // TODO: discuss the issue of options and facade methods
 
-class InputBuilder;
+    class DLV2Facade {
+    public:
+        DLV2Facade() : options(*Options::globalOptions()), builder(NULL) { }
+        ~DLV2Facade();
 
-// TODO: discuss the issue of options and facade methods
+        void parseOptions( int, char* const* );
+        void greetings();
+        int readInput();
+        void solve();
 
-class DLV2Facade {
-public:
-    DLV2Facade() : options(*dlv2::Options::globalOptions()), builder(NULL) { }
-    ~DLV2Facade();
+        Options& getOptions() { return options; }
+
+    private:
+
+        Options& options;
+
+        InputDirector director;
+        InputBuilder* builder;
+
+    }; 
     
-    void parseOptions( int, char* const* );
-    void greetings();
-    int readInput();
-    void solve();
-    
-    dlv2::Options& getOptions() { return options; }
- 
-private:
-
-    dlv2::Options& options;
-
-    InputDirector director;
-    InputBuilder* builder;
-
-};
+}; 
 
 #endif	/* DLV2FACADE_H */
 

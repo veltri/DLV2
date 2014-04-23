@@ -28,16 +28,12 @@
 #define	OPTIONS_H
 
 #include <vector>
-#include <stddef.h>
-#include <iostream>
-
 #include "Constants.h"
 using namespace std; 
 
-class DLV2Facade;
-
-namespace dlv2
+namespace DLV2
 {
+    class DLV2Facade;
 
     class Options{
     public:
@@ -88,7 +84,8 @@ namespace dlv2
         
         unsigned namedpipe;
 
-    }; // class
-}; // namespace
+    }; 
+    
+};
 
 #endif	/* OPTIONS_H */

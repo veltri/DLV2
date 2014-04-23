@@ -27,28 +27,33 @@
 #ifndef CONSTANTS_H
 #define	CONSTANTS_H
 
-// Input builder constants
-#define BUILDER_MOCK_OBJECTS 0
-#define BUILDER_DLV_DB 1
-#define BUILDER_IN_MEMORY 2
-#define BUILDER_SELECTOR 3
+namespace DLV2
+{
 
-// Output builder constants
-#define OUTPUT_ASPCORE2 0
-#define OUTPUT_SILENT 1
+    // Input builder constants
+    #define BUILDER_MOCK_OBJECTS 0
+    #define BUILDER_DLV_DB 1
+    #define BUILDER_IN_MEMORY 2
+    #define BUILDER_SELECTOR 3
 
-// DLV2 constants 
-#define DLV2_STRING "DLV 2.0\n"
+    // Output builder constants
+    #define OUTPUT_ASPCORE2 0
+    #define OUTPUT_SILENT 1
 
-// Error messages
-#define ERRORPARSING "\nError during parsing"
-#define ERRORGENERIC "\nGeneric error"
-#define ERRORPARSINGCODE 100
-#define ERRORGENERICCODE 110
+    // DLV2 constants 
+    #define DLV2_STRING "DLV 2.0\n"
 
-// New types
-typedef unsigned int INPUT_BUILDER_POLICY;
-typedef unsigned int OUTPUT_POLICY;
+    // Error messages
+    #define ERRORPARSING "\nError during parsing"
+    #define ERRORGENERIC "\nGeneric error"
+    #define ERRORPARSINGCODE 100
+    #define ERRORGENERICCODE 110
+
+    // New types
+    typedef unsigned int INPUT_BUILDER_POLICY;
+    typedef unsigned int OUTPUT_POLICY;
+
+};
 
 #endif	/* CONSTANTS_H */
 

@@ -33,49 +33,54 @@
 #include "Constraint.h"
 #include "WeakConstraint.h"
 
-class Program {
-public:
-    Program() { }
-    Program( const Program& p );
-    ~Program() { }
-    
-    void addRule( const Rule& r );
-    void addConstraint( const Constraint& c );
-    void addWeakConstraint( const WeakConstraint& wc );
-    void addChoiceRule( const ChoiceRule& cr );
-        
-private:
-    friend inline ostream& operator<< ( ostream&, const Program& );
-            
-    vector<Rule> rules;
-    vector<Constraint> constraints;
-    vector<WeakConstraint> weakConstraints;
-    vector<ChoiceRule> choiceRules;
-};
-
-ostream& 
-operator<< ( 
-    ostream& out, 
-    const Program& p )
+namespace DLV2
 {
-    for( unsigned i=0; i<p.rules.size(); i++ )
+    
+    class Program {
+    public:
+        Program() { }
+        Program( const Program& p );
+        ~Program() { }
+
+        void addRule( const Rule& r );
+        void addConstraint( const Constraint& c );
+        void addWeakConstraint( const WeakConstraint& wc );
+        void addChoiceRule( const ChoiceRule& cr );
+
+    private:
+        friend inline ostream& operator<< ( ostream&, const Program& );
+
+        vector<Rule> rules;
+        vector<Constraint> constraints;
+        vector<WeakConstraint> weakConstraints;
+        vector<ChoiceRule> choiceRules;
+    };
+
+    ostream& 
+    operator<< ( 
+        ostream& out, 
+        const Program& p )
     {
-        out << p.rules[i] << endl;
+        for( unsigned i=0; i<p.rules.size(); i++ )
+        {
+            out << p.rules[i] << endl;
+        }
+        for( unsigned i=0; i<p.choiceRules.size(); i++ )
+        {
+            out << p.choiceRules[i] << endl;
+        }
+        for( unsigned i=0; i<p.constraints.size(); i++ )
+        {
+            out << p.constraints[i] << endl;
+        }
+        for( unsigned i=0; i<p.weakConstraints.size(); i++ )
+        {
+            out << p.weakConstraints[i] << endl;
+        }
+        return out;
     }
-    for( unsigned i=0; i<p.choiceRules.size(); i++ )
-    {
-        out << p.choiceRules[i] << endl;
-    }
-    for( unsigned i=0; i<p.constraints.size(); i++ )
-    {
-        out << p.constraints[i] << endl;
-    }
-    for( unsigned i=0; i<p.weakConstraints.size(); i++ )
-    {
-        out << p.weakConstraints[i] << endl;
-    }
-    return out;
-}
+
+};
 
 #endif	/* PROGRAM_H */
 

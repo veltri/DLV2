@@ -19,6 +19,9 @@
 
 #include "Literal.h"
 
+namespace DLV2
+{
+
 Literal::Literal( 
     const Atom& a, 
     bool neg ): 
@@ -92,3 +95,5 @@ Literal::~Literal()
     if( atom != NULL )
         delete atom;
 }
+
+};
