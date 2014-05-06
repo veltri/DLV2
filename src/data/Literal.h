@@ -31,19 +31,17 @@
 #include "Atom.h"
 #include "AggregateElement.h"
 
-using namespace std;
-
 namespace DLV2
 {
     class AggregateElement;
-    inline ostream& operator<< ( ostream&, const AggregateElement& );
+    inline std::ostream& operator<< ( std::ostream&, const AggregateElement& );
 
     class Literal {
     public:
         // Classic literal constructor
         Literal( const Atom& a, bool neg );
         // Aggregate constructor
-        Literal( Term*, string, Term*, string, string, vector<AggregateElement>, bool );
+        Literal( Term*, std::string, Term*, std::string, std::string, std::vector<AggregateElement>, bool );
         // Copy constructor
         Literal( const Literal& l );
         ~Literal();
@@ -51,23 +49,24 @@ namespace DLV2
         void setIsNaf( bool isNaf ) { isNegative = isNaf; }
 
     private:
-        friend inline ostream& operator<< ( ostream&, const Literal& );
+        friend inline std::ostream& operator<< ( std::ostream&, const Literal& );
 
         Atom* atom;
         bool isNegative;
 
         bool isAggregate;
         Term* lowerGuard;
-        string lowerBinop;
+        std::string lowerBinop;
         Term* upperGuard;
-        string upperBinop;
-        string aggregateFunction;
-        vector<AggregateElement> aggregateElements;
+        std::string upperBinop;
+        std::string aggregateFunction;
+        std::vector<AggregateElement> aggregateElements;
     };
 
-    ostream& 
+    inline
+    std::ostream& 
     operator<< ( 
-        ostream& out, 
+        std::ostream& out, 
         const Literal& l )
     {
         if( l.isNegative )

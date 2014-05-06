@@ -20,6 +20,8 @@
 #include "Names.h"
 #include "../util/Assert.h"
 
+using namespace std;
+
 namespace DLV2
 {
 

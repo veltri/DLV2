@@ -35,20 +35,24 @@ namespace DLV2
 
     class ChoiceElement {
     public:
-        ChoiceElement( const Atom& a, vector<Literal> lits ): at(a), literals(lits) { }
+        ChoiceElement( const Atom& a, std::vector<Literal> lits ): at(a), literals(lits) { }
         ChoiceElement( const ChoiceElement& ce ): at(ce.at), literals(ce.literals) { }
         ~ChoiceElement() { }
 
         void addLiteral( const Literal& l ) { literals.push_back(l); }
 
     private:
-        friend inline ostream& operator<< ( ostream&, const ChoiceElement& );
+        friend inline std::ostream& operator<< ( std::ostream&, const ChoiceElement& );
 
         Atom at;
-        vector<Literal> literals;
+        std::vector<Literal> literals;
     };
 
-    inline ostream& operator<< ( ostream& out, const ChoiceElement& ce )
+    inline 
+    std::ostream& 
+    operator<< ( 
+        std::ostream& out, 
+        const ChoiceElement& ce )
     {
         out << ce.at;
         if( ce.literals.size() > 0 )

@@ -35,20 +35,24 @@ namespace DLV2
     
     class ChoiceAtom {
     public:
-        ChoiceAtom( Term*, string, vector<ChoiceElement>, string, Term* );
+        ChoiceAtom( Term*, std::string, std::vector<ChoiceElement>, std::string, Term* );
         ChoiceAtom( const ChoiceAtom& );
         ~ChoiceAtom();
     private:
-        friend inline ostream& operator<< ( ostream&, const ChoiceAtom& );
+        friend inline std::ostream& operator<< ( std::ostream&, const ChoiceAtom& );
 
         Term* lowerGuard;
-        string lowerBinop;
-        vector<ChoiceElement> choices;
-        string upperBinop;
+        std::string lowerBinop;
+        std::vector<ChoiceElement> choices;
+        std::string upperBinop;
         Term* upperGuard;
     };
 
-    inline ostream& operator<< ( ostream& out, const ChoiceAtom& ca )
+    inline 
+    std::ostream& 
+    operator<< ( 
+        std::ostream& out, 
+        const ChoiceAtom& ca )
     {
         if( ca.lowerGuard )
             out << *(ca.lowerGuard) << ca.lowerBinop;

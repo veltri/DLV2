@@ -21,6 +21,8 @@
 #include "../util/Assert.h"
 #include <climits>
 
+using namespace std;
+
 namespace DLV2
 {
 

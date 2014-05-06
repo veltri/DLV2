@@ -23,7 +23,6 @@
 #include <string>
 #include <iostream>
 #include <cstdlib>
-using namespace std;
 
 #include "Constants.h"
 
@@ -33,25 +32,25 @@ namespace DLV2
     class ErrorMessage
     {
         public:
-            static void errorDuringParsing( const string& errorMessage )
+            static void errorDuringParsing( const std::string& errorMessage )
             {
                 errorDuringParsing( errorMessage.c_str() );
             }
 
             static void errorDuringParsing( const char* errorMessage )
             {
-                cerr << ERRORPARSING << ": " << errorMessage << endl;
+                std::cerr << ERRORPARSING << ": " << errorMessage << std::endl;
                 exit( ERRORPARSINGCODE );
             }
 
-            static void errorGeneric( const string& errorMessage )
+            static void errorGeneric( const std::string& errorMessage )
             {
                 errorGeneric( errorMessage.c_str() );
             }
 
             static void errorGeneric( const char* errorMessage )
             {
-                cerr << ERRORGENERIC << ": " << errorMessage << endl;
+                std::cerr << ERRORGENERIC << ": " << errorMessage << std::endl;
                 exit( ERRORGENERICCODE );
             }
     };

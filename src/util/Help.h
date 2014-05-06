@@ -21,7 +21,6 @@
 #define HELP_H
 
 #include <iostream>
-using namespace std;
 #include "Constants.h"
 
 namespace DLV2
@@ -32,26 +31,26 @@ namespace DLV2
     public:
         static void printHelp( const char* exec )
         {
-            string separator = "\n---------------------------\n";
+            std::string separator = "\n---------------------------\n";
 
-            cout << DLV2_STRING << endl;
-            cout << "usage: " << exec << " {OPTIONS} [filename [filename [...]]]" << endl;
-            cout << separator << endl;
+            std::cout << DLV2_STRING << std::endl;
+            std::cout << "usage: " << exec << " {OPTIONS} [filename [filename [...]]]" << std::endl;
+            std::cout << separator << std::endl;
 
-            cout << "Input options                         " << endl << endl;
-            cout << "--aspcore2strict                       - Enable \"strict\" AspCore2 format as input." << endl;
-            cout << "--inmemory                             - Enable the input builder for the in-memory version. (default choice)" << endl;
-            cout << "--dlv-db                               - Enable the input builder for the DB-based version." << endl;
-            cout << separator << endl;
+            std::cout << "Input options                         " << std::endl << std::endl;
+            std::cout << "--aspcore2strict                       - Enable \"strict\" AspCore2 format as input." << std::endl;
+            std::cout << "--inmemory                             - Enable the input builder for the in-memory version. (default choice)" << std::endl;
+            std::cout << "--dlv-db                               - Enable the input builder for the DB-based version." << std::endl;
+            std::cout << separator << std::endl;
 
-            cout << "Output options                         " << endl << endl;
-            cout << "--silent                               - Suppress the startup banner and blank lines." << endl;
-            cout << "--printprogram                         - Enable the input builder for mock objects, print the input program and exit." << endl;
-            cout << separator << endl;
+            std::cout << "Output options                         " << std::endl << std::endl;
+            std::cout << "--silent                               - Suppress the startup banner and blank lines." << std::endl;
+            std::cout << "--printprogram                         - Enable the input builder for mock objects, print the input program and exit." << std::endl;
+            std::cout << separator << std::endl;
 
-            cout << "General options                     " << endl << endl;
-            cout << "--help                                 - Print this guide and exit." << endl;
-            cout << "--stdin                                - Read input from standard input." << endl;
+            std::cout << "General options                     " << std::endl << std::endl;
+            std::cout << "--help                                 - Print this guide and exit." << std::endl;
+            std::cout << "--stdin                                - Read input from standard input." << std::endl;
         }
     };
 

@@ -35,21 +35,22 @@ namespace DLV2
 
     class Constraint {
     public:
-        Constraint( vector<Literal> b ): body(b) { } 
+        Constraint( std::vector<Literal> b ): body(b) { } 
         Constraint( const Constraint& c ): body(c.body) { }
         ~Constraint() { }
 
         void addToBody( const Literal& l ) { body.push_back(l); }
 
     private:
-        friend inline ostream& operator<< ( ostream&, const Constraint& );
+        friend inline std::ostream& operator<< ( std::ostream&, const Constraint& );
 
-        vector<Literal> body;
+        std::vector<Literal> body;
     };
 
-    ostream& 
+    inline
+    std::ostream& 
     operator<< ( 
-        ostream& out,
+        std::ostream& out,
         const Constraint& c )
     {
         out << ":- ";

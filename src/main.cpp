@@ -3,6 +3,9 @@
 #include "DLV2Facade.h"
 #include "util/Options.h"
 
+#include "data/DependencyGraph.h"
+#include <string>
+
 using namespace std;
 
 int main(int argc, char** argv)
@@ -18,5 +21,10 @@ int main(int argc, char** argv)
     	dlv2Facade.solve();
     }
         
+    DLV2::DependencyGraph depGraph;
+    depGraph.addPositiveEdge("ciao","fesso");
+    depGraph.addPositiveEdge("fesso","ciao");
+    depGraph.computeStronglyConnectedComponents();
+    
     return parserExit;
 }

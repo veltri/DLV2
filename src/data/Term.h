@@ -30,8 +30,6 @@
 #include <iostream>
 #include "Names.h"
 
-using namespace std;
-
 namespace DLV2
 {
     
@@ -42,9 +40,9 @@ namespace DLV2
         // Integer constructor
         Term( unsigned );
         // String constructor
-        Term( string );
+        Term( std::string );
         // Variable construtor
-        Term( unsigned, string );
+        Term( unsigned, std::string );
         // Copy constructor
         Term( const Term& t );
         ~Term() { }
@@ -53,14 +51,18 @@ namespace DLV2
         unsigned getIndex() const { return index; }
 
     protected:
-        friend inline ostream& operator<< ( ostream&, const Term& );
+        friend inline std::ostream& operator<< ( std::ostream&, const Term& );
 
         unsigned index;
-        string varName;
+        std::string varName;
         Type type;
     };
 
-    inline ostream& operator<< ( ostream& out, const Term& t )
+    inline 
+    std::ostream& 
+    operator<< ( 
+        std::ostream& out, 
+        const Term& t )
     {
         if( t.getType() == Term::Integer )
             out << Names::getIntegerConstant(t.index);

@@ -32,8 +32,6 @@
 #include <unordered_map>
 #include <string>
 
-using namespace std;
-
 namespace DLV2
 {
 
@@ -60,6 +58,7 @@ namespace DLV2
         virtual void onFunction( char*, int );
         virtual void onTermDash();
         virtual void onTermParams();
+        virtual void onTermRange( char*, char* ) { }
         virtual void onArithmeticOperation( char );
         virtual void onWeightAtLevels( int, int, int );
         virtual void onChoiceLowerGuard( char* );
@@ -84,23 +83,23 @@ namespace DLV2
         bool foundQuery;
         bool foundChoice;
 
-        string predName;
+        std::string predName;
         //bool inBody;
-        vector<string> head;
-        struct Literal { string predname; bool sign; };
-        vector<Literal> body;
+        std::vector<std::string> head;
+        struct Literal { std::string predname; bool sign; };
+        std::vector<Literal> body;
         void cleanTemp();
 
 
-        unordered_map<string,unsigned> pred2nodeId;
-        unsigned addPredicateInHash(string predname);
+        std::unordered_map<std::string,unsigned> pred2nodeId;
+        unsigned addPredicateInHash(std::string predname);
 
-        vector<vector<unsigned>> heads;
-        bool reaches(unsigned, vector<unsigned>);
+        std::vector<std::vector<unsigned>> heads;
+        bool reaches(unsigned, std::vector<unsigned>);
 
         //unordered_map<unsigned,vector<vector<unsigned>>> headsOf;
 
-        unordered_map<unsigned,vector<unsigned>> grafo;
+        std::unordered_map<unsigned,std::vector<unsigned>> grafo;
         void addArc(unsigned from, unsigned to);
 
         bool HCF();

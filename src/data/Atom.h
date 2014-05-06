@@ -32,46 +32,45 @@
 #include "Term.h"
 #include "../util/Assert.h"
 
-using namespace std;
-
 namespace DLV2
 {
 
     class Atom {
     public:
         //Atom() { }
-        Atom( string, unsigned, vector<Term>, bool tNeg = false );
-        Atom( string, unsigned, vector<Term>, vector<Term> );
-        Atom( Term* left, string bop, Term* right );
+        Atom( std::string, unsigned, std::vector<Term>, bool tNeg = false );
+        Atom( std::string, unsigned, std::vector<Term>, std::vector<Term> );
+        Atom( Term* left, std::string bop, Term* right );
         Atom( const Atom& a );
         ~Atom();
 
-        string getPredName() const; 
+        std::string getPredName() const; 
         unsigned getIndex() const { return predIndex; }
         unsigned getPredicateArity( unsigned ) { return arity; }
-        vector<Term> getTerms() const { return terms; }
+        std::vector<Term> getTerms() const { return terms; }
         bool isTrueNegated() const { return trueNegated; } 
         bool isPropositional() const { return (terms.size() == 0); }
         bool isExistential() const { return (existentialVars.size() > 0); }
 
     private:
-        friend inline ostream& operator<< ( ostream&, const Atom& );
+        friend inline std::ostream& operator<< ( std::ostream&, const Atom& );
 
         unsigned predIndex;
         unsigned arity;
         bool trueNegated;
-        vector<Term> terms;
-        vector<Term> existentialVars;
+        std::vector<Term> terms;
+        std::vector<Term> existentialVars;
 
         bool isBuiltin;
         Term* bLeft;
-        string binop;
+        std::string binop;
         Term* bRight;
     };
 
-    ostream& 
+    inline
+    std::ostream& 
     operator<< ( 
-        ostream & out, 
+        std::ostream & out, 
         const Atom& a )
     {
         if( a.isBuiltin )

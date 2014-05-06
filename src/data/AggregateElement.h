@@ -34,24 +34,28 @@ namespace DLV2
 {
 
     class Literal;
-    inline ostream& operator<< ( ostream&, const Literal& );
+    inline std::ostream& operator<< ( std::ostream&, const Literal& );
     
     class AggregateElement {
     public:
-        AggregateElement( vector<Term> t, vector<Literal> lits ): terms(t), literals(lits) { }
+        AggregateElement( std::vector<Term> t, std::vector<Literal> lits ): terms(t), literals(lits) { }
         AggregateElement( const AggregateElement& ae ): terms(ae.terms), literals(ae.literals) { }
         ~AggregateElement() { }
 
         void addLiteral( const Literal& l ) { literals.push_back(l); }
 
     private:
-        friend inline ostream& operator<< ( ostream&, const AggregateElement& );
+        friend inline std::ostream& operator<< ( std::ostream&, const AggregateElement& );
 
-        vector<Term> terms;
-        vector<Literal> literals;
+        std::vector<Term> terms;
+        std::vector<Literal> literals;
     };
 
-    inline ostream& operator<< ( ostream& out, const AggregateElement& ae )
+    inline 
+    std::ostream& 
+    operator<< ( 
+        std::ostream& out, 
+        const AggregateElement& ae )
     {
         for( unsigned i=0; i<ae.terms.size(); i++ )
         {

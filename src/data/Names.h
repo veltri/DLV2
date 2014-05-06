@@ -30,26 +30,24 @@
 #include <string>
 #include <vector>
 
-using namespace std;
-
 namespace DLV2
 {
     
     class Names {
     public:
-        static unsigned addPredicateName( string );
-        static string getPredicateName( unsigned );
-        static unsigned addStringConstant( string );
-        static string getStringConstant( unsigned );
+        static unsigned addPredicateName( std::string );
+        static std::string getPredicateName( unsigned );
+        static unsigned addStringConstant( std::string );
+        static std::string getStringConstant( unsigned );
         static unsigned addIntegerConstant( int );
         static int getIntegerConstant( unsigned );
 
     private:
         Names() { }
 
-        static vector<string> predicateNames;
-        static vector<string> stringConstants;
-        static vector<int> integerConstants;
+        static std::vector<std::string> predicateNames;
+        static std::vector<std::string> stringConstants;
+        static std::vector<int> integerConstants;
     };
 
 };

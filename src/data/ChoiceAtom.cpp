@@ -19,6 +19,8 @@
 
 #include "ChoiceAtom.h"
 
+using namespace std;
+
 namespace DLV2
 {
     

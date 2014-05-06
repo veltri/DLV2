@@ -27,6 +27,8 @@
 #include "Buffer.h"
 #include <iostream>
 
+using namespace std;
+
 namespace DLV2
 {
     

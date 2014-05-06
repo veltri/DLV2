@@ -337,12 +337,6 @@ arithop
     | TIMES { $$ = '*'; }
     | SLASH { $$ = '/'; }
     ;      
-
-ddt
-    : 
-    |
-    DDOT NUMBER
-    ;
     
 term_ 
     : identifier 
@@ -350,7 +344,7 @@ term_
             director.getBuilder()->onTerm($1); 
             delete[] $1;
         }
-    | NUMBER ddt 
+    | NUMBER  
         { 
             director.getBuilder()->onTerm($1); 
             delete[] $1;
@@ -364,6 +358,12 @@ term_
         { 
             director.getBuilder()->onFunction($1, $3); 
             delete[] $1;
+        }
+    | NUMBER DDOT NUMBER
+        {
+            director.getBuilder()->onTermRange($1, $3);
+            delete[] $1;
+            delete[] $3;
         }
     | PARAM_OPEN term PARAM_CLOSE 
         { 

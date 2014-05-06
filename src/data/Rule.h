@@ -35,7 +35,7 @@ namespace DLV2
     
     class Rule {
     public:
-        Rule( vector<Atom> h, vector<Literal> b ): head(h), body(b) { }
+        Rule( std::vector<Atom> h, std::vector<Literal> b ): head(h), body(b) { }
         Rule( const Rule& r ): head(r.head), body(r.body) { } 
         ~Rule() { }
 
@@ -43,15 +43,16 @@ namespace DLV2
         void addToBody( const Literal& l ) { body.push_back(l); }
 
     private:
-        friend inline ostream& operator<< ( ostream&, const Rule& );
+        friend inline std::ostream& operator<< ( std::ostream&, const Rule& );
 
-        vector<Atom> head;
-        vector<Literal> body;
+        std::vector<Atom> head;
+        std::vector<Literal> body;
     };
 
-    ostream& 
+    inline
+    std::ostream& 
     operator<< ( 
-        ostream& out,
+        std::ostream& out,
         const Rule& r )
     {
         for( unsigned i=0; i<r.head.size(); i++ )

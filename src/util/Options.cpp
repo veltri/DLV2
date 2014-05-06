@@ -26,6 +26,8 @@
 #include <getopt.h>
 #include <cstdlib>
 
+using namespace std; 
+
 namespace DLV2{
   
 // Options with a short alias.

@@ -48,34 +48,35 @@ namespace DLV2
         void addChoiceRule( const ChoiceRule& cr );
 
     private:
-        friend inline ostream& operator<< ( ostream&, const Program& );
+        friend inline std::ostream& operator<< ( std::ostream&, const Program& );
 
-        vector<Rule> rules;
-        vector<Constraint> constraints;
-        vector<WeakConstraint> weakConstraints;
-        vector<ChoiceRule> choiceRules;
+        std::vector<Rule> rules;
+        std::vector<Constraint> constraints;
+        std::vector<WeakConstraint> weakConstraints;
+        std::vector<ChoiceRule> choiceRules;
     };
 
-    ostream& 
+    inline
+    std::ostream& 
     operator<< ( 
-        ostream& out, 
+        std::ostream& out, 
         const Program& p )
     {
         for( unsigned i=0; i<p.rules.size(); i++ )
         {
-            out << p.rules[i] << endl;
+            out << p.rules[i] << std::endl;
         }
         for( unsigned i=0; i<p.choiceRules.size(); i++ )
         {
-            out << p.choiceRules[i] << endl;
+            out << p.choiceRules[i] << std::endl;
         }
         for( unsigned i=0; i<p.constraints.size(); i++ )
         {
-            out << p.constraints[i] << endl;
+            out << p.constraints[i] << std::endl;
         }
         for( unsigned i=0; i<p.weakConstraints.size(); i++ )
         {
-            out << p.weakConstraints[i] << endl;
+            out << p.weakConstraints[i] << std::endl;
         }
         return out;
     }

@@ -35,24 +35,25 @@ namespace DLV2
 
     class WeakConstraint {
     public:
-        WeakConstraint( vector<Literal> b, Term* w, Term* l, vector<Term> t );
+        WeakConstraint( std::vector<Literal> b, Term* w, Term* l, std::vector<Term> t );
         WeakConstraint( const WeakConstraint& wc );
         ~WeakConstraint();
 
         void addToBody( const Literal& l ) { body.push_back(l); }
 
     private:
-        friend inline ostream& operator<< ( ostream&, const WeakConstraint& );
+        friend inline std::ostream& operator<< ( std::ostream&, const WeakConstraint& );
 
-        vector<Literal> body;
+        std::vector<Literal> body;
         Term* weight;
         Term* level;
-        vector<Term> terms;
+        std::vector<Term> terms;
     };
 
-    ostream& 
+    inline
+    std::ostream& 
     operator<< ( 
-        ostream& out,
+        std::ostream& out,
         const WeakConstraint& wc )
     {
         out << ":~ ";

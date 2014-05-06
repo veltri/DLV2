@@ -31,20 +31,18 @@
 #include<ostream>
 #include<cstring>
 
-using namespace std;
-
 namespace DLV2
 {
 
     class Buffer {
-            friend ostream& operator<<(Buffer&, ostream&);
+            friend std::ostream& operator<<(Buffer&, std::ostream&);
 
     public:
             Buffer();
             void addBlock(char*, int);
             void lastBlock();
-            void writeBlock(unsigned i, ostream&);
-            void flushOn(ostream& o);
+            void writeBlock(unsigned i, std::ostream&);
+            void flushOn(std::ostream& o);
 
             virtual ~Buffer();
 
@@ -52,7 +50,7 @@ namespace DLV2
 
             unsigned lastBlockSize;
             Buffer(const Buffer&){ exit(122); };
-            vector<char*> blocks;
+            std::vector<char*> blocks;
 
     };
 

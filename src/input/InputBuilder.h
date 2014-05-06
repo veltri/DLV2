@@ -53,6 +53,7 @@ namespace DLV2
         virtual void onFunction( char*, int ) = 0;
         virtual void onTermDash() = 0;
         virtual void onTermParams() = 0;
+        virtual void onTermRange( char*, char* ) = 0;
         virtual void onArithmeticOperation( char ) = 0;
         virtual void onWeightAtLevels( int, int, int ) = 0;
         virtual void onChoiceLowerGuard( char* ) = 0;

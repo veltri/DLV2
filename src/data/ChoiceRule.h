@@ -35,22 +35,23 @@ namespace DLV2
     
     class ChoiceRule {
     public:
-        ChoiceRule( const ChoiceAtom& ca, vector<Literal> b ): head(ca), body(b) { }
+        ChoiceRule( const ChoiceAtom& ca, std::vector<Literal> b ): head(ca), body(b) { }
         ChoiceRule( const ChoiceRule& cr ): head(cr.head), body(cr.body) { }
         ~ChoiceRule() { }
 
         void addToBody( const Literal& l ) { body.push_back(l); }
 
     private:
-        friend inline ostream& operator<< ( ostream&, const ChoiceRule& );
+        friend inline std::ostream& operator<< ( std::ostream&, const ChoiceRule& );
 
         ChoiceAtom head;
-        vector<Literal> body;
+        std::vector<Literal> body;
     };
 
-    ostream& 
+    inline
+    std::ostream& 
     operator<< ( 
-        ostream& out,
+        std::ostream& out,
         const ChoiceRule& r )
     {
         out << r.head;

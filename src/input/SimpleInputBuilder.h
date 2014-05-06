@@ -58,6 +58,7 @@ namespace DLV2
         virtual void onFunction( char*, int );
         virtual void onTermDash();
         virtual void onTermParams();
+        virtual void onTermRange( char*, char* ) { }
         virtual void onArithmeticOperation( char );
         virtual void onWeightAtLevels( int, int, int );
         virtual void onChoiceLowerGuard( char* );
@@ -78,24 +79,24 @@ namespace DLV2
         // Not derived methods
         Program& getProgram();
         Atom* getQuery();
-        void newTerm( char*, vector<Term>&, bool dash = false ); 
+        void newTerm( char*, std::vector<Term>&, bool dash = false ); 
 
         bool isNumeric( const char*, int );
 
     private:   
         Program* program;
-        vector<Atom> head;
-        vector<Literal> body;
+        std::vector<Atom> head;
+        std::vector<Literal> body;
         Literal* currentLiteral;
         Atom* currentAtom;
-        string predName;
-        vector<Term> termStack; 
-        vector<Term> existVars;
+        std::string predName;
+        std::vector<Term> termStack; 
+        std::vector<Term> existVars;
         struct VariableIndex {
-            string varName;
+            std::string varName;
             unsigned varIndex;
         };
-        vector<VariableIndex> localVariables; 
+        std::vector<VariableIndex> localVariables; 
         unsigned varCounter;
         Atom* query;
         unsigned nTermsForWeight; 
@@ -103,15 +104,15 @@ namespace DLV2
         unsigned nTermsAfterLevel;
         Term* lowerGuard;
         Term* upperGuard;
-        string lowerBinop;
-        string upperBinop;
+        std::string lowerBinop;
+        std::string upperBinop;
         ChoiceElement* currentChoiceElement;
-        vector<ChoiceElement> choiceElements;
+        std::vector<ChoiceElement> choiceElements;
         ChoiceAtom* currentChoiceAtom;
-        string aggregateFunction;
-        vector<Term> aggregateElementTerms;
-        vector<Literal> aggregateElementLiterals;
-        vector<AggregateElement> aggregateElements;
+        std::string aggregateFunction;
+        std::vector<Term> aggregateElementTerms;
+        std::vector<Literal> aggregateElementLiterals;
+        std::vector<AggregateElement> aggregateElements;
     };
 
 };

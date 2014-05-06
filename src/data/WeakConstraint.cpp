@@ -19,6 +19,8 @@
 
 #include "WeakConstraint.h"
 
+using namespace std;
+
 namespace DLV2
 {
 

@@ -19,6 +19,8 @@
 
 #include "Term.h"
 
+using namespace std;
+
 namespace DLV2
 {
 

@@ -29,7 +29,6 @@
 
 #include <vector>
 #include "Constants.h"
-using namespace std; 
 
 namespace DLV2
 {
@@ -46,7 +45,7 @@ namespace DLV2
 
         bool isAspCore2Strict() const { return aspCore2Strict; }
 
-        const vector<const char*>& getInputFiles() const { return inputFiles; }
+        const std::vector<const char*>& getInputFiles() const { return inputFiles; }
 
         INPUT_BUILDER_POLICY getInputBuilderPolicy() const { return inputPolicy; }
 
@@ -68,11 +67,11 @@ namespace DLV2
 
         void setInputBuilderPolicy(INPUT_BUILDER_POLICY inPolicy) { inputPolicy = inPolicy; }
 
-        void setInputFiles(const vector<const char*>& inFiles) { inputFiles = inFiles; }
+        void setInputFiles(const std::vector<const char*>& inFiles) { inputFiles = inFiles; }
 
         void setAspCore2Strict(bool strict) { aspCore2Strict = strict;	}
 
-        vector< const char* > inputFiles;
+        std::vector< const char* > inputFiles;
 
         bool aspCore2Strict;
         
