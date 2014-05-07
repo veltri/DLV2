@@ -27,11 +27,14 @@
 #ifndef GRAPH_H
 #define	GRAPH_H
 
+#include "../util/Constants.h"
 #include <vector>
 
 namespace DLV2
 {
     class DirectedGraph;
+    
+    typedef std::vector<unsigned> Component;
     
     class Graph {
     public:
@@ -39,8 +42,8 @@ namespace DLV2
         ~Graph();
         
         unsigned addVertex();
-        void addEdge( unsigned v1, unsigned v2, unsigned label = 0 );
-        bool isEdge( unsigned v1, unsigned v2, unsigned label = 0 );
+        void addEdge( unsigned v1, unsigned v2, unsigned label = POSITIVE_EDGE );
+        bool isEdge( unsigned v1, unsigned v2, unsigned label = POSITIVE_EDGE );
         void computeStronglyConnectedComponents();
         
         bool isHCF( unsigned componentIdx );
@@ -52,11 +55,15 @@ namespace DLV2
         bool isTight();
         
     private:        
+        void computeLabeledEdges();
+        
         DirectedGraph& graph;
-        // For each i in [0,size), this vector says: 
-        // vertex i belongs to component stronglyConnectedComponents[i]
-        std::vector<unsigned> stronglyConnectedComponents;
-        unsigned numberOfStronglyConnectedComponents;
+        // It represents vertices by components
+        std::vector<Component> stronglyConnectedComponents;
+        // It represents components by vertices
+        std::vector<int> vertexComponents;
+        bool hasLabeledEdges;
+        bool* componentHasNegations;
     };
     
 };

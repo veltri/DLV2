@@ -40,6 +40,11 @@ namespace DLV2
     #define OUTPUT_ASPCORE2 0
     #define OUTPUT_SILENT 1
 
+    // Dependency graph constants
+    #define POSITIVE_EDGE 0
+    #define NEGATIVE_EDGE 1
+    #define DISJUNCTIVE_EDGE 2
+
     // DLV2 constants 
     #define DLV2_STRING "DLV 2.0\n"
 

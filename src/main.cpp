@@ -22,8 +22,8 @@ int main(int argc, char** argv)
     }
         
     DLV2::DependencyGraph depGraph;
-    depGraph.addPositiveEdge("ciao","fesso");
-    depGraph.addPositiveEdge("fesso","ciao");
+    depGraph.addPositiveEdge("ciao","hello");
+    depGraph.addPositiveEdge("hello","ciao");
     depGraph.computeStronglyConnectedComponents();
     
     return parserExit;
