@@ -29,7 +29,6 @@
 
 #include "DepGraphNoStrategy.h"
 #include "../util/Constants.h"
-#include "../util/Assert.h"
 
 #include <vector>
 
@@ -89,7 +88,7 @@ namespace DLV2
         // It represents vertices by components
         Components stronglyConnectedComponents;
         // It represents components by vertices
-        std::vector<int> vertexComponents;
+        std::vector<unsigned> vertexComponents;
         // It represents negated edges in components
         std::vector<bool> componentHasNegations;
         // It represents disjunctive heads
@@ -100,7 +99,6 @@ namespace DLV2
     DependencyGraph<ControlStrategy>::DependencyGraph():
         graph( *new DirectedGraph() )
     {
-
     }
 
     template <typename ControlStrategy>
@@ -235,7 +233,8 @@ namespace DLV2
     void
     DependencyGraph<ControlStrategy>::addDisjunctiveHead(
         std::vector<unsigned> head )
-    { 
+    {
+        assert_msg( head.size() > 0, "The head is empty." );
         disjunctiveHeads.push_back(head); 
     }
 
