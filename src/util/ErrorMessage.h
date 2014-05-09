@@ -39,8 +39,8 @@ namespace DLV2
 
             static void errorDuringParsing( const char* errorMessage )
             {
-                std::cerr << ERRORPARSING << ": " << errorMessage << std::endl;
-                exit( ERRORPARSINGCODE );
+                std::cerr << ERROR_PARSING << ": " << errorMessage << std::endl;
+                exit( ERROR_PARSING_CODE );
             }
 
             static void errorGeneric( const std::string& errorMessage )
@@ -50,8 +50,8 @@ namespace DLV2
 
             static void errorGeneric( const char* errorMessage )
             {
-                std::cerr << ERRORGENERIC << ": " << errorMessage << std::endl;
-                exit( ERRORGENERICCODE );
+                std::cerr << ERROR_GENERIC << ": " << errorMessage << std::endl;
+                exit( ERROR_GENERIC_CODE );
             }
     };
 

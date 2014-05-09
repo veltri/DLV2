@@ -16,28 +16,28 @@
  *  limitations under the License.
  *
  */
-
-#include "DependencyGraph.h"
+/*
+#include "LabeledDependencyGraph.h"
 #include "../util/Assert.h"
-#include "Graph.h"
+#include "DependencyGraph.h"
 
 #include <cstring>
 
 namespace DLV2
 {
 
-DependencyGraph::DependencyGraph():
-    graph( new Graph() )
+LabeledDependencyGraph::LabeledDependencyGraph():
+    graph( new DependencyGraph() )
 {
 }
 
-DependencyGraph::~DependencyGraph() 
+LabeledDependencyGraph::~LabeledDependencyGraph() 
 {
     delete graph;
 }
 
 void
-DependencyGraph::addEdge(
+LabeledDependencyGraph::addEdge(
     const char* p1,
     const char* p2,
     unsigned label )
@@ -51,58 +51,58 @@ DependencyGraph::addEdge(
 }
 
 void
-DependencyGraph::computeStronglyConnectedComponents()
+LabeledDependencyGraph::computeStronglyConnectedComponents()
 {
     graph->computeStronglyConnectedComponents();
 }
 
 bool 
-DependencyGraph::isHCF(
+LabeledDependencyGraph::isHCF(
     unsigned componentIdx)
 {
     return graph->isHCF(componentIdx);
 }
 
 bool
-DependencyGraph::isHCF()
+LabeledDependencyGraph::isHCF()
 {
     return graph->isHCF();
 }
 
 bool 
-DependencyGraph::isStratified(
+LabeledDependencyGraph::isStratified(
     unsigned componentIdx)
 {
     return graph->isStratified(componentIdx);
 }
 
 bool
-DependencyGraph::isStratified()
+LabeledDependencyGraph::isStratified()
 {
     return graph->isStratified();
 }
 
 bool
-DependencyGraph::isCyclic(
+LabeledDependencyGraph::isCyclic(
     unsigned componentIdx)
 {
     return graph->isCyclic(componentIdx);
 }
 
 bool
-DependencyGraph::isCyclic()
+LabeledDependencyGraph::isCyclic()
 {
     return graph->isCyclic();
 }
 
 bool
-DependencyGraph::isTight()
+LabeledDependencyGraph::isTight()
 {
     return graph->isTight();
 }
 
 unsigned
-DependencyGraph::addVertex(
+LabeledDependencyGraph::addVertex(
     const char* p )
 {
     std::unordered_map<const char*, unsigned>::const_iterator it = predsMap.find(p);
@@ -117,3 +117,4 @@ DependencyGraph::addVertex(
 }
 
 };
+*/

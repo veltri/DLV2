@@ -3,7 +3,8 @@
 #include "DLV2Facade.h"
 #include "util/Options.h"
 
-#include "data/DependencyGraph.h"
+#include "depgraph/DependencyGraph.h"
+#include "depgraph/DepGraphOnlyPositiveEdgesStrategy.h"
 #include <string>
 
 using namespace std;
@@ -20,11 +21,14 @@ int main(int argc, char** argv)
     {
     	dlv2Facade.solve();
     }
-        
-    DLV2::DependencyGraph depGraph;
+    DLV2::DependencyGraph<DLV2::DepGraphOnlyPositiveEdgesStrategy> g;
+    g.addEdge(1,2);
+    
+/*        
+    DLV2::LabeledDependencyGraph depGraph;
     depGraph.addPositiveEdge("ciao","hello");
     depGraph.addPositiveEdge("hello","ciao");
     depGraph.computeStronglyConnectedComponents();
-    
+*/    
     return parserExit;
 }

@@ -23,21 +23,22 @@
  *
  * Created on 28 aprile 2014, 17.37
  */
-
-#ifndef DEPENDENCYGRAPH_H
-#define	DEPENDENCYGRAPH_H
+/*
+#ifndef LABELEDDEPENDENCYGRAPH_H
+#define	LABELEDDEPENDENCYGRAPH_H
         
 #include <unordered_map>
 
 namespace DLV2
 {
 
-    class Graph;
+    template<class ControlStrategy>
+    class DependencyGraph;
     
-    class DependencyGraph {
+    class LabeledDependencyGraph {
     public:
-        DependencyGraph();
-        ~DependencyGraph();
+        LabeledDependencyGraph();
+        ~LabeledDependencyGraph();
         
         unsigned addVertex( const char* );
         void addPositiveEdge( const char* p1, const char* p2 ) { addEdge(p1,p2,0); }
@@ -72,12 +73,13 @@ namespace DLV2
         // through 'addVertex'. 
         void addEdge( const char* p1, const char* p2, unsigned label );
         
-        Graph* graph;
+        DependencyGraph<>* graph;
         // Maps each predicate name to its vertex_descriptor in the graph.
         std::unordered_map<const char*, unsigned> predsMap;
     };
 
 };
+*/
+//#endif	/* LABELEDDEPENDENCYGRAPH_H */
 
-#endif	/* DEPENDENCYGRAPH_H */
 

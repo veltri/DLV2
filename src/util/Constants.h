@@ -25,39 +25,36 @@
  */
 
 #ifndef CONSTANTS_H
-#define	CONSTANTS_H
+#define CONSTANTS_H
 
 namespace DLV2
 {
-
-    // Input builder constants
-    #define BUILDER_MOCK_OBJECTS 0
-    #define BUILDER_DLV_DB 1
-    #define BUILDER_IN_MEMORY 2
-    #define BUILDER_SELECTOR 3
-
-    // Output builder constants
-    #define OUTPUT_ASPCORE2 0
-    #define OUTPUT_SILENT 1
-
-    // Dependency graph constants
-    #define POSITIVE_EDGE 0
-    #define NEGATIVE_EDGE 1
-    #define DISJUNCTIVE_EDGE 2
-
-    // DLV2 constants 
-    #define DLV2_STRING "DLV 2.0\n"
-
-    // Error messages
-    #define ERRORPARSING "\nError during parsing"
-    #define ERRORGENERIC "\nGeneric error"
-    #define ERRORPARSINGCODE 100
-    #define ERRORGENERICCODE 110
-
-    // New types
-    typedef unsigned int INPUT_BUILDER_POLICY;
-    typedef unsigned int OUTPUT_POLICY;
-
+// Input builder constants
+#define BUILDER_MOCK_OBJECTS 0
+#define BUILDER_DLV_DB 1
+#define BUILDER_IN_MEMORY 2
+#define BUILDER_SELECTOR 3
+    
+// Output builder constants
+#define OUTPUT_ASPCORE2 0
+#define OUTPUT_SILENT 1
+    
+// Dependency graph constants
+#define POSITIVE_EDGE 0
+#define NEGATIVE_EDGE 1
+    
+// DLV2 constants
+#define DLV2_STRING "DLV 2.0\n"
+    
+// Error messages
+#define ERROR_PARSING "\nError during parsing"
+#define ERROR_GENERIC "\nGeneric error"
+#define ERROR_PARSING_CODE 100
+#define ERROR_GENERIC_CODE 110
+    
+// New types
+typedef unsigned int INPUT_BUILDER_POLICY;
+typedef unsigned int OUTPUT_POLICY;
 };
 
 #endif	/* CONSTANTS_H */

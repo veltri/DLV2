@@ -27,8 +27,8 @@
 #ifndef SIMPLEINPUTBUILDER_H
 #define	SIMPLEINPUTBUILDER_H
 
-#include "../data/Program.h"
-#include "../data/AggregateElement.h"
+#include "../mockdata/Program.h"
+#include "../mockdata/AggregateElement.h"
 #include "InputBuilder.h"
 #include <vector>
 
