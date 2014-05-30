@@ -49,16 +49,25 @@ void
 InputDirector::configureBuilder( 
     InputBuilder* b )
 {
-    assert_msg( b != NULL, "InputBuilder has been already initialized" );
+    assert_msg( b != NULL, "The input builder is null." );
     builder = b;  	
+}
+
+void 
+InputDirector::configureParserConstraint( 
+    ParserConstraint* c )
+{
+    assert_msg( c != NULL, "The parser controller is null." );
+    parserConstraint = c;
 }
 
 InputDirector::InputDirector():   
     parserLine(0),
     parserFile(NULL),
     parserErrors(0),
-    parserStateInternal(true),
-    builder(NULL)
+    parserStateInternal(false),
+    builder(NULL),
+    parserConstraint(NULL)
 {
     
 }

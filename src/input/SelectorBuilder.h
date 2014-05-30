@@ -40,6 +40,7 @@ namespace DLV2
         SelectorBuilder();
         virtual ~SelectorBuilder();
 
+        virtual void onDirective( char*, char* ) { }
         virtual void onRule();
         virtual void onConstraint();
         virtual void onWeakConstraint();

@@ -28,6 +28,7 @@
 #define INPUTDIRECTOR_H
 
 #include "InputBuilder.h"
+#include "ParserConstraint.h"
 #include <vector>
 #include <cstdio>
 
@@ -42,6 +43,8 @@ namespace DLV2
 
         void configureBuilder( InputBuilder* );
         InputBuilder* getBuilder() { return builder; }
+        void configureParserConstraint( ParserConstraint* );
+        ParserConstraint* getParserConstraint() { return parserConstraint; }
 
         //////////////////////////////////////////////////////////////////////////////
         // Parsing functions
@@ -61,6 +64,7 @@ namespace DLV2
         unsigned parserErrors;
         bool parserStateInternal;
         InputBuilder* builder;
+        ParserConstraint* parserConstraint;
     };
     
 };

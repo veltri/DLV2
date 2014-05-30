@@ -34,6 +34,8 @@ namespace DLV2
 #define BUILDER_DLV_DB 1
 #define BUILDER_IN_MEMORY 2
 #define BUILDER_SELECTOR 3
+#define BUILDER_DEPGRAPH 4
+#define BUILDER_EMPTY 5
     
 // Output builder constants
 #define OUTPUT_ASPCORE2 0

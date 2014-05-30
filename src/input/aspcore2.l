@@ -28,26 +28,38 @@ This file is part of the ASPCOMP2013 ASP-Core-2 validator (validator in the foll
 
 %option nounput
 
-BLANK       ([ \t]+)
-NEWLINE     \15?\n
-COMMENT     \%.*
+BLANK               ([ \t]+)
+NEWLINE             \15?\n
+COMMENT             \%.*
+
+AGGR_COUNT          #count
+AGGR_MAX            #max
+AGGR_MIN            #min
+AGGR_SUM            #sum
+DIRECTIVE_NAME      #([A-Za-z]*)
+DIRECTIVE_VALUE     .*
 
 SYMBOLIC_CONSTANT   ([a-z][A-Za-z_0-9]*)
 VARIABLE            ([A-Z][A-Za-z_0-9]*)
 STRING              (\"[^\"]*\")
 NUMBER              ([0-9]+)
 
+%x DIRECTIVE_NAME_READ    
+                      // Only in state DIRECTIVE_NAME_READ a directive value 
+                      // token could be generated, while normally that token 
+                      // is not considered because it is too generic and, 
+                      // consequently, it might be matched anywhere.
+
 %START WANT_NEWLINE
-		       //Only in state WANT_NEWLINE a newline
-		       // token for the parser is generated, while
-		       // normally newlines are simply skipped.
-		       
+                      // Only in state WANT_NEWLINE a newline
+                      // token for the parser is generated, while
+                      // normally newlines are simply skipped.
 %%
         // Newline is normally skipped, except when explicitly
-	// requested with WANT_NEWLINE. (e.g. by a construct that is
-	// terminated by a newline.)
-	
-<WANT_NEWLINE>{NEWLINE} { 
+        // requested with WANT_NEWLINE. (e.g. by a construct that is
+        // terminated by a newline.)
+
+<WANT_NEWLINE,DIRECTIVE_NAME_READ>{NEWLINE} { 
                             director.onNewLine();
                             BEGIN(INITIAL);
                             return NEWLINE;
@@ -127,28 +139,42 @@ NUMBER              ([0-9]+)
                             return GREATER_OR_EQ;
                         }
 
-"#count"                { 
+{AGGR_COUNT}            { 
                             yylval.string=new char[strlen(yytext)+1];
                             strcpy(yylval.string,yytext);
                             return AGGR_COUNT;
                         }
 
-"#max"                  { 
+{AGGR_MAX}              { 
                             yylval.string=new char[strlen(yytext)+1];
                             strcpy(yylval.string,yytext);
                             return AGGR_MAX;
                         }
 
-"#min"                  { 
+{AGGR_MIN}              { 
                             yylval.string=new char[strlen(yytext)+1];
                             strcpy(yylval.string,yytext);
                             return AGGR_MIN;
                         }
 
-"#sum"                  { 
+{AGGR_SUM}              { 
                             yylval.string=new char[strlen(yytext)+1];
                             strcpy(yylval.string,yytext);
-                            return AGGR_SUM;              
+                            return AGGR_SUM;
+                        }
+
+{DIRECTIVE_NAME}        {
+                            BEGIN(DIRECTIVE_NAME_READ);
+                            yylval.string=new char[strlen(yytext)+1];
+                            strcpy(yylval.string,yytext);
+                            return DIRECTIVE_NAME;
+                        }
+
+<DIRECTIVE_NAME_READ>{DIRECTIVE_VALUE} {
+                            BEGIN(INITIAL);
+                            yylval.string=new char[strlen(yytext)+1];
+                            strcpy(yylval.string,yytext);
+                            return DIRECTIVE_VALUE;
                         }
 
 {SYMBOLIC_CONSTANT}     {
@@ -174,7 +200,7 @@ NUMBER              ([0-9]+)
                             strcpy(yylval.string,yytext);
                             return NUMBER; 
                         }
-							
+
 \%.*			{ /* Skip comments */ }
 {BLANK}			{ /* Skip blanks */ }
 
@@ -185,6 +211,6 @@ NUMBER              ([0-9]+)
                             assert(yytext[1]==0);
                             sprintf(s,"Lexical syntax error (%s)",yytext); 
                             yyerror(director,s);
-		
+
                             return ERROR;
                         }

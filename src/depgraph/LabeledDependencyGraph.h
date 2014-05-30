@@ -34,68 +34,75 @@
 namespace DLV2
 {
 
-    template<typename ControlStrategy>
+    template <typename ControlStrategy>
     class DependencyGraph;
     
-    template< typename ControlStrategy = DepGraphNoStrategy >
+    template < typename ControlStrategy = DepGraphNoStrategy, 
+               typename Label = std::string >
     class LabeledDependencyGraph {
     public:
         LabeledDependencyGraph() {}
         ~LabeledDependencyGraph() {}
         
-        unsigned addVertex( const char* );
-        void addPositiveEdge( const char* p1, const char* p2 ) { addEdge(p1,p2,POSITIVE_EDGE); }
-        void addNegativeEdge( const char* p1, const char* p2 ) { addEdge(p1,p2,NEGATIVE_EDGE); }
-        bool isPositiveEdge( const char* p1, const char* p2 ) { return isEdge(p1,p2,POSITIVE_EDGE); }
-        bool isNegativeEdge( const char* p1, const char* p2 ) { return isEdge(p1,p2,NEGATIVE_EDGE); }
-        void computeStronglyConnectedComponents();
-        unsigned getAtomComponent( const char* );
-        const Component& getComponent( unsigned id ) { return graph.getComponent(id); }
-        const Components& getComponentList() { return graph.getComponentList(); }
-        unsigned numberOfComponents() { return graph.numberOfComponents(); }
+        unsigned addVertex( Label name );
+        void addPositiveEdge( Label p1, Label p2 ) { addEdge(p1,p2,POSITIVE_EDGE); }
+        void addNegativeEdge( Label p1, Label p2 ) { addEdge(p1,p2,NEGATIVE_EDGE); }
+        bool isPositiveEdge( Label p1, Label p2 ) const { return isEdge(p1,p2,POSITIVE_EDGE); }
+        bool isNegativeEdge( Label p1, Label p2 ) const { return isEdge(p1,p2,NEGATIVE_EDGE); }
+        unsigned numOfVertices() const { return graph.numOfVertices(); }
+        void computeStronglyConnectedComponents() { graph.computeStronglyConnectedComponents(); }
+        unsigned getAtomComponent( Label name ) const;
+        const Component& getComponent( unsigned id ) const { return graph.getComponent(id); }
+        const Components& getComponentList() const { return graph.getComponentList(); }
+        unsigned numberOfComponents() const { return graph.numberOfComponents(); }
         
-        void addDisjunctiveHead( std::vector<const char*> );
+        void addDisjunctiveHead( std::vector<Label> head );
 
         // Returns true iff the component with the index componentidx is 
         // head-cycle free (HCF). A component is HCF if it contains no 
         // disjunctions or if it is acyclic.        
-        bool isHCF(unsigned componentIdx) { return graph.isHCF(componentIdx); }
+        bool isHCF( unsigned componentIdx ) const { return graph.isHCF(componentIdx); }
         // Returns true iff the program is HCF.
         // A program is HCF if all of its components are HCF.
-        bool isHCF() { return graph.isHCF(); }
+        bool isHCF() const { return graph.isHCF(); }
         // Returns true iff the component with the index componentidx is stratified.
-        bool isStratified(unsigned componentIdx) { return graph.isStratified(componentIdx); }
+        bool isStratified( unsigned componentIdx ) { return graph.isStratified(componentIdx); }
         // Returns true iff the program is stratified.
         // A program is stratified if all of its components are stratified.
         bool isStratified() { return graph.isStratified(); }
         // Returns true iff the component with the index componentidx is cyclic.
         // A component is cyclic iff it contains more than one atom or it is recursive.
-        bool isCyclic(unsigned componentIdx) { return graph.isCyclic(componentIdx); }
+        bool isCyclic( unsigned componentIdx ) const { return graph.isCyclic(componentIdx); }
         // Returns true iff the program is cyclic.
         // A program is cyclic iff at least one of its components is cyclic.
-        bool isCyclic() { return graph.isCyclic(); }
+        bool isCyclic() const { return graph.isCyclic(); }
         // Return true iff the program is tight.
         // A program is tight iff its dependency graph has no cyclic components.
-        bool isTight() { return graph.isTight(); }
+        bool isTight() const { return graph.isTight(); }
         
     private:      
         // Adds an edge from p1 to p2. Notice that, p1 and p2 are strings,
         // so their vertex_descriptors have to be first retrieved 
         // through 'addVertex'. 
-        void addEdge( const char*, const char*, unsigned label = POSITIVE_EDGE );
-        bool isEdge( const char*, const char*, unsigned label = POSITIVE_EDGE );
+        void addEdge( Label p1, Label p2, unsigned edgeLabel = POSITIVE_EDGE );
+        bool isEdge( Label p1, Label p2, unsigned edgeLabel = POSITIVE_EDGE ) const;
         
         DependencyGraph<ControlStrategy> graph;
         // Maps each predicate name to its vertex_descriptor in the graph.
-        std::unordered_map<const char*, unsigned> predsMap;
+        std::unordered_map<Label, unsigned> predsMap;
+        
+        template<typename T, typename L>
+        friend inline std::ostream& operator<<( std::ostream&, 
+                LabeledDependencyGraph<T,L>& );
     };
     
-    template<typename ControlStrategy>
+    template <typename ControlStrategy,
+              typename Label>
     unsigned
-    LabeledDependencyGraph<ControlStrategy>::addVertex(
-        const char* p )
+    LabeledDependencyGraph<ControlStrategy,Label>::addVertex(
+        Label p )
     {
-        std::unordered_map<const char*, unsigned>::const_iterator it = predsMap.find(p);
+        typename std::unordered_map<Label, unsigned>::const_iterator it = predsMap.find(p);
         if( it == predsMap.end() )
         {
             unsigned descriptor = graph.addVertex();
@@ -106,55 +113,86 @@ namespace DLV2
             return it->second;
     }
 
-    template<typename ControlStrategy>
-    void
-    LabeledDependencyGraph<ControlStrategy>::addEdge(
-        const char* p1,
-        const char* p2,
-        unsigned label )
-    {
-        //assert_msg( strcmp(p1,p2) != 0, "Adding a noose to the depgraph." );
-        // Retrieve the vertex_descriptors.
-        unsigned v1 = addVertex(p1);
-        unsigned v2 = addVertex(p2);
-        if( !graph.isEdge(v1,v2,label) )
-            graph.addEdge(v1,v2,label);
-    }
-
-    template<typename ControlStrategy>
-    void
-    LabeledDependencyGraph<ControlStrategy>::computeStronglyConnectedComponents()
-    {
-        graph.computeStronglyConnectedComponents();
-    }
-
-    template<typename ControlStrategy>
+    template <typename ControlStrategy,
+              typename Label>
     unsigned
-    LabeledDependencyGraph<ControlStrategy>::getAtomComponent(
-        const char* p )
+    LabeledDependencyGraph<ControlStrategy,Label>::getAtomComponent(
+        Label p ) const
     {
-        std::unordered_map<const char*, unsigned>::const_iterator it = predsMap.find(p);
+        typename std::unordered_map<Label, unsigned>::const_iterator it = predsMap.find(p);
         assert_msg( it != predsMap.end(), "Unknown predicate name." );
         return graph.getAtomComponent(it->second);
     }
-
-    template<typename ControlStrategy>
+    
+    template <typename ControlStrategy,
+              typename Label>
     void 
-    LabeledDependencyGraph<ControlStrategy>::addDisjunctiveHead( 
-        std::vector<const char*> head )
+    LabeledDependencyGraph<ControlStrategy,Label>::addDisjunctiveHead( 
+        std::vector<Label> head )
     {
         assert_msg( head.size() > 0, "The head is empty." );    
 
         std::vector<unsigned> unsignedHead;
         for( unsigned i=0; i<head.size(); i++ )
         {
-            std::unordered_map<const char*, unsigned>::const_iterator it = predsMap.find(head[i]);
+            typename std::unordered_map<Label, unsigned>::const_iterator it = predsMap.find(head[i]);
             assert_msg( it != predsMap.end(), "Unknown predicate name." );
             unsignedHead.push_back(it->second);
         }
         graph.addDisjunctiveHead(unsignedHead);
     }
+    
+    template <typename ControlStrategy,
+              typename Label>
+    void
+    LabeledDependencyGraph<ControlStrategy,Label>::addEdge(
+        Label p1,
+        Label p2,
+        unsigned label )
+    {
+        //assert_msg( strcmp(p1,p2) != 0, "Adding a noose to the depgraph." );
+        // Retrieve the vertex descriptors.
+        unsigned v1 = addVertex(p1);
+        unsigned v2 = addVertex(p2);
+        if( !graph.isEdge(v1,v2,label) )
+            graph.addEdge(v1,v2,label);
+    }
+    
+    template <typename ControlStrategy,
+              typename Label>
+    bool 
+    LabeledDependencyGraph<ControlStrategy, Label>::isEdge( 
+        Label p1, 
+        Label p2, 
+        unsigned edgeLabel ) const
+    {
+        // Retrieve the vertex descriptors.
+        unsigned v1 = addVertex(p1);
+        unsigned v2 = addVertex(p2);
+        return graph.isEdge(v1,v2,edgeLabel);
+    }
 
+    template <typename ControlStrategy,
+              typename Label>
+    std::ostream&
+    operator<<( 
+        std::ostream& out,
+        LabeledDependencyGraph<ControlStrategy,Label>& labGraph )
+    {
+        out << labGraph.graph << std::endl << std::endl;
+        
+        // Print the vertex set.
+        out << "Predicate names map:" << std::endl;
+        for( typename std::unordered_map<Label,unsigned>::const_iterator it = labGraph.predsMap.begin();
+             it != labGraph.predsMap.end(); 
+             it++ )
+            // For each vertex descriptor, print the corresponding predicate name.
+            out << it->second << ": " << it->first << std::endl;
+
+        out << std::endl;
+        
+        return out;
+    }
 };
 
 #endif	/* LABELEDDEPENDENCYGRAPH_H */

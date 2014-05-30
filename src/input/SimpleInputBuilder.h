@@ -40,6 +40,7 @@ namespace DLV2
         SimpleInputBuilder();
         virtual ~SimpleInputBuilder();
 
+        virtual void onDirective( char* directiveName, char* directiveValue );
         virtual void onRule();
         virtual void onConstraint();
         virtual void onWeakConstraint();
@@ -58,7 +59,7 @@ namespace DLV2
         virtual void onFunction( char*, int );
         virtual void onTermDash();
         virtual void onTermParams();
-        virtual void onTermRange( char*, char* ) { }
+        virtual void onTermRange( char*, char* );
         virtual void onArithmeticOperation( char );
         virtual void onWeightAtLevels( int, int, int );
         virtual void onChoiceLowerGuard( char* );
@@ -83,7 +84,7 @@ namespace DLV2
 
         bool isNumeric( const char*, int );
 
-    private:   
+    private:
         Program* program;
         std::vector<Atom> head;
         std::vector<Literal> body;

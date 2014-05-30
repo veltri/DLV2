@@ -35,6 +35,7 @@ namespace DLV2
         InputBuilder() { }
         virtual ~InputBuilder() { }
 
+        virtual void onDirective( char* directiveName, char* directiveValue ) = 0;
         virtual void onRule() = 0;
         virtual void onConstraint() = 0;
         virtual void onWeakConstraint() = 0;
@@ -46,28 +47,28 @@ namespace DLV2
         virtual void onNafLiteral( bool naf = false ) = 0;
         virtual void onAtom( bool isStrongNeg = false ) = 0;
         virtual void onExistentialAtom() = 0;
-        virtual void onPredicateName( char* ) = 0;
-        virtual void onExistentialVariable( char* ) = 0;
-        virtual void onTerm( char* ) = 0;
-        virtual void onTerm( int ) = 0;
-        virtual void onFunction( char*, int ) = 0;
+        virtual void onPredicateName( char* name ) = 0;
+        virtual void onExistentialVariable( char* var ) = 0;
+        virtual void onTerm( char* value ) = 0;
+        virtual void onTerm( int value ) = 0;
+        virtual void onFunction( char* functionSymbol, int nTerms ) = 0;
         virtual void onTermDash() = 0;
         virtual void onTermParams() = 0;
-        virtual void onTermRange( char*, char* ) = 0;
-        virtual void onArithmeticOperation( char ) = 0;
-        virtual void onWeightAtLevels( int, int, int ) = 0;
-        virtual void onChoiceLowerGuard( char* ) = 0;
-        virtual void onChoiceUpperGuard( char* ) = 0;
+        virtual void onTermRange( char* lowerBound, char* upperBound ) = 0;
+        virtual void onArithmeticOperation( char arithOperator ) = 0;
+        virtual void onWeightAtLevels( int nWeight, int nLevel, int nTerm ) = 0;
+        virtual void onChoiceLowerGuard( char* binop ) = 0;
+        virtual void onChoiceUpperGuard( char* binop ) = 0;
         virtual void onChoiceElementAtom() = 0;
         virtual void onChoiceElementLiteral() = 0;
         virtual void onChoiceElement() = 0;
         virtual void onChoiceAtom() = 0;
-        virtual void onBuiltinAtom( char* ) = 0;
-        virtual void onAggregateLowerGuard( char* ) = 0;
-        virtual void onAggregateUpperGuard( char* ) = 0;
-        virtual void onAggregateFunction( char* ) = 0;
-        virtual void onAggregateGroundTerm( char*, bool dash = false ) = 0;
-        virtual void onAggregateVariableTerm( char* ) = 0;
+        virtual void onBuiltinAtom( char* binop ) = 0;
+        virtual void onAggregateLowerGuard( char* guardOperator ) = 0;
+        virtual void onAggregateUpperGuard( char* guardOperator ) = 0;
+        virtual void onAggregateFunction( char* functionSymbol ) = 0;
+        virtual void onAggregateGroundTerm( char* value, bool dash = false ) = 0;
+        virtual void onAggregateVariableTerm( char* value ) = 0;
         virtual void onAggregateNafLiteral() = 0;
         virtual void onAggregateElement() = 0;
         virtual void onAggregate( bool naf = false ) = 0;

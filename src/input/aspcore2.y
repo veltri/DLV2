@@ -36,7 +36,7 @@ This file is part of the ASPCOMP2013 ASP-Core-2 validator (validator in the foll
 %type <single_char> arithop
 %type <string> identifier compareop leftwardop rightwardop binop
 
-%token <string> SYMBOLIC_CONSTANT NUMBER VARIABLE STRING
+%token <string> SYMBOLIC_CONSTANT NUMBER VARIABLE STRING DIRECTIVE_NAME DIRECTIVE_VALUE
 %token <string> EQUAL UNEQUAL LESS GREATER LESS_OR_EQ GREATER_OR_EQ
 %token <string> AGGR_COUNT AGGR_MAX AGGR_MIN AGGR_SUM ANON_VAR
 
@@ -64,9 +64,14 @@ HEAD_SEPARATOR  : VEL;
 
 program
     : 
-    | rules
-    | rules query { director.getBuilder()->onQuery(); }
+    | real_program
+    | directives real_program
     | error { yyerror(director,"Generic error"); }
+    ;
+
+real_program
+    : rules
+    | rules query { director.getBuilder()->onQuery(); }
     ;
 
 rules
@@ -441,7 +446,24 @@ identifier
     | STRING { $$ = $1; }
     | VARIABLE { $$ = $1; }
     ;
-                
+
+directives
+    : DIRECTIVE_NAME DIRECTIVE_VALUE
+        {
+            director.getParserConstraint()->directives();
+            director.getBuilder()->onDirective($1,$2);
+            delete[] $1;
+            delete[] $2;
+        }
+    | directives DIRECTIVE_NAME DIRECTIVE_VALUE
+        {
+            director.getParserConstraint()->directives();
+            director.getBuilder()->onDirective($2,$3);
+            delete[] $2;
+            delete[] $3;
+        }
+    ;
+        
 query     
     : atom QUERY_MARK 
         { 

@@ -286,18 +286,19 @@ static void yy_fatal_error YY_PROTO(( yyconst char msg[] ));
 	*yy_cp = '\0'; \
 	yy_c_buf_p = yy_cp;
 
-#define YY_NUM_RULES 44
-#define YY_END_OF_BUFFER 45
-static yyconst short int yy_accept[75] =
+#define YY_NUM_RULES 46
+#define YY_END_OF_BUFFER 47
+static yyconst short int yy_accept[83] =
     {   0,
-        0,    0,    0,    0,   45,   43,   42,    2,   43,   43,
-       43,   43,   41,   18,   19,   16,   14,    5,   15,    3,
-       17,   40,    8,    7,   29,   26,   30,   24,    9,   38,
-       20,   43,   21,   25,   37,   37,   22,    6,   23,    1,
-       43,   42,    2,   28,    0,   39,    0,    0,    0,   41,
-        4,   40,   12,   13,   31,   27,   32,   38,   10,   37,
-       37,    1,    0,    0,    0,    0,   11,    0,   34,   35,
-       36,    0,   33,    0
+        0,    0,   38,   38,    0,    0,   47,   45,   44,    2,
+       45,   45,   45,   37,   43,   18,   19,   16,   14,    5,
+       15,    3,   17,   42,    8,    7,   29,   26,   30,   24,
+        9,   40,   20,   45,   21,   25,   39,   39,   22,    6,
+       23,   38,    1,   38,    1,   45,   44,    2,   28,    0,
+       41,   37,   37,   37,   37,   43,    4,   42,   12,   13,
+       31,   27,   32,   40,   10,   39,   39,   38,    1,    1,
+       37,   37,   37,   37,   11,   37,   34,   35,   36,   37,
+       33,    0
     } ;
 
 static yyconst int yy_ec[256] =
@@ -336,71 +337,77 @@ static yyconst int yy_meta[46] =
     {   0,
         1,    1,    2,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    3,    1,    1,    1,
-        1,    1,    1,    1,    3,    3,    1,    1,    1,    3,
-        3,    3,    3,    3,    3,    3,    3,    3,    3,    3,
-        3,    1,    1,    1,    1
+        1,    1,    1,    1,    4,    4,    1,    1,    1,    3,
+        4,    4,    4,    4,    4,    4,    4,    4,    4,    4,
+        4,    1,    1,    1,    1
     } ;
 
-static yyconst short int yy_base[79] =
+static yyconst short int yy_base[90] =
     {   0,
-        0,    0,   43,   45,   87,   89,   79,   89,   77,   58,
-       72,   17,    0,   89,   89,   89,   89,   89,   89,   62,
-       89,   59,   37,   89,   32,   89,   54,   89,   89,    0,
-       89,   48,   89,   89,    0,   36,   89,   89,   89,   89,
-       69,   69,   89,   89,   64,   89,   32,   25,   28,    0,
-       89,   50,   89,   89,   89,   89,   89,    0,   89,    0,
-       27,   89,   25,   23,   27,   27,    0,   25,   89,   89,
-       89,   21,   89,   89,   82,   85,   55,   54
+        0,    0,   43,   45,   47,   49,   96,  107,   83,  107,
+       81,   62,   76,   21,    0,  107,  107,  107,  107,  107,
+      107,   66,  107,   63,   41,  107,   36,  107,   58,  107,
+      107,    0,  107,   52,  107,  107,    0,   40,  107,  107,
+      107,    0,  107,   73,  107,   72,   72,  107,  107,   67,
+      107,    0,   35,   29,   31,    0,  107,   53,  107,  107,
+      107,  107,  107,    0,  107,    0,   30,    0,  107,  107,
+       28,   26,   30,   30,    0,   28,    0,    0,    0,   23,
+        0,  107,   86,   90,   57,   94,   96,   98,  102
     } ;
 
-static yyconst short int yy_def[79] =
+static yyconst short int yy_def[90] =
     {   0,
-       74,    1,    1,    1,   74,   74,   74,   74,   74,   74,
-       75,   74,   76,   74,   74,   74,   74,   74,   74,   74,
-       74,   74,   74,   74,   74,   74,   74,   74,   74,   77,
-       74,   74,   74,   74,   78,   78,   74,   74,   74,   74,
-       74,   74,   74,   74,   75,   74,   74,   74,   74,   76,
-       74,   74,   74,   74,   74,   74,   74,   77,   74,   78,
-       78,   74,   74,   74,   74,   74,   78,   74,   74,   74,
-       74,   74,   74,    0,   74,   74,   74,   74
+       82,    1,   83,   83,    1,    1,   82,   82,   82,   82,
+       82,   82,   84,   85,   86,   82,   82,   82,   82,   82,
+       82,   82,   82,   82,   82,   82,   82,   82,   82,   82,
+       82,   87,   82,   82,   82,   82,   88,   88,   82,   82,
+       82,   89,   82,   89,   82,   82,   82,   82,   82,   84,
+       82,   85,   85,   85,   85,   86,   82,   82,   82,   82,
+       82,   82,   82,   87,   82,   88,   88,   89,   82,   82,
+       85,   85,   85,   85,   88,   85,   85,   85,   85,   85,
+       85,    0,   82,   82,   82,   82,   82,   82,   82
     } ;
 
-static yyconst short int yy_nxt[135] =
+static yyconst short int yy_nxt[153] =
     {   0,
-        6,    7,    8,    9,   10,   11,   12,   13,   14,   15,
-       16,   17,   18,   19,   20,   21,   22,   23,   24,   25,
-       26,   27,   28,   29,   30,   30,   31,   32,   33,   34,
-       35,   35,   35,   35,   35,   36,   35,   35,   35,   35,
-       35,   37,   38,   39,    6,   40,   41,   40,   41,   47,
-       53,   48,   55,   56,   49,   64,   60,   58,   65,   73,
-       72,   71,   70,   69,   68,   67,   52,   66,   63,   46,
-       42,   62,   61,   59,   57,   52,   51,   46,   44,   43,
-       42,   54,   45,   45,   45,   50,   74,   50,    5,   74,
-       74,   74,   74,   74,   74,   74,   74,   74,   74,   74,
+        8,    9,   10,   11,   12,   13,   14,   15,   16,   17,
+       18,   19,   20,   21,   22,   23,   24,   25,   26,   27,
+       28,   29,   30,   31,   32,   32,   33,   34,   35,   36,
+       37,   37,   37,   37,   37,   38,   37,   37,   37,   37,
+       37,   39,   40,   41,    8,   43,   44,   43,   44,   45,
+       46,   45,   46,   53,   59,   54,   61,   62,   55,   72,
+       52,   81,   73,   80,   79,   78,   77,   76,   75,   58,
+       74,   71,   51,   47,   70,   69,   67,   65,   63,   58,
+       57,   51,   49,   48,   47,   60,   42,   42,   42,   42,
+       50,   50,   50,   50,   56,   82,   56,   56,   64,   64,
 
-       74,   74,   74,   74,   74,   74,   74,   74,   74,   74,
-       74,   74,   74,   74,   74,   74,   74,   74,   74,   74,
-       74,   74,   74,   74,   74,   74,   74,   74,   74,   74,
-       74,   74,   74,   74
+       66,   66,   68,   82,   68,   68,    7,   82,   82,   82,
+       82,   82,   82,   82,   82,   82,   82,   82,   82,   82,
+       82,   82,   82,   82,   82,   82,   82,   82,   82,   82,
+       82,   82,   82,   82,   82,   82,   82,   82,   82,   82,
+       82,   82,   82,   82,   82,   82,   82,   82,   82,   82,
+       82,   82
     } ;
 
-static yyconst short int yy_chk[135] =
+static yyconst short int yy_chk[153] =
     {   0,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
-        1,    1,    1,    1,    1,    3,    3,    4,    4,   12,
-       23,   12,   25,   25,   12,   48,   78,   77,   48,   72,
-       68,   66,   65,   64,   63,   61,   52,   49,   47,   45,
-       42,   41,   36,   32,   27,   22,   20,   11,   10,    9,
-        7,   23,   75,   75,   75,   76,    5,   76,   74,   74,
-       74,   74,   74,   74,   74,   74,   74,   74,   74,   74,
+        1,    1,    1,    1,    1,    3,    3,    4,    4,    5,
+        5,    6,    6,   14,   25,   14,   27,   27,   14,   54,
+       85,   80,   54,   76,   74,   73,   72,   71,   67,   58,
+       55,   53,   50,   47,   46,   44,   38,   34,   29,   24,
+       22,   13,   12,   11,    9,   25,   83,   83,   83,   83,
+       84,   84,   84,   84,   86,    7,   86,   86,   87,   87,
 
-       74,   74,   74,   74,   74,   74,   74,   74,   74,   74,
-       74,   74,   74,   74,   74,   74,   74,   74,   74,   74,
-       74,   74,   74,   74,   74,   74,   74,   74,   74,   74,
-       74,   74,   74,   74
+       88,   88,   89,    0,   89,   89,   82,   82,   82,   82,
+       82,   82,   82,   82,   82,   82,   82,   82,   82,   82,
+       82,   82,   82,   82,   82,   82,   82,   82,   82,   82,
+       82,   82,   82,   82,   82,   82,   82,   82,   82,   82,
+       82,   82,   82,   82,   82,   82,   82,   82,   82,   82,
+       82,   82
     } ;
 
 static yy_state_type yy_last_accepting_state;
@@ -443,12 +450,18 @@ This file is part of the ASPCOMP2013 ASP-Core-2 validator (validator in the foll
 #define YY_DECL int yylex(DLV2::InputDirector& director)
 
 #define YY_NO_UNPUT 1
-#define WANT_NEWLINE 1
+#define DIRECTIVE_NAME_READ 1
+    
+// Only in state DIRECTIVE_NAME_READ a directive value 
+// token could be generated, while normally that token 
+// is not considered because it is too generic and, 
+// consequently, it might be matched anywhere.
+#define WANT_NEWLINE 2
 
-//Only in state WANT_NEWLINE a newline
+// Only in state WANT_NEWLINE a newline
 // token for the parser is generated, while
 // normally newlines are simply skipped.
-#line 452 "src/input/aspcore2_lexer.hpp"
+#line 465 "src/input/aspcore2_lexer.hpp"
 
 /* Macros after this point can all be overridden by user definitions in
  * section 1.
@@ -610,13 +623,13 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
 
-#line 45 "src/input/aspcore2.l"
+#line 57 "src/input/aspcore2.l"
 
         // Newline is normally skipped, except when explicitly
-	// requested with WANT_NEWLINE. (e.g. by a construct that is
-	// terminated by a newline.)
-	
-#line 620 "src/input/aspcore2_lexer.hpp"
+        // requested with WANT_NEWLINE. (e.g. by a construct that is
+        // terminated by a newline.)
+
+#line 633 "src/input/aspcore2_lexer.hpp"
 
 	if ( yy_init )
 		{
@@ -667,13 +680,13 @@ yy_match:
 			while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 				{
 				yy_current_state = (int) yy_def[yy_current_state];
-				if ( yy_current_state >= 75 )
+				if ( yy_current_state >= 83 )
 					yy_c = yy_meta[(unsigned int) yy_c];
 				}
 			yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
 			++yy_cp;
 			}
-		while ( yy_base[yy_current_state] != 89 );
+		while ( yy_base[yy_current_state] != 107 );
 
 yy_find_action:
 		yy_act = yy_accept[yy_current_state];
@@ -701,7 +714,7 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 50 "src/input/aspcore2.l"
+#line 62 "src/input/aspcore2.l"
 { 
                             director.onNewLine();
                             BEGIN(INITIAL);
@@ -710,122 +723,122 @@ YY_RULE_SETUP
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 56 "src/input/aspcore2.l"
+#line 68 "src/input/aspcore2.l"
 { director.onNewLine(); }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 57 "src/input/aspcore2.l"
+#line 69 "src/input/aspcore2.l"
 { return DOT; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 58 "src/input/aspcore2.l"
+#line 70 "src/input/aspcore2.l"
 { return DDOT; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 59 "src/input/aspcore2.l"
+#line 71 "src/input/aspcore2.l"
 { return COMMA; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 60 "src/input/aspcore2.l"
+#line 72 "src/input/aspcore2.l"
 { return VEL; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 61 "src/input/aspcore2.l"
+#line 73 "src/input/aspcore2.l"
 { return SEMICOLON; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 62 "src/input/aspcore2.l"
+#line 74 "src/input/aspcore2.l"
 { return COLON; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 63 "src/input/aspcore2.l"
+#line 75 "src/input/aspcore2.l"
 { return AT; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 64 "src/input/aspcore2.l"
+#line 76 "src/input/aspcore2.l"
 { return EXISTS; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 66 "src/input/aspcore2.l"
+#line 78 "src/input/aspcore2.l"
 { return NAF; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 68 "src/input/aspcore2.l"
+#line 80 "src/input/aspcore2.l"
 { return CONS; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 69 "src/input/aspcore2.l"
+#line 81 "src/input/aspcore2.l"
 { return WCONS; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 71 "src/input/aspcore2.l"
+#line 83 "src/input/aspcore2.l"
 { return PLUS; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 72 "src/input/aspcore2.l"
+#line 84 "src/input/aspcore2.l"
 { return DASH; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 73 "src/input/aspcore2.l"
+#line 85 "src/input/aspcore2.l"
 { return TIMES; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 74 "src/input/aspcore2.l"
+#line 86 "src/input/aspcore2.l"
 { return SLASH; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 76 "src/input/aspcore2.l"
+#line 88 "src/input/aspcore2.l"
 { return PARAM_OPEN; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 77 "src/input/aspcore2.l"
+#line 89 "src/input/aspcore2.l"
 { return PARAM_CLOSE; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 79 "src/input/aspcore2.l"
+#line 91 "src/input/aspcore2.l"
 { return SQUARE_OPEN; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 80 "src/input/aspcore2.l"
+#line 92 "src/input/aspcore2.l"
 { return SQUARE_CLOSE; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 82 "src/input/aspcore2.l"
+#line 94 "src/input/aspcore2.l"
 { return CURLY_OPEN; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 83 "src/input/aspcore2.l"
+#line 95 "src/input/aspcore2.l"
 { return CURLY_CLOSE; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 85 "src/input/aspcore2.l"
+#line 97 "src/input/aspcore2.l"
 { return QUERY_MARK; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 87 "src/input/aspcore2.l"
+#line 99 "src/input/aspcore2.l"
 { 
                             yylval.string=new char[strlen(yytext)+1];
                             strcpy(yylval.string,yytext);
@@ -834,7 +847,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 93 "src/input/aspcore2.l"
+#line 105 "src/input/aspcore2.l"
 {
                             yylval.string=new char[strlen(yytext)+1];
                             strcpy(yylval.string,yytext);
@@ -842,10 +855,10 @@ YY_RULE_SETUP
                         }
 	YY_BREAK
 case 27:
-#line 100 "src/input/aspcore2.l"
+#line 112 "src/input/aspcore2.l"
 case 28:
 YY_RULE_SETUP
-#line 100 "src/input/aspcore2.l"
+#line 112 "src/input/aspcore2.l"
 {
                             yylval.string=new char[strlen(yytext)+1];
                             strcpy(yylval.string,yytext);
@@ -854,7 +867,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 106 "src/input/aspcore2.l"
+#line 118 "src/input/aspcore2.l"
 {
                             yylval.string=new char[strlen(yytext)+1];
                             strcpy(yylval.string,yytext);
@@ -863,7 +876,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 112 "src/input/aspcore2.l"
+#line 124 "src/input/aspcore2.l"
 {
                             yylval.string=new char[strlen(yytext)+1];
                             strcpy(yylval.string,yytext);
@@ -872,7 +885,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 118 "src/input/aspcore2.l"
+#line 130 "src/input/aspcore2.l"
 {
                             yylval.string=new char[strlen(yytext)+1];
                             strcpy(yylval.string,yytext);
@@ -881,7 +894,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 124 "src/input/aspcore2.l"
+#line 136 "src/input/aspcore2.l"
 {
                             yylval.string=new char[strlen(yytext)+1];
                             strcpy(yylval.string,yytext);
@@ -890,7 +903,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 130 "src/input/aspcore2.l"
+#line 142 "src/input/aspcore2.l"
 { 
                             yylval.string=new char[strlen(yytext)+1];
                             strcpy(yylval.string,yytext);
@@ -899,7 +912,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 136 "src/input/aspcore2.l"
+#line 148 "src/input/aspcore2.l"
 { 
                             yylval.string=new char[strlen(yytext)+1];
                             strcpy(yylval.string,yytext);
@@ -908,7 +921,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 142 "src/input/aspcore2.l"
+#line 154 "src/input/aspcore2.l"
 { 
                             yylval.string=new char[strlen(yytext)+1];
                             strcpy(yylval.string,yytext);
@@ -917,62 +930,82 @@ YY_RULE_SETUP
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 148 "src/input/aspcore2.l"
+#line 160 "src/input/aspcore2.l"
 { 
                             yylval.string=new char[strlen(yytext)+1];
                             strcpy(yylval.string,yytext);
-                            return AGGR_SUM;              
+                            return AGGR_SUM;
                         }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 154 "src/input/aspcore2.l"
+#line 166 "src/input/aspcore2.l"
+{
+                            BEGIN(DIRECTIVE_NAME_READ);
+                            yylval.string=new char[strlen(yytext)+1];
+                            strcpy(yylval.string,yytext);
+                            return DIRECTIVE_NAME;
+                        }
+	YY_BREAK
+case 38:
+YY_RULE_SETUP
+#line 173 "src/input/aspcore2.l"
+{
+                            BEGIN(INITIAL);
+                            yylval.string=new char[strlen(yytext)+1];
+                            strcpy(yylval.string,yytext);
+                            return DIRECTIVE_VALUE;
+                        }
+	YY_BREAK
+case 39:
+YY_RULE_SETUP
+#line 180 "src/input/aspcore2.l"
 {
                             yylval.string=new char[strlen(yytext)+1];
                             strcpy(yylval.string,yytext);
                             return SYMBOLIC_CONSTANT;
                         }
 	YY_BREAK
-case 38:
+case 40:
 YY_RULE_SETUP
-#line 160 "src/input/aspcore2.l"
+#line 186 "src/input/aspcore2.l"
 {
                             yylval.string=new char[strlen(yytext)+1];
                             strcpy(yylval.string,yytext);
                             return VARIABLE;
                         }
 	YY_BREAK
-case 39:
+case 41:
 YY_RULE_SETUP
-#line 166 "src/input/aspcore2.l"
+#line 192 "src/input/aspcore2.l"
 {
                             yylval.string=new char[strlen(yytext)+1];
                             strcpy(yylval.string,yytext);
                             return STRING;
                         }
 	YY_BREAK
-case 40:
+case 42:
 YY_RULE_SETUP
-#line 172 "src/input/aspcore2.l"
+#line 198 "src/input/aspcore2.l"
 { 
                             yylval.string=new char[strlen(yytext)+1];
                             strcpy(yylval.string,yytext);
                             return NUMBER; 
                         }
 	YY_BREAK
-case 41:
-YY_RULE_SETUP
-#line 178 "src/input/aspcore2.l"
-{ /* Skip comments */ }
-	YY_BREAK
-case 42:
-YY_RULE_SETUP
-#line 179 "src/input/aspcore2.l"
-{ /* Skip blanks */ }
-	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 181 "src/input/aspcore2.l"
+#line 204 "src/input/aspcore2.l"
+{ /* Skip comments */ }
+	YY_BREAK
+case 44:
+YY_RULE_SETUP
+#line 205 "src/input/aspcore2.l"
+{ /* Skip blanks */ }
+	YY_BREAK
+case 45:
+YY_RULE_SETUP
+#line 207 "src/input/aspcore2.l"
 {   
                             // Anything not matching one of the patterns
                             // given above is considered an error.
@@ -980,17 +1013,18 @@ YY_RULE_SETUP
                             assert(yytext[1]==0);
                             sprintf(s,"Lexical syntax error (%s)",yytext); 
                             yyerror(director,s);
-		
+
                             return ERROR;
                         }
 	YY_BREAK
-case 44:
+case 46:
 YY_RULE_SETUP
-#line 191 "src/input/aspcore2.l"
+#line 217 "src/input/aspcore2.l"
 ECHO;
 	YY_BREAK
-#line 993 "src/input/aspcore2_lexer.hpp"
+#line 1026 "src/input/aspcore2_lexer.hpp"
 case YY_STATE_EOF(INITIAL):
+case YY_STATE_EOF(DIRECTIVE_NAME_READ):
 case YY_STATE_EOF(WANT_NEWLINE):
 	yyterminate();
 
@@ -1282,7 +1316,7 @@ static yy_state_type yy_get_previous_state()
 		while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 			{
 			yy_current_state = (int) yy_def[yy_current_state];
-			if ( yy_current_state >= 75 )
+			if ( yy_current_state >= 83 )
 				yy_c = yy_meta[(unsigned int) yy_c];
 			}
 		yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
@@ -1317,11 +1351,11 @@ yy_state_type yy_current_state;
 	while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 		{
 		yy_current_state = (int) yy_def[yy_current_state];
-		if ( yy_current_state >= 75 )
+		if ( yy_current_state >= 83 )
 			yy_c = yy_meta[(unsigned int) yy_c];
 		}
 	yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
-	yy_is_jam = (yy_current_state == 74);
+	yy_is_jam = (yy_current_state == 82);
 
 	return yy_is_jam ? 0 : yy_current_state;
 	}
@@ -1880,4 +1914,4 @@ int main()
 	return 0;
 	}
 #endif
-#line 191 "src/input/aspcore2.l"
+#line 217 "src/input/aspcore2.l"

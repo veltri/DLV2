@@ -21,8 +21,6 @@
 #include "ErrorMessage.h"
 #include "Help.h"
 
-#include "../DLV2Facade.h"
-
 #include <getopt.h>
 #include <cstdlib>
 
@@ -38,12 +36,15 @@ namespace DLV2{
 /* INPUT OPTIONS */
 #define OPTIONID_aspcore2strict ( 'z' + 1 )
 #define OPTIONID_inmemory ( 'z' + 2 )
-#define OPTIONID_dlvdb ( 'z' + 3 )    
+#define OPTIONID_dlvdb ( 'z' + 3 )
+#define OPTIONID_testparser ( 'z' + 4 )
 
 /* OUTPUT OPTIONS */
 #define OPTIONID_silent ( 'z' + 10 )
 #define OPTIONID_printprogram ( 'z' + 11 )
 #define OPTIONID_selector ( 'z' + 12 )
+#define OPTIONID_printdepgraph ( 'z' + 13 )
+#define OPTIONID_printstatistics ( 'z' + 14 )
     
 /* GENERIC OPTIONS */
 #define OPTIONID_stdin ( 'z' + 20 )
@@ -65,13 +66,18 @@ void
 Options::finalizeGlobalOptions() 
 {
     if( instance != NULL )
+    {
         delete instance;
+        instance = NULL;
+    }
 }
 
 
 Options::Options(): 
         aspCore2Strict(false), 
         printProgram(false),
+        printDepGraph(false),
+        printStatistics(false),
         inputPolicy(BUILDER_IN_MEMORY),
         outputPolicy(OUTPUT_ASPCORE2) 
 {
@@ -82,6 +88,8 @@ Options::Options(
     const Options& o):
         aspCore2Strict(o.aspCore2Strict),
         printProgram(o.printProgram),
+        printDepGraph(o.printDepGraph),
+        printStatistics(o.printStatistics),
         inputPolicy(o.inputPolicy),
         outputPolicy(o.outputPolicy) 
 {
@@ -106,11 +114,14 @@ Options::init(
         { "aspcore2strict", no_argument, NULL, OPTIONID_aspcore2strict },
         { "inmemory", no_argument, NULL, OPTIONID_inmemory },
         { "dlv-db", no_argument, NULL, OPTIONID_dlvdb },
+        { "test-parser", no_argument, NULL, OPTIONID_testparser },
 
         /* OUTPUT OPTIONS */
         { "silent", no_argument, NULL, OPTIONID_silent },
         { "printprogram", no_argument, NULL, OPTIONID_printprogram },
         { "selector", required_argument, NULL, OPTIONID_selector },
+        { "printdepgraph", no_argument, NULL, OPTIONID_printdepgraph },
+        { "stats", no_argument, NULL, OPTIONID_printstatistics },
 
         /* GENERIC OPTIONS */
         { "help", no_argument, NULL, OPTIONID_help },
@@ -143,6 +154,11 @@ Options::init(
                 inputPolicy = BUILDER_DLV_DB;
                 break;
                 
+            case OPTIONID_testparser:
+                inputPolicy = BUILDER_EMPTY;
+                printStatistics = true;
+                break;
+                
             case OPTIONID_silent:
                 outputPolicy = OUTPUT_SILENT;
                 break;
@@ -157,7 +173,16 @@ Options::init(
                 printProgram = true;
                 namedpipe = atoi( optarg );
                 break;
+                
+            case OPTIONID_printdepgraph:
+                inputPolicy = BUILDER_DEPGRAPH;
+                printDepGraph = true;
+                break;
 
+            case OPTIONID_printstatistics:
+                printStatistics = true;
+                break;
+                
             case OPTIONID_help:
                 Help::printHelp(argv[0]);
                 exit(0);

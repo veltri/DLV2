@@ -41,11 +41,14 @@ namespace DLV2
             std::cout << "--aspcore2strict                       - Enable \"strict\" AspCore2 format as input." << std::endl;
             std::cout << "--inmemory                             - Enable the input builder for the in-memory version. (default choice)" << std::endl;
             std::cout << "--dlv-db                               - Enable the input builder for the DB-based version." << std::endl;
+            std::cout << "--test-parser                          - Enable an empty input builder in order to test just parsing functionalities." << std::endl;
             std::cout << separator << std::endl;
 
             std::cout << "Output options                         " << std::endl << std::endl;
             std::cout << "--silent                               - Suppress the startup banner and blank lines." << std::endl;
             std::cout << "--printprogram                         - Enable the input builder for mock objects, print the input program and exit." << std::endl;
+            std::cout << "--printdepgraph                        - Enable the input builder for the dependency graph, print it and exit." << std::endl;
+            std::cout << "--stats                                - Print final statistics." << std::endl;
             std::cout << separator << std::endl;
 
             std::cout << "General options                     " << std::endl << std::endl;

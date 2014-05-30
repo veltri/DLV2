@@ -32,7 +32,6 @@
 
 namespace DLV2
 {
-    class DLV2Facade;
 
     class Options{
     public:
@@ -46,6 +45,12 @@ namespace DLV2
         bool isAspCore2Strict() const { return aspCore2Strict; }
 
         const std::vector<const char*>& getInputFiles() const { return inputFiles; }
+        
+        bool getPrintProgram() const { return printProgram; }
+        
+        bool getPrintDepGraph() const { return printDepGraph; }
+        
+        bool getPrintStatistics() const { return printStatistics; }
 
         INPUT_BUILDER_POLICY getInputBuilderPolicy() const { return inputPolicy; }
 
@@ -76,6 +81,10 @@ namespace DLV2
         bool aspCore2Strict;
         
         bool printProgram;
+        
+        bool printDepGraph;
+        
+        bool printStatistics;
         
         INPUT_BUILDER_POLICY inputPolicy;
         

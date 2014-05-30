@@ -18,46 +18,33 @@
  */
 
 /* 
- * File:   DLV2Facade.h
+ * File:   DirectiveFactory.h
  * Author: cesco
  *
- * Created on 4 aprile 2014, 18.50
+ * Created on 29 maggio 2014, 22.58
  */
 
-#ifndef DLV2FACADE_H
-#define	DLV2FACADE_H
+#ifndef DIRECTIVEFACTORY_H
+#define	DIRECTIVEFACTORY_H
 
-#include "util/Options.h"
-#include "input/InputDirector.h"
+#include "Directive.h"
 
 namespace DLV2
 {
-    // TODO: discuss the issue of options and facade methods
-
-    class DLV2Facade {
-    public:
-        DLV2Facade() : options(*Options::globalOptions()), builder(NULL) { }
-        ~DLV2Facade();
-
-        void parseOptions( int, char* const* );
-        void greetings();
-        int readInput();
-        void solve();
-
-        Options& getOptions() { return options; }
-
-    private:
-
-        Options& options;
-
-        InputDirector director;
-        InputBuilder* builder;
-        
-        double parserDuration;
-
-    }; 
     
-}; 
+    // FIXME
+    class DirectiveFactory {
+    public:
+        static Directive* createDirective( char* dirName, char* dirValue ) { return new Directive(dirName,dirValue); }
+        
+    private:
+        DirectiveFactory() { }
+        DirectiveFactory(const DirectiveFactory&) { }
+        ~DirectiveFactory() { }
+        
+    };
+    
+};
 
-#endif	/* DLV2FACADE_H */
+#endif	/* DIRECTIVEFACTORY_H */
 

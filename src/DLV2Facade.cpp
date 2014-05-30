@@ -23,9 +23,13 @@
 #include "input/SimpleInputBuilder.h"
 #include "input/SelectorBuilder.h"
 #include "input/Buffer.h"
+#include "input/DepGraphBuilder.h"
+#include "input/EmptyInputBuilder.h"
 
 //extern Buffer theBuffer;
 
+#include <cstdio>
+#include <ctime>
 #include <fstream>
 #include <sstream>
 using namespace std;
@@ -54,14 +58,18 @@ DLV2Facade::readInput()
 {
     switch( getOptions().getInputBuilderPolicy() )
     {
-        case BUILDER_SELECTOR:
-            builder = new SelectorBuilder();
-            break;
-
         case BUILDER_MOCK_OBJECTS:
             builder = new SimpleInputBuilder();
             break;
 
+        case BUILDER_SELECTOR:
+            builder = new SelectorBuilder();
+            break;
+            
+        case BUILDER_DEPGRAPH:
+            builder = new DepGraphBuilder();
+            break;
+            
         case BUILDER_DLV_DB:
             // TODO
             ErrorMessage::errorGeneric( "--dlv-db: Not supported yet! Bye." );
@@ -70,6 +78,10 @@ DLV2Facade::readInput()
         case BUILDER_IN_MEMORY:
             // TODO
             ErrorMessage::errorGeneric( "--inmemory: Not supported yet! Bye." );
+            break;
+            
+        case BUILDER_EMPTY:
+            builder = new EmptyInputBuilder();
             break;
 
         default:
@@ -80,81 +92,96 @@ DLV2Facade::readInput()
             "Null input-builder, cannot start the parsing process.");
 
     director.configureBuilder(builder);
-    return director.parse(getOptions().getInputFiles());
+    
+    // FIXME //
+    // Currently, there is only one implementation of ParserConstraint.
+    ParserConstraint* pc = new ParserConstraint();
+    director.configureParserConstraint(pc);
+    /////////// 
+        
+    clock_t start = clock();
+    int error = director.parse(getOptions().getInputFiles());
+    parserDuration = ( clock() - start ) / (double) CLOCKS_PER_SEC;
+    
+    // FIXME //
+    delete pc;
+    ///////////
+    
+    return error;
 }
 
 void
 DLV2Facade::solve()
 {
-	// FIXME: this switch should be done differently else.
+    // FIXME: this switch should be done differently else.
+    if( getOptions().getPrintProgram() )
+    {
+        if( getOptions().getInputBuilderPolicy() == BUILDER_SELECTOR )
+        {
+            SelectorBuilder* selectorBuilder = static_cast<SelectorBuilder*>(builder);
 
-	switch( getOptions().getInputBuilderPolicy() )
-	{
+            ostringstream s1;
+            s1 << "mkfifo /tmp/wasppipe_" << getOptions().getNamedpipe();
+            system(s1.str().c_str());
 
-	case BUILDER_SELECTOR:
-	{
-		SelectorBuilder* selectorBuilder = static_cast<SelectorBuilder*>(builder);
+            int ecode = selectorBuilder->getSolverToCall();
 
-		ostringstream s1;
-                s1 << "mkfifo /tmp/wasppipe_" << getOptions().getNamedpipe();
-                system(s1.str().c_str());
+            if(ecode == 0)
+            {
+                //cerr << "WASP" << endl;
+                cout<<"0"<<endl;
+            }
+            else
+            {
+                //cerr << "DLV" << endl;
+                cout<<"1"<<endl;
+                //system("cat - < /tmp/wasppipe");
+            }
+            cout.flush();
 
-                int ecode = selectorBuilder->getSolverToCall();
+            ostringstream s;
+            s << "/tmp/wasppipe_" << getOptions().getNamedpipe();
+            fstream o(s.str(), std::ios::out);
+            //cerr << "scrivo" << endl;
+            //theBuffer.flushOn(o);
+            o.flush();
+            //cerr << "finito" << endl;
+            o.close();
 
-                if(ecode == 0)
-                {
-                        //cerr << "WASP" << endl;
-                        cout<<"0"<<endl;
+            //delete selectorBuilder;
+            //free();
 
-                }
-                else{
-			//cerr << "DLV" << endl;
-			cout<<"1"<<endl;
-			//system("cat - < /tmp/wasppipe");
-		}
-		cout.flush();
-
-		ostringstream s;
-		s << "/tmp/wasppipe_" << getOptions().getNamedpipe();
-
-		fstream o(s.str(), std::ios::out);
-
-		//cerr << "scrivo" << endl;
-		//theBuffer.flushOn(o);
-		o.flush();
-		//cerr << "finito" << endl;
-		o.close();
-
-        //delete selectorBuilder;
-        //free();
-
-        //exit(ecode);
-
-	}
-        break;
-
-        case BUILDER_MOCK_OBJECTS:
+            //exit(ecode);
+        }
+        else if( getOptions().getInputBuilderPolicy() == BUILDER_MOCK_OBJECTS )
         {
             SimpleInputBuilder* simpleBuilder = static_cast<SimpleInputBuilder*>(builder);
             cout << simpleBuilder->getProgram();
             if( simpleBuilder->getQuery() )
                 cout << *(simpleBuilder->getQuery()) << "?" << endl;
         }
-        break;
-
-        case BUILDER_DLV_DB:
-            // TODO
-            ErrorMessage::errorGeneric( "No solver available! Bye" );
-            break;
-
-        case BUILDER_IN_MEMORY:
-            // TODO
-            ErrorMessage::errorGeneric( "No solver available! Bye" );
-            break;
-
-        default:
-            ErrorMessage::errorGeneric( "No solver available! Bye" );
+        else
+            ErrorMessage::errorGeneric( "Not valid solver to print the input program! Bye" );
+    }
+        
+    if( getOptions().getPrintDepGraph() )
+    {
+        if( getOptions().getInputBuilderPolicy() == BUILDER_DEPGRAPH )
+        {
+            DepGraphBuilder* depGraphBuilder = static_cast<DepGraphBuilder*>(builder);
+            // Compute strongly connected components.
+            depGraphBuilder->getLabeledDependencyGraph().computeStronglyConnectedComponents();
+            cout << depGraphBuilder->getLabeledDependencyGraph() << endl;
         }
+        else
+            ErrorMessage::errorGeneric( "Not valid solver to print the dependency graph! Bye" );
+    }
+    
+    if( getOptions().getPrintStatistics() )
+    {
+        cerr << endl << "***FINAL STATISTICS***" << endl;
+        cerr << "Parsing time: " << parserDuration << "s" << endl;
+    }
     
 }
 

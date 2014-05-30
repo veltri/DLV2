@@ -19,9 +19,9 @@
 
 #include <sstream>
 #include <cstring>
-#include <cstdlib>
 #include "SimpleInputBuilder.h"
 #include "../util/Assert.h"
+#include "../directives/DirectiveFactory.h"
 
 using namespace std;
 
@@ -78,6 +78,16 @@ SimpleInputBuilder::getQuery()
 {
     // It could be null;
     return query; 
+}
+
+void 
+SimpleInputBuilder::onDirective(
+    char* directiveName,
+    char* directiveValue )
+{
+    Directive* dir = DirectiveFactory::createDirective(directiveName,directiveValue);
+    std::cout << *dir << std::endl;
+    delete dir;
 }
 
 void 
@@ -260,7 +270,7 @@ SimpleInputBuilder::onPredicateName(
     char* name )
 {
     assert_msg( name, "Trying to create an atom with a null predicate name" );
-    predName = string(name);
+    predName.assign(name);
 }
     
 void 
@@ -363,6 +373,22 @@ SimpleInputBuilder::onTermParams()
 }
 
 void 
+SimpleInputBuilder::onTermRange( 
+    char* lowerBound, 
+    char* upperBound )
+{
+    // The resulting term is "[upperBound]..[upperBound]\0".
+    unsigned newLength = strlen(lowerBound)+strlen(upperBound)+3;
+    char* range = new char[newLength];
+    strcat(range,lowerBound);
+    strcat(range,"..");
+    strcat(range,upperBound);
+    range[newLength-1]='\0';
+    newTerm(range,termStack);
+    delete[] range;
+}
+
+void 
 SimpleInputBuilder::onArithmeticOperation( char arithOperator )
 {
     // The right and left operands are on top of the stack.
@@ -384,11 +410,11 @@ void
 SimpleInputBuilder::onWeightAtLevels( 
     int nWeight, 
     int nLevel, 
-    int nTerms )
+    int nTerm )
 {
     nTermsForWeight = nWeight; 
     nTermsForLevel = nLevel;
-    nTermsAfterLevel = nTerms;
+    nTermsAfterLevel = nTerm;
 }
     
 void 
@@ -670,11 +696,11 @@ SimpleInputBuilder::isNumeric(
     else
         return false;
  
-    // was any input successfully consumed/converted?
-    if ( ! iss )
+    // Was any input successfully consumed/converted?
+    if ( !iss )
         return false;
  
-    // was all the input successfully consumed/converted?
+    // Was all the input successfully consumed/converted?
     return ( iss.rdbuf()->in_avail() == 0 );
 }
 
