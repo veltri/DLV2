@@ -56,6 +56,9 @@ DLV2Facade::greetings()
 int
 DLV2Facade::readInput()
 {
+    if( getOptions().isAspCore2Strict() )
+        director.setParserConstraint(new ParserConstraintAspCore2Strict());
+        
     switch( getOptions().getInputBuilderPolicy() )
     {
         case BUILDER_MOCK_OBJECTS:
@@ -90,22 +93,11 @@ DLV2Facade::readInput()
 
     assert_msg( director.getBuilder() == NULL,
             "Null input-builder, cannot start the parsing process.");
-
     director.configureBuilder(builder);
-    
-    // FIXME //
-    // Currently, there is only one implementation of ParserConstraint.
-    ParserConstraint* pc = new ParserConstraint();
-    director.configureParserConstraint(pc);
-    /////////// 
-        
+           
     clock_t start = clock();
     int error = director.parse(getOptions().getInputFiles());
     parserDuration = ( clock() - start ) / (double) CLOCKS_PER_SEC;
-    
-    // FIXME //
-    delete pc;
-    ///////////
     
     return error;
 }

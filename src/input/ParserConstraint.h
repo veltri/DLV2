@@ -1,3 +1,22 @@
+/*
+ *
+ *  Copyright 2014 Mario Alviano, Carmine Dodaro, Francesco Ricca and
+ *                 Pierfrancesco Veltri.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ */
+
 /* 
  * File:   ParserConstraint.h
  * Author: cesco
@@ -19,23 +38,9 @@ namespace DLV2
         ParserConstraint() {}
         virtual ~ParserConstraint() {}
         
-        inline virtual void rangeFacts();
-        inline virtual void directives();
+        inline virtual void rangeFacts() {}
+        inline virtual void directives() {}
     };
-
-    void
-    ParserConstraint::rangeFacts()
-    {
-        if( Options::globalOptions()->isAspCore2Strict() )
-            ErrorMessage::errorDuringParsing("range facts are not in the ASPCore2 standard!");
-    }
-    
-    void
-    ParserConstraint::directives()
-    {
-        if( Options::globalOptions()->isAspCore2Strict() )
-            ErrorMessage::errorDuringParsing("directives are not in the ASPCore2 standard!");
-    }
     
 };
 

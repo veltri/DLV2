@@ -1,0 +1,40 @@
+/* 
+ * File:   ParserConstraintAspCore2Strict.h
+ * Author: cesco
+ *
+ * Created on 3 giugno 2014, 18.40
+ */
+
+#ifndef PARSERCONSTRAINTASPCORE2STRICT_H
+#define	PARSERCONSTRAINTASPCORE2STRICT_H
+
+#include "ParserConstraint.h"
+
+namespace DLV2
+{
+
+    class ParserConstraintAspCore2Strict : public ParserConstraint{
+    public:
+        ParserConstraintAspCore2Strict() {}
+        virtual ~ParserConstraintAspCore2Strict() {}
+        
+        inline virtual void rangeFacts();
+        inline virtual void directives();
+    };
+
+    void
+    ParserConstraintAspCore2Strict::rangeFacts()
+    {
+        ErrorMessage::errorDuringParsing("range facts are not in the ASPCore2 standard!");
+    }
+    
+    void
+    ParserConstraintAspCore2Strict::directives()
+    {
+        ErrorMessage::errorDuringParsing("directives are not in the ASPCore2 standard!");
+    }
+    
+};
+
+#endif	/* PARSERCONSTRAINTASPCORE2STRICT_H */
+

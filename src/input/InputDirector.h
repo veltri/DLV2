@@ -28,7 +28,7 @@
 #define INPUTDIRECTOR_H
 
 #include "InputBuilder.h"
-#include "ParserConstraint.h"
+#include "ParserConstraintAspCore2Strict.h"
 #include <vector>
 #include <cstdio>
 
@@ -43,7 +43,7 @@ namespace DLV2
 
         void configureBuilder( InputBuilder* );
         InputBuilder* getBuilder() { return builder; }
-        void configureParserConstraint( ParserConstraint* );
+        void setParserConstraint( ParserConstraint* );
         ParserConstraint* getParserConstraint() { return parserConstraint; }
 
         //////////////////////////////////////////////////////////////////////////////

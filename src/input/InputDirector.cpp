@@ -53,11 +53,16 @@ InputDirector::configureBuilder(
     builder = b;  	
 }
 
+// Set a new ParserConstraint after deleting the current one. 
+// The director acquires the ownership of the input ParserConstraint object, 
+// and, as owner, it is deleting its ParserConstraint in the destructor.
 void 
-InputDirector::configureParserConstraint( 
+InputDirector::setParserConstraint( 
     ParserConstraint* c )
 {
     assert_msg( c != NULL, "The parser controller is null." );
+    if( parserConstraint )
+        delete parserConstraint;
     parserConstraint = c;
 }
 
@@ -67,14 +72,15 @@ InputDirector::InputDirector():
     parserErrors(0),
     parserStateInternal(false),
     builder(NULL),
-    parserConstraint(NULL)
+    parserConstraint(new ParserConstraint())
 {
     
 }
 
 InputDirector::~InputDirector()
 {
-    
+    if( parserConstraint )
+        delete parserConstraint;
 }
 
 int
