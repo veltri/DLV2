@@ -47,28 +47,36 @@ namespace DLV2
             virtual void onNafLiteral( bool naf = false ) { }
             virtual void onAtom( bool isStrongNeg = false ) { }
             virtual void onExistentialAtom() { }
+            virtual void onEqualOperator() { }
+            virtual void onUnequalOperator() { }
+            virtual void onLessOperator() { }
+            virtual void onLessOrEqualOperator() { }
+            virtual void onGreaterOperator() { }
+            virtual void onGreaterOrEqualOperator() { }
             virtual void onPredicateName( char* name ) { }
             virtual void onExistentialVariable( char* var ) { }
             virtual void onTerm( char* value ) { }
             virtual void onTerm( int value ) { }
+            virtual void onUnknownVariable() { }
             virtual void onFunction( char* functionSymbol, int nTerms ) { }
             virtual void onTermDash() { }
             virtual void onTermParams() { }
             virtual void onTermRange( char* lowerBound, char* upperBound ) { }
             virtual void onArithmeticOperation( char arithOperator ) { }
             virtual void onWeightAtLevels( int nWeight, int nLevel, int nTerm ) { }
-            virtual void onChoiceLowerGuard( char* binop ) { }
-            virtual void onChoiceUpperGuard( char* binop ) { }
+            virtual void onChoiceLowerGuard() { }
+            virtual void onChoiceUpperGuard() { }
             virtual void onChoiceElementAtom() { }
             virtual void onChoiceElementLiteral() { }
             virtual void onChoiceElement() { }
             virtual void onChoiceAtom() { }
-            virtual void onBuiltinAtom( char* binop ) { }
-            virtual void onAggregateLowerGuard( char* guardOperator ) { }
-            virtual void onAggregateUpperGuard( char* guardOperator ) { }
+            virtual void onBuiltinAtom() { }
+            virtual void onAggregateLowerGuard() { }
+            virtual void onAggregateUpperGuard() { }
             virtual void onAggregateFunction( char* functionSymbol ) { }
             virtual void onAggregateGroundTerm( char* value, bool dash = false ) { }
             virtual void onAggregateVariableTerm( char* value ) { }
+            virtual void onAggregateUnknownVariable() { }
             virtual void onAggregateNafLiteral() { }
             virtual void onAggregateElement() { }
             virtual void onAggregate( bool naf = false ) { }

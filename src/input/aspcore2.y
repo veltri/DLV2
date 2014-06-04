@@ -34,11 +34,10 @@ This file is part of the ASPCOMP2013 ASP-Core-2 validator (validator in the foll
 
 %type <integer> terms 
 %type <single_char> arithop
-%type <string> identifier compareop leftwardop rightwardop binop
+%type <string> identifier
 
 %token <string> SYMBOLIC_CONSTANT NUMBER VARIABLE STRING DIRECTIVE_NAME DIRECTIVE_VALUE
-%token <string> EQUAL UNEQUAL LESS GREATER LESS_OR_EQ GREATER_OR_EQ
-%token <string> AGGR_COUNT AGGR_MAX AGGR_MIN AGGR_SUM ANON_VAR
+%token <string> AGGR_COUNT AGGR_MAX AGGR_MIN AGGR_SUM
 
 %token ERROR NEWLINE   
 
@@ -46,9 +45,13 @@ This file is part of the ASPCOMP2013 ASP-Core-2 validator (validator in the foll
 
 %token PLUS TIMES SLASH
 
+%token ANON_VAR
+
 %token PARAM_OPEN PARAM_CLOSE
 %token SQUARE_OPEN SQUARE_CLOSE
 %token CURLY_OPEN CURLY_CLOSE
+
+%token EQUAL UNEQUAL LESS GREATER LESS_OR_EQ GREATER_OR_EQ
 
 %token DASH COMMA NAF AT WCONS
 
@@ -193,16 +196,14 @@ choice_atom
 lower_guard
     : term binop 
         { 
-            director.getBuilder()->onChoiceLowerGuard($2); 
-            delete[] $2;
+            director.getBuilder()->onChoiceLowerGuard();
         } 
     ;
 
 upper_guard
     : binop term 
         { 
-            director.getBuilder()->onChoiceUpperGuard($1); 
-            delete[] $1;
+            director.getBuilder()->onChoiceUpperGuard();
         }
     ;
 
@@ -320,20 +321,25 @@ basic_terms
 builtin_atom
     : term binop term 
         {
-            director.getBuilder()->onBuiltinAtom($2);  
-            delete[] $2;
+            director.getBuilder()->onBuiltinAtom();
         }
     ;
 
-compareop 
-    : EQUAL   { $$ = $1; } 
-    | UNEQUAL { $$ = $1; }
+compareop
+    : EQUAL 
+        {
+            director.getBuilder()->onEqualOperator();
+        } 
+    | UNEQUAL
+        {
+            director.getBuilder()->onUnequalOperator(); 
+        }
     ;       
          
-binop    
-    : compareop   { $$ = $1; } 
-    | leftwardop  { $$ = $1; }
-    | rightwardop { $$ = $1; }
+binop
+    : compareop
+    | leftwardop
+    | rightwardop
     ;       
          
 arithop   
@@ -356,8 +362,7 @@ term_
         }
     | ANON_VAR 
         { 
-            director.getBuilder()->onTerm($1); 
-            delete[] $1;
+            director.getBuilder()->onUnknownVariable(); 
         }
     | identifier PARAM_OPEN terms PARAM_CLOSE 
         { 
@@ -423,8 +428,7 @@ variable_term
         }
     | ANON_VAR
         {
-            director.getBuilder()->onAggregateVariableTerm($1);
-            delete[] $1;
+            director.getBuilder()->onAggregateUnknownVariable();
         }
     ;
 
@@ -474,16 +478,14 @@ query
 lower_guard_compare_aggregate
     : term compareop
         {
-            director.getBuilder()->onAggregateLowerGuard($2);
-            delete[] $2;
+            director.getBuilder()->onAggregateLowerGuard();
         }
     ;
 
 upper_guard_compare_aggregate
     : compareop term
         {
-            director.getBuilder()->onAggregateUpperGuard($1);
-            delete[] $1;
+            director.getBuilder()->onAggregateUpperGuard();
         }
     ;
 
@@ -495,8 +497,7 @@ compare_aggregate
 lower_guard_leftward_left_aggregate
     : term leftwardop
         {
-            director.getBuilder()->onAggregateLowerGuard($2);
-            delete[] $2;
+            director.getBuilder()->onAggregateLowerGuard();
         }
     ;
 
@@ -512,8 +513,7 @@ left_aggregate
 lower_guard_rightward_left_aggregate
     : term rightwardop
         {
-            director.getBuilder()->onAggregateLowerGuard($2);
-            delete[] $2;
+            director.getBuilder()->onAggregateLowerGuard();
         }
     ;
 
@@ -524,16 +524,14 @@ rightward_left_aggregate
 upper_guard_leftward_right_aggregate
     : leftwardop term
         {
-            director.getBuilder()->onAggregateUpperGuard($1);
-            delete[] $1;
+            director.getBuilder()->onAggregateUpperGuard();
         }
     ;
 
 upper_guard_rightward_right_aggregate
     : rightwardop term
         {
-            director.getBuilder()->onAggregateUpperGuard($1);
-            delete[] $1;
+            director.getBuilder()->onAggregateUpperGuard();
         }
     ;
 
@@ -550,14 +548,26 @@ aggregate_atom
     | rightward_left_aggregate upper_guard_rightward_right_aggregate 
     ;   
 
-leftwardop 
-    : LESS { $$ = $1; }
-    | LESS_OR_EQ { $$ = $1; }
+leftwardop
+    : LESS 
+        {
+            director.getBuilder()->onLessOperator(); 
+        }
+    | LESS_OR_EQ
+        {
+            director.getBuilder()->onLessOrEqualOperator(); 
+        }
     ;    
 
-rightwardop 
-    : GREATER { $$ = $1; }
-    | GREATER_OR_EQ { $$ = $1; }
+rightwardop
+    : GREATER
+        {
+            director.getBuilder()->onGreaterOperator();
+        } 
+    | GREATER_OR_EQ
+        {
+            director.getBuilder()->onGreaterOrEqualOperator();
+        }
     ;           
             
 aggregate  

@@ -172,6 +172,35 @@ SelectorBuilder::onExistentialVariable(char*)
 {
 }
 
+void 
+SelectorBuilder::onEqualOperator()
+{    
+}
+
+void 
+SelectorBuilder::onUnequalOperator()
+{
+}
+
+void
+SelectorBuilder::onLessOperator()
+{
+}
+
+void
+SelectorBuilder::onLessOrEqualOperator()
+{
+}
+
+void
+SelectorBuilder::onGreaterOperator()
+{
+}
+
+void SelectorBuilder::onGreaterOrEqualOperator()
+{
+}
+
 void
 SelectorBuilder::onTerm(char*)
 {
@@ -180,6 +209,12 @@ SelectorBuilder::onTerm(char*)
 void
 SelectorBuilder::onTerm(int int1)
 {
+}
+
+void
+SelectorBuilder::onUnknownVariable() 
+{
+
 }
 
 void
@@ -208,12 +243,12 @@ SelectorBuilder::onWeightAtLevels(int int1, int int2, int int3)
 }
 
 void
-SelectorBuilder::onChoiceLowerGuard(char*)
+SelectorBuilder::onChoiceLowerGuard()
 {
 }
 
 void
-SelectorBuilder::onChoiceUpperGuard(char*)
+SelectorBuilder::onChoiceUpperGuard()
 {
 }
 
@@ -248,17 +283,17 @@ SelectorBuilder::onChoiceAtom()
 }
 
 void
-SelectorBuilder::onBuiltinAtom(char*)
+SelectorBuilder::onBuiltinAtom()
 {
 }
 
 void
-SelectorBuilder::onAggregateLowerGuard(char*)
+SelectorBuilder::onAggregateLowerGuard()
 {
 }
 
 void
-SelectorBuilder::onAggregateUpperGuard(char*)
+SelectorBuilder::onAggregateUpperGuard()
 {
 }
 
@@ -275,6 +310,12 @@ SelectorBuilder::onAggregateGroundTerm(char*, bool dash)
 void
 SelectorBuilder::onAggregateVariableTerm(char*)
 {
+}
+
+void
+SelectorBuilder::onAggregateUnknownVariable()
+{
+    
 }
 
 void

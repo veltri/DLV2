@@ -132,6 +132,41 @@ DepGraphBuilder::onExistentialVariable(
 {   
 }
     
+void
+DepGraphBuilder::onEqualOperator()
+{
+    
+}
+
+void
+DepGraphBuilder::onUnequalOperator()
+{
+    
+}
+
+void
+DepGraphBuilder::onLessOperator()
+{
+    
+}
+
+void
+DepGraphBuilder::onLessOrEqualOperator()
+{
+    
+}
+
+void 
+DepGraphBuilder::onGreaterOperator()
+{
+    
+}
+void
+DepGraphBuilder::onGreaterOrEqualOperator()
+{
+    
+}
+        
 void 
 DepGraphBuilder::onTerm( 
     char* value )
@@ -143,7 +178,13 @@ DepGraphBuilder::onTerm(
     int value )
 {   
 }
+
+void 
+DepGraphBuilder::onUnknownVariable()
+{
     
+}
+
 void 
 DepGraphBuilder::onFunction( 
     char* functionSymbol, 
@@ -182,14 +223,12 @@ DepGraphBuilder::onWeightAtLevels(
 }
     
 void 
-DepGraphBuilder::onChoiceLowerGuard( 
-    char* binop ) 
+DepGraphBuilder::onChoiceLowerGuard()
 {
 }
 
 void 
-DepGraphBuilder::onChoiceUpperGuard(
-    char* binop ) 
+DepGraphBuilder::onChoiceUpperGuard()
 {
 }
 
@@ -236,21 +275,18 @@ DepGraphBuilder::onChoiceAtom()
 }
 
 void 
-DepGraphBuilder::onBuiltinAtom( 
-    char* binop )
+DepGraphBuilder::onBuiltinAtom()
 {
     isBuiltin = true;
 }
 
 void 
-DepGraphBuilder::onAggregateLowerGuard( 
-    char* op )
+DepGraphBuilder::onAggregateLowerGuard()
 {
 }
 
 void 
-DepGraphBuilder::onAggregateUpperGuard( 
-    char* op )
+DepGraphBuilder::onAggregateUpperGuard()
 {
 }
 
@@ -280,6 +316,12 @@ DepGraphBuilder::onAggregateVariableTerm(
 {
     assert_msg( value, "Trying to create an aggregate function with a null variable term" );
     currentAggregateElementTerms.push_back(std::string(value));
+}
+
+void
+DepGraphBuilder::onAggregateUnknownVariable()
+{
+    
 }
 
 void 

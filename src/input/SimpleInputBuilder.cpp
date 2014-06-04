@@ -297,6 +297,45 @@ SimpleInputBuilder::onExistentialVariable(
 }
 
 void 
+SimpleInputBuilder::onEqualOperator()
+{
+    binop = string("=");
+}
+
+void
+SimpleInputBuilder::onUnequalOperator()
+{
+    // Write always "!=" because you don't know
+    // which symbol has been used in input 
+    // between "!=" and "<>".
+    binop = string("!=");
+}
+
+void
+SimpleInputBuilder::onLessOperator()
+{
+    binop = string("<");
+}
+
+void
+SimpleInputBuilder::onLessOrEqualOperator()
+{
+    binop = string("<=");
+}
+
+void
+SimpleInputBuilder::onGreaterOperator()
+{
+    binop = string(">");
+}
+
+void
+SimpleInputBuilder::onGreaterOrEqualOperator()
+{
+    binop = string(">=");
+}
+
+void 
 SimpleInputBuilder::onTerm( 
     char* value )
 {
@@ -309,7 +348,14 @@ SimpleInputBuilder::onTerm(
 {
     termStack.push_back(Term(value));
 }
-    
+
+void 
+SimpleInputBuilder::onUnknownVariable() 
+{
+    Term t(varCounter++,string("_"));
+    termStack.push_back(t);
+}
+
 void 
 SimpleInputBuilder::onFunction( 
     char* functionSymbol, 
@@ -418,8 +464,7 @@ SimpleInputBuilder::onWeightAtLevels(
 }
     
 void 
-SimpleInputBuilder::onChoiceLowerGuard( 
-    char* binop ) 
+SimpleInputBuilder::onChoiceLowerGuard() 
 {
     // It should be on top of the stack.
     assert_msg( termStack.size() > 0, 
@@ -431,12 +476,11 @@ SimpleInputBuilder::onChoiceLowerGuard(
     }
     lowerGuard = new Term(termStack.back());
     termStack.pop_back();
-    lowerBinop = string(binop);
+    lowerBinop.assign(binop);
 }
 
 void 
-SimpleInputBuilder::onChoiceUpperGuard(
-    char* binop ) 
+SimpleInputBuilder::onChoiceUpperGuard()
 {
     // It should be on top of the stack.
     assert_msg( termStack.size() > 0, 
@@ -448,7 +492,7 @@ SimpleInputBuilder::onChoiceUpperGuard(
     }
     upperGuard = new Term(termStack.back());
     termStack.pop_back();
-    upperBinop = string(binop);
+    upperBinop.assign(binop);
 }
 
 void 
@@ -534,24 +578,22 @@ SimpleInputBuilder::onChoiceAtom()
 }
 
 void 
-SimpleInputBuilder::onBuiltinAtom( 
-    char* binop )
+SimpleInputBuilder::onBuiltinAtom()
 {
     // The operands should be on top of the terms' stack.
-    assert_msg( (termStack.size() > 1 && binop != NULL), 
+    assert_msg( termStack.size() > 1,
             "Trying to create an invalid builtin atom" );
     Term* rightOperand = new Term(termStack.back());
     termStack.pop_back();
     Term* leftOperand = new Term(termStack.back());
     termStack.pop_back();
-    string op(binop);
     
     if( currentAtom != NULL )
     {
         delete currentAtom;
         currentAtom = NULL;
     }
-    currentAtom = new Atom(leftOperand,op,rightOperand);
+    currentAtom = new Atom(leftOperand,binop,rightOperand);
     termStack.clear();
     predName = "";
     if( leftOperand != NULL )
@@ -561,8 +603,7 @@ SimpleInputBuilder::onBuiltinAtom(
 }
 
 void 
-SimpleInputBuilder::onAggregateLowerGuard( 
-    char* op )
+SimpleInputBuilder::onAggregateLowerGuard()
 {
     // It should be on top of the stack.
     assert_msg( termStack.size() > 0, 
@@ -574,12 +615,11 @@ SimpleInputBuilder::onAggregateLowerGuard(
     }
     lowerGuard = new Term(termStack.back());
     termStack.pop_back();
-    lowerBinop = string(op);
+    lowerBinop.assign(binop);
 }
 
 void 
-SimpleInputBuilder::onAggregateUpperGuard( 
-    char* op )
+SimpleInputBuilder::onAggregateUpperGuard()
 {
     // It should be on top of the stack.
     assert_msg( termStack.size() > 0, 
@@ -591,7 +631,7 @@ SimpleInputBuilder::onAggregateUpperGuard(
     }
     upperGuard = new Term(termStack.back());
     termStack.pop_back();
-    upperBinop = string(op);
+    upperBinop.assign(binop);
 }
 
 void 
@@ -615,6 +655,13 @@ SimpleInputBuilder::onAggregateVariableTerm(
     char* value )
 {
     newTerm(value,aggregateElementTerms);
+}
+
+void
+SimpleInputBuilder::onAggregateUnknownVariable()
+{
+    Term t(varCounter++,string("_"));
+    aggregateElementTerms.push_back(t);
 }
 
 void 
@@ -729,10 +776,6 @@ SimpleInputBuilder::newTerm(
             ind.varName = string(value);
             localVariables.push_back( ind );
         }   
-    }
-    else if( value[0] == '_' && strlen(value) == 1 ) // Unknow variable;
-    { 
-        currentTerm = new Term(varCounter++,string(value));  
     }
     else if( (value[0] == '\"' && value[strlen(value)-1] == '\"') ||  
             (value[0] >= 'a' && value[0] <='z') )   // String constant

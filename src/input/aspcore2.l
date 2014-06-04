@@ -96,48 +96,15 @@ NUMBER              ([0-9]+)
 
 "?"                     { return QUERY_MARK; }
 
-"_"                     { 
-                            yylval.string=new char[strlen(yytext)+1];
-                            strcpy(yylval.string,yytext);
-                            return ANON_VAR; 
-                        }
+"_"                     { return ANON_VAR; }
 
-"="                     {
-                            yylval.string=new char[strlen(yytext)+1];
-                            strcpy(yylval.string,yytext);
-                            return EQUAL;
-                        }
-
+"="                     { return EQUAL; }
 "<>"    |
-"!="                    {
-                            yylval.string=new char[strlen(yytext)+1];
-                            strcpy(yylval.string,yytext);
-                            return UNEQUAL;
-                        }
-
-"<"                     {
-                            yylval.string=new char[strlen(yytext)+1];
-                            strcpy(yylval.string,yytext);
-                            return LESS;
-                        }
-
-">"                     {
-                            yylval.string=new char[strlen(yytext)+1];
-                            strcpy(yylval.string,yytext);
-                            return GREATER;
-                        }
-
-"<="                    {
-                            yylval.string=new char[strlen(yytext)+1];
-                            strcpy(yylval.string,yytext);
-                            return LESS_OR_EQ;
-                        }
-
-">="                    {
-                            yylval.string=new char[strlen(yytext)+1];
-                            strcpy(yylval.string,yytext);
-                            return GREATER_OR_EQ;
-                        }
+"!="                    { return UNEQUAL; }
+"<"                     { return LESS; }
+">"                     { return GREATER; }
+"<="                    { return LESS_OR_EQ; }
+">="                    { return GREATER_OR_EQ; }
 
 {AGGR_COUNT}            { 
                             yylval.string=new char[strlen(yytext)+1];

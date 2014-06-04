@@ -127,34 +127,34 @@ This file is part of the ASPCOMP2013 ASP-Core-2 validator (validator in the foll
      STRING = 261,
      DIRECTIVE_NAME = 262,
      DIRECTIVE_VALUE = 263,
-     EQUAL = 264,
-     UNEQUAL = 265,
-     LESS = 266,
-     GREATER = 267,
-     LESS_OR_EQ = 268,
-     GREATER_OR_EQ = 269,
-     AGGR_COUNT = 270,
-     AGGR_MAX = 271,
-     AGGR_MIN = 272,
-     AGGR_SUM = 273,
-     ANON_VAR = 274,
-     ERROR = 275,
-     NEWLINE = 276,
-     DOT = 277,
-     DDOT = 278,
-     SEMICOLON = 279,
-     COLON = 280,
-     CONS = 281,
-     QUERY_MARK = 282,
-     PLUS = 283,
-     TIMES = 284,
-     SLASH = 285,
-     PARAM_OPEN = 286,
-     PARAM_CLOSE = 287,
-     SQUARE_OPEN = 288,
-     SQUARE_CLOSE = 289,
-     CURLY_OPEN = 290,
-     CURLY_CLOSE = 291,
+     AGGR_COUNT = 264,
+     AGGR_MAX = 265,
+     AGGR_MIN = 266,
+     AGGR_SUM = 267,
+     ERROR = 268,
+     NEWLINE = 269,
+     DOT = 270,
+     DDOT = 271,
+     SEMICOLON = 272,
+     COLON = 273,
+     CONS = 274,
+     QUERY_MARK = 275,
+     PLUS = 276,
+     TIMES = 277,
+     SLASH = 278,
+     ANON_VAR = 279,
+     PARAM_OPEN = 280,
+     PARAM_CLOSE = 281,
+     SQUARE_OPEN = 282,
+     SQUARE_CLOSE = 283,
+     CURLY_OPEN = 284,
+     CURLY_CLOSE = 285,
+     EQUAL = 286,
+     UNEQUAL = 287,
+     LESS = 288,
+     GREATER = 289,
+     LESS_OR_EQ = 290,
+     GREATER_OR_EQ = 291,
      DASH = 292,
      COMMA = 293,
      NAF = 294,
@@ -171,34 +171,34 @@ This file is part of the ASPCOMP2013 ASP-Core-2 validator (validator in the foll
 #define STRING 261
 #define DIRECTIVE_NAME 262
 #define DIRECTIVE_VALUE 263
-#define EQUAL 264
-#define UNEQUAL 265
-#define LESS 266
-#define GREATER 267
-#define LESS_OR_EQ 268
-#define GREATER_OR_EQ 269
-#define AGGR_COUNT 270
-#define AGGR_MAX 271
-#define AGGR_MIN 272
-#define AGGR_SUM 273
-#define ANON_VAR 274
-#define ERROR 275
-#define NEWLINE 276
-#define DOT 277
-#define DDOT 278
-#define SEMICOLON 279
-#define COLON 280
-#define CONS 281
-#define QUERY_MARK 282
-#define PLUS 283
-#define TIMES 284
-#define SLASH 285
-#define PARAM_OPEN 286
-#define PARAM_CLOSE 287
-#define SQUARE_OPEN 288
-#define SQUARE_CLOSE 289
-#define CURLY_OPEN 290
-#define CURLY_CLOSE 291
+#define AGGR_COUNT 264
+#define AGGR_MAX 265
+#define AGGR_MIN 266
+#define AGGR_SUM 267
+#define ERROR 268
+#define NEWLINE 269
+#define DOT 270
+#define DDOT 271
+#define SEMICOLON 272
+#define COLON 273
+#define CONS 274
+#define QUERY_MARK 275
+#define PLUS 276
+#define TIMES 277
+#define SLASH 278
+#define ANON_VAR 279
+#define PARAM_OPEN 280
+#define PARAM_CLOSE 281
+#define SQUARE_OPEN 282
+#define SQUARE_CLOSE 283
+#define CURLY_OPEN 284
+#define CURLY_CLOSE 285
+#define EQUAL 286
+#define UNEQUAL 287
+#define LESS 288
+#define GREATER 289
+#define LESS_OR_EQ 290
+#define GREATER_OR_EQ 291
 #define DASH 292
 #define COMMA 293
 #define NAF 294
@@ -455,7 +455,7 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  67
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   372
+#define YYLAST   379
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  44
@@ -533,58 +533,58 @@ static const yytype_int8 yyrhs[] =
 {
       46,     0,    -1,    42,    -1,    -1,    47,    -1,    82,    47,
       -1,     1,    -1,    48,    -1,    48,    83,    -1,    48,    49,
-      -1,    49,    -1,    50,    22,    -1,    50,    26,    22,    -1,
-      50,    26,    51,    22,    -1,    26,    51,    22,    -1,    41,
-      51,    22,    52,    -1,    54,    -1,    56,    -1,    55,    -1,
-      33,    76,    34,    -1,    33,    76,    53,    34,    -1,    40,
+      -1,    49,    -1,    50,    15,    -1,    50,    19,    15,    -1,
+      50,    19,    51,    15,    -1,    19,    51,    15,    -1,    41,
+      51,    15,    52,    -1,    54,    -1,    56,    -1,    55,    -1,
+      27,    76,    28,    -1,    27,    76,    53,    28,    -1,    40,
       76,    -1,    40,    76,    38,    69,    -1,    38,    69,    -1,
       67,    -1,    54,    45,    67,    -1,    66,    -1,    54,    45,
-      66,    -1,    65,    -1,    55,    38,    65,    -1,    57,    35,
-      59,    36,    58,    -1,    57,    35,    59,    36,    -1,    35,
-      59,    36,    -1,    35,    59,    36,    58,    -1,    76,    73,
-      -1,    73,    76,    -1,    59,    24,    60,    -1,    60,    -1,
-      61,    -1,    61,    25,    62,    -1,    68,    -1,    64,    -1,
+      66,    -1,    65,    -1,    55,    38,    65,    -1,    57,    29,
+      59,    30,    58,    -1,    57,    29,    59,    30,    -1,    29,
+      59,    30,    -1,    29,    59,    30,    58,    -1,    76,    73,
+      -1,    73,    76,    -1,    59,    17,    60,    -1,    60,    -1,
+      61,    -1,    61,    18,    62,    -1,    68,    -1,    64,    -1,
       62,    38,    64,    -1,    64,    -1,    63,    38,    64,    -1,
       67,    -1,    39,    67,    -1,    71,    -1,    64,    -1,    95,
       -1,    39,    95,    -1,    43,    80,    68,    -1,    68,    -1,
-      37,    68,    -1,    81,    -1,    81,    31,    69,    32,    -1,
-      81,    31,    32,    -1,    76,    -1,    69,    38,    76,    -1,
+      37,    68,    -1,    81,    -1,    81,    25,    69,    26,    -1,
+      81,    25,    26,    -1,    76,    -1,    69,    38,    76,    -1,
       77,    -1,    70,    38,    77,    -1,    76,    73,    76,    -1,
-       9,    -1,    10,    -1,    72,    -1,    96,    -1,    97,    -1,
-      28,    -1,    37,    -1,    29,    -1,    30,    -1,    81,    -1,
-       4,    -1,    19,    -1,    81,    31,    69,    32,    -1,     4,
-      23,     4,    -1,    31,    76,    32,    -1,    37,    76,    -1,
+      31,    -1,    32,    -1,    72,    -1,    96,    -1,    97,    -1,
+      21,    -1,    37,    -1,    22,    -1,    23,    -1,    81,    -1,
+       4,    -1,    24,    -1,    81,    25,    69,    26,    -1,     4,
+      16,     4,    -1,    25,    76,    26,    -1,    37,    76,    -1,
       75,    -1,    76,    74,    75,    -1,    78,    -1,    79,    -1,
        3,    -1,     6,    -1,     4,    -1,    37,     4,    -1,     5,
-      -1,    19,    -1,     5,    -1,    80,    38,     5,    -1,     3,
+      -1,    24,    -1,     5,    -1,    80,    38,     5,    -1,     3,
       -1,     6,    -1,     5,    -1,     7,     8,    -1,    82,     7,
-       8,    -1,    68,    27,    -1,    76,    72,    -1,    72,    76,
+       8,    -1,    68,    20,    -1,    76,    72,    -1,    72,    76,
       -1,    84,    98,    -1,    98,    85,    -1,    76,    96,    -1,
       87,    98,    -1,    88,    -1,    91,    -1,    76,    97,    -1,
       90,    98,    -1,    96,    76,    -1,    97,    76,    -1,    98,
       92,    -1,    98,    93,    -1,    89,    -1,    94,    -1,    86,
-      -1,    88,    92,    -1,    91,    93,    -1,    11,    -1,    13,
-      -1,    12,    -1,    14,    -1,   101,    35,    99,    36,    -1,
-      99,    24,   100,    -1,   100,    -1,    70,    25,    63,    -1,
-      15,    -1,    16,    -1,    17,    -1,    18,    -1
+      -1,    88,    92,    -1,    91,    93,    -1,    33,    -1,    35,
+      -1,    34,    -1,    36,    -1,   101,    29,    99,    30,    -1,
+      99,    17,   100,    -1,   100,    -1,    70,    18,    63,    -1,
+       9,    -1,    10,    -1,    11,    -1,    12,    -1
 };
 
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,    63,    63,    65,    67,    68,    69,    73,    74,    78,
-      79,    83,    87,    91,    95,    99,   106,   110,   118,   125,
-     130,   138,   143,   147,   157,   161,   165,   169,   176,   180,
-     187,   188,   189,   190,   194,   202,   210,   211,   215,   219,
-     226,   233,   237,   244,   248,   255,   259,   263,   270,   271,
-     275,   282,   288,   289,   293,   298,   303,   311,   312,   316,
-     317,   321,   329,   330,   334,   335,   336,   340,   341,   342,
-     343,   347,   352,   357,   362,   367,   373,   377,   384,   385,
-     391,   392,   396,   401,   406,   411,   419,   424,   432,   437,
-     445,   446,   447,   451,   458,   468,   475,   483,   491,   492,
-     496,   504,   508,   509,   513,   521,   525,   533,   541,   542,
-     546,   547,   548,   549,   550,   554,   555,   559,   560,   564,
-     568,   569,   574,   581,   586,   591,   596
+       0,    66,    66,    68,    70,    71,    72,    76,    77,    81,
+      82,    86,    90,    94,    98,   102,   109,   113,   121,   128,
+     133,   141,   146,   150,   160,   164,   168,   172,   179,   183,
+     190,   191,   192,   193,   197,   204,   211,   212,   216,   220,
+     227,   234,   238,   245,   249,   256,   260,   264,   271,   272,
+     276,   283,   289,   290,   294,   299,   304,   312,   313,   317,
+     318,   322,   329,   333,   340,   341,   342,   346,   347,   348,
+     349,   353,   358,   363,   367,   372,   378,   382,   389,   390,
+     396,   397,   401,   406,   411,   416,   424,   429,   436,   441,
+     449,   450,   451,   455,   462,   472,   479,   486,   493,   494,
+     498,   505,   509,   510,   514,   521,   525,   532,   539,   540,
+     544,   545,   546,   547,   548,   552,   556,   563,   567,   574,
+     578,   579,   584,   591,   596,   601,   606
 };
 #endif
 
@@ -594,16 +594,16 @@ static const yytype_uint16 yyrline[] =
 static const char *const yytname[] =
 {
   "$end", "error", "$undefined", "SYMBOLIC_CONSTANT", "NUMBER",
-  "VARIABLE", "STRING", "DIRECTIVE_NAME", "DIRECTIVE_VALUE", "EQUAL",
-  "UNEQUAL", "LESS", "GREATER", "LESS_OR_EQ", "GREATER_OR_EQ",
-  "AGGR_COUNT", "AGGR_MAX", "AGGR_MIN", "AGGR_SUM", "ANON_VAR", "ERROR",
-  "NEWLINE", "DOT", "DDOT", "SEMICOLON", "COLON", "CONS", "QUERY_MARK",
-  "PLUS", "TIMES", "SLASH", "PARAM_OPEN", "PARAM_CLOSE", "SQUARE_OPEN",
-  "SQUARE_CLOSE", "CURLY_OPEN", "CURLY_CLOSE", "DASH", "COMMA", "NAF",
-  "AT", "WCONS", "VEL", "EXISTS", "$accept", "HEAD_SEPARATOR", "program",
-  "real_program", "rules", "rule", "head", "body", "weight_at_levels",
-  "levels_and_terms", "disjunction", "conjunction", "choice_atom",
-  "lower_guard", "upper_guard", "choice_elements", "choice_element",
+  "VARIABLE", "STRING", "DIRECTIVE_NAME", "DIRECTIVE_VALUE", "AGGR_COUNT",
+  "AGGR_MAX", "AGGR_MIN", "AGGR_SUM", "ERROR", "NEWLINE", "DOT", "DDOT",
+  "SEMICOLON", "COLON", "CONS", "QUERY_MARK", "PLUS", "TIMES", "SLASH",
+  "ANON_VAR", "PARAM_OPEN", "PARAM_CLOSE", "SQUARE_OPEN", "SQUARE_CLOSE",
+  "CURLY_OPEN", "CURLY_CLOSE", "EQUAL", "UNEQUAL", "LESS", "GREATER",
+  "LESS_OR_EQ", "GREATER_OR_EQ", "DASH", "COMMA", "NAF", "AT", "WCONS",
+  "VEL", "EXISTS", "$accept", "HEAD_SEPARATOR", "program", "real_program",
+  "rules", "rule", "head", "body", "weight_at_levels", "levels_and_terms",
+  "disjunction", "conjunction", "choice_atom", "lower_guard",
+  "upper_guard", "choice_elements", "choice_element",
   "choice_element_atom", "choice_elements_literals", "naf_literals",
   "naf_literal", "naf_literal_aggregate", "existential_atom",
   "classic_literal", "atom", "terms", "basic_terms", "builtin_atom",
@@ -674,15 +674,15 @@ static const yytype_uint8 yyr2[] =
    means the default is an error.  */
 static const yytype_uint8 yydefact[] =
 {
-       0,     6,    90,    72,    92,    91,     0,    73,     0,     0,
+       0,     6,    90,    72,    92,    91,     0,     0,    73,     0,
        0,     0,     0,     0,     0,     4,     7,    10,     0,    16,
       17,     0,    26,    24,    52,    78,     0,    71,     0,     0,
       93,   123,   124,   125,   126,     0,     0,    18,    48,    28,
       45,    47,     0,     0,   112,     0,   102,   110,     0,   103,
      111,    49,     0,     0,     0,     0,    71,     0,    37,    38,
       40,    54,    53,    77,     0,    88,     0,     1,     9,    52,
-       8,    11,     0,     2,     0,     0,    62,    63,   115,   117,
-     116,   118,    67,    69,    70,    68,    64,    34,     0,    65,
+       8,    11,     0,     2,     0,     0,    67,    69,    70,    62,
+      63,   115,   117,   116,   118,    68,    64,    34,     0,    65,
       66,     0,     0,     5,    75,    46,     0,    50,    14,     0,
       64,     0,    65,    66,    98,   101,   113,     0,   105,   114,
        0,     0,    99,   108,   109,     0,    76,     0,     0,    32,
@@ -710,41 +710,41 @@ static const yytype_int16 yydefgoto[] =
 
 /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
    STATE-NUM.  */
-#define YYPACT_NINF -118
+#define YYPACT_NINF -116
 static const yytype_int16 yypact[] =
 {
-     144,  -118,  -118,    18,  -118,  -118,    16,  -118,   281,   203,
-     183,   203,   281,    60,    66,  -118,   211,  -118,     8,    39,
-    -118,    38,  -118,  -118,  -118,  -118,   296,   310,   192,    96,
-    -118,  -118,  -118,  -118,  -118,   298,    81,    70,  -118,  -118,
-    -118,  -118,   296,   185,  -118,   185,   116,  -118,   185,    84,
-    -118,  -118,   267,    69,   203,   124,    86,    24,  -118,    91,
-    -118,   101,  -118,   -23,    90,  -118,    41,  -118,  -118,   110,
-    -118,  -118,   252,  -118,    46,   183,  -118,  -118,  -118,  -118,
-    -118,  -118,  -118,  -118,  -118,  -118,  -118,  -118,   203,  -118,
-    -118,   136,   125,  -118,  -118,  -118,   296,  -118,  -118,   281,
-     346,   203,   350,   354,  -118,  -118,  -118,   203,  -118,  -118,
-     203,   203,  -118,  -118,  -118,   256,  -118,   203,   183,   267,
-      87,   136,   126,   152,  -118,  -118,  -118,   142,   183,  -118,
-    -118,    26,  -118,  -118,    -7,   106,  -118,  -118,  -118,  -118,
-    -118,   106,   106,   106,   106,  -118,  -118,  -118,  -118,  -118,
-     154,    15,  -118,  -118,  -118,    31,  -118,    42,  -118,  -118,
-     203,    65,   127,  -118,   296,    56,   203,  -118,  -118,  -118,
-     267,   318,   203,  -118,    87,   256,   256,  -118,  -118,   106,
-      87,  -118,    85,  -118,   106,   131,  -118,  -118,  -118,  -118,
-    -118,   203,   203,   143,    87,   138,   235,  -118,  -118,   203,
-     138
+     132,  -116,  -116,   -10,  -116,  -116,     9,   266,  -116,   303,
+     103,   303,   266,    29,    41,  -116,   208,  -116,    73,    19,
+    -116,    37,  -116,  -116,  -116,  -116,   336,   200,   181,    54,
+    -116,  -116,  -116,  -116,  -116,   313,    52,    80,  -116,  -116,
+    -116,  -116,   336,   131,  -116,   131,   135,  -116,   131,   142,
+    -116,  -116,   343,    95,   303,    63,    45,    27,  -116,   111,
+    -116,   124,  -116,     1,   147,  -116,    42,  -116,  -116,   130,
+    -116,  -116,   249,  -116,    50,   103,  -116,  -116,  -116,  -116,
+    -116,  -116,  -116,  -116,  -116,  -116,  -116,  -116,   303,  -116,
+    -116,   122,   150,  -116,  -116,  -116,   336,  -116,  -116,   266,
+     143,   303,   192,   256,  -116,  -116,  -116,   303,  -116,  -116,
+     303,   303,  -116,  -116,  -116,   327,  -116,   303,   103,   343,
+     276,   122,   138,   162,  -116,  -116,  -116,   156,   103,  -116,
+    -116,    32,  -116,  -116,   -18,    93,  -116,  -116,  -116,  -116,
+    -116,    93,    93,    93,    93,  -116,  -116,  -116,  -116,  -116,
+     175,     4,  -116,  -116,  -116,    51,  -116,    14,  -116,  -116,
+     303,    68,   144,  -116,   336,    25,   303,  -116,  -116,  -116,
+     343,   324,   303,  -116,   276,   327,   327,  -116,  -116,    93,
+     276,  -116,   274,  -116,    93,   151,  -116,  -116,  -116,  -116,
+    -116,   303,   303,   153,   276,   152,    75,  -116,  -116,   303,
+     152
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int16 yypgoto[] =
 {
-    -118,  -118,  -118,   150,  -118,   166,  -118,    -8,  -118,  -118,
-    -118,  -118,  -118,  -118,    21,   108,    75,  -118,  -118,  -118,
-    -117,   111,   139,     1,     3,   -94,  -118,  -118,   -37,   -24,
-    -118,   117,     0,    37,  -118,  -118,  -118,    10,  -118,  -118,
-    -118,  -118,  -118,  -118,  -118,  -118,  -118,  -118,   167,   168,
-    -118,   186,    -9,   -10,    13,  -118,    48,  -118
+    -116,  -116,  -116,   163,  -116,   177,  -116,    -8,  -116,  -116,
+    -116,  -116,  -116,  -116,    26,   120,    81,  -116,  -116,  -116,
+    -115,    99,   133,     2,    16,   -96,  -116,  -116,     8,   -25,
+    -116,   121,     0,    33,  -116,  -116,  -116,     3,  -116,  -116,
+    -116,  -116,  -116,  -116,  -116,  -116,  -116,  -116,   164,   169,
+    -116,   188,   -13,    -6,    74,  -116,    53,  -116
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
@@ -753,118 +753,118 @@ static const yytype_int16 yypgoto[] =
 #define YYTABLE_NINF -105
 static const yytype_int16 yytable[] =
 {
-      26,    23,    87,   163,    64,   100,    83,    84,    42,    55,
-      27,    63,    42,    60,    62,   111,    26,    23,    27,    69,
-      61,    27,    27,   157,    30,   171,    27,   165,    26,    23,
-      71,   172,   103,   102,    72,    96,    95,   107,    27,   110,
-     174,    29,   110,   107,     2,    27,     4,     5,   118,     2,
-     118,     4,     5,   175,    63,   176,   104,   186,   105,   137,
-     119,   108,   170,   189,   127,    65,    67,   177,     2,   124,
-       4,     5,    42,    75,   178,   130,    61,   198,    60,   123,
-     172,    73,    27,   128,    61,    61,   139,   138,   181,    13,
-       2,     3,     4,     5,   172,   160,    79,   195,    81,    42,
-      94,   141,   128,    98,   115,   200,     7,   142,    99,    27,
-     143,   144,   122,    82,    83,    84,   120,   117,     9,   190,
-     164,    60,    85,   191,    11,   192,   161,    78,    61,    80,
-      27,    62,   121,   136,    82,    83,    84,   125,    61,     2,
-       3,     4,     5,    85,    -3,     1,   160,     2,     3,     4,
-       5,     6,    82,    83,    84,     7,   116,   168,   173,   166,
-     179,    85,    95,     7,   169,   180,   182,     9,   133,   194,
-       8,    61,   184,    54,   164,     9,   172,   197,    93,    10,
-     164,    11,    68,   131,    27,    12,     2,    13,     4,     5,
-      27,   183,   196,   158,   164,     2,     3,     4,     5,    92,
-      31,    32,    33,    34,    27,   132,     2,     3,     4,     5,
-     140,     7,   187,   129,     2,     3,     4,     5,     8,   113,
-     114,    97,     7,     9,   188,     0,     0,    10,     0,    11,
-       7,     0,     0,    12,     9,    13,     0,     8,     0,     0,
-      54,     0,     9,     0,     0,     0,    10,     0,    11,     0,
-       0,     0,    12,     0,    13,     2,     3,     4,     5,   145,
-     146,   147,   148,    82,    83,    84,     0,    31,    32,    33,
-      34,     7,    85,   199,   126,   149,    76,    77,    78,    79,
-      80,    81,     0,     9,     2,     3,     4,     5,     0,    11,
-       0,    35,     0,   150,     0,     0,    31,    32,    33,    34,
-       7,     2,     3,     4,     5,    76,    77,    78,    79,    80,
-      81,     0,     9,    31,    32,    33,    34,     7,    11,     0,
-      35,     0,     0,     0,    82,    83,    84,     0,     0,     9,
-       0,     0,   -54,    85,   -54,    11,   -54,   -54,     0,     0,
-     -55,    91,   -55,     0,   -55,   -55,   -54,     0,   -54,     0,
-       0,     0,   -54,     0,   -55,     0,   -55,     0,     0,     0,
-     -55,   -96,   -96,   -96,   -96,  -100,  -100,  -100,  -100,  -104,
-    -104,  -104,  -104
+      26,    87,    23,    27,    64,   163,    29,    42,   171,    55,
+      27,    63,    42,    61,    27,    27,    26,    30,    23,    27,
+     172,   157,   174,    77,    78,   165,    60,    62,    26,   102,
+      23,    27,    69,   107,    65,    96,   103,    95,    27,   107,
+     178,    67,   175,   110,   118,     2,   110,     4,     5,   118,
+     100,   181,   172,     2,    63,     4,     5,   119,    94,   186,
+     111,    73,   170,   172,   127,   189,    75,    98,   176,    61,
+     117,     2,    42,     4,     5,    27,   130,    61,    61,   198,
+     123,   177,   124,   138,    76,    77,    78,   128,    71,   116,
+     139,    60,    72,    13,   160,   195,    76,    77,    78,    42,
+      85,   141,    27,   200,   137,   128,     2,   142,     4,     5,
+     143,   144,    85,   199,    76,    77,    78,   104,    99,   105,
+     164,    61,   108,    27,   115,     2,     3,     4,     5,   120,
+      85,    61,    -3,     1,    60,     2,     3,     4,     5,     6,
+      31,    32,    33,    34,    62,   160,     8,     9,   133,   121,
+     125,     7,   -96,   -96,   -96,   -96,     8,     9,   136,    54,
+     179,    10,   122,    95,    61,   166,   182,   168,    81,    11,
+      83,   169,   184,    12,   164,    13,    82,    27,    84,   173,
+     164,   197,   180,    27,     2,     3,     4,     5,    92,   194,
+     172,    93,   196,    68,   164,   131,   183,    27,   140,   158,
+       7,  -100,  -100,  -100,  -100,     8,     9,   129,   187,   132,
+      10,     2,     3,     4,     5,   -54,   113,   -54,    11,   -54,
+     -54,   114,    12,    97,    13,    91,     0,     7,     0,   188,
+     -54,     0,     8,     9,     0,     0,     0,    10,   -54,     0,
+       0,     0,   -54,     0,     0,    11,     0,     0,     0,    12,
+       0,    13,     2,     3,     4,     5,     0,     0,    31,    32,
+      33,    34,     0,     0,   126,  -104,  -104,  -104,  -104,     2,
+       3,     4,     5,     8,     9,    31,    32,    33,    34,     2,
+       3,     4,     5,     0,     0,     0,    11,     0,    35,     0,
+       8,     9,     0,     0,     0,    76,    77,    78,     0,     0,
+       8,     9,   190,    11,     0,    35,     2,     3,     4,     5,
+       0,    85,   191,    11,   192,   161,     2,     3,     4,     5,
+       0,     0,    31,    32,    33,    34,     0,     8,     9,     0,
+     145,   146,   147,   148,     0,     0,     0,     8,     9,   -55,
+      54,   -55,     0,   -55,   -55,     0,     0,     0,     0,     0,
+      11,   149,     0,     0,   -55,     0,     0,    76,    77,    78,
+       0,     0,   -55,     0,   150,     0,   -55,    79,    80,    81,
+      82,    83,    84,    85,    79,    80,    81,    82,    83,    84
 };
 
 #define yypact_value_is_default(yystate) \
-  ((yystate) == (-118))
+  ((yystate) == (-116))
 
 #define yytable_value_is_error(yytable_value) \
   YYID (0)
 
 static const yytype_int16 yycheck[] =
 {
-       0,     0,    26,   120,    12,    42,    29,    30,     8,     9,
-       0,    11,    12,    10,    11,    52,    16,    16,     8,    16,
-      10,    11,    12,   117,     8,    32,    16,   121,    28,    28,
-      22,    38,    42,    42,    26,    35,    35,    46,    28,    49,
-      25,    23,    52,    52,     3,    35,     5,     6,    24,     3,
-      24,     5,     6,    38,    54,    24,    43,   174,    45,    96,
-      36,    48,    36,   180,    72,     5,     0,    36,     3,    66,
-       5,     6,    72,    35,    32,    74,    66,   194,    75,    38,
-      38,    42,    72,    37,    74,    75,    96,    96,    32,    43,
-       3,     4,     5,     6,    38,   119,    12,   191,    14,    99,
-       4,   101,    37,    22,    35,   199,    19,   107,    38,    99,
-     110,   111,    22,    28,    29,    30,    25,    31,    31,    34,
-     120,   118,    37,    38,    37,    40,    39,    11,   118,    13,
-     120,   128,    31,     8,    28,    29,    30,    27,   128,     3,
-       4,     5,     6,    37,     0,     1,   170,     3,     4,     5,
-       6,     7,    28,    29,    30,    19,    32,     5,     4,    33,
-     160,    37,   161,    19,    22,    38,   166,    31,    32,    38,
-      26,   161,   172,    37,   174,    31,    38,    34,    28,    35,
-     180,    37,    16,    75,   174,    41,     3,    43,     5,     6,
-     180,   170,   192,   118,   194,     3,     4,     5,     6,     7,
-      15,    16,    17,    18,   194,    88,     3,     4,     5,     6,
-      99,    19,   175,    74,     3,     4,     5,     6,    26,    52,
-      52,    35,    19,    31,   176,    -1,    -1,    35,    -1,    37,
-      19,    -1,    -1,    41,    31,    43,    -1,    26,    -1,    -1,
-      37,    -1,    31,    -1,    -1,    -1,    35,    -1,    37,    -1,
-      -1,    -1,    41,    -1,    43,     3,     4,     5,     6,     3,
-       4,     5,     6,    28,    29,    30,    -1,    15,    16,    17,
-      18,    19,    37,    38,    22,    19,     9,    10,    11,    12,
-      13,    14,    -1,    31,     3,     4,     5,     6,    -1,    37,
-      -1,    39,    -1,    37,    -1,    -1,    15,    16,    17,    18,
-      19,     3,     4,     5,     6,     9,    10,    11,    12,    13,
-      14,    -1,    31,    15,    16,    17,    18,    19,    37,    -1,
-      39,    -1,    -1,    -1,    28,    29,    30,    -1,    -1,    31,
-      -1,    -1,    22,    37,    24,    37,    26,    27,    -1,    -1,
-      22,    31,    24,    -1,    26,    27,    36,    -1,    38,    -1,
-      -1,    -1,    42,    -1,    36,    -1,    38,    -1,    -1,    -1,
-      42,    15,    16,    17,    18,    15,    16,    17,    18,    15,
-      16,    17,    18
+       0,    26,     0,     0,    12,   120,    16,     7,    26,     9,
+       7,    11,    12,    10,    11,    12,    16,     8,    16,    16,
+      38,   117,    18,    22,    23,   121,    10,    11,    28,    42,
+      28,    28,    16,    46,     5,    35,    42,    35,    35,    52,
+      26,     0,    38,    49,    17,     3,    52,     5,     6,    17,
+      42,    26,    38,     3,    54,     5,     6,    30,     4,   174,
+      52,    42,    30,    38,    72,   180,    29,    15,    17,    66,
+      25,     3,    72,     5,     6,    72,    74,    74,    75,   194,
+      38,    30,    66,    96,    21,    22,    23,    37,    15,    26,
+      96,    75,    19,    43,   119,   191,    21,    22,    23,    99,
+      37,   101,    99,   199,    96,    37,     3,   107,     5,     6,
+     110,   111,    37,    38,    21,    22,    23,    43,    38,    45,
+     120,   118,    48,   120,    29,     3,     4,     5,     6,    18,
+      37,   128,     0,     1,   118,     3,     4,     5,     6,     7,
+       9,    10,    11,    12,   128,   170,    24,    25,    26,    25,
+      20,    19,     9,    10,    11,    12,    24,    25,     8,    37,
+     160,    29,    15,   161,   161,    27,   166,     5,    33,    37,
+      35,    15,   172,    41,   174,    43,    34,   174,    36,     4,
+     180,    28,    38,   180,     3,     4,     5,     6,     7,    38,
+      38,    28,   192,    16,   194,    75,   170,   194,    99,   118,
+      19,     9,    10,    11,    12,    24,    25,    74,   175,    88,
+      29,     3,     4,     5,     6,    15,    52,    17,    37,    19,
+      20,    52,    41,    35,    43,    25,    -1,    19,    -1,   176,
+      30,    -1,    24,    25,    -1,    -1,    -1,    29,    38,    -1,
+      -1,    -1,    42,    -1,    -1,    37,    -1,    -1,    -1,    41,
+      -1,    43,     3,     4,     5,     6,    -1,    -1,     9,    10,
+      11,    12,    -1,    -1,    15,     9,    10,    11,    12,     3,
+       4,     5,     6,    24,    25,     9,    10,    11,    12,     3,
+       4,     5,     6,    -1,    -1,    -1,    37,    -1,    39,    -1,
+      24,    25,    -1,    -1,    -1,    21,    22,    23,    -1,    -1,
+      24,    25,    28,    37,    -1,    39,     3,     4,     5,     6,
+      -1,    37,    38,    37,    40,    39,     3,     4,     5,     6,
+      -1,    -1,     9,    10,    11,    12,    -1,    24,    25,    -1,
+       3,     4,     5,     6,    -1,    -1,    -1,    24,    25,    15,
+      37,    17,    -1,    19,    20,    -1,    -1,    -1,    -1,    -1,
+      37,    24,    -1,    -1,    30,    -1,    -1,    21,    22,    23,
+      -1,    -1,    38,    -1,    37,    -1,    42,    31,    32,    33,
+      34,    35,    36,    37,    31,    32,    33,    34,    35,    36
 };
 
 /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
    symbol of state STATE-NUM.  */
 static const yytype_uint8 yystos[] =
 {
-       0,     1,     3,     4,     5,     6,     7,    19,    26,    31,
-      35,    37,    41,    43,    46,    47,    48,    49,    50,    54,
-      56,    57,    66,    67,    68,    75,    76,    81,    82,    23,
-       8,    15,    16,    17,    18,    39,    51,    55,    64,    65,
+       0,     1,     3,     4,     5,     6,     7,    19,    24,    25,
+      29,    37,    41,    43,    46,    47,    48,    49,    50,    54,
+      56,    57,    66,    67,    68,    75,    76,    81,    82,    16,
+       8,     9,    10,    11,    12,    39,    51,    55,    64,    65,
       67,    71,    76,    84,    86,    87,    88,    89,    90,    91,
       94,    95,    98,   101,    37,    76,    81,    59,    60,    61,
       68,    81,    68,    76,    51,     5,    80,     0,    49,    68,
-      83,    22,    26,    42,    45,    35,     9,    10,    11,    12,
-      13,    14,    28,    29,    30,    37,    72,    73,    74,    96,
-      97,    31,     7,    47,     4,    67,    76,    95,    22,    38,
+      83,    15,    19,    42,    45,    29,    21,    22,    23,    31,
+      32,    33,    34,    35,    36,    37,    72,    73,    74,    96,
+      97,    25,     7,    47,     4,    67,    76,    95,    15,    38,
       72,    73,    96,    97,    98,    98,    92,    96,    98,    93,
-      97,    72,    85,    92,    93,    35,    32,    31,    24,    36,
-      25,    31,    22,    38,    68,    27,    22,    51,    37,    66,
-      67,    59,    75,    32,    69,    76,     8,    72,    96,    97,
-      65,    76,    76,    76,    76,     3,     4,     5,     6,    19,
+      97,    72,    85,    92,    93,    29,    26,    25,    17,    30,
+      18,    25,    15,    38,    68,    20,    15,    51,    37,    66,
+      67,    59,    75,    26,    69,    76,     8,    72,    96,    97,
+      65,    76,    76,    76,    76,     3,     4,     5,     6,    24,
       37,    70,    77,    78,    79,    99,   100,    69,    60,    58,
-      73,    39,    62,    64,    76,    69,    33,    52,     5,    22,
-      36,    32,    38,     4,    25,    38,    24,    36,    32,    76,
-      38,    32,    76,    58,    76,    63,    64,    77,   100,    64,
-      34,    38,    40,    53,    38,    69,    76,    34,    64,    38,
+      73,    39,    62,    64,    76,    69,    27,    52,     5,    15,
+      30,    26,    38,     4,    18,    38,    17,    30,    26,    76,
+      38,    26,    76,    58,    76,    63,    64,    77,   100,    64,
+      28,    38,    40,    53,    38,    69,    76,    28,    64,    38,
       69
 };
 
@@ -1708,21 +1708,21 @@ yyreduce:
         case 6:
 
 /* Line 1806 of yacc.c  */
-#line 69 "src/input/aspcore2.y"
+#line 72 "src/input/aspcore2.y"
     { yyerror(director,"Generic error"); }
     break;
 
   case 8:
 
 /* Line 1806 of yacc.c  */
-#line 74 "src/input/aspcore2.y"
+#line 77 "src/input/aspcore2.y"
     { director.getBuilder()->onQuery(); }
     break;
 
   case 11:
 
 /* Line 1806 of yacc.c  */
-#line 84 "src/input/aspcore2.y"
+#line 87 "src/input/aspcore2.y"
     { 
             director.getBuilder()->onRule(); 
         }
@@ -1731,7 +1731,7 @@ yyreduce:
   case 12:
 
 /* Line 1806 of yacc.c  */
-#line 88 "src/input/aspcore2.y"
+#line 91 "src/input/aspcore2.y"
     {
             director.getBuilder()->onRule(); 
         }
@@ -1740,7 +1740,7 @@ yyreduce:
   case 13:
 
 /* Line 1806 of yacc.c  */
-#line 92 "src/input/aspcore2.y"
+#line 95 "src/input/aspcore2.y"
     { 
             director.getBuilder()->onRule(); 
         }
@@ -1749,7 +1749,7 @@ yyreduce:
   case 14:
 
 /* Line 1806 of yacc.c  */
-#line 96 "src/input/aspcore2.y"
+#line 99 "src/input/aspcore2.y"
     { 
             director.getBuilder()->onConstraint(); 
         }
@@ -1758,7 +1758,7 @@ yyreduce:
   case 15:
 
 /* Line 1806 of yacc.c  */
-#line 100 "src/input/aspcore2.y"
+#line 103 "src/input/aspcore2.y"
     { 
             director.getBuilder()->onWeakConstraint(); 
         }
@@ -1767,7 +1767,7 @@ yyreduce:
   case 16:
 
 /* Line 1806 of yacc.c  */
-#line 107 "src/input/aspcore2.y"
+#line 110 "src/input/aspcore2.y"
     {
             director.getBuilder()->onHead();
         }
@@ -1776,7 +1776,7 @@ yyreduce:
   case 17:
 
 /* Line 1806 of yacc.c  */
-#line 111 "src/input/aspcore2.y"
+#line 114 "src/input/aspcore2.y"
     {
             director.getBuilder()->onChoiceAtom();
             director.getBuilder()->onHead();
@@ -1786,7 +1786,7 @@ yyreduce:
   case 18:
 
 /* Line 1806 of yacc.c  */
-#line 119 "src/input/aspcore2.y"
+#line 122 "src/input/aspcore2.y"
     {
             director.getBuilder()->onBody();
         }
@@ -1795,7 +1795,7 @@ yyreduce:
   case 19:
 
 /* Line 1806 of yacc.c  */
-#line 126 "src/input/aspcore2.y"
+#line 129 "src/input/aspcore2.y"
     {
             // There is only the weight. No level and terms.
             director.getBuilder()->onWeightAtLevels(1,0,0); 
@@ -1805,7 +1805,7 @@ yyreduce:
   case 20:
 
 /* Line 1806 of yacc.c  */
-#line 131 "src/input/aspcore2.y"
+#line 134 "src/input/aspcore2.y"
     {
             // There are also a level and/or some terms.
             // The finalization has been postponed to "level_and_terms".
@@ -1815,7 +1815,7 @@ yyreduce:
   case 21:
 
 /* Line 1806 of yacc.c  */
-#line 139 "src/input/aspcore2.y"
+#line 142 "src/input/aspcore2.y"
     {
             // There is no terms following the level.
             director.getBuilder()->onWeightAtLevels(1,1,0); 
@@ -1825,7 +1825,7 @@ yyreduce:
   case 22:
 
 /* Line 1806 of yacc.c  */
-#line 144 "src/input/aspcore2.y"
+#line 147 "src/input/aspcore2.y"
     { 
             director.getBuilder()->onWeightAtLevels(1,1,(yyvsp[(4) - (4)].integer)); 
         }
@@ -1834,7 +1834,7 @@ yyreduce:
   case 23:
 
 /* Line 1806 of yacc.c  */
-#line 148 "src/input/aspcore2.y"
+#line 151 "src/input/aspcore2.y"
     { 
             // The level is omitted.
             // Thus, the first term, recognized as the
@@ -1846,7 +1846,7 @@ yyreduce:
   case 24:
 
 /* Line 1806 of yacc.c  */
-#line 158 "src/input/aspcore2.y"
+#line 161 "src/input/aspcore2.y"
     { 
             director.getBuilder()->onHeadAtom(); 
         }
@@ -1855,7 +1855,7 @@ yyreduce:
   case 25:
 
 /* Line 1806 of yacc.c  */
-#line 162 "src/input/aspcore2.y"
+#line 165 "src/input/aspcore2.y"
     { 
             director.getBuilder()->onHeadAtom(); 
         }
@@ -1864,7 +1864,7 @@ yyreduce:
   case 26:
 
 /* Line 1806 of yacc.c  */
-#line 166 "src/input/aspcore2.y"
+#line 169 "src/input/aspcore2.y"
     { 
             director.getBuilder()->onHeadAtom(); 
         }
@@ -1873,7 +1873,7 @@ yyreduce:
   case 27:
 
 /* Line 1806 of yacc.c  */
-#line 170 "src/input/aspcore2.y"
+#line 173 "src/input/aspcore2.y"
     { 
             director.getBuilder()->onHeadAtom(); 
         }
@@ -1882,7 +1882,7 @@ yyreduce:
   case 28:
 
 /* Line 1806 of yacc.c  */
-#line 177 "src/input/aspcore2.y"
+#line 180 "src/input/aspcore2.y"
     { 
             director.getBuilder()->onBodyLiteral(); 
         }
@@ -1891,7 +1891,7 @@ yyreduce:
   case 29:
 
 /* Line 1806 of yacc.c  */
-#line 181 "src/input/aspcore2.y"
+#line 184 "src/input/aspcore2.y"
     { 
             director.getBuilder()->onBodyLiteral(); 
         }
@@ -1900,27 +1900,25 @@ yyreduce:
   case 34:
 
 /* Line 1806 of yacc.c  */
-#line 195 "src/input/aspcore2.y"
+#line 198 "src/input/aspcore2.y"
     { 
-            director.getBuilder()->onChoiceLowerGuard((yyvsp[(2) - (2)].string)); 
-            delete[] (yyvsp[(2) - (2)].string);
+            director.getBuilder()->onChoiceLowerGuard();
         }
     break;
 
   case 35:
 
 /* Line 1806 of yacc.c  */
-#line 203 "src/input/aspcore2.y"
+#line 205 "src/input/aspcore2.y"
     { 
-            director.getBuilder()->onChoiceUpperGuard((yyvsp[(1) - (2)].string)); 
-            delete[] (yyvsp[(1) - (2)].string);
+            director.getBuilder()->onChoiceUpperGuard();
         }
     break;
 
   case 38:
 
 /* Line 1806 of yacc.c  */
-#line 216 "src/input/aspcore2.y"
+#line 217 "src/input/aspcore2.y"
     {
             director.getBuilder()->onChoiceElement(); 
         }
@@ -1929,7 +1927,7 @@ yyreduce:
   case 39:
 
 /* Line 1806 of yacc.c  */
-#line 220 "src/input/aspcore2.y"
+#line 221 "src/input/aspcore2.y"
     {
             director.getBuilder()->onChoiceElement(); 
         }
@@ -1938,7 +1936,7 @@ yyreduce:
   case 40:
 
 /* Line 1806 of yacc.c  */
-#line 227 "src/input/aspcore2.y"
+#line 228 "src/input/aspcore2.y"
     {
             director.getBuilder()->onChoiceElementAtom(); 
         }
@@ -1947,7 +1945,7 @@ yyreduce:
   case 41:
 
 /* Line 1806 of yacc.c  */
-#line 234 "src/input/aspcore2.y"
+#line 235 "src/input/aspcore2.y"
     { 
             director.getBuilder()->onChoiceElementLiteral(); 
         }
@@ -1956,7 +1954,7 @@ yyreduce:
   case 42:
 
 /* Line 1806 of yacc.c  */
-#line 238 "src/input/aspcore2.y"
+#line 239 "src/input/aspcore2.y"
     {
             director.getBuilder()->onChoiceElementLiteral();
         }
@@ -1965,7 +1963,7 @@ yyreduce:
   case 43:
 
 /* Line 1806 of yacc.c  */
-#line 245 "src/input/aspcore2.y"
+#line 246 "src/input/aspcore2.y"
     {
             director.getBuilder()->onAggregateNafLiteral();
         }
@@ -1974,7 +1972,7 @@ yyreduce:
   case 44:
 
 /* Line 1806 of yacc.c  */
-#line 249 "src/input/aspcore2.y"
+#line 250 "src/input/aspcore2.y"
     {
             director.getBuilder()->onAggregateNafLiteral();
         }
@@ -1983,7 +1981,7 @@ yyreduce:
   case 45:
 
 /* Line 1806 of yacc.c  */
-#line 256 "src/input/aspcore2.y"
+#line 257 "src/input/aspcore2.y"
     { 
             director.getBuilder()->onNafLiteral();
         }
@@ -1992,7 +1990,7 @@ yyreduce:
   case 46:
 
 /* Line 1806 of yacc.c  */
-#line 260 "src/input/aspcore2.y"
+#line 261 "src/input/aspcore2.y"
     { 
             director.getBuilder()->onNafLiteral(true);
         }
@@ -2001,7 +1999,7 @@ yyreduce:
   case 47:
 
 /* Line 1806 of yacc.c  */
-#line 264 "src/input/aspcore2.y"
+#line 265 "src/input/aspcore2.y"
     {
             director.getBuilder()->onNafLiteral();
         }
@@ -2010,7 +2008,7 @@ yyreduce:
   case 49:
 
 /* Line 1806 of yacc.c  */
-#line 272 "src/input/aspcore2.y"
+#line 273 "src/input/aspcore2.y"
     {
             director.getBuilder()->onAggregate();
         }
@@ -2019,7 +2017,7 @@ yyreduce:
   case 50:
 
 /* Line 1806 of yacc.c  */
-#line 276 "src/input/aspcore2.y"
+#line 277 "src/input/aspcore2.y"
     {
             director.getBuilder()->onAggregate(true);
         }
@@ -2028,7 +2026,7 @@ yyreduce:
   case 51:
 
 /* Line 1806 of yacc.c  */
-#line 283 "src/input/aspcore2.y"
+#line 284 "src/input/aspcore2.y"
     { 
             director.getBuilder()->onExistentialAtom(); 
         }
@@ -2037,21 +2035,21 @@ yyreduce:
   case 52:
 
 /* Line 1806 of yacc.c  */
-#line 288 "src/input/aspcore2.y"
+#line 289 "src/input/aspcore2.y"
     { director.getBuilder()->onAtom(); }
     break;
 
   case 53:
 
 /* Line 1806 of yacc.c  */
-#line 289 "src/input/aspcore2.y"
+#line 290 "src/input/aspcore2.y"
     { director.getBuilder()->onAtom(true); }
     break;
 
   case 54:
 
 /* Line 1806 of yacc.c  */
-#line 294 "src/input/aspcore2.y"
+#line 295 "src/input/aspcore2.y"
     { 
             director.getBuilder()->onPredicateName((yyvsp[(1) - (1)].string)); 
             delete[] (yyvsp[(1) - (1)].string);
@@ -2061,7 +2059,7 @@ yyreduce:
   case 55:
 
 /* Line 1806 of yacc.c  */
-#line 299 "src/input/aspcore2.y"
+#line 300 "src/input/aspcore2.y"
     { 
             director.getBuilder()->onPredicateName((yyvsp[(1) - (4)].string)); 
             delete[] (yyvsp[(1) - (4)].string);
@@ -2071,7 +2069,7 @@ yyreduce:
   case 56:
 
 /* Line 1806 of yacc.c  */
-#line 304 "src/input/aspcore2.y"
+#line 305 "src/input/aspcore2.y"
     { 
             director.getBuilder()->onPredicateName((yyvsp[(1) - (3)].string)); 
             delete[] (yyvsp[(1) - (3)].string);
@@ -2081,94 +2079,76 @@ yyreduce:
   case 57:
 
 /* Line 1806 of yacc.c  */
-#line 311 "src/input/aspcore2.y"
+#line 312 "src/input/aspcore2.y"
     { (yyval.integer) = 1; }
     break;
 
   case 58:
 
 /* Line 1806 of yacc.c  */
-#line 312 "src/input/aspcore2.y"
+#line 313 "src/input/aspcore2.y"
     { (yyval.integer) = (yyvsp[(1) - (3)].integer) + 1; }
     break;
 
   case 61:
 
 /* Line 1806 of yacc.c  */
-#line 322 "src/input/aspcore2.y"
+#line 323 "src/input/aspcore2.y"
     {
-            director.getBuilder()->onBuiltinAtom((yyvsp[(2) - (3)].string));  
-            delete[] (yyvsp[(2) - (3)].string);
+            director.getBuilder()->onBuiltinAtom();
         }
     break;
 
   case 62:
 
 /* Line 1806 of yacc.c  */
-#line 329 "src/input/aspcore2.y"
-    { (yyval.string) = (yyvsp[(1) - (1)].string); }
+#line 330 "src/input/aspcore2.y"
+    {
+            director.getBuilder()->onEqualOperator();
+        }
     break;
 
   case 63:
 
 /* Line 1806 of yacc.c  */
-#line 330 "src/input/aspcore2.y"
-    { (yyval.string) = (yyvsp[(1) - (1)].string); }
-    break;
-
-  case 64:
-
-/* Line 1806 of yacc.c  */
 #line 334 "src/input/aspcore2.y"
-    { (yyval.string) = (yyvsp[(1) - (1)].string); }
-    break;
-
-  case 65:
-
-/* Line 1806 of yacc.c  */
-#line 335 "src/input/aspcore2.y"
-    { (yyval.string) = (yyvsp[(1) - (1)].string); }
-    break;
-
-  case 66:
-
-/* Line 1806 of yacc.c  */
-#line 336 "src/input/aspcore2.y"
-    { (yyval.string) = (yyvsp[(1) - (1)].string); }
+    {
+            director.getBuilder()->onUnequalOperator(); 
+        }
     break;
 
   case 67:
 
 /* Line 1806 of yacc.c  */
-#line 340 "src/input/aspcore2.y"
+#line 346 "src/input/aspcore2.y"
     { (yyval.single_char) = '+'; }
     break;
 
   case 68:
 
 /* Line 1806 of yacc.c  */
-#line 341 "src/input/aspcore2.y"
+#line 347 "src/input/aspcore2.y"
     { (yyval.single_char) = '-'; }
     break;
 
   case 69:
 
 /* Line 1806 of yacc.c  */
-#line 342 "src/input/aspcore2.y"
+#line 348 "src/input/aspcore2.y"
     { (yyval.single_char) = '*'; }
     break;
 
   case 70:
 
 /* Line 1806 of yacc.c  */
-#line 343 "src/input/aspcore2.y"
+#line 349 "src/input/aspcore2.y"
     { (yyval.single_char) = '/'; }
     break;
 
   case 71:
 
 /* Line 1806 of yacc.c  */
-#line 348 "src/input/aspcore2.y"
+#line 354 "src/input/aspcore2.y"
     { 
             director.getBuilder()->onTerm((yyvsp[(1) - (1)].string)); 
             delete[] (yyvsp[(1) - (1)].string);
@@ -2178,7 +2158,7 @@ yyreduce:
   case 72:
 
 /* Line 1806 of yacc.c  */
-#line 353 "src/input/aspcore2.y"
+#line 359 "src/input/aspcore2.y"
     { 
             director.getBuilder()->onTerm((yyvsp[(1) - (1)].string)); 
             delete[] (yyvsp[(1) - (1)].string);
@@ -2188,17 +2168,16 @@ yyreduce:
   case 73:
 
 /* Line 1806 of yacc.c  */
-#line 358 "src/input/aspcore2.y"
+#line 364 "src/input/aspcore2.y"
     { 
-            director.getBuilder()->onTerm((yyvsp[(1) - (1)].string)); 
-            delete[] (yyvsp[(1) - (1)].string);
+            director.getBuilder()->onUnknownVariable(); 
         }
     break;
 
   case 74:
 
 /* Line 1806 of yacc.c  */
-#line 363 "src/input/aspcore2.y"
+#line 368 "src/input/aspcore2.y"
     { 
             director.getBuilder()->onFunction((yyvsp[(1) - (4)].string), (yyvsp[(3) - (4)].integer)); 
             delete[] (yyvsp[(1) - (4)].string);
@@ -2208,7 +2187,7 @@ yyreduce:
   case 75:
 
 /* Line 1806 of yacc.c  */
-#line 368 "src/input/aspcore2.y"
+#line 373 "src/input/aspcore2.y"
     {
             director.getBuilder()->onTermRange((yyvsp[(1) - (3)].string), (yyvsp[(3) - (3)].string));
             delete[] (yyvsp[(1) - (3)].string);
@@ -2219,7 +2198,7 @@ yyreduce:
   case 76:
 
 /* Line 1806 of yacc.c  */
-#line 374 "src/input/aspcore2.y"
+#line 379 "src/input/aspcore2.y"
     { 
             director.getBuilder()->onTermParams(); 
         }
@@ -2228,7 +2207,7 @@ yyreduce:
   case 77:
 
 /* Line 1806 of yacc.c  */
-#line 378 "src/input/aspcore2.y"
+#line 383 "src/input/aspcore2.y"
     { 
             director.getBuilder()->onTermDash(); 
         }
@@ -2237,14 +2216,14 @@ yyreduce:
   case 78:
 
 /* Line 1806 of yacc.c  */
-#line 384 "src/input/aspcore2.y"
+#line 389 "src/input/aspcore2.y"
     {}
     break;
 
   case 79:
 
 /* Line 1806 of yacc.c  */
-#line 386 "src/input/aspcore2.y"
+#line 391 "src/input/aspcore2.y"
     { 
             director.getBuilder()->onArithmeticOperation((yyvsp[(2) - (3)].single_char)); 
         }
@@ -2253,28 +2232,18 @@ yyreduce:
   case 80:
 
 /* Line 1806 of yacc.c  */
-#line 391 "src/input/aspcore2.y"
+#line 396 "src/input/aspcore2.y"
     {}
     break;
 
   case 81:
 
 /* Line 1806 of yacc.c  */
-#line 392 "src/input/aspcore2.y"
+#line 397 "src/input/aspcore2.y"
     {}
     break;
 
   case 82:
-
-/* Line 1806 of yacc.c  */
-#line 397 "src/input/aspcore2.y"
-    {
-            director.getBuilder()->onAggregateGroundTerm((yyvsp[(1) - (1)].string));
-            delete[] (yyvsp[(1) - (1)].string);
-        }
-    break;
-
-  case 83:
 
 /* Line 1806 of yacc.c  */
 #line 402 "src/input/aspcore2.y"
@@ -2284,7 +2253,7 @@ yyreduce:
         }
     break;
 
-  case 84:
+  case 83:
 
 /* Line 1806 of yacc.c  */
 #line 407 "src/input/aspcore2.y"
@@ -2294,10 +2263,20 @@ yyreduce:
         }
     break;
 
-  case 85:
+  case 84:
 
 /* Line 1806 of yacc.c  */
 #line 412 "src/input/aspcore2.y"
+    {
+            director.getBuilder()->onAggregateGroundTerm((yyvsp[(1) - (1)].string));
+            delete[] (yyvsp[(1) - (1)].string);
+        }
+    break;
+
+  case 85:
+
+/* Line 1806 of yacc.c  */
+#line 417 "src/input/aspcore2.y"
     {
             director.getBuilder()->onAggregateGroundTerm((yyvsp[(2) - (2)].string),true);
             delete[] (yyvsp[(2) - (2)].string);
@@ -2307,7 +2286,7 @@ yyreduce:
   case 86:
 
 /* Line 1806 of yacc.c  */
-#line 420 "src/input/aspcore2.y"
+#line 425 "src/input/aspcore2.y"
     { 
             director.getBuilder()->onAggregateVariableTerm((yyvsp[(1) - (1)].string));
             delete[] (yyvsp[(1) - (1)].string);
@@ -2317,17 +2296,16 @@ yyreduce:
   case 87:
 
 /* Line 1806 of yacc.c  */
-#line 425 "src/input/aspcore2.y"
+#line 430 "src/input/aspcore2.y"
     {
-            director.getBuilder()->onAggregateVariableTerm((yyvsp[(1) - (1)].string));
-            delete[] (yyvsp[(1) - (1)].string);
+            director.getBuilder()->onAggregateUnknownVariable();
         }
     break;
 
   case 88:
 
 /* Line 1806 of yacc.c  */
-#line 433 "src/input/aspcore2.y"
+#line 437 "src/input/aspcore2.y"
     { 
             director.getBuilder()->onExistentialVariable((yyvsp[(1) - (1)].string)); 
             delete[] (yyvsp[(1) - (1)].string);
@@ -2337,7 +2315,7 @@ yyreduce:
   case 89:
 
 /* Line 1806 of yacc.c  */
-#line 438 "src/input/aspcore2.y"
+#line 442 "src/input/aspcore2.y"
     { 
             director.getBuilder()->onExistentialVariable((yyvsp[(3) - (3)].string));
             delete[] (yyvsp[(3) - (3)].string);
@@ -2347,28 +2325,28 @@ yyreduce:
   case 90:
 
 /* Line 1806 of yacc.c  */
-#line 445 "src/input/aspcore2.y"
+#line 449 "src/input/aspcore2.y"
     { (yyval.string) = (yyvsp[(1) - (1)].string); }
     break;
 
   case 91:
 
 /* Line 1806 of yacc.c  */
-#line 446 "src/input/aspcore2.y"
+#line 450 "src/input/aspcore2.y"
     { (yyval.string) = (yyvsp[(1) - (1)].string); }
     break;
 
   case 92:
 
 /* Line 1806 of yacc.c  */
-#line 447 "src/input/aspcore2.y"
+#line 451 "src/input/aspcore2.y"
     { (yyval.string) = (yyvsp[(1) - (1)].string); }
     break;
 
   case 93:
 
 /* Line 1806 of yacc.c  */
-#line 452 "src/input/aspcore2.y"
+#line 456 "src/input/aspcore2.y"
     {
             director.getParserConstraint()->directives();
             director.getBuilder()->onDirective((yyvsp[(1) - (2)].string),(yyvsp[(2) - (2)].string));
@@ -2380,7 +2358,7 @@ yyreduce:
   case 94:
 
 /* Line 1806 of yacc.c  */
-#line 459 "src/input/aspcore2.y"
+#line 463 "src/input/aspcore2.y"
     {
             director.getParserConstraint()->directives();
             director.getBuilder()->onDirective((yyvsp[(2) - (3)].string),(yyvsp[(3) - (3)].string));
@@ -2392,7 +2370,7 @@ yyreduce:
   case 95:
 
 /* Line 1806 of yacc.c  */
-#line 469 "src/input/aspcore2.y"
+#line 473 "src/input/aspcore2.y"
     { 
             director.getBuilder()->onAtom(); 
         }
@@ -2401,40 +2379,36 @@ yyreduce:
   case 96:
 
 /* Line 1806 of yacc.c  */
-#line 476 "src/input/aspcore2.y"
+#line 480 "src/input/aspcore2.y"
     {
-            director.getBuilder()->onAggregateLowerGuard((yyvsp[(2) - (2)].string));
-            delete[] (yyvsp[(2) - (2)].string);
+            director.getBuilder()->onAggregateLowerGuard();
         }
     break;
 
   case 97:
 
 /* Line 1806 of yacc.c  */
-#line 484 "src/input/aspcore2.y"
+#line 487 "src/input/aspcore2.y"
     {
-            director.getBuilder()->onAggregateUpperGuard((yyvsp[(1) - (2)].string));
-            delete[] (yyvsp[(1) - (2)].string);
+            director.getBuilder()->onAggregateUpperGuard();
         }
     break;
 
   case 100:
 
 /* Line 1806 of yacc.c  */
-#line 497 "src/input/aspcore2.y"
+#line 499 "src/input/aspcore2.y"
     {
-            director.getBuilder()->onAggregateLowerGuard((yyvsp[(2) - (2)].string));
-            delete[] (yyvsp[(2) - (2)].string);
+            director.getBuilder()->onAggregateLowerGuard();
         }
     break;
 
   case 104:
 
 /* Line 1806 of yacc.c  */
-#line 514 "src/input/aspcore2.y"
+#line 515 "src/input/aspcore2.y"
     {
-            director.getBuilder()->onAggregateLowerGuard((yyvsp[(2) - (2)].string));
-            delete[] (yyvsp[(2) - (2)].string);
+            director.getBuilder()->onAggregateLowerGuard();
         }
     break;
 
@@ -2443,79 +2417,65 @@ yyreduce:
 /* Line 1806 of yacc.c  */
 #line 526 "src/input/aspcore2.y"
     {
-            director.getBuilder()->onAggregateUpperGuard((yyvsp[(1) - (2)].string));
-            delete[] (yyvsp[(1) - (2)].string);
+            director.getBuilder()->onAggregateUpperGuard();
         }
     break;
 
   case 107:
 
 /* Line 1806 of yacc.c  */
-#line 534 "src/input/aspcore2.y"
+#line 533 "src/input/aspcore2.y"
     {
-            director.getBuilder()->onAggregateUpperGuard((yyvsp[(1) - (2)].string));
-            delete[] (yyvsp[(1) - (2)].string);
+            director.getBuilder()->onAggregateUpperGuard();
         }
     break;
 
   case 115:
 
 /* Line 1806 of yacc.c  */
-#line 554 "src/input/aspcore2.y"
-    { (yyval.string) = (yyvsp[(1) - (1)].string); }
+#line 553 "src/input/aspcore2.y"
+    {
+            director.getBuilder()->onLessOperator(); 
+        }
     break;
 
   case 116:
 
 /* Line 1806 of yacc.c  */
-#line 555 "src/input/aspcore2.y"
-    { (yyval.string) = (yyvsp[(1) - (1)].string); }
+#line 557 "src/input/aspcore2.y"
+    {
+            director.getBuilder()->onLessOrEqualOperator(); 
+        }
     break;
 
   case 117:
 
 /* Line 1806 of yacc.c  */
-#line 559 "src/input/aspcore2.y"
-    { (yyval.string) = (yyvsp[(1) - (1)].string); }
+#line 564 "src/input/aspcore2.y"
+    {
+            director.getBuilder()->onGreaterOperator();
+        }
     break;
 
   case 118:
 
 /* Line 1806 of yacc.c  */
-#line 560 "src/input/aspcore2.y"
-    { (yyval.string) = (yyvsp[(1) - (1)].string); }
+#line 568 "src/input/aspcore2.y"
+    {
+            director.getBuilder()->onGreaterOrEqualOperator();
+        }
     break;
 
   case 122:
 
 /* Line 1806 of yacc.c  */
-#line 575 "src/input/aspcore2.y"
+#line 585 "src/input/aspcore2.y"
     {
             director.getBuilder()->onAggregateElement();
         }
     break;
 
   case 123:
-
-/* Line 1806 of yacc.c  */
-#line 582 "src/input/aspcore2.y"
-    {
-            director.getBuilder()->onAggregateFunction((yyvsp[(1) - (1)].string));
-            delete[] (yyvsp[(1) - (1)].string);
-        }
-    break;
-
-  case 124:
-
-/* Line 1806 of yacc.c  */
-#line 587 "src/input/aspcore2.y"
-    {
-            director.getBuilder()->onAggregateFunction((yyvsp[(1) - (1)].string));
-            delete[] (yyvsp[(1) - (1)].string);
-        }
-    break;
-
-  case 125:
 
 /* Line 1806 of yacc.c  */
 #line 592 "src/input/aspcore2.y"
@@ -2525,7 +2485,7 @@ yyreduce:
         }
     break;
 
-  case 126:
+  case 124:
 
 /* Line 1806 of yacc.c  */
 #line 597 "src/input/aspcore2.y"
@@ -2535,10 +2495,30 @@ yyreduce:
         }
     break;
 
+  case 125:
+
+/* Line 1806 of yacc.c  */
+#line 602 "src/input/aspcore2.y"
+    {
+            director.getBuilder()->onAggregateFunction((yyvsp[(1) - (1)].string));
+            delete[] (yyvsp[(1) - (1)].string);
+        }
+    break;
+
+  case 126:
+
+/* Line 1806 of yacc.c  */
+#line 607 "src/input/aspcore2.y"
+    {
+            director.getBuilder()->onAggregateFunction((yyvsp[(1) - (1)].string));
+            delete[] (yyvsp[(1) - (1)].string);
+        }
+    break;
+
 
 
 /* Line 1806 of yacc.c  */
-#line 2542 "src/input/aspcore2_parser.hpp"
+#line 2522 "src/input/aspcore2_parser.hpp"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires

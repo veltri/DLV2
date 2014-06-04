@@ -839,71 +839,43 @@ YY_RULE_SETUP
 case 25:
 YY_RULE_SETUP
 #line 99 "src/input/aspcore2.l"
-{ 
-                            yylval.string=new char[strlen(yytext)+1];
-                            strcpy(yylval.string,yytext);
-                            return ANON_VAR; 
-                        }
+{ return ANON_VAR; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 105 "src/input/aspcore2.l"
-{
-                            yylval.string=new char[strlen(yytext)+1];
-                            strcpy(yylval.string,yytext);
-                            return EQUAL;
-                        }
+#line 101 "src/input/aspcore2.l"
+{ return EQUAL; }
 	YY_BREAK
 case 27:
-#line 112 "src/input/aspcore2.l"
+#line 103 "src/input/aspcore2.l"
 case 28:
 YY_RULE_SETUP
-#line 112 "src/input/aspcore2.l"
-{
-                            yylval.string=new char[strlen(yytext)+1];
-                            strcpy(yylval.string,yytext);
-                            return UNEQUAL;
-                        }
+#line 103 "src/input/aspcore2.l"
+{ return UNEQUAL; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 118 "src/input/aspcore2.l"
-{
-                            yylval.string=new char[strlen(yytext)+1];
-                            strcpy(yylval.string,yytext);
-                            return LESS;
-                        }
+#line 104 "src/input/aspcore2.l"
+{ return LESS; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 124 "src/input/aspcore2.l"
-{
-                            yylval.string=new char[strlen(yytext)+1];
-                            strcpy(yylval.string,yytext);
-                            return GREATER;
-                        }
+#line 105 "src/input/aspcore2.l"
+{ return GREATER; }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 130 "src/input/aspcore2.l"
-{
-                            yylval.string=new char[strlen(yytext)+1];
-                            strcpy(yylval.string,yytext);
-                            return LESS_OR_EQ;
-                        }
+#line 106 "src/input/aspcore2.l"
+{ return LESS_OR_EQ; }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 136 "src/input/aspcore2.l"
-{
-                            yylval.string=new char[strlen(yytext)+1];
-                            strcpy(yylval.string,yytext);
-                            return GREATER_OR_EQ;
-                        }
+#line 107 "src/input/aspcore2.l"
+{ return GREATER_OR_EQ; }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 142 "src/input/aspcore2.l"
+#line 109 "src/input/aspcore2.l"
 { 
                             yylval.string=new char[strlen(yytext)+1];
                             strcpy(yylval.string,yytext);
@@ -912,7 +884,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 148 "src/input/aspcore2.l"
+#line 115 "src/input/aspcore2.l"
 { 
                             yylval.string=new char[strlen(yytext)+1];
                             strcpy(yylval.string,yytext);
@@ -921,7 +893,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 154 "src/input/aspcore2.l"
+#line 121 "src/input/aspcore2.l"
 { 
                             yylval.string=new char[strlen(yytext)+1];
                             strcpy(yylval.string,yytext);
@@ -930,7 +902,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 160 "src/input/aspcore2.l"
+#line 127 "src/input/aspcore2.l"
 { 
                             yylval.string=new char[strlen(yytext)+1];
                             strcpy(yylval.string,yytext);
@@ -939,7 +911,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 166 "src/input/aspcore2.l"
+#line 133 "src/input/aspcore2.l"
 {
                             BEGIN(DIRECTIVE_NAME_READ);
                             yylval.string=new char[strlen(yytext)+1];
@@ -949,7 +921,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 173 "src/input/aspcore2.l"
+#line 140 "src/input/aspcore2.l"
 {
                             BEGIN(INITIAL);
                             yylval.string=new char[strlen(yytext)+1];
@@ -959,7 +931,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 180 "src/input/aspcore2.l"
+#line 147 "src/input/aspcore2.l"
 {
                             yylval.string=new char[strlen(yytext)+1];
                             strcpy(yylval.string,yytext);
@@ -968,7 +940,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 186 "src/input/aspcore2.l"
+#line 153 "src/input/aspcore2.l"
 {
                             yylval.string=new char[strlen(yytext)+1];
                             strcpy(yylval.string,yytext);
@@ -977,7 +949,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 192 "src/input/aspcore2.l"
+#line 159 "src/input/aspcore2.l"
 {
                             yylval.string=new char[strlen(yytext)+1];
                             strcpy(yylval.string,yytext);
@@ -986,7 +958,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 198 "src/input/aspcore2.l"
+#line 165 "src/input/aspcore2.l"
 { 
                             yylval.string=new char[strlen(yytext)+1];
                             strcpy(yylval.string,yytext);
@@ -995,17 +967,17 @@ YY_RULE_SETUP
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 204 "src/input/aspcore2.l"
+#line 171 "src/input/aspcore2.l"
 { /* Skip comments */ }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 205 "src/input/aspcore2.l"
+#line 172 "src/input/aspcore2.l"
 { /* Skip blanks */ }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 207 "src/input/aspcore2.l"
+#line 174 "src/input/aspcore2.l"
 {   
                             // Anything not matching one of the patterns
                             // given above is considered an error.
@@ -1019,10 +991,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 217 "src/input/aspcore2.l"
+#line 184 "src/input/aspcore2.l"
 ECHO;
 	YY_BREAK
-#line 1026 "src/input/aspcore2_lexer.hpp"
+#line 998 "src/input/aspcore2_lexer.hpp"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(DIRECTIVE_NAME_READ):
 case YY_STATE_EOF(WANT_NEWLINE):
@@ -1914,4 +1886,4 @@ int main()
 	return 0;
 	}
 #endif
-#line 217 "src/input/aspcore2.l"
+#line 184 "src/input/aspcore2.l"
