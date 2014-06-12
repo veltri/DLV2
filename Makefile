@@ -90,21 +90,33 @@ parser: $(SOURCE_DIR)/input/aspcore2.l $(SOURCE_DIR)/input/aspcore2.y
 TESTS_DIR = tests
 
 TESTS_TESTER = $(TESTS_DIR)/pyregtest.py
+TESTS_REPORT_text = $(TESTS_DIR)/text.report.py
+
 TESTS_COMMAND_dlv2_parser = $(BINARY) --printprogram --silent --stdin
 TESTS_CHECKER_dlv2_parser = $(TESTS_DIR)/dlv2Parser.checker.py
 
-TESTS_REPORT_text = $(TESTS_DIR)/text.report.py
+TESTS_COMMAND_dlv2_depgraph = $(BINARY) --printdepgraph --silent --stdin
+TESTS_CHECKER_dlv2_depgraph = $(TESTS_DIR)/depgraph.checker.py
 
 TESTS_DIR_dlv2_parser = $(TESTS_DIR)/parser/
 TESTS_SRC_dlv2_parser = $(sort $(shell find $(TESTS_DIR_dlv2_parser) -name '*.test.py'))
 TESTS_OUT_dlv2_parser = $(patsubst %.test.py,%.test.py.text, $(TESTS_SRC_dlv2_parser))
 
-tests: tests/parser
+TESTS_DIR_dlv2_depgraph = $(TESTS_DIR)/depgraph/
+TESTS_SRC_dlv2_depgraph = $(sort $(shell find $(TESTS_DIR_dlv2_depgraph) -name '*.test.py'))
+TESTS_OUT_dlv2_depgraph = $(patsubst %.test.py,%.test.py.text, $(TESTS_SRC_dlv2_depgraph))
+
+tests: tests/parser tests/depgraph
 
 tests/parser: $(TESTS_OUT_dlv2_parser)
 
+tests/depgraph: $(TESTS_OUT_dlv2_depgraph) 
+
 $(TESTS_OUT_dlv2_parser):
 	@$(TESTS_TESTER) "$(TESTS_COMMAND_dlv2_parser)" $(patsubst %.test.py.text,%.test.py , $@) $(TESTS_CHECKER_dlv2_parser) $(TESTS_REPORT_text)
+
+$(TESTS_OUT_dlv2_depgraph):
+	@$(TESTS_TESTER) "$(TESTS_COMMAND_dlv2_depgraph)" $(patsubst %.test.py.text,%.test.py , $@) $(TESTS_CHECKER_dlv2_depgraph) $(TESTS_REPORT_text)
 
 ########## Clean
 

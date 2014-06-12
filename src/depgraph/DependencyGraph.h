@@ -66,6 +66,7 @@ namespace DLV2
         unsigned addVertex();
         void addEdge( unsigned, unsigned, unsigned label = POSITIVE_EDGE );
         bool isEdge( unsigned, unsigned, unsigned label = POSITIVE_EDGE ) const;
+        bool isAnyEdge( unsigned, unsigned ) const;
         unsigned numOfVertices() const { return boost::num_vertices(graph); }
         void computeStronglyConnectedComponents();
         unsigned getAtomComponent( unsigned ) const;
@@ -158,6 +159,17 @@ namespace DLV2
         }
         else 
             return false;
+    }
+    
+    template <typename ControlStrategy>
+    bool 
+    DependencyGraph<ControlStrategy>::isAnyEdge(
+        unsigned v1, 
+        unsigned v2
+    ) const
+    {
+        std::pair<Edge,bool> alreadyExists = boost::edge(v1,v2,graph);
+        return alreadyExists.second;
     }
 
     template <typename ControlStrategy>
@@ -348,7 +360,10 @@ namespace DLV2
         assert_msg( componentIdx < stronglyConnectedComponents.size(), 
                 "The component id is out of range." );
 
-        return stronglyConnectedComponents[componentIdx].size() > 1;
+        return ( stronglyConnectedComponents[componentIdx].size() > 1 ||
+                   ( stronglyConnectedComponents[componentIdx].size() == 1 &&
+                    isAnyEdge(stronglyConnectedComponents[componentIdx][0],
+                        stronglyConnectedComponents[componentIdx][0]) ) );
     }
 
     template <typename ControlStrategy>
@@ -423,10 +438,7 @@ namespace DLV2
             for (boost::tie(ei, eiEnd) = boost::out_edges(*vi,g.graph); ei != eiEnd; ++ei)
             {
                 Vertex target = boost::target(*ei, g.graph);
-                if( g.isEdge(*vi,target, POSITIVE_EDGE ) )
-                    out << " " << target;
-                else
-                    out << " *" << target;
+                out << " " << target;
             }
             out << std::endl;
         }

@@ -1,0 +1,18 @@
+input = """
+a(1) | a(2).     
+
+% Count up the IDB predicates during the propagation.
+b(X) :- a(X).
+
+% If the count value is correct, the 'ok' predicate should be true.
+ok :- #count{V : b(V)} = 1.
+"""
+output = """
+a(1) | a(2).     
+
+% Count up the IDB predicates during the propagation.
+b(X) :- a(X).
+
+% If the count value is correct, the 'ok' predicate should be true.
+ok :- #count{V : b(V)} = 1.
+"""

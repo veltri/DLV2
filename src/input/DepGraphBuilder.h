@@ -38,7 +38,7 @@ namespace DLV2
     class DepGraphBuilder: public InputBuilder {
     public:
         
-        DepGraphBuilder(): isNaf(false), isBuiltin(false), aggregateLiteralPlaceholder(0) { }
+        DepGraphBuilder(): isNaf(false), isBuiltin(false), isChoice(false), aggregateLiteralPlaceholder(0) { }
         virtual ~DepGraphBuilder() { }
 
         virtual void onDirective( char* directiveName, char* directiveValue );
@@ -98,6 +98,7 @@ namespace DLV2
         std::string predName;
         bool isNaf;
         bool isBuiltin;
+        bool isChoice;
         std::string aggregateFunction;
         std::string aggregateSet;
         std::vector<std::string> currentAggregateElementTerms;

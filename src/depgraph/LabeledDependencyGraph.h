@@ -49,6 +49,7 @@ namespace DLV2
         void addNegativeEdge( Label p1, Label p2 ) { addEdge(p1,p2,NEGATIVE_EDGE); }
         bool isPositiveEdge( Label p1, Label p2 ) const { return isEdge(p1,p2,POSITIVE_EDGE); }
         bool isNegativeEdge( Label p1, Label p2 ) const { return isEdge(p1,p2,NEGATIVE_EDGE); }
+        bool isAnyEdge( Label p1, Label p2 ) const;
         unsigned numOfVertices() const { return graph.numOfVertices(); }
         void computeStronglyConnectedComponents() { graph.computeStronglyConnectedComponents(); }
         unsigned getAtomComponent( Label name ) const;
@@ -170,6 +171,19 @@ namespace DLV2
         unsigned v1 = addVertex(p1);
         unsigned v2 = addVertex(p2);
         return graph.isEdge(v1,v2,edgeLabel);
+    }
+    
+    template <typename ControlStrategy,
+              typename Label>
+    bool 
+    LabeledDependencyGraph<ControlStrategy, Label>::isAnyEdge( 
+        Label p1, 
+        Label p2 ) const
+    {
+        // Retrieve the vertex descriptors.
+        unsigned v1 = addVertex(p1);
+        unsigned v2 = addVertex(p2);
+        return graph.isAnyEdge(v1,v2);
     }
 
     template <typename ControlStrategy,

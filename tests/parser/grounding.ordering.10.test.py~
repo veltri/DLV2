@@ -1,0 +1,12 @@
+input = """
+%#maxint=100.
+g(1,X):- . %#int(X).
+s(1).
+f(X) :- s(Y), g(Y,X), T=1+2. 
+"""
+output = """
+%#maxint=100.
+g(1,X):- . %#int(X).
+s(1).
+f(X) :- s(Y), g(Y,X), T=1+2. 
+"""

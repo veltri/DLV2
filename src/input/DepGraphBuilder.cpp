@@ -77,6 +77,11 @@ DepGraphBuilder::onHead()
     // only in heads of rules without body.
     for( unsigned i=0; i<atomStack.size(); i++ )
         graph.addVertex(atomStack[i]);
+    
+    if( !isChoice && atomStack.size() > 1 )
+        graph.addDisjunctiveHead(atomStack);
+    
+    isChoice = false;
 }
     
 void 
@@ -272,6 +277,7 @@ DepGraphBuilder::onChoiceElement()
 void 
 DepGraphBuilder::onChoiceAtom()
 {
+    isChoice = true;
 }
 
 void 
