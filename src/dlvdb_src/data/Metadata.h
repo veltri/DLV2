@@ -27,31 +27,34 @@
 #ifndef METADATA_H
 #define	METADATA_H
 
+#include <unordered_map>
+#include <vector>
+#include <string>
+
 namespace DLV2{ namespace DB{
 
     class Metadata {
     public:
+        Metadata( const Metadata& );
+        ~Metadata() { delete attributeNames; }
         
-        ~Metadata() { }
-        
-        bool pushAttribute( const std::string& name, const std::string& type );
-        const std::string& getPredicateName() { return predicateName; }
-        unsigned getArity() { return arity; }
-        const std::string& getAttributeName( unsigned index );
-        unsigned getAttributeIndex( const std::string& name );
-        const std::string& getAttributeType( unsigned index );
+        const std::string& getPredicateName() const { return predicateName; }
+        unsigned getArity() const { return arity; }
+        const std::string& getAttributeName( unsigned index ) const;
+        unsigned getAttributeIndex( const std::string& name ) const;
+        //const std::string& getAttributeType( unsigned index ) const;
         
     private:
+        friend class Program;
         // Only class Program can create Metadata objects.
         Metadata() { }
-        Metadata( const std::string& pred, unsigned a ): predicateName(pred), arity(a) { }
-        //friend class Program;
+        Metadata( const std::string& pred, unsigned a, std::vector<std::string>* attrs );
         
         std::string predicateName;
         unsigned arity;
-        std::vector<std::string> attributeNames;
+        std::vector<std::string>* attributeNames;
         std::unordered_map<std::string,unsigned> attributeIndexes;
-        std::vector<std::string> attributeTypes;
+        //std::vector<std::string> attributeTypes;
     };
     
 };};

@@ -49,6 +49,11 @@ namespace DLV2{
 /* GENERIC OPTIONS */
 #define OPTIONID_stdin ( 'z' + 20 )
 
+/* DB OPTIONS */
+#define OPTIONID_datasource ('z' + 30 )
+#define OPTIONID_username ('z' + 31 )
+#define OPTIONID_password ('z' + 32 )
+    
 // Initialize singleton
 Options* Options::instance = NULL;
 
@@ -113,7 +118,7 @@ Options::init(
         /* INPUT OPTIONS */
         { "aspcore2strict", no_argument, NULL, OPTIONID_aspcore2strict },
         { "inmemory", no_argument, NULL, OPTIONID_inmemory },
-        { "dlv-db", no_argument, NULL, OPTIONID_dlvdb },
+        { "dlvdb", no_argument, NULL, OPTIONID_dlvdb },
         { "test-parser", no_argument, NULL, OPTIONID_testparser },
 
         /* OUTPUT OPTIONS */
@@ -126,6 +131,11 @@ Options::init(
         /* GENERIC OPTIONS */
         { "help", no_argument, NULL, OPTIONID_help },
         { "stdin", no_argument, NULL, OPTIONID_stdin },
+        
+        /* DB OPTIONS */
+        { "db-datasource", required_argument, NULL, OPTIONID_datasource },
+        { "db-user", required_argument, NULL, OPTIONID_username },
+        { "db-pwd", required_argument, NULL, OPTIONID_password },
 
         // Required at end of array. 
         { NULL, 0, NULL, 0 }
@@ -190,6 +200,18 @@ Options::init(
                 
             case OPTIONID_stdin:
                 inputFiles.push_back("--");
+                break;
+            
+            case OPTIONID_datasource:
+                dbDataSource.append(optarg);
+                break;
+                
+            case OPTIONID_username:
+                dbUsername.append(optarg);
+                break;
+                
+            case OPTIONID_password:
+                dbPassword.append(optarg);
                 break;
                 
             default:

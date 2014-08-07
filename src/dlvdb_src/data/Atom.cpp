@@ -25,25 +25,32 @@ using namespace std;
     
 // Builtins
 Atom::Atom(
-    const string& txt ):
-        predicateName(txt),
+    const Term& left,
+    const string& binop,
+    const Term& right):
+        predicateName(""),
         arity(0),
         trueNegated(false),
-        isBuiltin(true)
+        builtin(true),
+        binOp(binop)
 {
+    leftOp = new Term(left);
+    rightOp = new Term(right);
 }
 
 // Classical atoms
 Atom::Atom(
     const string& name, 
-    unsigned ar, 
-    vector<Term> tList, 
+    const vector<Term>& tList, 
     bool tNeg ):
         predicateName(name),
-        arity(ar),
+        arity(tList.size()),
         trueNegated(tNeg),
         terms(tList),
-        isBuiltin(false)
+        builtin(false),
+        leftOp(NULL),
+        binOp(""),
+        rightOp(NULL)
 {
 }
 
@@ -54,8 +61,28 @@ Atom::Atom(
         arity(a.arity),
         trueNegated(a.trueNegated),
         terms(a.terms),
-        isBuiltin(a.isBuiltin)
+        builtin(a.builtin),
+        binOp(a.binOp)
 {
+    if( a.builtin )
+    {
+        assert_msg( (a.leftOp != NULL && a.rightOp != NULL), "Builtin operands not valid.");
+        leftOp = new Term(*a.leftOp);
+        rightOp = new Term(*a.rightOp);
+    }
+    else
+    {
+        leftOp = NULL;
+        rightOp = NULL;
+    }
+}
+
+Atom::~Atom()
+{
+    if( leftOp != NULL )
+        delete leftOp;
+    if( rightOp != NULL )
+        delete rightOp;
 }
     
 };};

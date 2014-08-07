@@ -28,33 +28,42 @@
 #define	ATOM_H
 
 #include "Term.h"
+#include "../../util/Assert.h"
+#include <vector>
 
 namespace DLV2{ namespace DB{
     
     class Atom {
+    public:
         Atom( const Atom& );
-        ~Atom() { }
+        ~Atom();
         
-        const std::string& getPredicateName() { return predicateName; }
-        unsigned getArity() { return arity; }
-        bool isTrueNegated() { return trueNegated; }
-        const std::vector<Term>& getTerms() { return terms; } 
-        bool isBuiltin() { return isBuiltin; }
+        const std::string& getPredicateName() const { return predicateName; }
+        unsigned getArity() const { return arity; }
+        bool isTrueNegated() const { return trueNegated; }
+        const std::vector<Term>& getTerms() const { return terms; } 
+        bool isBuiltin() const { return builtin; }
+        const Term& getLeftOperand() const { return *leftOp; }
+        const std::string& getBinaryOperator() const { return binOp; }
+        const Term& getRightOperand() const { return *rightOp; }
         
     private:
         friend inline std::ostream& operator<< ( std::ostream&, const Atom& );
+        friend class Program;
         
         // Only class Program can create Atom objects.
         Atom() { }
-        Atom( const std::string& );
-        Atom( const std::string&, unsigned, std::vector<Term>, bool tNeg=false );
-        //friend class Program;
+        Atom( const Term& leftOp, const std::string& binOp, const Term& rightOp );
+        Atom( const std::string& predName, const std::vector<Term>& terms, bool tNeg=false );
 
         std::string predicateName;
         unsigned arity;
         bool trueNegated;
         std::vector<Term> terms;
-        bool isBuiltin;
+        bool builtin;
+        Term* leftOp;
+        std::string binOp;
+        Term* rightOp;
     };
     
     inline
@@ -63,9 +72,11 @@ namespace DLV2{ namespace DB{
         std::ostream & out, 
         const Atom& a )
     {
-        if( a.isBuiltin )
+        if( a.builtin )
         {
-            out << a.predicateName;
+            assert_msg( (a.leftOp != NULL && a.rightOp != NULL),
+                "Invalid builtin atom, null terms");
+            out << *(a.leftOp) << a.binOp << *(a.rightOp);
         }
         else
         {

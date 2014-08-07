@@ -27,7 +27,6 @@
 #ifndef PROGRAM_H
 #define	PROGRAM_H
 
-#include <map>
 #include "Rule.h"
 #include "ChoiceRule.h"
 #include "Constraint.h"

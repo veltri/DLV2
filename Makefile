@@ -31,7 +31,7 @@ linkflags.debug0x = \
  -lm
 cxxflags.trace0x = \
  -Wall -std=c++0x -DTRACE_ON
-linkflags.trace = \
+linkflags.trace0x = \
  -lm
 cxxflags.release0x = \
  -Wall -std=c++0x -DNDEBUG -O3
@@ -57,6 +57,7 @@ CXX = $(GCC)
 CXXFLAGS = $(cxxflags.$(BUILD))
 LINK = $(GCC)
 LINKFLAGS = $(linkflags.$(BUILD))
+LIBS = -lodbc
 
 SRCS = $(shell find $(SOURCE_DIR) -name '*.cpp')
 
@@ -73,10 +74,10 @@ $(BUILD_DIR)/%.d: $(SOURCE_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -MM -MT '$(@:.d=.o)' $< -MF $@
 	
 $(BINARY): $(OBJS) $(DEPS)
-	$(LINK) $(LINKFLAGS) $(LIBS) $(OBJS) -o $(BINARY)
+	$(LINK) $(LINKFLAGS) $(OBJS) $(LIBS) -o $(BINARY)
 
 static: $(OBJS) $(DEPS)
-	$(LINK) $(LINKFLAGS) $(LIBS) $(OBJS) -static -o $(BINARY)
+	$(LINK) $(LINKFLAGS) $(OBJS) $(LIBS) -static -o $(BINARY)
 
 run: $(BINARY)
 	./$(BINARY)

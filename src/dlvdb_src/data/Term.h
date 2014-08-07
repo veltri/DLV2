@@ -27,22 +27,38 @@
 #ifndef TERM_H
 #define	TERM_H
 
+#include <string>
+
 namespace DLV2 { namespace DB{
 
     class Term {
     public:
-        Term( const Term& t ): text(t.text) { }
+        enum Type{ Variable, Integer, String };
+        
+        Term( const Term& t ): value(t.value), text(t.text), type(t.type) { }
         ~Term() { }
+        
+        unsigned getValue() const { return value; }
+        const std::string& getText() const { return text; }
+        Type getType() const { return type; }
         
     private:
         friend inline std::ostream& operator<< ( std::ostream&, const Term& );
+        friend class Program;
         
         // Only class Program can create Term objects.
         Term() { }
-        Term( const std::string& txt ): text(txt) { }
-        //friend class Program;
+        // Integer constructor
+        Term( unsigned val ): value(val), text(""), type(Integer) { }
+        // String constructor
+        Term( const std::string& txt ): text(txt), type(String) { }
+        // Variable constructor; the first parameter allows
+        // to distinguish this constructor from the one for strings
+        Term( unsigned, const std::string& var ): text(var), type(Variable) { }
         
-        std::string text;        
+        unsigned value;
+        std::string text;
+        Type type;        
     };
     
     inline 
@@ -51,7 +67,10 @@ namespace DLV2 { namespace DB{
         std::ostream& out, 
         const Term& t )
     {
-        out << t.text;
+        if( t.getType() == Term::Integer )
+            out << t.value;
+        else
+            out << t.text;
         return out;
     }
     

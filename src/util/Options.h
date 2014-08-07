@@ -28,6 +28,7 @@
 #define	OPTIONS_H
 
 #include <vector>
+#include <string>
 #include "Constants.h"
 
 namespace DLV2
@@ -57,6 +58,12 @@ namespace DLV2
         OUTPUT_POLICY getOutputPolicy() const { return outputPolicy; }
 
         unsigned getNamedpipe() const { return namedpipe; }
+        
+        const std::string& getDBDataSource() const { return dbDataSource; }
+        
+        const std::string& getDBUsername() const { return dbUsername; }
+        
+        const std::string& getDBPassword() const { return dbPassword; }
 
         ~Options() { /*if (instance != NULL) delete instance;*/ }
 
@@ -91,7 +98,12 @@ namespace DLV2
         OUTPUT_POLICY outputPolicy;
         
         unsigned namedpipe;
+        
+        std::string dbDataSource;
 
+        std::string dbUsername;
+        
+        std::string dbPassword;
     }; 
     
 };
