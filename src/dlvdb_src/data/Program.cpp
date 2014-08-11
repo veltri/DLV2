@@ -50,11 +50,13 @@ Program::~Program()
         delete it->second;
     }
     subProgramsMapping.clear();
+    for( unsigned i=0; i<rules.size(); i++ )
+        delete rules[i];
 }
     
 Term*
 Program::createIntegerConstant( 
-    unsigned val )
+    int val )
 {
     return new Term(val);
 }
@@ -67,8 +69,22 @@ Program::createStringConstant(
 }
 
 Term*
+Program::createStringConstant( 
+    char* val )
+{
+    return new Term(val);
+}
+
+Term*
 Program::createVariable( 
     const string& name )
+{
+    return new Term(0,name);
+}
+
+Term*
+Program::createVariable( 
+    char* name )
 {
     return new Term(0,name);
 }
@@ -76,7 +92,16 @@ Program::createVariable(
 Atom*
 Program::createAtom( 
     const string& predName, 
-    const vector<Term>& terms, 
+    const vector<Term*>& terms, 
+    bool tNeg )
+{
+    return new Atom(predName,terms,tNeg);
+}
+
+Atom*
+Program::createAtom( 
+    char* predName, 
+    const vector<Term*>& terms, 
     bool tNeg )
 {
     return new Atom(predName,terms,tNeg);
@@ -84,16 +109,16 @@ Program::createAtom(
 
 Atom*
 Program::createBuiltinAtom(
-    const Term& leftOp, 
+    Term* leftOp, 
     const string& binOp, 
-    const Term& rightOp )
+    Term* rightOp )
 {
     return new Atom(leftOp,binOp,rightOp);
 }
 
 Literal*
 Program::createLiteral(
-    const Atom& a, 
+    Atom* a, 
     bool naf )
 {
     return new Literal(a,naf);
@@ -106,7 +131,7 @@ Program::createAggregateLiteral(
     Term* upperGuard, 
     const string& upperBinop, 
     const string& aggregateFunction, 
-    const vector<AggregateElement>& aggregateSet,
+    const vector<AggregateElement*>& aggregateSet,
     bool isNegative )
 {
     return new Literal(
@@ -121,46 +146,46 @@ Program::createAggregateLiteral(
 
 AggregateElement*
 Program::createAggregateElement( 
-    const vector<Term>& terms,
-    const vector<Literal>& lits )
+    const vector<Term*>& terms,
+    const vector<Literal*>& lits )
 {
     return new AggregateElement(terms,lits);
 }
 
 Rule*
 Program::createRule( 
-    const vector<Atom>& head,
-    const vector<Literal>& body )
+    const vector<Atom*>& head,
+    const vector<Literal*>& body )
 {
     return new Rule(head,body);
 }
 
 void
 Program::createAndAddRule( 
-    const vector<Atom>& head,
-    const std::vector<Literal>& body )
+    const vector<Atom*>& head,
+    const std::vector<Literal*>& body )
 {
-    addRule(Rule(head,body));
+    addRule(new Rule(head,body));
 }
 
 void
 Program::addRule(
-    const Rule& r )
+    Rule* r )
 {
     // Retrieve table schema for each predicate in r.
     // Moreover, for each predicate p in the head, 
     // add the index of r to the set of rules 
     // having p in the head.
-    const std::vector<Atom>& head = r.getHead();
-    const std::vector<Literal>& body = r.getBody();
+    const std::vector<Atom*>& head = r->getHead();
+    const std::vector<Literal*>& body = r->getBody();
     for( unsigned i = 0; i < head.size(); i++ )
     {
-        const Atom* a = static_cast<const Atom*>(&head[i]);
+        const Atom* a = static_cast<const Atom*>(head[i]);
         addHeadPredicate(a->getPredicateName(),a->getArity(),rules.size());
     }
     for( unsigned i = 0; i < body.size(); i++ )
     {
-        const Literal* l = static_cast<const Literal*>(&body[i]);
+        const Literal* l = static_cast<const Literal*>(body[i]);
         addPredicate(l->getAtom().getPredicateName(),l->getAtom().getArity());
     }   
     rules.push_back(r);

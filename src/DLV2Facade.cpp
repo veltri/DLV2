@@ -20,11 +20,13 @@
 #include "DLV2Facade.h"
 #include "util/Assert.h"
 #include "util/ErrorMessage.h"
+#include "util/DBConnection.h"
 #include "input/SimpleInputBuilder.h"
 #include "input/SelectorBuilder.h"
 #include "input/Buffer.h"
 #include "input/DepGraphBuilder.h"
 #include "input/EmptyInputBuilder.h"
+#include "dlvdb_src/input/DBInputBuilder.h"
 
 //extern Buffer theBuffer;
 
@@ -32,10 +34,11 @@
 #include <ctime>
 #include <fstream>
 #include <sstream>
-using namespace std;
 
 namespace DLV2
 {
+
+using namespace std;
 
 void 
 DLV2Facade::parseOptions(
@@ -74,8 +77,11 @@ DLV2Facade::readInput()
             break;
             
         case BUILDER_DLV_DB:
-            // TODO
-            ErrorMessage::errorGeneric( "--dlv-db: Not supported yet! Bye." );
+            DB::DBConnection::globalDBConnection()->connect(
+                    getOptions().getDBDataSource(),
+                    getOptions().getDBUsername(),
+                    getOptions().getDBPassword());
+            builder = new DB::DBInputBuilder(*DB::DBConnection::globalDBConnection());
             break;
 
         case BUILDER_IN_MEMORY:
@@ -105,7 +111,6 @@ DLV2Facade::readInput()
 void
 DLV2Facade::solve()
 {
-    // FIXME: this switch should be done differently else.
     if( getOptions().getPrintProgram() )
     {
         if( getOptions().getInputBuilderPolicy() == BUILDER_SELECTOR )
@@ -167,6 +172,17 @@ DLV2Facade::solve()
         }
         else
             ErrorMessage::errorGeneric( "Not valid solver to print the dependency graph! Bye" );
+    }
+    
+    if( getOptions().getInputBuilderPolicy() == BUILDER_DLV_DB )
+    {
+        DB::DBInputBuilder* dbInputBuilder = static_cast<DB::DBInputBuilder*>(builder);
+        cout << *(dbInputBuilder->getProgram());
+        if( dbInputBuilder->getQuery() )
+            cout << *(dbInputBuilder->getQuery()) << "?" << endl;
+        delete dbInputBuilder->getProgram();
+        delete dbInputBuilder->getQuery();
+        delete dbInputBuilder->getLabeledDependencyGraph();
     }
     
     if( getOptions().getPrintStatistics() )

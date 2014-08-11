@@ -44,8 +44,8 @@ namespace DLV2{ namespace DB{
         void connect( const std::string& source, const std::string& user, const std::string& pwd );
         void disconnect();
         bool isConnected() { return connected; }
-        // If table "tableName" doesn't exist it will be returned 
-        // a pointer to an empty vector of strings.
+        // If table "tableName" doesn't exist a pointer to an empty
+        // vector of strings will be returned.
         std::vector<std::string>* retrieveTableSchema( const std::string& tableName );
         ~DBConnection();
         

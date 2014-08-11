@@ -34,22 +34,22 @@ namespace DLV2{ namespace DB{
     class Rule {
     public:
         Rule( const Rule& r ): head(r.head), body(r.body) { } 
-        ~Rule() { }
+        ~Rule();
 
-        const std::vector<Atom>& getHead() const { return head; }
-        const std::vector<Literal>& getBody() const { return body; }
+        const std::vector<Atom*>& getHead() const { return head; }
+        const std::vector<Literal*>& getBody() const { return body; }
 
     private:
         friend inline std::ostream& operator<< ( std::ostream&, const Rule& );
         friend class Program;
         
         // Only class Program can create Rule objects.
-        Rule( const std::vector<Atom>& h, const std::vector<Literal>& b ): head(h), body(b) { }
-        void addToHead( const Atom& a ) { head.push_back(a); }
-        void addToBody( const Literal& l ) { body.push_back(l); }
+        Rule( const std::vector<Atom*>& h, const std::vector<Literal*>& b ): head(h), body(b) { }
+        void addToHead( Atom* a ) { head.push_back(a); }
+        void addToBody( Literal* l ) { body.push_back(l); }
 
-        std::vector<Atom> head;
-        std::vector<Literal> body;
+        std::vector<Atom*> head;
+        std::vector<Literal*> body;
     };
 
     inline
@@ -60,7 +60,7 @@ namespace DLV2{ namespace DB{
     {
         for( unsigned i=0; i<r.head.size(); i++ )
         {
-            out << r.head[i];
+            out << *(r.head[i]);
             if( i<r.head.size()-1 )
                 out << " | ";
         }
@@ -70,7 +70,7 @@ namespace DLV2{ namespace DB{
             out << ":- ";
         for( unsigned i=0; i<r.body.size(); i++ )
         {
-            out << r.body[i];
+            out << *(r.body[i]);
             if( i<r.body.size()-1 )
                 out << ", ";
         }

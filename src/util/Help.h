@@ -51,6 +51,12 @@ namespace DLV2
             std::cout << "--stats                                - Print final statistics." << std::endl;
             std::cout << separator << std::endl;
 
+            std::cout << "DB options                             " << std::endl << std::endl;
+            std::cout << "--db-source=[db_name]                  - Set the name of the database where input data are stored." << std::endl;
+            std::cout << "--db-user=[db_username]                - Set the username to have access to the database." << std::endl;
+            std::cout << "--db-pwd=[db_password]                 - Set the password to have access to the database." << std::endl;
+            std::cout << separator << std::endl;
+            
             std::cout << "General options                     " << std::endl << std::endl;
             std::cout << "--help                                 - Print this guide and exit." << std::endl;
             std::cout << "--stdin                                - Read input from standard input." << std::endl;

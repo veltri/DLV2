@@ -49,6 +49,7 @@ namespace DLV2{ namespace DB{
         // Only class Program can create Metadata objects.
         Metadata() { }
         Metadata( const std::string& pred, unsigned a, std::vector<std::string>* attrs );
+        Metadata( char* pred, unsigned a, std::vector<std::string>* attrs );
         
         std::string predicateName;
         unsigned arity;

@@ -25,23 +25,39 @@ using namespace std;
     
 // Builtins
 Atom::Atom(
-    const Term& left,
+    Term* left,
     const string& binop,
-    const Term& right):
+    Term* right):
         predicateName(""),
         arity(0),
         trueNegated(false),
         builtin(true),
-        binOp(binop)
+        leftOp(left),
+        binOp(binop),
+        rightOp(right)
 {
-    leftOp = new Term(left);
-    rightOp = new Term(right);
 }
 
 // Classical atoms
 Atom::Atom(
     const string& name, 
-    const vector<Term>& tList, 
+    const vector<Term*>& tList, 
+    bool tNeg ):
+        predicateName(name),
+        arity(tList.size()),
+        trueNegated(tNeg),
+        terms(tList),
+        builtin(false),
+        leftOp(NULL),
+        binOp(""),
+        rightOp(NULL)
+{
+}
+
+// Classical atoms
+Atom::Atom(
+    char* name, 
+    const vector<Term*>& tList, 
     bool tNeg ):
         predicateName(name),
         arity(tList.size()),
@@ -83,6 +99,8 @@ Atom::~Atom()
         delete leftOp;
     if( rightOp != NULL )
         delete rightOp;
+    for( unsigned i=0; i<terms.size(); i++ )
+        delete terms[i];
 }
     
 };};

@@ -133,7 +133,7 @@ Options::init(
         { "stdin", no_argument, NULL, OPTIONID_stdin },
         
         /* DB OPTIONS */
-        { "db-datasource", required_argument, NULL, OPTIONID_datasource },
+        { "db-source", required_argument, NULL, OPTIONID_datasource },
         { "db-user", required_argument, NULL, OPTIONID_username },
         { "db-pwd", required_argument, NULL, OPTIONID_password },
 

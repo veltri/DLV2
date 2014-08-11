@@ -38,6 +38,19 @@ Metadata::Metadata(
 }
 
 Metadata::Metadata(
+    char* pred, 
+    unsigned a, 
+    vector<string>* attrs ):
+        predicateName(pred),
+        arity(a)
+{
+    assert_msg( attrs != NULL, "Null attribute list");
+    attributeNames = attrs;
+    for( unsigned i=0; i<attributeNames->size(); i++ )
+        attributeIndexes[(*attributeNames)[i]] = i;
+}
+
+Metadata::Metadata(
     const Metadata& m ):
         predicateName(m.predicateName),
         arity(m.arity),

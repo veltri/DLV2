@@ -38,22 +38,22 @@ namespace DLV2{ namespace DB{
     class AggregateElement {
     public:
         AggregateElement( const AggregateElement& ae ): terms(ae.terms), literals(ae.literals) { }
-        ~AggregateElement() { }
+        ~AggregateElement();
 
-        const std::vector<Term>& getTerms() const { return terms; }
-        const std::vector<Literal>& getLiterals() const { return literals; }
+        const std::vector<Term*>& getTerms() const { return terms; }
+        const std::vector<Literal*>& getLiterals() const { return literals; }
 
     private:
         friend inline std::ostream& operator<< ( std::ostream&, const AggregateElement& );
         friend class Program;
         
         // Only class Program can create AggregateElement objects.
-        AggregateElement( const std::vector<Term>& t, const std::vector<Literal>& lits ): terms(t), literals(lits) { }
-        void addLiteral( const Literal& l ) { literals.push_back(l); }
-        void addTerm( const Term& t ) { terms.push_back(t); }
+        AggregateElement( const std::vector<Term*>& t, const std::vector<Literal*>& lits ): terms(t), literals(lits) { }
+        void addLiteral( Literal* l ) { literals.push_back(l); }
+        void addTerm( Term* t ) { terms.push_back(t); }
 
-        std::vector<Term> terms;
-        std::vector<Literal> literals;
+        std::vector<Term*> terms;
+        std::vector<Literal*> literals;
     };
 
     inline 
@@ -64,7 +64,7 @@ namespace DLV2{ namespace DB{
     {
         for( unsigned i=0; i<ae.terms.size(); i++ )
         {
-            out << ae.terms[i];
+            out << *(ae.terms[i]);
             if( i < ae.terms.size()-1 )
                 out << ",";
         }

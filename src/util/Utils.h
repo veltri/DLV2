@@ -18,6 +18,7 @@ namespace DLV2
         
         static bool parseLongInteger( const char*, long int& );
         static bool parseInteger( const char*, int& );
+        static bool isNumeric( const char*, int );
     };
     
 };

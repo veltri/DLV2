@@ -49,14 +49,16 @@ namespace DLV2 { namespace DB{
         // Only class Program can create Term objects.
         Term() { }
         // Integer constructor
-        Term( unsigned val ): value(val), text(""), type(Integer) { }
+        Term( int val ): value(val), text(""), type(Integer) { }
         // String constructor
         Term( const std::string& txt ): text(txt), type(String) { }
+        Term( char* txt ): text(txt), type(String) { }
         // Variable constructor; the first parameter allows
         // to distinguish this constructor from the one for strings
         Term( unsigned, const std::string& var ): text(var), type(Variable) { }
+        Term( unsigned, char* var ): text(var), type(Variable) { }
         
-        unsigned value;
+        int value;
         std::string text;
         Type type;        
     };

@@ -24,8 +24,9 @@ namespace DLV2{ namespace DB{
 using namespace std;
     
 Literal::Literal( 
-    const Atom& a, 
-    bool neg ): 
+    Atom* a, 
+    bool neg ):
+        atom(a),
         isNegative(neg),
         aggregate(false),
         lowerGuard(NULL),
@@ -34,7 +35,6 @@ Literal::Literal(
         upperBinop(""),
         aggregateFunction("")
 {
-    atom = new Atom(a);
 }
 
 // Aggregates' constructor
@@ -44,24 +44,18 @@ Literal::Literal(
     Term* uGuard,
     const string& uOp,
     const string& function,
-    const vector<AggregateElement>& aElements,
+    const vector<AggregateElement*>& aElements,
     bool naf):
         atom(NULL),
         isNegative(naf),
         aggregate(true),
+        lowerGuard(lGuard),
         lowerBinop(lOp),
+        upperGuard(uGuard),
         upperBinop(uOp),
         aggregateFunction(function),
         aggregateElements(aElements)
 {
-    if( lGuard != NULL )
-        lowerGuard = new Term(*lGuard);
-    else
-        lowerGuard = NULL;
-    if( uGuard != NULL )
-        upperGuard = new Term(*uGuard);
-    else
-        upperGuard = NULL;
 }
 
 Literal::Literal( 
@@ -95,6 +89,8 @@ Literal::~Literal()
         delete upperGuard;
     if( atom != NULL )
         delete atom;
+    for( unsigned i=0; i<aggregateElements.size(); i++ )
+        delete aggregateElements[i];
 }
 
 };};

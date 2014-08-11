@@ -45,25 +45,28 @@ namespace DLV2{ namespace DB{
         Program( const Program& p );
         ~Program();
 
-        Term* createIntegerConstant( unsigned val );
+        Term* createIntegerConstant( int val );
         Term* createStringConstant( const std::string& val );
+        Term* createStringConstant( char* val );
         Term* createVariable( const std::string& name );
-        Atom* createAtom( const std::string& predName, const std::vector<Term>& terms, bool tNeg=false );
-        Atom* createBuiltinAtom( const Term& leftOp, const std::string& binop, const Term& rightOp );
-        Literal* createLiteral( const Atom& a, bool naf=false );
+        Term* createVariable( char* name );
+        Atom* createAtom( const std::string& predName, const std::vector<Term*>& terms, bool tNeg=false );
+        Atom* createAtom( char* predName, const std::vector<Term*>& terms, bool tNeg=false );
+        Atom* createBuiltinAtom( Term* leftOp, const std::string& binop, Term* rightOp );
+        Literal* createLiteral( Atom* a, bool naf=false );
         Literal* createAggregateLiteral( Term* lowerGuard, 
                                          const std::string& lowerBinop, 
                                          Term* upperGuard, 
                                          const std::string& upperBinop, 
                                          const std::string& aggregateFunction, 
-                                         const std::vector<AggregateElement>& aggregateSet, 
+                                         const std::vector<AggregateElement*>& aggregateSet, 
                                          bool isNegative = false );
-        AggregateElement* createAggregateElement( const std::vector<Term>& terms, const std::vector<Literal>& lits );
-        Rule* createRule( const std::vector<Atom>& head, const std::vector<Literal>& body );
-        void createAndAddRule( const std::vector<Atom>& head, const std::vector<Literal>& body );
-        void addRule( const Rule& r );
+        AggregateElement* createAggregateElement( const std::vector<Term*>& terms, const std::vector<Literal*>& lits );
+        Rule* createRule( const std::vector<Atom*>& head, const std::vector<Literal*>& body );
+        void createAndAddRule( const std::vector<Atom*>& head, const std::vector<Literal*>& body );
+        void addRule( Rule* r );
         
-        const std::vector<Rule>& getRules() const { return rules; }
+        const std::vector<Rule*>& getRules() const { return rules; }
         const SCHEMAMAP& getMapSchema() const { return schemaMapping; }
         Metadata* getMetadata( const std::string& predName );
         const SUBPROGRAMSMAP& getMapSubPrograms() const { return subProgramsMapping; }
@@ -76,7 +79,7 @@ namespace DLV2{ namespace DB{
         bool addPredicate( const std::string& name, unsigned arity );
         bool addHeadPredicate( const std::string& name, unsigned arity, unsigned ruleIndex );
 
-        std::vector<Rule> rules;
+        std::vector<Rule*> rules;
         SCHEMAMAP schemaMapping;
         SUBPROGRAMSMAP subProgramsMapping;
         
@@ -91,7 +94,7 @@ namespace DLV2{ namespace DB{
     {
         for( unsigned i=0; i<p.rules.size(); i++ )
         {
-            out << p.rules[i] << std::endl;
+            out << *(p.rules[i]) << std::endl;
         }
         return out;
     }

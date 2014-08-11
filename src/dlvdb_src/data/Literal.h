@@ -48,7 +48,7 @@ namespace DLV2{ namespace DB{
         const Term& getAggregateUpperGuard() const { return *upperGuard; }
         const std::string& getAggregateUpperBinop() const { return upperBinop; }
         const std::string& getAggregateFunction() const { return aggregateFunction; }
-        const std::vector<AggregateElement>& getAggregateElements() const { return aggregateElements; }
+        const std::vector<AggregateElement*>& getAggregateElements() const { return aggregateElements; }
 
     private:
         friend inline std::ostream& operator<< ( std::ostream&, const Literal& );
@@ -56,9 +56,9 @@ namespace DLV2{ namespace DB{
         
         // Only class Program can create Literal objects.
         // Classic literal constructor
-        Literal( const Atom& a, bool neg = false );
+        Literal( Atom* a, bool neg = false );
         // Aggregate constructor
-        Literal( Term*, const std::string&, Term*, const std::string&, const std::string&, const std::vector<AggregateElement>&, bool neg = false );
+        Literal( Term*, const std::string&, Term*, const std::string&, const std::string&, const std::vector<AggregateElement*>&, bool neg = false );
         void setIsNaf( bool isNaf ) { isNegative = isNaf; }
         
         Atom* atom;
@@ -70,7 +70,7 @@ namespace DLV2{ namespace DB{
         Term* upperGuard;
         std::string upperBinop;
         std::string aggregateFunction;
-        std::vector<AggregateElement> aggregateElements;
+        std::vector<AggregateElement*> aggregateElements;
     };
 
     inline
@@ -90,7 +90,7 @@ namespace DLV2{ namespace DB{
             out << l.aggregateFunction << "{";
             for( unsigned i=0; i<l.aggregateElements.size(); i++ )
             {
-                out << l.aggregateElements[i];
+                out << *(l.aggregateElements[i]);
                 if( i < l.aggregateElements.size()-1 )
                     out << ";";
             }

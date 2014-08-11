@@ -41,7 +41,7 @@ namespace DLV2{ namespace DB{
         const std::string& getPredicateName() const { return predicateName; }
         unsigned getArity() const { return arity; }
         bool isTrueNegated() const { return trueNegated; }
-        const std::vector<Term>& getTerms() const { return terms; } 
+        const std::vector<Term*>& getTerms() const { return terms; } 
         bool isBuiltin() const { return builtin; }
         const Term& getLeftOperand() const { return *leftOp; }
         const std::string& getBinaryOperator() const { return binOp; }
@@ -53,13 +53,14 @@ namespace DLV2{ namespace DB{
         
         // Only class Program can create Atom objects.
         Atom() { }
-        Atom( const Term& leftOp, const std::string& binOp, const Term& rightOp );
-        Atom( const std::string& predName, const std::vector<Term>& terms, bool tNeg=false );
+        Atom( Term* leftOp, const std::string& binOp, Term* rightOp );
+        Atom( const std::string& predName, const std::vector<Term*>& terms, bool tNeg=false );
+        Atom( char* predName, const std::vector<Term*>& terms, bool tNeg=false );
 
         std::string predicateName;
         unsigned arity;
         bool trueNegated;
-        std::vector<Term> terms;
+        std::vector<Term*> terms;
         bool builtin;
         Term* leftOp;
         std::string binOp;
@@ -88,7 +89,7 @@ namespace DLV2{ namespace DB{
                 out << "(";
                 for( unsigned i=0; i<a.terms.size(); i++ )
                 {
-                    out << a.terms[i];
+                    out << *(a.terms[i]);
                     if( i < a.terms.size()-1 )
                         out << ",";
                 }

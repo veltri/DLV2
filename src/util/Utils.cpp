@@ -1,9 +1,12 @@
 #include "Utils.h"
 #include <cstdlib>
 #include <climits>
+#include <sstream>
 
 namespace DLV2
 {
+    
+using namespace std;
     
 bool
 Utils::parseLongInteger(
@@ -33,6 +36,34 @@ Utils::parseInteger(
     
     result = n;
     return true;
+}
+
+bool 
+Utils::isNumeric( 
+    const char* pszInput, 
+    int nNumberBase )
+{
+    istringstream iss( pszInput );
+ 
+    if ( nNumberBase == 10 )
+    {
+        double dTestSink;
+        iss >> dTestSink;
+    }
+    else if ( nNumberBase == 8 || nNumberBase == 16 )
+    {
+        int nTestSink;
+        iss >> ( ( nNumberBase == 8 ) ? oct : hex ) >> nTestSink;
+    }
+    else
+        return false;
+ 
+    // Was any input successfully consumed/converted?
+    if ( !iss )
+        return false;
+ 
+    // Was all the input successfully consumed/converted?
+    return ( iss.rdbuf()->in_avail() == 0 );
 }
 
 };
