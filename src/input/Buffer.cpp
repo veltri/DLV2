@@ -28,22 +28,28 @@
 #include <iostream>
 
 using namespace std;
-
-namespace DLV2
-{
+using namespace DLV2;
     
-Buffer::Buffer() : lastBlockSize(0), blocks(20){
+Buffer::Buffer(): 
+        lastBlockSize(0), 
+        blocks(20)
+{
 	for (unsigned i = 0; i < 20; ++i)
 		blocks[i] = 0;
 }
 
-void Buffer::addBlock(char* b, int size) {
+void 
+Buffer::addBlock(
+    char* b, 
+    int size) 
+{
     lastBlockSize = size;
 	char* bc = new char[size];
 	memcpy(bc,b,size*sizeof(char));
 	blocks.push_back(bc); 
 }
-void Buffer::lastBlock()
+void 
+Buffer::lastBlock()
 {
   if(blocks.size())
   {
@@ -53,7 +59,10 @@ void Buffer::lastBlock()
 }
 
 
-void Buffer::writeBlock(unsigned i, ostream& o)
+void 
+Buffer::writeBlock(
+    unsigned i, 
+    ostream& o)
 {
 	if(blocks[i])
 	{
@@ -69,15 +78,10 @@ Buffer::~Buffer() {
 			delete [] blocks[i];
 }
 
-
-ostream& operator<<(Buffer& b, ostream& o)
+void 
+Buffer::flushOn(
+    ostream& o )
 {
-	for(unsigned i = 0; i < b.blocks.size(); ++i)
-		b.writeBlock(i,o);
-	return o;
-}
-
-void Buffer::flushOn(ostream& o) {
 /*if(blocks.size())
 {
 char* last = blocks.back();
@@ -96,13 +100,3 @@ last[lastdot+1]='\0';
 	for(unsigned i = 0; i < blocks.size(); ++i)
 		writeBlock(i,o);
 }
-
-};
-
-
-
-
-
-
-
-

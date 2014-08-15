@@ -31,8 +31,8 @@
 #include "Atom.h"
 #include "AggregateElement.h"
 
-namespace DLV2
-{
+namespace DLV2{ namespace MOCK{
+    
     class AggregateElement;
     inline std::ostream& operator<< ( std::ostream&, const AggregateElement& );
 
@@ -96,7 +96,7 @@ namespace DLV2
         return out;
     }
 
-};
+};};
 
 #endif	/* LITERAL_H */
 

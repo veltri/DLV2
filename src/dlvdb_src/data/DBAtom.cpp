@@ -17,17 +17,16 @@
  *
  */
 
-#include "Atom.h"
-
-namespace DLV2{ namespace DB{
+#include "DBAtom.h"
 
 using namespace std;
+using namespace DLV2::DB;
     
 // Builtins
-Atom::Atom(
-    Term* left,
+DBAtom::DBAtom(
+    DBTerm* left,
     const string& binop,
-    Term* right):
+    DBTerm* right):
         predicateName(""),
         arity(0),
         trueNegated(false),
@@ -39,9 +38,9 @@ Atom::Atom(
 }
 
 // Classical atoms
-Atom::Atom(
+DBAtom::DBAtom(
     const string& name, 
-    const vector<Term*>& tList, 
+    const vector<DBTerm*>& tList, 
     bool tNeg ):
         predicateName(name),
         arity(tList.size()),
@@ -55,9 +54,9 @@ Atom::Atom(
 }
 
 // Classical atoms
-Atom::Atom(
+DBAtom::DBAtom(
     char* name, 
-    const vector<Term*>& tList, 
+    const vector<DBTerm*>& tList, 
     bool tNeg ):
         predicateName(name),
         arity(tList.size()),
@@ -71,8 +70,8 @@ Atom::Atom(
 }
 
 // Copy constructor
-Atom::Atom(
-    const Atom& a ):
+DBAtom::DBAtom(
+    const DBAtom& a ):
         predicateName(a.predicateName),
         arity(a.arity),
         trueNegated(a.trueNegated),
@@ -83,8 +82,8 @@ Atom::Atom(
     if( a.builtin )
     {
         assert_msg( (a.leftOp != NULL && a.rightOp != NULL), "Builtin operands not valid.");
-        leftOp = new Term(*a.leftOp);
-        rightOp = new Term(*a.rightOp);
+        leftOp = new DBTerm(*a.leftOp);
+        rightOp = new DBTerm(*a.rightOp);
     }
     else
     {
@@ -93,14 +92,13 @@ Atom::Atom(
     }
 }
 
-Atom::~Atom()
+DBAtom::~DBAtom()
 {
     if( leftOp != NULL )
         delete leftOp;
     if( rightOp != NULL )
         delete rightOp;
     for( unsigned i=0; i<terms.size(); i++ )
-        delete terms[i];
+        if( terms[i] != NULL )
+            delete terms[i];
 }
-    
-};};

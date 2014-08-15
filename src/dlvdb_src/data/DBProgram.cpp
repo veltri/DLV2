@@ -17,16 +17,15 @@
  *
  */
 
-#include "Program.h"
+#include "DBProgram.h"
 #include "Metadata.h"
 #include "../../util/DBConnection.h"
-
-namespace DLV2{ namespace DB{
     
 using namespace std;
+using namespace DLV2::DB;
 
-Program::Program( 
-    const Program& p ): 
+DBProgram::DBProgram( 
+    const DBProgram& p ): 
         rules(p.rules), 
         schemaMapping(p.schemaMapping),
         subProgramsMapping(p.subProgramsMapping),
@@ -34,7 +33,7 @@ Program::Program(
 {
 }
 
-Program::~Program()
+DBProgram::~DBProgram()
 {
     for( SCHEMAMAP::iterator it = schemaMapping.begin();
             it != schemaMapping.end();
@@ -54,87 +53,87 @@ Program::~Program()
         delete rules[i];
 }
     
-Term*
-Program::createIntegerConstant( 
+DBTerm*
+DBProgram::createIntegerConstant( 
     int val )
 {
-    return new Term(val);
+    return new DBTerm(val);
 }
 
-Term*
-Program::createStringConstant( 
+DBTerm*
+DBProgram::createStringConstant( 
     const string& val )
 {
-    return new Term(val);
+    return new DBTerm(val);
 }
 
-Term*
-Program::createStringConstant( 
+DBTerm*
+DBProgram::createStringConstant( 
     char* val )
 {
-    return new Term(val);
+    return new DBTerm(val);
 }
 
-Term*
-Program::createVariable( 
+DBTerm*
+DBProgram::createVariable( 
     const string& name )
 {
-    return new Term(0,name);
+    return new DBTerm(0,name);
 }
 
-Term*
-Program::createVariable( 
+DBTerm*
+DBProgram::createVariable( 
     char* name )
 {
-    return new Term(0,name);
+    return new DBTerm(0,name);
 }
 
-Atom*
-Program::createAtom( 
+DBAtom*
+DBProgram::createAtom( 
     const string& predName, 
-    const vector<Term*>& terms, 
+    const vector<DBTerm*>& terms, 
     bool tNeg )
 {
-    return new Atom(predName,terms,tNeg);
+    return new DBAtom(predName,terms,tNeg);
 }
 
-Atom*
-Program::createAtom( 
+DBAtom*
+DBProgram::createAtom( 
     char* predName, 
-    const vector<Term*>& terms, 
+    const vector<DBTerm*>& terms, 
     bool tNeg )
 {
-    return new Atom(predName,terms,tNeg);
+    return new DBAtom(predName,terms,tNeg);
 }
 
-Atom*
-Program::createBuiltinAtom(
-    Term* leftOp, 
+DBAtom*
+DBProgram::createBuiltinAtom(
+    DBTerm* leftOp, 
     const string& binOp, 
-    Term* rightOp )
+    DBTerm* rightOp )
 {
-    return new Atom(leftOp,binOp,rightOp);
+    return new DBAtom(leftOp,binOp,rightOp);
 }
 
-Literal*
-Program::createLiteral(
-    Atom* a, 
+DBLiteral*
+DBProgram::createLiteral(
+    DBAtom* a, 
     bool naf )
 {
-    return new Literal(a,naf);
+    return new DBLiteral(a,naf);
 }
 
-Literal*
-Program::createAggregateLiteral(
-    Term* lowerGuard,
+DBLiteral*
+DBProgram::createAggregateLiteral(
+    DBTerm* lowerGuard,
     const string& lowerBinop,
-    Term* upperGuard, 
+    DBTerm* upperGuard, 
     const string& upperBinop, 
     const string& aggregateFunction, 
-    const vector<AggregateElement*>& aggregateSet,
+    const vector<DBAggregateElement*>& aggregateSet,
     bool isNegative )
 {
-    return new Literal(
+    return new DBLiteral(
             lowerGuard,
             lowerBinop,
             upperGuard,
@@ -144,55 +143,51 @@ Program::createAggregateLiteral(
             isNegative);
 }
 
-AggregateElement*
-Program::createAggregateElement( 
-    const vector<Term*>& terms,
-    const vector<Literal*>& lits )
+DBAggregateElement*
+DBProgram::createAggregateElement( 
+    const vector<DBTerm*>& terms,
+    const vector<DBLiteral*>& lits )
 {
-    return new AggregateElement(terms,lits);
+    return new DBAggregateElement(terms,lits);
 }
 
-Rule*
-Program::createRule( 
-    const vector<Atom*>& head,
-    const vector<Literal*>& body )
+DBRule*
+DBProgram::createRule( 
+    const vector<DBAtom*>& head,
+    const vector<DBLiteral*>& body )
 {
-    return new Rule(head,body);
-}
-
-void
-Program::createAndAddRule( 
-    const vector<Atom*>& head,
-    const std::vector<Literal*>& body )
-{
-    addRule(new Rule(head,body));
+    return new DBRule(head,body);
 }
 
 void
-Program::addRule(
-    Rule* r )
+DBProgram::createAndAddRule( 
+    const vector<DBAtom*>& head,
+    const std::vector<DBLiteral*>& body )
 {
-    // Retrieve table schema for each predicate in r.
-    // Moreover, for each predicate p in the head, 
-    // add the index of r to the set of rules 
-    // having p in the head.
-    const std::vector<Atom*>& head = r->getHead();
-    const std::vector<Literal*>& body = r->getBody();
+    addRule(new DBRule(head,body));
+}
+
+void
+DBProgram::addRule(
+    DBRule* r )
+{
+    // Add the index of r to the set of rules having
+    // p in the head for each predicate p in the head.
+    const std::vector<DBAtom*>& head = r->getHead();
     for( unsigned i = 0; i < head.size(); i++ )
     {
-        const Atom* a = static_cast<const Atom*>(head[i]);
-        addHeadPredicate(a->getPredicateName(),a->getArity(),rules.size());
+        const DBAtom* a = head[i];//static_cast<const DBAtom*>(head[i]);
+        assert_msg( a != NULL, "Null head atom." );
+        // Only standard atoms can be found in the head. 
+        // Thus, this control is not necessary.
+        if( !a->isBuiltin() )
+            addToPredicateSubProgram(a->getPredicateName(),a->getArity(),rules.size());
     }
-    for( unsigned i = 0; i < body.size(); i++ )
-    {
-        const Literal* l = static_cast<const Literal*>(body[i]);
-        addPredicate(l->getAtom().getPredicateName(),l->getAtom().getArity());
-    }   
     rules.push_back(r);
 }
 
 Metadata*
-Program::getMetadata(
+DBProgram::getMetadata(
     const std::string& predName )
 {
     SCHEMAMAP::iterator it = schemaMapping.find(predName);
@@ -203,7 +198,7 @@ Program::getMetadata(
 }
 
 set<unsigned>*
-Program::getSubProgram(
+DBProgram::getSubProgram(
     const std::string& predName )
 {
     SUBPROGRAMSMAP::iterator it = subProgramsMapping.find(predName);
@@ -214,7 +209,7 @@ Program::getSubProgram(
 }
 
 bool
-Program::addPredicate(
+DBProgram::addPredicateName(
     const string& name,
     unsigned arity )
 {
@@ -222,15 +217,20 @@ Program::addPredicate(
     if( it == schemaMapping.end() )
     {
         // Retrieve the attribute list of table "name".
-        Metadata* data = new Metadata(name,arity,getDBConnection().retrieveTableSchema(name));   
-        schemaMapping[name] = data; 
-        return true;
+        vector<string>* attributeNames = NULL;
+        attributeNames = getDBConnection().retrieveTableSchema(name);
+        if( attributeNames != NULL && attributeNames->size() > 0 )
+        {
+            Metadata* data = new Metadata(name,arity,attributeNames);
+            schemaMapping[name] = data; 
+            return true;
+        }
     }
     return false;
 }
     
 bool
-Program::addHeadPredicate(
+DBProgram::addToPredicateSubProgram(
     const string& name,
     unsigned arity,
     unsigned ruleIndex )
@@ -240,12 +240,12 @@ Program::addHeadPredicate(
     {
         set<unsigned>* subProgram = new set<unsigned>();
         subProgram->insert(ruleIndex);
-        subProgramsMapping[name] = subProgram; 
+        subProgramsMapping[name] = subProgram;
+        return true;
     }
     else
-        it->second->insert(ruleIndex);
-    
-    return addPredicate(name,arity);
+    {
+        pair<set<unsigned>::iterator,bool> res = it->second->insert(ruleIndex);
+        return res.second;
+    }
 }
-
-};};

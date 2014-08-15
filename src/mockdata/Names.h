@@ -30,8 +30,7 @@
 #include <string>
 #include <vector>
 
-namespace DLV2
-{
+namespace DLV2{ namespace MOCK{
     
     class Names {
     public:
@@ -50,7 +49,7 @@ namespace DLV2
         static std::vector<int> integerConstants;
     };
 
-};
+};};
 
 #endif	/* NAMES_H */
 

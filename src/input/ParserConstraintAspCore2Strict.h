@@ -21,20 +21,19 @@ namespace DLV2
         inline virtual void rangeFacts();
         inline virtual void directives();
     };
-
-    void
-    ParserConstraintAspCore2Strict::rangeFacts()
-    {
-        ErrorMessage::errorDuringParsing("range facts are not in the ASPCore2 standard!");
-    }
-    
-    void
-    ParserConstraintAspCore2Strict::directives()
-    {
-        ErrorMessage::errorDuringParsing("directives are not in the ASPCore2 standard!");
-    }
-    
 };
+
+void
+DLV2::ParserConstraintAspCore2Strict::rangeFacts()
+{
+    DLV2::ErrorMessage::errorDuringParsing("range facts are not in the ASPCore2 standard!");
+}
+
+void
+DLV2::ParserConstraintAspCore2Strict::directives()
+{
+    DLV2::ErrorMessage::errorDuringParsing("directives are not in the ASPCore2 standard!");
+}
 
 #endif	/* PARSERCONSTRAINTASPCORE2STRICT_H */
 

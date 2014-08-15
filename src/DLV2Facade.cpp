@@ -35,10 +35,9 @@
 #include <fstream>
 #include <sstream>
 
-namespace DLV2
-{
-
 using namespace std;
+using namespace DLV2;
+using namespace DLV2::DB;
 
 void 
 DLV2Facade::parseOptions(
@@ -77,11 +76,11 @@ DLV2Facade::readInput()
             break;
             
         case BUILDER_DLV_DB:
-            DB::DBConnection::globalDBConnection()->connect(
+            DBConnection::globalDBConnection()->connect(
                     getOptions().getDBDataSource(),
                     getOptions().getDBUsername(),
                     getOptions().getDBPassword());
-            builder = new DB::DBInputBuilder(*DB::DBConnection::globalDBConnection());
+            builder = new DBInputBuilder(*DBConnection::globalDBConnection());
             break;
 
         case BUILDER_IN_MEMORY:
@@ -176,12 +175,17 @@ DLV2Facade::solve()
     
     if( getOptions().getInputBuilderPolicy() == BUILDER_DLV_DB )
     {
-        DB::DBInputBuilder* dbInputBuilder = static_cast<DB::DBInputBuilder*>(builder);
-        cout << *(dbInputBuilder->getProgram());
-        if( dbInputBuilder->getQuery() )
-            cout << *(dbInputBuilder->getQuery()) << "?" << endl;
-        delete dbInputBuilder->getProgram();
-        delete dbInputBuilder->getQuery();
+        DBInputBuilder* dbInputBuilder = static_cast<DBInputBuilder*>(builder);
+        DBProgram* program = NULL;
+        program = dbInputBuilder->getProgram();
+        if( program != NULL )
+            cout << *program;
+        DBAtom* query = NULL;
+        query = dbInputBuilder->getQuery(); 
+        if( query != NULL )
+            cout << *query << "?" << endl;
+        delete program;
+        delete query;
         delete dbInputBuilder->getLabeledDependencyGraph();
     }
     
@@ -199,5 +203,3 @@ DLV2Facade::~DLV2Facade()
     if( builder != NULL ) 
         delete builder;
 }
-
-};

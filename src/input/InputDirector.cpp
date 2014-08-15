@@ -27,6 +27,7 @@
 #include "aspcore2_parser.hpp"
 
 using namespace std;
+using namespace DLV2;
 
 //////////////////////////////////////////////////////////////////////////////
 // Some LEX/FLEX dependencies
@@ -36,14 +37,11 @@ extern FILE* yyin;     // Where LEX reads its input from
 
 int 
 yyerror( 
-    DLV2::InputDirector& director,
+    InputDirector& director,
     const char* msg ) 
 { 
     return director.onError(msg); 
 }
-
-namespace DLV2
-{
     
 void 
 InputDirector::configureBuilder( 
@@ -183,5 +181,3 @@ InputDirector::onError(
 
     return 0;
 }
-
-};

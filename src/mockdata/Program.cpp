@@ -19,8 +19,7 @@
 
 #include "Program.h"
 
-namespace DLV2
-{
+using namespace DLV2::MOCK;
 
 Program::Program( 
     const Program& p ): 
@@ -59,5 +58,3 @@ Program::addChoiceRule(
 { 
     choiceRules.push_back(cr); 
 }
-
-};

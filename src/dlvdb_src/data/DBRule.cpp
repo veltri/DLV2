@@ -17,16 +17,16 @@
  *
  */
 
-#include "Rule.h"
+#include "DBRule.h"
 
-namespace DLV2{ namespace DB{
+using namespace DLV2::DB;
     
-Rule::~Rule()
+DBRule::~DBRule()
 {
     for( unsigned i=0; i<head.size(); i++ )
-        delete head[i];
+        if( head[i] != NULL )
+            delete head[i];
     for( unsigned i=0; i<body.size(); i++ )
-        delete body[i];
+        if( body[i] != NULL )
+            delete body[i];
 }
-    
-};};

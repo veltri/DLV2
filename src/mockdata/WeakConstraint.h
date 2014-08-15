@@ -30,8 +30,7 @@
 #include <vector>
 #include "Literal.h"
 
-namespace DLV2
-{
+namespace DLV2{ namespace MOCK{
 
     class WeakConstraint {
     public:
@@ -84,7 +83,7 @@ namespace DLV2
         return out;
     }
 
-};
+};};
 
 #endif	/* WEAKCONSTRAINT_H */
 

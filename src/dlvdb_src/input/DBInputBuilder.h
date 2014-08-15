@@ -27,7 +27,7 @@
 #ifndef DBINPUTBUILDER_H
 #define	DBINPUTBUILDER_H
 
-#include "../data/Program.h"
+#include "../data/DBProgram.h"
 #include "../../depgraph/LabeledDependencyGraph.h"
 #include "../../input/InputBuilder.h"
 #include "../../util/DBConnection.h"
@@ -85,36 +85,36 @@ namespace DLV2{ namespace DB{
         virtual void onAggregateElement();
         virtual void onAggregate( bool naf = false );
         
-        void newTerm( char*, std::vector<Term*>&, bool dash = false );
+        void newTerm( char*, std::vector<DBTerm*>&, bool dash = false );
         static bool isNumeric( const char*, int );
         
-        Program* getProgram() { return program; }
-        Atom* getQuery() { return query; }
+        DBProgram* getProgram() { return program; }
+        DBAtom* getQuery() { return query; }
         LabeledDependencyGraph<>* getLabeledDependencyGraph() { return graph; }
             
     private:
         LabeledDependencyGraph<>* graph;
-        Program* program;
+        DBProgram* program;
         
-        std::vector<Term*> termStack;
+        std::vector<DBTerm*> termStack;
         std::string predName;
-        Atom* currentAtom;
-        Literal* currentLiteral;
-        std::vector<Atom*> head;
-        std::vector<Literal*> body;
-        Atom* query;
+        DBAtom* currentAtom;
+        DBLiteral* currentLiteral;
+        std::vector<DBAtom*> head;
+        std::vector<DBLiteral*> body;
+        DBAtom* query;
         unsigned nTermsForWeight;
         unsigned nTermsForLevel;
         unsigned nTermsAfterLevel;
         std::string binop;
         std::string lowerBinop;
         std::string upperBinop;
-        Term* lowerGuard;
-        Term* upperGuard;
+        DBTerm* lowerGuard;
+        DBTerm* upperGuard;
         std::string aggregateFunction;
-        std::vector<Term*> aggregateElementTerms;
-        std::vector<Literal*> aggregateElementLiterals;
-        std::vector<AggregateElement*> aggregateElements;
+        std::vector<DBTerm*> aggregateElementTerms;
+        std::vector<DBLiteral*> aggregateElementLiterals;
+        std::vector<DBAggregateElement*> aggregateElements;
     };
 
 };};

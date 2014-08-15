@@ -18,45 +18,45 @@
  */
 
 /* 
- * File:   Term.h
+ * File:   DBTerm.h
  * Author: pierfrancesco
  *
  * Created on 28 luglio 2014, 18.04
  */
 
-#ifndef TERM_H
-#define	TERM_H
+#ifndef DBTERM_H
+#define	DBTERM_H
 
 #include <string>
 
-namespace DLV2 { namespace DB{
+namespace DLV2{ namespace DB{
 
-    class Term {
+    class DBTerm {
     public:
         enum Type{ Variable, Integer, String };
         
-        Term( const Term& t ): value(t.value), text(t.text), type(t.type) { }
-        ~Term() { }
+        DBTerm( const DBTerm& t ): value(t.value), text(t.text), type(t.type) { }
+        ~DBTerm() { }
         
         unsigned getValue() const { return value; }
         const std::string& getText() const { return text; }
         Type getType() const { return type; }
         
     private:
-        friend inline std::ostream& operator<< ( std::ostream&, const Term& );
-        friend class Program;
+        friend inline std::ostream& operator<< ( std::ostream&, const DBTerm& );
+        friend class DBProgram;
         
         // Only class Program can create Term objects.
-        Term() { }
+        DBTerm() { }
         // Integer constructor
-        Term( int val ): value(val), text(""), type(Integer) { }
+        DBTerm( int val ): value(val), text(""), type(Integer) { }
         // String constructor
-        Term( const std::string& txt ): text(txt), type(String) { }
-        Term( char* txt ): text(txt), type(String) { }
+        DBTerm( const std::string& txt ): text(txt), type(String) { }
+        DBTerm( char* txt ): text(txt), type(String) { }
         // Variable constructor; the first parameter allows
         // to distinguish this constructor from the one for strings
-        Term( unsigned, const std::string& var ): text(var), type(Variable) { }
-        Term( unsigned, char* var ): text(var), type(Variable) { }
+        DBTerm( unsigned, const std::string& var ): text(var), type(Variable) { }
+        DBTerm( unsigned, char* var ): text(var), type(Variable) { }
         
         int value;
         std::string text;
@@ -67,9 +67,9 @@ namespace DLV2 { namespace DB{
     std::ostream& 
     operator<< ( 
         std::ostream& out, 
-        const Term& t )
+        const DBTerm& t )
     {
-        if( t.getType() == Term::Integer )
+        if( t.getType() == DBTerm::Integer )
             out << t.value;
         else
             out << t.text;

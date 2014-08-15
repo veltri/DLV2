@@ -22,10 +22,9 @@
 #include "Assert.h"
 #include <cstring>
 
-namespace DLV2{ namespace DB{
-
 using namespace std;
-    
+using namespace DLV2::DB;
+
 // Initialize singleton
 DBConnection* DBConnection::instance = NULL;
 
@@ -46,13 +45,14 @@ DBConnection::DBConnection():
 {
 }
 
-DBConnection::DBConnection(const DBConnection& dbc):
-    source(dbc.source),
-    pwd(dbc.pwd),
-    user(dbc.user),
-    hEnv(dbc.hEnv),
-    hDBc(dbc.hDBc),
-    connected(dbc.connected)
+DBConnection::DBConnection(
+    const DBConnection& dbc):
+        source(dbc.source),
+        pwd(dbc.pwd),
+        user(dbc.user),
+        hEnv(dbc.hEnv),
+        hDBc(dbc.hDBc),
+        connected(dbc.connected)
 {
 }
 
@@ -210,7 +210,7 @@ DBConnection::retrieveTableSchema(
             //SQLBindCol(hstmt, 6, SQL_C_CHAR, szTypeName, STR_LEN, &cbTypeName);
             while (SQL_SUCCEEDED(retCode = SQLFetch(hStmt))) 
             {            
-                cout << "Attribute name: " << szColumnName << endl;
+//                cout << "Attribute name: " << szColumnName << endl;
                 attributesList->push_back(string(szColumnName));
             }
             // If attributeList is empty, table "tableName" doesn't exist.
@@ -239,6 +239,4 @@ DBConnection::retrieveTableSchema(
     }
     return attributesList;
 }
-
-};};
 

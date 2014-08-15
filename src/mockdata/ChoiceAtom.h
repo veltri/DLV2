@@ -30,8 +30,7 @@
 #include "Term.h"
 #include "ChoiceElement.h"
 
-namespace DLV2
-{
+namespace DLV2{ namespace MOCK{
     
     class ChoiceAtom {
     public:
@@ -69,7 +68,7 @@ namespace DLV2
         return out;
     }
 
-};
+};};
 
 #endif	/* CHOICEATOM_H */
 

@@ -24,9 +24,8 @@
 #include "../directives/DirectiveFactory.h"
 
 using namespace std;
-
-namespace DLV2
-{
+using namespace DLV2::MOCK;
+using DLV2::SimpleInputBuilder;
 
 SimpleInputBuilder::SimpleInputBuilder():
         program(new Program()), 
@@ -797,5 +796,3 @@ SimpleInputBuilder::newTerm(
         delete currentTerm;
     }
 }
-
-};

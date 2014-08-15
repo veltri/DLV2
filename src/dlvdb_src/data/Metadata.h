@@ -30,6 +30,7 @@
 #include <unordered_map>
 #include <vector>
 #include <string>
+#include <iostream>
 
 namespace DLV2{ namespace DB{
 
@@ -45,18 +46,32 @@ namespace DLV2{ namespace DB{
         //const std::string& getAttributeType( unsigned index ) const;
         
     private:
-        friend class Program;
+        friend class DBProgram;
         // Only class Program can create Metadata objects.
         Metadata() { }
         Metadata( const std::string& pred, unsigned a, std::vector<std::string>* attrs );
         Metadata( char* pred, unsigned a, std::vector<std::string>* attrs );
-        
+        friend inline std::ostream& operator<< ( std::ostream&, const Metadata& );
+            
         std::string predicateName;
         unsigned arity;
         std::vector<std::string>* attributeNames;
         std::unordered_map<std::string,unsigned> attributeIndexes;
         //std::vector<std::string> attributeTypes;
     };
+    
+    inline
+    std::ostream&
+    operator<<(
+        std::ostream& out,
+        const Metadata& m )
+    {
+        out << "Predicate: " << m.predicateName << std::endl;
+        out << "Arity: " << m.arity << std::endl;
+        for( unsigned i=0; i<m.attributeNames->size(); i++ )
+            out << i << " --> " << m.attributeNames->at(i) << std::endl;
+        return out;
+    }
     
 };};
 

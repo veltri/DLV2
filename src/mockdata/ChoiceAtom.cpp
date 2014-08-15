@@ -20,9 +20,7 @@
 #include "ChoiceAtom.h"
 
 using namespace std;
-
-namespace DLV2
-{
+using namespace DLV2::MOCK;
     
 ChoiceAtom::ChoiceAtom(
     Term* lb, 
@@ -67,5 +65,3 @@ ChoiceAtom::~ChoiceAtom()
     if( upperGuard != NULL )
         delete upperGuard;
 }
-
-};

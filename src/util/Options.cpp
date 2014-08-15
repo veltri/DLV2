@@ -24,15 +24,13 @@
 #include <getopt.h>
 #include <cstdlib>
 
-using namespace std; 
-
-namespace DLV2{
-  
+namespace DLV2 
+{
 // Options with a short alias.
 #define OPTIONID_help 'h'
 
 // "Only-long" options with their code.
-    
+
 /* INPUT OPTIONS */
 #define OPTIONID_aspcore2strict ( 'z' + 1 )
 #define OPTIONID_inmemory ( 'z' + 2 )
@@ -45,7 +43,7 @@ namespace DLV2{
 #define OPTIONID_selector ( 'z' + 12 )
 #define OPTIONID_printdepgraph ( 'z' + 13 )
 #define OPTIONID_printstatistics ( 'z' + 14 )
-    
+
 /* GENERIC OPTIONS */
 #define OPTIONID_stdin ( 'z' + 20 )
 
@@ -53,6 +51,10 @@ namespace DLV2{
 #define OPTIONID_datasource ('z' + 30 )
 #define OPTIONID_username ('z' + 31 )
 #define OPTIONID_password ('z' + 32 )
+};
+
+using namespace std; 
+using namespace DLV2;
     
 // Initialize singleton
 Options* Options::instance = NULL;
@@ -226,5 +228,3 @@ Options::init(
         inputFiles.push_back( argv[ i ] );
     }
 }
-
-};

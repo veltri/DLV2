@@ -22,9 +22,7 @@
 #include <climits>
 
 using namespace std;
-
-namespace DLV2
-{
+using namespace DLV2::MOCK;
 
 // Classical atoms' constructor
 Atom::Atom(  
@@ -118,5 +116,3 @@ Atom::getPredName() const
     assert_msg( !isBuiltin, "This atom is a builtin, it has not a predicate name." );
     return Names::getPredicateName(predIndex); 
 }
-
-};

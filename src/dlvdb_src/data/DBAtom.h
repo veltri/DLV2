@@ -18,60 +18,59 @@
  */
 
 /* 
- * File:   Atom.h
+ * File:   DBAtom.h
  * Author: pierfrancesco
  *
  * Created on 28 luglio 2014, 19.02
  */
 
-#ifndef ATOM_H
-#define	ATOM_H
+#ifndef DBATOM_H
+#define	DBATOM_H
 
-#include "Term.h"
+#include "DBTerm.h"
 #include "../../util/Assert.h"
 #include <vector>
 
 namespace DLV2{ namespace DB{
     
-    class Atom {
+    class DBAtom {
     public:
-        Atom( const Atom& );
-        ~Atom();
+        DBAtom( const DBAtom& );
+        ~DBAtom();
         
         const std::string& getPredicateName() const { return predicateName; }
         unsigned getArity() const { return arity; }
         bool isTrueNegated() const { return trueNegated; }
-        const std::vector<Term*>& getTerms() const { return terms; } 
+        const std::vector<DBTerm*>& getTerms() const { return terms; } 
         bool isBuiltin() const { return builtin; }
-        const Term& getLeftOperand() const { return *leftOp; }
+        DBTerm* getLeftOperand() const { return leftOp; }
         const std::string& getBinaryOperator() const { return binOp; }
-        const Term& getRightOperand() const { return *rightOp; }
+        DBTerm* getRightOperand() const { return rightOp; }
         
     private:
-        friend inline std::ostream& operator<< ( std::ostream&, const Atom& );
-        friend class Program;
+        friend inline std::ostream& operator<< ( std::ostream&, const DBAtom& );
+        friend class DBProgram;
         
         // Only class Program can create Atom objects.
-        Atom() { }
-        Atom( Term* leftOp, const std::string& binOp, Term* rightOp );
-        Atom( const std::string& predName, const std::vector<Term*>& terms, bool tNeg=false );
-        Atom( char* predName, const std::vector<Term*>& terms, bool tNeg=false );
+        DBAtom( DBTerm* leftOp, const std::string& binOp, DBTerm* rightOp );
+        DBAtom( const std::string& predName, const std::vector<DBTerm*>& terms, bool tNeg=false );
+        DBAtom( char* predName, const std::vector<DBTerm*>& terms, bool tNeg=false );
 
         std::string predicateName;
         unsigned arity;
         bool trueNegated;
-        std::vector<Term*> terms;
+        std::vector<DBTerm*> terms;
         bool builtin;
-        Term* leftOp;
+        DBTerm* leftOp;
         std::string binOp;
-        Term* rightOp;
+        DBTerm* rightOp;
     };
     
     inline
     std::ostream& 
     operator<< ( 
         std::ostream & out, 
-        const Atom& a )
+        const DBAtom& a )
     {
         if( a.builtin )
         {
@@ -89,9 +88,12 @@ namespace DLV2{ namespace DB{
                 out << "(";
                 for( unsigned i=0; i<a.terms.size(); i++ )
                 {
-                    out << *(a.terms[i]);
-                    if( i < a.terms.size()-1 )
-                        out << ",";
+                    if( a.terms[i] != NULL )
+                    {
+                        out << *(a.terms[i]);
+                        if( i < a.terms.size()-1 )
+                            out << ",";
+                    }
                 }
                 out << ")";
             }
@@ -101,5 +103,5 @@ namespace DLV2{ namespace DB{
     
 };};
 
-#endif	/* ATOM_H */
+#endif	/* DBATOM_H */
 

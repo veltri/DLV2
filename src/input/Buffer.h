@@ -35,7 +35,7 @@ namespace DLV2
 {
 
     class Buffer {
-            friend std::ostream& operator<<(Buffer&, std::ostream&);
+            friend inline std::ostream& operator<<(Buffer&, std::ostream&);
 
     public:
             Buffer();
@@ -53,6 +53,16 @@ namespace DLV2
             std::vector<char*> blocks;
 
     };
+    
+    std::ostream& 
+    operator<<(
+        Buffer& b, 
+        std::ostream& o )
+    {
+	for(unsigned i = 0; i < b.blocks.size(); ++i)
+		b.writeBlock(i,o);
+	return o;
+    }
 
 };
 

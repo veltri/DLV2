@@ -21,9 +21,7 @@
 #include "../util/Assert.h"
 
 using namespace std;
-
-namespace DLV2
-{
+using namespace DLV2::MOCK;
 
 vector<string> Names::predicateNames;
 vector<string> Names::stringConstants;
@@ -118,5 +116,3 @@ Names::getIntegerConstant(
             "The index " << index << " is not valid." );
     return Names::integerConstants[index];
 }
-
-};

@@ -30,8 +30,7 @@
 #include <vector>
 #include "Literal.h"
 
-namespace DLV2
-{
+namespace DLV2{ namespace MOCK{
 
     class Literal;
     inline std::ostream& operator<< ( std::ostream&, const Literal& );
@@ -74,7 +73,7 @@ namespace DLV2
         return out;
     }
 
-};
+};};
 
 #endif	/* AGGREGATEELEMENT_H */
 

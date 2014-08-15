@@ -30,8 +30,7 @@
 #include <iostream>
 #include "Names.h"
 
-namespace DLV2
-{
+namespace DLV2{ namespace MOCK{
     
     class Term {
     public:
@@ -74,7 +73,7 @@ namespace DLV2
 
     }
     
-};
+};};
 
 #endif	/* TERM_H */
 

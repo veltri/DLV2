@@ -104,7 +104,7 @@ namespace DLV2
         std::string dbUsername;
         
         std::string dbPassword;
-    }; 
+    };
     
 };
 

@@ -20,9 +20,7 @@
 #include "Literal.h"
 
 using namespace std;
-
-namespace DLV2
-{
+using namespace DLV2::MOCK;
 
 Literal::Literal( 
     const Atom& a, 
@@ -97,5 +95,3 @@ Literal::~Literal()
     if( atom != NULL )
         delete atom;
 }
-
-};

@@ -18,51 +18,54 @@
  */
 
 /* 
- * File:   Rule.h
+ * File:   DBRule.h
  * Author: pierfrancesco
  *
  * Created on 29 luglio 2014, 17.42
  */
 
-#ifndef RULE_H
-#define	RULE_H
+#ifndef DBRULE_H
+#define	DBRULE_H
 
-#include "Literal.h"
+#include "DBLiteral.h"
 
 namespace DLV2{ namespace DB{
     
-    class Rule {
+    class DBRule {
     public:
-        Rule( const Rule& r ): head(r.head), body(r.body) { } 
-        ~Rule();
+        DBRule( const DBRule& r ): head(r.head), body(r.body) { } 
+        ~DBRule();
 
-        const std::vector<Atom*>& getHead() const { return head; }
-        const std::vector<Literal*>& getBody() const { return body; }
+        const std::vector<DBAtom*>& getHead() const { return head; }
+        const std::vector<DBLiteral*>& getBody() const { return body; }
 
     private:
-        friend inline std::ostream& operator<< ( std::ostream&, const Rule& );
-        friend class Program;
+        friend inline std::ostream& operator<< ( std::ostream&, const DBRule& );
+        friend class DBProgram;
         
         // Only class Program can create Rule objects.
-        Rule( const std::vector<Atom*>& h, const std::vector<Literal*>& b ): head(h), body(b) { }
-        void addToHead( Atom* a ) { head.push_back(a); }
-        void addToBody( Literal* l ) { body.push_back(l); }
+        DBRule( const std::vector<DBAtom*>& h, const std::vector<DBLiteral*>& b ): head(h), body(b) { }
+        void addToHead( DBAtom* a ) { if( a != NULL ) head.push_back(a); }
+        void addToBody( DBLiteral* l ) { if( l != NULL ) body.push_back(l); }
 
-        std::vector<Atom*> head;
-        std::vector<Literal*> body;
+        std::vector<DBAtom*> head;
+        std::vector<DBLiteral*> body;
     };
 
     inline
     std::ostream& 
     operator<< ( 
         std::ostream& out,
-        const Rule& r )
+        const DBRule& r )
     {
         for( unsigned i=0; i<r.head.size(); i++ )
         {
-            out << *(r.head[i]);
-            if( i<r.head.size()-1 )
-                out << " | ";
+            if( r.head[i] != NULL )
+            {
+                out << *(r.head[i]);
+                if( i<r.head.size()-1 )
+                    out << " | ";
+            }
         }
         if( r.head.size() > 0 && r.body.size() > 0 )
             out << " :- ";
@@ -70,9 +73,12 @@ namespace DLV2{ namespace DB{
             out << ":- ";
         for( unsigned i=0; i<r.body.size(); i++ )
         {
-            out << *(r.body[i]);
-            if( i<r.body.size()-1 )
-                out << ", ";
+            if( r.body[i] != NULL )
+            {
+                out << *(r.body[i]);
+                if( i<r.body.size()-1 )
+                    out << ", ";
+            }
         }
         out << ".";
         return out;
@@ -80,5 +86,5 @@ namespace DLV2{ namespace DB{
     
 };};
 
-#endif	/* RULE_H */
+#endif	/* DBRULE_H */
 

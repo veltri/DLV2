@@ -20,9 +20,7 @@
 #include "WeakConstraint.h"
 
 using namespace std;
-
-namespace DLV2
-{
+using namespace DLV2::MOCK;
 
 WeakConstraint::WeakConstraint( 
     vector<Literal> b,
@@ -64,5 +62,3 @@ WeakConstraint::~WeakConstraint()
     if( weight != NULL )
         delete weight;
 }
-
-};

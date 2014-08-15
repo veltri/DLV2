@@ -17,16 +17,14 @@
  *
  */
 
-#include "AggregateElement.h"
+#include "DBAggregateElement.h"
 
-namespace DLV2{ namespace DB{
+using namespace DLV2::DB;
    
-AggregateElement::~AggregateElement()
+DBAggregateElement::~DBAggregateElement()
 {
     for( unsigned i=0;i<terms.size(); i++ )
         delete terms[i];
     for( unsigned i=0;i<literals.size(); i++ )
         delete literals[i];
 }
-    
-};};

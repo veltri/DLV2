@@ -17,14 +17,13 @@
  *
  */
 
-#include "Literal.h"
-
-namespace DLV2{ namespace DB{
+#include "DBLiteral.h"
 
 using namespace std;
+using namespace DLV2::DB;
     
-Literal::Literal( 
-    Atom* a, 
+DBLiteral::DBLiteral( 
+    DBAtom* a, 
     bool neg ):
         atom(a),
         isNegative(neg),
@@ -38,13 +37,13 @@ Literal::Literal(
 }
 
 // Aggregates' constructor
-Literal::Literal( 
-    Term* lGuard, 
+DBLiteral::DBLiteral( 
+    DBTerm* lGuard, 
     const string& lOp, 
-    Term* uGuard,
+    DBTerm* uGuard,
     const string& uOp,
     const string& function,
-    const vector<AggregateElement*>& aElements,
+    const vector<DBAggregateElement*>& aElements,
     bool naf):
         atom(NULL),
         isNegative(naf),
@@ -58,8 +57,8 @@ Literal::Literal(
 {
 }
 
-Literal::Literal( 
-    const Literal& l ): 
+DBLiteral::DBLiteral( 
+    const DBLiteral& l ): 
         isNegative(l.isNegative),
         aggregate(l.aggregate),
         lowerBinop(l.lowerBinop),
@@ -68,20 +67,20 @@ Literal::Literal(
         aggregateElements(l.aggregateElements)
 { 
     if( l.atom != NULL )
-        atom = new Atom(*l.atom);
+        atom = new DBAtom(*l.atom);
     else 
         atom = NULL;
     if( l.lowerGuard != NULL )
-        lowerGuard = new Term(*l.lowerGuard);
+        lowerGuard = new DBTerm(*l.lowerGuard);
     else
         lowerGuard = NULL;
     if( l.upperGuard != NULL )
-        upperGuard = new Term(*l.upperGuard);
+        upperGuard = new DBTerm(*l.upperGuard);
     else
         upperGuard = NULL;
 }
 
-Literal::~Literal() 
+DBLiteral::~DBLiteral() 
 {
     if( lowerGuard != NULL )
         delete lowerGuard;
@@ -90,7 +89,6 @@ Literal::~Literal()
     if( atom != NULL )
         delete atom;
     for( unsigned i=0; i<aggregateElements.size(); i++ )
-        delete aggregateElements[i];
+        if( aggregateElements[i] != NULL )
+            delete aggregateElements[i];
 }
-
-};};

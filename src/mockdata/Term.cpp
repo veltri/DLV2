@@ -20,9 +20,7 @@
 #include "Term.h"
 
 using namespace std;
-
-namespace DLV2
-{
+using namespace DLV2::MOCK;
 
 Term::Term( 
     unsigned i ):
@@ -60,5 +58,3 @@ Term::Term(
 {
     
 }
-
-};

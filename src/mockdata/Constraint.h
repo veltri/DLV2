@@ -30,8 +30,7 @@
 #include <vector>
 #include "Literal.h"
 
-namespace DLV2
-{
+namespace DLV2{ namespace MOCK{
 
     class Constraint {
     public:
@@ -65,7 +64,7 @@ namespace DLV2
         return out;
     }
 
-};
+};};
 
 #endif	/* CONSTRAINT_H */
 

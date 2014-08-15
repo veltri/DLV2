@@ -20,9 +20,8 @@
 #include "Metadata.h"
 #include "../../util/Assert.h"
 
-namespace DLV2{ namespace DB{
-
 using namespace std;
+using namespace DLV2::DB;
 
 Metadata::Metadata(
     const string& pred, 
@@ -32,6 +31,7 @@ Metadata::Metadata(
         arity(a)
 {
     assert_msg( attrs != NULL, "Null attribute list");
+    assert_msg( a == attrs->size(), "Invalid arity" );
     attributeNames = attrs;
     for( unsigned i=0; i<attributeNames->size(); i++ )
         attributeIndexes[(*attributeNames)[i]] = i;
@@ -45,6 +45,7 @@ Metadata::Metadata(
         arity(a)
 {
     assert_msg( attrs != NULL, "Null attribute list");
+    assert_msg( a == attrs->size(), "Invalid arity" );
     attributeNames = attrs;
     for( unsigned i=0; i<attributeNames->size(); i++ )
         attributeIndexes[(*attributeNames)[i]] = i;
@@ -65,7 +66,7 @@ Metadata::getAttributeName(
 {
     assert_msg( (attributeNames != NULL && index > 0 && index <attributeNames->size()), 
             "Attribute index out of range." );
-    return (*attributeNames)[index];
+    return attributeNames->at(index);
 }
 
 unsigned
@@ -76,5 +77,3 @@ Metadata::getAttributeIndex(
     assert_msg( ok != attributeIndexes.end(), "Attribute name not valid." );
     return ok->second;
 }
-
-};};

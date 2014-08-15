@@ -18,66 +18,66 @@
  */
 
 /* 
- * File:   Literal.h
+ * File:   DBLiteral.h
  * Author: pierfrancesco
  *
  * Created on 29 luglio 2014, 16.15
  */
 
-#ifndef LITERAL_H
-#define	LITERAL_H
+#ifndef DBLITERAL_H
+#define	DBLITERAL_H
 
-#include "Atom.h"
-#include "AggregateElement.h"
+#include "DBAtom.h"
+#include "DBAggregateElement.h"
 
 namespace DLV2{ namespace DB{
     
-    class AggregateElement;
-    inline std::ostream& operator<< ( std::ostream&, const AggregateElement& );
+    class DBAggregateElement;
+    inline std::ostream& operator<< ( std::ostream&, const DBAggregateElement& );
 
-    class Literal {
+    class DBLiteral {
     public:
-        Literal( const Literal& l );
-        ~Literal();
+        DBLiteral( const DBLiteral& l );
+        ~DBLiteral();
 
         bool isNaf() const { return isNegative; }
-        const Atom& getAtom() const { return *atom; }
+        DBAtom* getAtom() const { return atom; }
         bool isAggregate() const { return aggregate; }
-        const Term& getAggregateLowerGuard() const { return *lowerGuard; }
+        DBTerm* getAggregateLowerGuard() const { return lowerGuard; }
         const std::string& getAggregateLowerBinop() const { return lowerBinop; }
-        const Term& getAggregateUpperGuard() const { return *upperGuard; }
+        DBTerm* getAggregateUpperGuard() const { return upperGuard; }
         const std::string& getAggregateUpperBinop() const { return upperBinop; }
         const std::string& getAggregateFunction() const { return aggregateFunction; }
-        const std::vector<AggregateElement*>& getAggregateElements() const { return aggregateElements; }
+        const std::vector<DBAggregateElement*>& getAggregateElements() const { return aggregateElements; }
 
     private:
-        friend inline std::ostream& operator<< ( std::ostream&, const Literal& );
-        friend class Program;
+        friend inline std::ostream& operator<< ( std::ostream&, const DBLiteral& );
+        friend class DBProgram;
         
         // Only class Program can create Literal objects.
         // Classic literal constructor
-        Literal( Atom* a, bool neg = false );
+        DBLiteral( DBAtom* a, bool neg = false );
         // Aggregate constructor
-        Literal( Term*, const std::string&, Term*, const std::string&, const std::string&, const std::vector<AggregateElement*>&, bool neg = false );
+        DBLiteral( DBTerm*, const std::string&, DBTerm*, const std::string&, const std::string&, const std::vector<DBAggregateElement*>&, bool neg = false );
         void setIsNaf( bool isNaf ) { isNegative = isNaf; }
         
-        Atom* atom;
+        DBAtom* atom;
         bool isNegative;
 
         bool aggregate;
-        Term* lowerGuard;
+        DBTerm* lowerGuard;
         std::string lowerBinop;
-        Term* upperGuard;
+        DBTerm* upperGuard;
         std::string upperBinop;
         std::string aggregateFunction;
-        std::vector<AggregateElement*> aggregateElements;
+        std::vector<DBAggregateElement*> aggregateElements;
     };
 
     inline
     std::ostream& 
     operator<< ( 
         std::ostream& out, 
-        const Literal& l )
+        const DBLiteral& l )
     {
         if( l.isNegative )
                 out << "not ";
@@ -108,5 +108,5 @@ namespace DLV2{ namespace DB{
 
 };};
 
-#endif	/* LITERAL_H */
+#endif	/* DBLITERAL_H */
 

@@ -30,8 +30,7 @@
 #include <vector>
 #include "ChoiceAtom.h"
 
-namespace DLV2
-{
+namespace DLV2{ namespace MOCK{
     
     class ChoiceRule {
     public:
@@ -67,7 +66,7 @@ namespace DLV2
         return out;
     }
     
-};
+};};
 
 #endif	/* CHOICERULE_H */
 

@@ -28,14 +28,13 @@
 #define LABELEDDEPENDENCYGRAPH_H
 
 #include "DependencyGraph.h"
-
 #include <unordered_map>
 
 namespace DLV2
 {
-
-    template <typename ControlStrategy>
-    class DependencyGraph;
+//
+//    template <typename ControlStrategy>
+//    class DependencyGraph;
     
     template < typename ControlStrategy = DepGraphNoStrategy, 
                typename Label = std::string >
@@ -96,95 +95,6 @@ namespace DLV2
         friend inline std::ostream& operator<<( std::ostream&, 
                 LabeledDependencyGraph<T,L>& );
     };
-    
-    template <typename ControlStrategy,
-              typename Label>
-    unsigned
-    LabeledDependencyGraph<ControlStrategy,Label>::addVertex(
-        Label p )
-    {
-        typename std::unordered_map<Label, unsigned>::const_iterator it = predsMap.find(p);
-        if( it == predsMap.end() )
-        {
-            unsigned descriptor = graph.addVertex();
-            predsMap[p] = descriptor;
-            return descriptor;
-        }
-        else 
-            return it->second;
-    }
-
-    template <typename ControlStrategy,
-              typename Label>
-    unsigned
-    LabeledDependencyGraph<ControlStrategy,Label>::getAtomComponent(
-        Label p ) const
-    {
-        typename std::unordered_map<Label, unsigned>::const_iterator it = predsMap.find(p);
-        assert_msg( it != predsMap.end(), "Unknown predicate name." );
-        return graph.getAtomComponent(it->second);
-    }
-    
-    template <typename ControlStrategy,
-              typename Label>
-    void 
-    LabeledDependencyGraph<ControlStrategy,Label>::addDisjunctiveHead( 
-        std::vector<Label> head )
-    {
-        assert_msg( head.size() > 0, "The head is empty." );    
-
-        std::vector<unsigned> unsignedHead;
-        for( unsigned i=0; i<head.size(); i++ )
-        {
-            typename std::unordered_map<Label, unsigned>::const_iterator it = predsMap.find(head[i]);
-            assert_msg( it != predsMap.end(), "Unknown predicate name." );
-            unsignedHead.push_back(it->second);
-        }
-        graph.addDisjunctiveHead(unsignedHead);
-    }
-    
-    template <typename ControlStrategy,
-              typename Label>
-    void
-    LabeledDependencyGraph<ControlStrategy,Label>::addEdge(
-        Label p1,
-        Label p2,
-        unsigned label )
-    {
-        //assert_msg( strcmp(p1,p2) != 0, "Adding a noose to the depgraph." );
-        // Retrieve the vertex descriptors.
-        unsigned v1 = addVertex(p1);
-        unsigned v2 = addVertex(p2);
-        if( !graph.isEdge(v1,v2,label) )
-            graph.addEdge(v1,v2,label);
-    }
-    
-    template <typename ControlStrategy,
-              typename Label>
-    bool 
-    LabeledDependencyGraph<ControlStrategy, Label>::isEdge( 
-        Label p1, 
-        Label p2, 
-        unsigned edgeLabel ) const
-    {
-        // Retrieve the vertex descriptors.
-        unsigned v1 = addVertex(p1);
-        unsigned v2 = addVertex(p2);
-        return graph.isEdge(v1,v2,edgeLabel);
-    }
-    
-    template <typename ControlStrategy,
-              typename Label>
-    bool 
-    LabeledDependencyGraph<ControlStrategy, Label>::isAnyEdge( 
-        Label p1, 
-        Label p2 ) const
-    {
-        // Retrieve the vertex descriptors.
-        unsigned v1 = addVertex(p1);
-        unsigned v2 = addVertex(p2);
-        return graph.isAnyEdge(v1,v2);
-    }
 
     template <typename ControlStrategy,
               typename Label>
@@ -208,6 +118,97 @@ namespace DLV2
         return out;
     }
 };
+
+using namespace DLV2;
+
+template <typename ControlStrategy,
+          typename Label>
+unsigned
+LabeledDependencyGraph<ControlStrategy,Label>::addVertex(
+    Label p )
+{
+    typename std::unordered_map<Label, unsigned>::const_iterator it = predsMap.find(p);
+    if( it == predsMap.end() )
+    {
+        unsigned descriptor = graph.addVertex();
+        predsMap[p] = descriptor;
+        return descriptor;
+    }
+    else 
+        return it->second;
+}
+
+template <typename ControlStrategy,
+          typename Label>
+unsigned
+LabeledDependencyGraph<ControlStrategy,Label>::getAtomComponent(
+    Label p ) const
+{
+    typename std::unordered_map<Label, unsigned>::const_iterator it = predsMap.find(p);
+    assert_msg( it != predsMap.end(), "Unknown predicate name." );
+    return graph.getAtomComponent(it->second);
+}
+
+template <typename ControlStrategy,
+          typename Label>
+void 
+LabeledDependencyGraph<ControlStrategy,Label>::addDisjunctiveHead( 
+    std::vector<Label> head )
+{
+    assert_msg( head.size() > 0, "The head is empty." );    
+
+    std::vector<unsigned> unsignedHead;
+    for( unsigned i=0; i<head.size(); i++ )
+    {
+        typename std::unordered_map<Label, unsigned>::const_iterator it = predsMap.find(head[i]);
+        assert_msg( it != predsMap.end(), "Unknown predicate name." );
+        unsignedHead.push_back(it->second);
+    }
+    graph.addDisjunctiveHead(unsignedHead);
+}
+
+template <typename ControlStrategy,
+          typename Label>
+void
+LabeledDependencyGraph<ControlStrategy,Label>::addEdge(
+    Label p1,
+    Label p2,
+    unsigned label )
+{
+    //assert_msg( strcmp(p1,p2) != 0, "Adding a noose to the depgraph." );
+    // Retrieve the vertex descriptors.
+    unsigned v1 = addVertex(p1);
+    unsigned v2 = addVertex(p2);
+    if( !graph.isEdge(v1,v2,label) )
+        graph.addEdge(v1,v2,label);
+}
+
+template <typename ControlStrategy,
+          typename Label>
+bool 
+LabeledDependencyGraph<ControlStrategy, Label>::isEdge( 
+    Label p1, 
+    Label p2, 
+    unsigned edgeLabel ) const
+{
+    // Retrieve the vertex descriptors.
+    unsigned v1 = addVertex(p1);
+    unsigned v2 = addVertex(p2);
+    return graph.isEdge(v1,v2,edgeLabel);
+}
+
+template <typename ControlStrategy,
+          typename Label>
+bool 
+LabeledDependencyGraph<ControlStrategy, Label>::isAnyEdge( 
+    Label p1, 
+    Label p2 ) const
+{
+    // Retrieve the vertex descriptors.
+    unsigned v1 = addVertex(p1);
+    unsigned v2 = addVertex(p2);
+    return graph.isAnyEdge(v1,v2);
+}
 
 #endif	/* LABELEDDEPENDENCYGRAPH_H */
 

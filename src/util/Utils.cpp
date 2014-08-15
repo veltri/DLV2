@@ -3,11 +3,9 @@
 #include <climits>
 #include <sstream>
 
-namespace DLV2
-{
-    
 using namespace std;
-    
+using namespace DLV2;
+
 bool
 Utils::parseLongInteger(
     const char* value,
@@ -65,5 +63,3 @@ Utils::isNumeric(
     // Was all the input successfully consumed/converted?
     return ( iss.rdbuf()->in_avail() == 0 );
 }
-
-};

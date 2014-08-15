@@ -20,9 +20,8 @@
 #include "DBInputBuilder.h"
 #include "../../util/Utils.h"
 
-namespace DLV2{ namespace DB{
-
-using namespace std;    
+using namespace std;
+using namespace DLV2::DB;
     
 DBInputBuilder::DBInputBuilder(
     DBConnection& con ):
@@ -35,7 +34,7 @@ DBInputBuilder::DBInputBuilder(
         lowerGuard(NULL),
         upperGuard(NULL)
 {
-    program = new Program(con);
+    program = new DBProgram(con);
     graph = new LabeledDependencyGraph<>();
 }
     
@@ -63,7 +62,7 @@ DBInputBuilder::onWeakConstraint()
     // TODO
     // How to handle weak constraints?
     
-    // At the moment we are simply deleting the terms from the stack which are 
+    // At the moment we are simply deleting the terms which are 
     // involved in the current weak constraint.
     assert_msg( nTermsForWeight +
             nTermsForLevel +
@@ -150,7 +149,8 @@ DBInputBuilder::onAtom(
 {
     assert_msg( predName.length() > 0, 
             "Trying to finalize an atom with a null predicate name" );
-    
+
+    program->addPredicateName(predName,termStack.size());
     currentAtom = program->createAtom(predName, termStack, isStrongNeg);
     termStack.clear();
     predName = "";
@@ -160,6 +160,7 @@ void
 DBInputBuilder::onExistentialAtom()
 {
     // TODO
+    program->addPredicateName(predName,termStack.size());
 }
 
 void
@@ -224,7 +225,7 @@ void
 DBInputBuilder::onTerm( 
     int value )
 {
-    Term* currentTerm = NULL;
+    DBTerm* currentTerm = NULL;
     
     currentTerm = program->createIntegerConstant(value);
     
@@ -238,7 +239,7 @@ DBInputBuilder::onTerm(
 void
 DBInputBuilder::onUnknownVariable()
 {
-    Term* currentTerm = NULL;
+    DBTerm* currentTerm = NULL;
     
     currentTerm = program->createVariable(string("_"));
     
@@ -330,6 +331,7 @@ void
 DBInputBuilder::onChoiceElementAtom()
 {
     // TODO
+    program->addPredicateName(predName,termStack.size());
 }
 
 void 
@@ -356,9 +358,9 @@ DBInputBuilder::onBuiltinAtom()
     // The operands should be on top of the terms' stack.
     assert_msg( termStack.size() > 1,
             "Trying to create an invalid builtin atom" );
-    Term* rightOperand = termStack.back();
+    DBTerm* rightOperand = termStack.back();
     termStack.pop_back();
-    Term* leftOperand = termStack.back();
+    DBTerm* leftOperand = termStack.back();
     termStack.pop_back();
     
     currentAtom = program->createBuiltinAtom(leftOperand,binop,rightOperand);
@@ -432,7 +434,7 @@ DBInputBuilder::onAggregateElement()
     assert_msg( (aggregateElementTerms.size() > 0 
             && aggregateElementLiterals.size() > 0),
             "Invalid aggregate element.");
-    AggregateElement* element = 
+    DBAggregateElement* element = 
             program->createAggregateElement(aggregateElementTerms,aggregateElementLiterals);
     aggregateElements.push_back(element);
     aggregateElementTerms.clear();
@@ -469,10 +471,10 @@ DBInputBuilder::onAggregate(
 void 
 DBInputBuilder::newTerm( 
     char* value,
-    vector<Term*>& target,
+    vector<DBTerm*>& target,
     bool dash )
 {
-    Term* currentTerm = NULL;
+    DBTerm* currentTerm = NULL;
     
     if( value[0] >= 'A' && value[0] <='Z' ) // Variable
     {
@@ -496,5 +498,3 @@ DBInputBuilder::newTerm(
         target.push_back(currentTerm);
     }
 }
-
-};};

@@ -20,8 +20,7 @@
 #include "DepGraphBuilder.h"
 #include "../directives/DirectiveFactory.h"
 
-namespace DLV2
-{
+using namespace DLV2;
 
 void 
 DepGraphBuilder::onDirective( 
@@ -33,7 +32,8 @@ DepGraphBuilder::onDirective(
     delete dir;
 }
         
-void DepGraphBuilder::onRule()
+void 
+DepGraphBuilder::onRule()
 {
     // Add an edge from each body literal to each head atom.
     for( unsigned i=0; i<literalStack.size(); i++ )
@@ -140,36 +140,30 @@ DepGraphBuilder::onExistentialVariable(
 void
 DepGraphBuilder::onEqualOperator()
 {
-    
 }
 
 void
 DepGraphBuilder::onUnequalOperator()
 {
-    
 }
 
 void
 DepGraphBuilder::onLessOperator()
 {
-    
 }
 
 void
 DepGraphBuilder::onLessOrEqualOperator()
 {
-    
 }
 
 void 
 DepGraphBuilder::onGreaterOperator()
 {
-    
 }
 void
 DepGraphBuilder::onGreaterOrEqualOperator()
-{
-    
+{   
 }
         
 void 
@@ -187,7 +181,6 @@ DepGraphBuilder::onTerm(
 void 
 DepGraphBuilder::onUnknownVariable()
 {
-    
 }
 
 void 
@@ -215,7 +208,8 @@ DepGraphBuilder::onTermRange(
 }
 
 void 
-DepGraphBuilder::onArithmeticOperation( char arithOperator )
+DepGraphBuilder::onArithmeticOperation( 
+    char arithOperator )
 {
 }
 
@@ -327,7 +321,6 @@ DepGraphBuilder::onAggregateVariableTerm(
 void
 DepGraphBuilder::onAggregateUnknownVariable()
 {
-    
 }
 
 void 
@@ -404,5 +397,3 @@ DepGraphBuilder::onAggregate(
     // that aggregate atom will be added to body literals' stack.
     isNaf = naf;
 }
-
-};

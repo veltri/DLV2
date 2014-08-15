@@ -23,10 +23,8 @@
 #include "SelectorBuilder.h"
 #include "../util/Assert.h"
 
-using namespace std; 
-
-namespace DLV2
-{
+using namespace std;
+using namespace DLV2;
 
 SelectorBuilder::SelectorBuilder():
         InputBuilder(), foundQuery(false), foundChoice(false),
@@ -34,7 +32,8 @@ SelectorBuilder::SelectorBuilder():
 {}
 
 unsigned
-SelectorBuilder::addPredicateInHash(string predname)
+SelectorBuilder::addPredicateInHash(
+    string predname )
 {
 	unsigned id = pred2nodeId.size();
 
@@ -58,7 +57,9 @@ SelectorBuilder::cleanTemp()
 }
 
 void
-SelectorBuilder::addArc(unsigned f, unsigned t)
+SelectorBuilder::addArc(
+    unsigned f,
+    unsigned t)
 {
 	if(grafo.find(f) == grafo.end())
 	{
@@ -140,7 +141,8 @@ SelectorBuilder::onBodyLiteral()
 }
 
 void
-SelectorBuilder::onNafLiteral(bool naf)
+SelectorBuilder::onNafLiteral(
+    bool naf )
 {
 
 	Literal l;
@@ -151,7 +153,8 @@ SelectorBuilder::onNafLiteral(bool naf)
 }
 
 void
-SelectorBuilder::onAtom(bool isStrongNeg)
+SelectorBuilder::onAtom(
+    bool isStrongNeg )
 {
 }
 
@@ -161,14 +164,16 @@ SelectorBuilder::onExistentialAtom()
 }
 
 void
-SelectorBuilder::onPredicateName(char* p)
+SelectorBuilder::onPredicateName(
+    char* p )
 {
 	predName=p;
 	//cout << "pred"<< p << endl;
 }
 
 void
-SelectorBuilder::onExistentialVariable(char*)
+SelectorBuilder::onExistentialVariable(
+    char* v )
 {
 }
 
@@ -197,17 +202,20 @@ SelectorBuilder::onGreaterOperator()
 {
 }
 
-void SelectorBuilder::onGreaterOrEqualOperator()
+void 
+SelectorBuilder::onGreaterOrEqualOperator()
 {
 }
 
 void
-SelectorBuilder::onTerm(char*)
+SelectorBuilder::onTerm(
+    char* t )
 {
 }
 
 void
-SelectorBuilder::onTerm(int int1)
+SelectorBuilder::onTerm(
+    int int1 )
 {
 }
 
@@ -218,7 +226,9 @@ SelectorBuilder::onUnknownVariable()
 }
 
 void
-SelectorBuilder::onFunction(char*, int int1)
+SelectorBuilder::onFunction(
+    char* fs, 
+    int int1)
 {
 }
 
@@ -233,12 +243,16 @@ SelectorBuilder::onTermParams()
 }
 
 void
-SelectorBuilder::onArithmeticOperation(char char1)
+SelectorBuilder::onArithmeticOperation(
+    char char1 )
 {
 }
 
 void
-SelectorBuilder::onWeightAtLevels(int int1, int int2, int int3)
+SelectorBuilder::onWeightAtLevels(
+    int int1, 
+    int int2, 
+    int int3)
 {
 }
 
@@ -404,5 +418,3 @@ SelectorBuilder::~SelectorBuilder()
 	}
 	*/
 }
-
-};

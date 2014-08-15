@@ -30,8 +30,7 @@
 #include <vector>
 #include "Literal.h"
 
-namespace DLV2
-{
+namespace DLV2{ namespace MOCK{
     
     class Rule {
     public:
@@ -75,7 +74,7 @@ namespace DLV2
         return out;
     }
 
-};
+};};
 
 #endif	/* RULE_H */
 

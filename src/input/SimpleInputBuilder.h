@@ -86,43 +86,43 @@ namespace DLV2
         virtual void onAggregateElement();
         virtual void onAggregate( bool naf = false );
         // Not derived methods
-        Program& getProgram();
-        Atom* getQuery();
-        void newTerm( char*, std::vector<Term>&, bool dash = false ); 
+        MOCK::Program& getProgram();
+        MOCK::Atom* getQuery();
+        void newTerm( char*, std::vector<MOCK::Term>&, bool dash = false ); 
 
         bool isNumeric( const char*, int );
 
     private:
-        Program* program;
-        std::vector<Atom> head;
-        std::vector<Literal> body;
-        Literal* currentLiteral;
-        Atom* currentAtom;
+        MOCK::Program* program;
+        std::vector<MOCK::Atom> head;
+        std::vector<MOCK::Literal> body;
+        MOCK::Literal* currentLiteral;
+        MOCK::Atom* currentAtom;
         std::string predName;
-        std::vector<Term> termStack; 
-        std::vector<Term> existVars;
+        std::vector<MOCK::Term> termStack; 
+        std::vector<MOCK::Term> existVars;
         struct VariableIndex {
             std::string varName;
             unsigned varIndex;
         };
         std::vector<VariableIndex> localVariables; 
         unsigned varCounter;
-        Atom* query;
+        MOCK::Atom* query;
         unsigned nTermsForWeight; 
         unsigned nTermsForLevel;
         unsigned nTermsAfterLevel;
-        Term* lowerGuard;
-        Term* upperGuard;
+        MOCK::Term* lowerGuard;
+        MOCK::Term* upperGuard;
         std::string binop;
         std::string lowerBinop;
         std::string upperBinop;
-        ChoiceElement* currentChoiceElement;
-        std::vector<ChoiceElement> choiceElements;
-        ChoiceAtom* currentChoiceAtom;
+        MOCK::ChoiceElement* currentChoiceElement;
+        std::vector<MOCK::ChoiceElement> choiceElements;
+        MOCK::ChoiceAtom* currentChoiceAtom;
         std::string aggregateFunction;
-        std::vector<Term> aggregateElementTerms;
-        std::vector<Literal> aggregateElementLiterals;
-        std::vector<AggregateElement> aggregateElements;
+        std::vector<MOCK::Term> aggregateElementTerms;
+        std::vector<MOCK::Literal> aggregateElementLiterals;
+        std::vector<MOCK::AggregateElement> aggregateElements;
     };
 
 };

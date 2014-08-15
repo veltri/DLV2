@@ -32,8 +32,7 @@
 #include "Constraint.h"
 #include "WeakConstraint.h"
 
-namespace DLV2
-{
+namespace DLV2{ namespace MOCK{
     
     class Program {
     public:
@@ -80,7 +79,7 @@ namespace DLV2
         return out;
     }
 
-};
+};};
 
 #endif	/* PROGRAM_H */
 

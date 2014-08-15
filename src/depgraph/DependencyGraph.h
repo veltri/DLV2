@@ -104,319 +104,6 @@ namespace DLV2
     };
     
     template <typename ControlStrategy>
-    DependencyGraph<ControlStrategy>::DependencyGraph():
-        graph( *new DirectedGraph() )
-    {
-    }
-
-    template <typename ControlStrategy>
-    DependencyGraph<ControlStrategy>::~DependencyGraph()
-    {
-        graph.clear();
-        assert_msg( graph.vertex_set().empty(), "The depgraph is not empty." );
-        delete &graph;
-    }
-
-    template <typename ControlStrategy>
-    unsigned 
-    DependencyGraph<ControlStrategy>::addVertex() 
-    {
-        return boost::add_vertex(graph);
-    }
-
-    template <typename ControlStrategy>
-    void 
-    DependencyGraph<ControlStrategy>::addEdge( 
-        unsigned v1,
-        unsigned v2,
-        unsigned label )
-    {
-        //assert_msg( v1 != v2, "Adding a noose to the depgraph." );
-        assert_msg( (label >= POSITIVE_EDGE && label <= NEGATIVE_EDGE), 
-                "Not a valid label for the new edge." );
-        controller.edge(label);
-
-        boost::add_edge(v1,v2,label,graph);
-    }
-
-    template <typename ControlStrategy>
-    bool 
-    DependencyGraph<ControlStrategy>::isEdge(
-        unsigned v1, 
-        unsigned v2, 
-        unsigned label 
-    ) const
-    {
-        assert_msg( (label >= POSITIVE_EDGE && label <= NEGATIVE_EDGE), 
-                "Not a valid label for the edge in input." );
-        controller.edge(label);
-
-        std::pair<Edge,bool> alreadyExists = boost::edge(v1,v2,graph);
-        if( alreadyExists.second )
-        {
-            unsigned lab = boost::get(boost::edge_name,graph,alreadyExists.first);
-            return label == lab;
-        }
-        else 
-            return false;
-    }
-    
-    template <typename ControlStrategy>
-    bool 
-    DependencyGraph<ControlStrategy>::isAnyEdge(
-        unsigned v1, 
-        unsigned v2
-    ) const
-    {
-        std::pair<Edge,bool> alreadyExists = boost::edge(v1,v2,graph);
-        return alreadyExists.second;
-    }
-
-    template <typename ControlStrategy>
-    void
-    DependencyGraph<ControlStrategy>::computeStronglyConnectedComponents()
-    {
-        assert_msg( stronglyConnectedComponents.size() == 0, 
-                "Strongly connected components have been already computed." );
-
-        vertexComponents.resize( boost::num_vertices( graph ) );
-        std::vector< unsigned int > discoverTime( boost::num_vertices( graph ) );
-        std::vector< boost::default_color_type > color( boost::num_vertices( graph ) );
-        std::vector< Vertex > root( boost::num_vertices( graph ) );
-        unsigned numberOfStronglyConnectedComponents = boost::strong_components( graph, 
-            &vertexComponents[ 0 ], 
-            boost::root_map( &root[ 0 ] ).
-            color_map( &color[ 0 ] ).
-            discover_time_map( &discoverTime[ 0 ] ) );
-
-        assert_msg( numberOfStronglyConnectedComponents > 0, 
-                "No strongly connected components in the depgraph." );
-
-        stronglyConnectedComponents.resize( numberOfStronglyConnectedComponents );
-        for( std::vector< int >::size_type i = 0; i != vertexComponents.size(); ++i )
-        {
-            unsigned currentComponentId = vertexComponents[ i ];
-            assert_msg( currentComponentId < stronglyConnectedComponents.size(),
-                    "The current component id is out of range." );
-            stronglyConnectedComponents[ currentComponentId ].push_back( i );
-        }
-
-    }
-
-    template <typename ControlStrategy>
-    unsigned
-    DependencyGraph<ControlStrategy>::getAtomComponent(
-        unsigned vertexId 
-    ) const
-    {
-        assert_msg( vertexComponents.size() > 0, 
-                "Strongly connected components have not been computed." );
-        assert_msg( vertexId < vertexComponents.size(), 
-                "The component id is out of range." );
-        
-        return vertexComponents[vertexId];
-    }
-    
-    template <typename ControlStrategy>
-    const Component&
-    DependencyGraph<ControlStrategy>::getComponent(
-        unsigned componentIdx 
-    ) const
-    {
-        assert_msg( stronglyConnectedComponents.size() > 0, 
-                "Strongly connected components have not been computed." );
-        assert_msg( componentIdx < stronglyConnectedComponents.size(), 
-                "The component id is out of range." );
-        
-        return stronglyConnectedComponents[componentIdx];
-    }
-    
-    template <typename ControlStrategy>
-    const Components&
-    DependencyGraph<ControlStrategy>::getComponentList() const
-    {
-        assert_msg( stronglyConnectedComponents.size() > 0, 
-                "Strongly connected components have not been computed." );
-        
-        return stronglyConnectedComponents;
-    }
-        
-    template <typename ControlStrategy>
-    unsigned
-    DependencyGraph<ControlStrategy>::numberOfComponents() const
-    {
-        assert_msg( stronglyConnectedComponents.size() > 0, 
-                "Strongly connected components have not been computed." );
-        
-        return stronglyConnectedComponents.size();
-    }
-    
-    template <typename ControlStrategy>
-    void
-    DependencyGraph<ControlStrategy>::addDisjunctiveHead(
-        std::vector<unsigned> head )
-    {
-        assert_msg( head.size() > 0, "The head is empty." );
-        disjunctiveHeads.push_back(head); 
-    }
-
-    template <typename ControlStrategy>
-    bool
-    DependencyGraph<ControlStrategy>::isHCF(
-        unsigned componentIdx ) const
-    {
-        assert_msg( stronglyConnectedComponents.size() > 0, 
-                "Strongly connected components have not been computed." );
-        assert_msg( componentIdx < stronglyConnectedComponents.size(), 
-                "The component id is out of range." );
-        
-        if( !isCyclic(componentIdx) )
-            return true;
-        
-        for( unsigned i=0; i<disjunctiveHeads.size(); i++ )
-            for( unsigned j=0; j<disjunctiveHeads[i].size(); j++ )
-                for( unsigned k=j+1; k<disjunctiveHeads[i].size(); k++ )
-                {
-                    unsigned v1 = disjunctiveHeads[i][j];
-                    unsigned v2 = disjunctiveHeads[i][k];
-                    assert_msg( (v1 < vertexComponents.size() && 
-                            v2<vertexComponents.size()),
-                            "Vertex id out of range" );
-                    if( vertexComponents[v1] == vertexComponents[v2] &&
-                            vertexComponents[v1] == componentIdx )
-                        return false;
-                }
-        return true;
-    }
-
-    template <typename ControlStrategy>
-    bool
-    DependencyGraph<ControlStrategy>::isHCF() const
-    {
-        assert_msg( stronglyConnectedComponents.size() > 0, 
-                "Strongly connected components have not been computed." );
-                
-        if( !isCyclic() )
-            return true; 
-        
-        for( unsigned i=0; i<disjunctiveHeads.size(); i++ )
-            for( unsigned j=0; j<disjunctiveHeads[i].size(); j++ )
-                for( unsigned k=j+1; k<disjunctiveHeads[i].size(); k++ )
-                {
-                    unsigned v1 = disjunctiveHeads[i][j];
-                    unsigned v2 = disjunctiveHeads[i][k];
-                    assert_msg( (v1 < vertexComponents.size() && 
-                            v2<vertexComponents.size()),
-                            "Vertex id out of range" );
-                    if( vertexComponents[v1] == vertexComponents[v2] )
-                        return false;
-                }
-        return true;
-    }
-
-    template <typename ControlStrategy>
-    bool 
-    DependencyGraph<ControlStrategy>::isStratified(
-        unsigned componentIdx )
-    {
-        assert_msg( stronglyConnectedComponents.size() > 0, 
-                "Strongly connected components have not been computed." );
-        assert_msg( componentIdx < stronglyConnectedComponents.size(), 
-                "The component id is out of range." );
-
-        if( controller.isPositive() )
-            return true;
-
-        if( componentHasNegations.size() == 0 )
-        {
-            computeLabeledEdges(); 
-        }
-        return !componentHasNegations[componentIdx];
-    }
-
-    template <typename ControlStrategy>
-    bool 
-    DependencyGraph<ControlStrategy>::isStratified()
-    {
-        assert_msg( stronglyConnectedComponents.size() > 0, 
-                "Strongly connencted components have not been computed." );
-
-        if( controller.isPositive() )
-            return true;
-
-        for( unsigned i=0; i<stronglyConnectedComponents.size(); i++ )
-            if( !isStratified(i) )
-                return false;
-        return true;
-    }
-
-    template <typename ControlStrategy>
-    bool 
-    DependencyGraph<ControlStrategy>::isCyclic(
-        unsigned componentIdx ) const
-    {
-        assert_msg( stronglyConnectedComponents.size() > 0, 
-                "Strongly connencted components have not been computed." );
-        assert_msg( componentIdx < stronglyConnectedComponents.size(), 
-                "The component id is out of range." );
-
-        return ( stronglyConnectedComponents[componentIdx].size() > 1 ||
-                   ( stronglyConnectedComponents[componentIdx].size() == 1 &&
-                    isAnyEdge(stronglyConnectedComponents[componentIdx][0],
-                        stronglyConnectedComponents[componentIdx][0]) ) );
-    }
-
-    template <typename ControlStrategy>
-    bool 
-    DependencyGraph<ControlStrategy>::isCyclic() const
-    {
-        assert_msg( stronglyConnectedComponents.size() > 0, 
-                "Strongly connencted components have not been computed." );
-
-        for( unsigned i=0; i<stronglyConnectedComponents.size(); i++ )
-            if( isCyclic(i) )
-                return true;
-        return false;
-    }
-
-    template <typename ControlStrategy>
-    bool 
-    DependencyGraph<ControlStrategy>::isTight() const
-    {
-        return !isCyclic();
-    }
-
-    template <typename ControlStrategy>
-    void
-    DependencyGraph<ControlStrategy>::computeLabeledEdges()
-    {
-        assert_msg( stronglyConnectedComponents.size() > 0, 
-                "Strongly connencted components have not been computed." );
-
-        componentHasNegations.resize(stronglyConnectedComponents.size());
-        for( unsigned i = 0; i < stronglyConnectedComponents.size(); i++ )
-            componentHasNegations[i] = false;
-
-        // Scan for negated edges
-        // if components of the connected nodes are equal, not stratified
-        EdgeIterator i, iEnd;
-        for( tie(i,iEnd) = boost::edges(graph); i != iEnd; ++i )
-        {
-            unsigned label = boost::get(boost::edge_name,graph,*i);
-            if( label == NEGATIVE_EDGE )
-            {
-                Vertex src = source(*i,graph);
-                Vertex trgt = target(*i,graph);
-                assert_msg( (src < vertexComponents.size() &&  
-                        trgt < vertexComponents.size()),
-                        "Vertex id out of range" );
-                if( vertexComponents[src] == vertexComponents[trgt] )
-                    componentHasNegations[vertexComponents[src]] = true;
-            }
-        }
-    }
-    
-    template <typename ControlStrategy>
     std::ostream&
     operator<<( 
         std::ostream& out,
@@ -460,6 +147,322 @@ namespace DLV2
         return out;
     }
 };
+    
+using namespace DLV2;
+
+template <typename ControlStrategy>
+DependencyGraph<ControlStrategy>::DependencyGraph():
+    graph( *new DirectedGraph() )
+{
+}
+
+template <typename ControlStrategy>
+DependencyGraph<ControlStrategy>::~DependencyGraph()
+{
+    graph.clear();
+    assert_msg( graph.vertex_set().empty(), "The depgraph is not empty." );
+    delete &graph;
+}
+
+template <typename ControlStrategy>
+unsigned 
+DependencyGraph<ControlStrategy>::addVertex() 
+{
+    return boost::add_vertex(graph);
+}
+
+template <typename ControlStrategy>
+void 
+DependencyGraph<ControlStrategy>::addEdge( 
+    unsigned v1,
+    unsigned v2,
+    unsigned label )
+{
+    //assert_msg( v1 != v2, "Adding a noose to the depgraph." );
+    assert_msg( (label >= POSITIVE_EDGE && label <= NEGATIVE_EDGE), 
+            "Not a valid label for the new edge." );
+    controller.edge(label);
+
+    boost::add_edge(v1,v2,label,graph);
+}
+
+template <typename ControlStrategy>
+bool 
+DependencyGraph<ControlStrategy>::isEdge(
+    unsigned v1, 
+    unsigned v2, 
+    unsigned label 
+) const
+{
+    assert_msg( (label >= POSITIVE_EDGE && label <= NEGATIVE_EDGE), 
+            "Not a valid label for the edge in input." );
+    controller.edge(label);
+
+    std::pair<Edge,bool> alreadyExists = boost::edge(v1,v2,graph);
+    if( alreadyExists.second )
+    {
+        unsigned lab = boost::get(boost::edge_name,graph,alreadyExists.first);
+        return label == lab;
+    }
+    else 
+        return false;
+}
+
+template <typename ControlStrategy>
+bool 
+DependencyGraph<ControlStrategy>::isAnyEdge(
+    unsigned v1, 
+    unsigned v2
+) const
+{
+    std::pair<Edge,bool> alreadyExists = boost::edge(v1,v2,graph);
+    return alreadyExists.second;
+}
+
+template <typename ControlStrategy>
+void
+DependencyGraph<ControlStrategy>::computeStronglyConnectedComponents()
+{
+    assert_msg( stronglyConnectedComponents.size() == 0, 
+            "Strongly connected components have been already computed." );
+
+    vertexComponents.resize( boost::num_vertices( graph ) );
+    std::vector< unsigned int > discoverTime( boost::num_vertices( graph ) );
+    std::vector< boost::default_color_type > color( boost::num_vertices( graph ) );
+    std::vector< Vertex > root( boost::num_vertices( graph ) );
+    unsigned numberOfStronglyConnectedComponents = boost::strong_components( graph, 
+        &vertexComponents[ 0 ], 
+        boost::root_map( &root[ 0 ] ).
+        color_map( &color[ 0 ] ).
+        discover_time_map( &discoverTime[ 0 ] ) );
+
+    assert_msg( numberOfStronglyConnectedComponents > 0, 
+            "No strongly connected components in the depgraph." );
+
+    stronglyConnectedComponents.resize( numberOfStronglyConnectedComponents );
+    for( std::vector< int >::size_type i = 0; i != vertexComponents.size(); ++i )
+    {
+        unsigned currentComponentId = vertexComponents[ i ];
+        assert_msg( currentComponentId < stronglyConnectedComponents.size(),
+                "The current component id is out of range." );
+        stronglyConnectedComponents[ currentComponentId ].push_back( i );
+    }
+
+}
+
+template <typename ControlStrategy>
+unsigned
+DependencyGraph<ControlStrategy>::getAtomComponent(
+    unsigned vertexId 
+) const
+{
+    assert_msg( vertexComponents.size() > 0, 
+            "Strongly connected components have not been computed." );
+    assert_msg( vertexId < vertexComponents.size(), 
+            "The component id is out of range." );
+
+    return vertexComponents[vertexId];
+}
+
+template <typename ControlStrategy>
+const Component&
+DependencyGraph<ControlStrategy>::getComponent(
+    unsigned componentIdx 
+) const
+{
+    assert_msg( stronglyConnectedComponents.size() > 0, 
+            "Strongly connected components have not been computed." );
+    assert_msg( componentIdx < stronglyConnectedComponents.size(), 
+            "The component id is out of range." );
+
+    return stronglyConnectedComponents[componentIdx];
+}
+
+template <typename ControlStrategy>
+const Components&
+DependencyGraph<ControlStrategy>::getComponentList() const
+{
+    assert_msg( stronglyConnectedComponents.size() > 0, 
+            "Strongly connected components have not been computed." );
+
+    return stronglyConnectedComponents;
+}
+
+template <typename ControlStrategy>
+unsigned
+DependencyGraph<ControlStrategy>::numberOfComponents() const
+{
+    assert_msg( stronglyConnectedComponents.size() > 0, 
+            "Strongly connected components have not been computed." );
+
+    return stronglyConnectedComponents.size();
+}
+
+template <typename ControlStrategy>
+void
+DependencyGraph<ControlStrategy>::addDisjunctiveHead(
+    std::vector<unsigned> head )
+{
+    assert_msg( head.size() > 0, "The head is empty." );
+    disjunctiveHeads.push_back(head); 
+}
+
+template <typename ControlStrategy>
+bool
+DependencyGraph<ControlStrategy>::isHCF(
+    unsigned componentIdx ) const
+{
+    assert_msg( stronglyConnectedComponents.size() > 0, 
+            "Strongly connected components have not been computed." );
+    assert_msg( componentIdx < stronglyConnectedComponents.size(), 
+            "The component id is out of range." );
+
+    if( !isCyclic(componentIdx) )
+        return true;
+
+    for( unsigned i=0; i<disjunctiveHeads.size(); i++ )
+        for( unsigned j=0; j<disjunctiveHeads[i].size(); j++ )
+            for( unsigned k=j+1; k<disjunctiveHeads[i].size(); k++ )
+            {
+                unsigned v1 = disjunctiveHeads[i][j];
+                unsigned v2 = disjunctiveHeads[i][k];
+                assert_msg( (v1 < vertexComponents.size() && 
+                        v2<vertexComponents.size()),
+                        "Vertex id out of range" );
+                if( vertexComponents[v1] == vertexComponents[v2] &&
+                        vertexComponents[v1] == componentIdx )
+                    return false;
+            }
+    return true;
+}
+
+template <typename ControlStrategy>
+bool
+DependencyGraph<ControlStrategy>::isHCF() const
+{
+    assert_msg( stronglyConnectedComponents.size() > 0, 
+            "Strongly connected components have not been computed." );
+
+    if( !isCyclic() )
+        return true; 
+
+    for( unsigned i=0; i<disjunctiveHeads.size(); i++ )
+        for( unsigned j=0; j<disjunctiveHeads[i].size(); j++ )
+            for( unsigned k=j+1; k<disjunctiveHeads[i].size(); k++ )
+            {
+                unsigned v1 = disjunctiveHeads[i][j];
+                unsigned v2 = disjunctiveHeads[i][k];
+                assert_msg( (v1 < vertexComponents.size() && 
+                        v2<vertexComponents.size()),
+                        "Vertex id out of range" );
+                if( vertexComponents[v1] == vertexComponents[v2] )
+                    return false;
+            }
+    return true;
+}
+
+template <typename ControlStrategy>
+bool 
+DependencyGraph<ControlStrategy>::isStratified(
+    unsigned componentIdx )
+{
+    assert_msg( stronglyConnectedComponents.size() > 0, 
+            "Strongly connected components have not been computed." );
+    assert_msg( componentIdx < stronglyConnectedComponents.size(), 
+            "The component id is out of range." );
+
+    if( controller.isPositive() )
+        return true;
+
+    if( componentHasNegations.size() == 0 )
+    {
+        computeLabeledEdges(); 
+    }
+    return !componentHasNegations[componentIdx];
+}
+
+template <typename ControlStrategy>
+bool 
+DependencyGraph<ControlStrategy>::isStratified()
+{
+    assert_msg( stronglyConnectedComponents.size() > 0, 
+            "Strongly connencted components have not been computed." );
+
+    if( controller.isPositive() )
+        return true;
+
+    for( unsigned i=0; i<stronglyConnectedComponents.size(); i++ )
+        if( !isStratified(i) )
+            return false;
+    return true;
+}
+
+template <typename ControlStrategy>
+bool 
+DependencyGraph<ControlStrategy>::isCyclic(
+    unsigned componentIdx ) const
+{
+    assert_msg( stronglyConnectedComponents.size() > 0, 
+            "Strongly connencted components have not been computed." );
+    assert_msg( componentIdx < stronglyConnectedComponents.size(), 
+            "The component id is out of range." );
+
+    return ( stronglyConnectedComponents[componentIdx].size() > 1 ||
+               ( stronglyConnectedComponents[componentIdx].size() == 1 &&
+                isAnyEdge(stronglyConnectedComponents[componentIdx][0],
+                    stronglyConnectedComponents[componentIdx][0]) ) );
+}
+
+template <typename ControlStrategy>
+bool 
+DependencyGraph<ControlStrategy>::isCyclic() const
+{
+    assert_msg( stronglyConnectedComponents.size() > 0, 
+            "Strongly connencted components have not been computed." );
+
+    for( unsigned i=0; i<stronglyConnectedComponents.size(); i++ )
+        if( isCyclic(i) )
+            return true;
+    return false;
+}
+
+template <typename ControlStrategy>
+bool 
+DependencyGraph<ControlStrategy>::isTight() const
+{
+    return !isCyclic();
+}
+
+template <typename ControlStrategy>
+void
+DependencyGraph<ControlStrategy>::computeLabeledEdges()
+{
+    assert_msg( stronglyConnectedComponents.size() > 0, 
+            "Strongly connencted components have not been computed." );
+
+    componentHasNegations.resize(stronglyConnectedComponents.size());
+    for( unsigned i = 0; i < stronglyConnectedComponents.size(); i++ )
+        componentHasNegations[i] = false;
+
+    // Scan for negated edges
+    // if components of the connected nodes are equal, not stratified
+    EdgeIterator i, iEnd;
+    for( tie(i,iEnd) = boost::edges(graph); i != iEnd; ++i )
+    {
+        unsigned label = boost::get(boost::edge_name,graph,*i);
+        if( label == NEGATIVE_EDGE )
+        {
+            Vertex src = source(*i,graph);
+            Vertex trgt = target(*i,graph);
+            assert_msg( (src < vertexComponents.size() &&  
+                    trgt < vertexComponents.size()),
+                    "Vertex id out of range" );
+            if( vertexComponents[src] == vertexComponents[trgt] )
+                componentHasNegations[vertexComponents[src]] = true;
+        }
+    }
+}
+
 
 
 #endif	/* DEPENDENCYGRAPH_H */
