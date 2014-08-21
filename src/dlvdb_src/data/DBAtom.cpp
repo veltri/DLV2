@@ -99,6 +99,8 @@ DBAtom::~DBAtom()
     if( rightOp != NULL )
         delete rightOp;
     for( unsigned i=0; i<terms.size(); i++ )
-        if( terms[i] != NULL )
-            delete terms[i];
+    {
+        assert_msg( terms[i] != NULL, "Trying to destroy an atom with a null term." );
+        delete terms[i];
+    }
 }

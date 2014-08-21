@@ -17,20 +17,29 @@
  *
  */
 
-#include "DBAggregateElement.h"
+/* 
+ * File:   SQLBuilder.h
+ * Author: pierfrancesco
+ *
+ * Created on 21 agosto 2014, 14.37
+ */
 
-using namespace DLV2::DB;
-   
-DBAggregateElement::~DBAggregateElement()
-{
-    for( unsigned i=0;i<terms.size(); i++ )
-    {
-        assert_msg( terms[i] != NULL, "Trying to destroy an aggregate element with a null term." );
-        delete terms[i];
-    }
-    for( unsigned i=0;i<literals.size(); i++ )
-    {
-        assert_msg( literals[i] != NULL, "Trying to destroy an aggregate element with a null literal." );
-        delete literals[i];
-    }
-}
+#ifndef SQLBUILDER_H
+#define	SQLBUILDER_H
+
+namespace DLV2{ namespace DB{
+    
+    class QueryObject;
+    
+    class SQLBuilder {
+    public:
+        SQLBuilder() { }
+        virtual ~SQLBuilder() { }
+        
+        virtual std::string* generateSQL( QueryObject* ) = 0;
+    };
+
+};};
+
+#endif	/* SQLBUILDER_H */
+

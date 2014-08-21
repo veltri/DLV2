@@ -27,6 +27,7 @@
 #include "input/DepGraphBuilder.h"
 #include "input/EmptyInputBuilder.h"
 #include "dlvdb_src/input/DBInputBuilder.h"
+#include "dlvdb_src/sql/QueryObject.h"
 
 //extern Buffer theBuffer;
 
@@ -181,12 +182,30 @@ DLV2Facade::solve()
         if( program != NULL )
             cout << *program;
         DBAtom* query = NULL;
-        query = dbInputBuilder->getQuery(); 
+        query = dbInputBuilder->getQuery();
+        LabeledDependencyGraph<>* depGraph = dbInputBuilder->getLabeledDependencyGraph();
+        if( depGraph != NULL )
+        {
+            depGraph->computeStronglyConnectedComponents();
+            cout << *depGraph << endl;
+        }
         if( query != NULL )
             cout << *query << "?" << endl;
-        delete program;
+        cout << endl << "QUERY-OBJECTS:" << endl;
+        for( unsigned i=0; i<program->getQueryObjects().size(); i++ )
+        {
+            QueryObject* queryObject = program->getQueryObjects().at(i);
+            if( queryObject != NULL )
+            {
+                queryObject->setSQLBuilder(queryObject);
+                string* sql = queryObject->getSQL(); 
+                cout << i << ":    " << *sql << endl;
+                delete sql;
+            }
+        }
+        delete depGraph;
         delete query;
-        delete dbInputBuilder->getLabeledDependencyGraph();
+        delete program;
     }
     
     if( getOptions().getPrintStatistics() )

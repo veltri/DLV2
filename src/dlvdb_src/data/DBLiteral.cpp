@@ -32,7 +32,8 @@ DBLiteral::DBLiteral(
         lowerBinop(""),
         upperGuard(NULL),
         upperBinop(""),
-        aggregateFunction("")
+        aggregateFunction(""),
+        aggregateNameForDepGraph("")
 {
 }
 
@@ -44,7 +45,8 @@ DBLiteral::DBLiteral(
     const string& uOp,
     const string& function,
     const vector<DBAggregateElement*>& aElements,
-    bool naf):
+    bool naf,
+    const string& name ):
         atom(NULL),
         isNegative(naf),
         aggregate(true),
@@ -53,7 +55,8 @@ DBLiteral::DBLiteral(
         upperGuard(uGuard),
         upperBinop(uOp),
         aggregateFunction(function),
-        aggregateElements(aElements)
+        aggregateElements(aElements),
+        aggregateNameForDepGraph(name)
 {
 }
 
@@ -64,7 +67,8 @@ DBLiteral::DBLiteral(
         lowerBinop(l.lowerBinop),
         upperBinop(l.upperBinop),
         aggregateFunction(l.aggregateFunction),
-        aggregateElements(l.aggregateElements)
+        aggregateElements(l.aggregateElements),
+        aggregateNameForDepGraph(l.aggregateNameForDepGraph)
 { 
     if( l.atom != NULL )
         atom = new DBAtom(*l.atom);
@@ -89,6 +93,18 @@ DBLiteral::~DBLiteral()
     if( atom != NULL )
         delete atom;
     for( unsigned i=0; i<aggregateElements.size(); i++ )
-        if( aggregateElements[i] != NULL )
-            delete aggregateElements[i];
+    {
+        assert_msg( aggregateElements[i] != NULL, "Trying to destroy an aggregate literal with a null element." );
+        delete aggregateElements[i];
+    }
+}
+
+bool
+DBLiteral::isBuiltin() 
+const
+{
+    if( atom == NULL )
+        return false;
+    else
+        return atom->isBuiltin();
 }

@@ -35,6 +35,11 @@
 
 namespace DLV2{ namespace DB{
     
+    // The definitions of classes QueryObject and QueryBuilder have 
+    // been forwarded in order to avoid cyclic inclusion dependencies.
+    class QueryBuilder;
+    class QueryObject;
+    
     class DBProgram {
     public:
         typedef std::unordered_map<std::string,Metadata*> SCHEMAMAP;
@@ -59,15 +64,29 @@ namespace DLV2{ namespace DB{
                                          const std::string& upperBinop, 
                                          const std::string& aggregateFunction, 
                                          const std::vector<DBAggregateElement*>& aggregateSet, 
-                                         bool isNegative = false );
+                                         bool isNegative = false,
+                                         const std::string& name = "" );
         DBAggregateElement* createAggregateElement( const std::vector<DBTerm*>& terms, const std::vector<DBLiteral*>& lits );
-        DBRule* createRule( const std::vector<DBAtom*>& head, const std::vector<DBLiteral*>& body );
-        void createAndAddRule( const std::vector<DBAtom*>& head, const std::vector<DBLiteral*>& body );
+        DBRule* createRule( 
+            const std::vector<DBAtom*>& head, 
+            const std::vector<DBLiteral*>& body, 
+            bool hasNegation, 
+            bool hasAggregates, 
+            bool hasBuiltins);
+        void createAndAddRule( 
+            const std::vector<DBAtom*>& head, 
+            const std::vector<DBLiteral*>& body,
+            bool hasNegation, 
+            bool hasAggregates, 
+            bool hasBuiltins);
         void addRule( DBRule* r );
         bool addPredicateName( const std::string& name, unsigned arity );
         bool addToPredicateSubProgram( const std::string& name, unsigned arity, unsigned ruleIndex );
         
         const std::vector<DBRule*>& getRules() const { return rules; }
+        void setQueryBuilder( QueryBuilder* build );
+        const std::vector<QueryObject*>& getQueryObjects() const { return queries; }
+        QueryObject* getQueryObject( unsigned i );
         const SCHEMAMAP& getMapSchema() const { return schemaMapping; }
         Metadata* getMetadata( const std::string& predName );
         const SUBPROGRAMSMAP& getMapSubPrograms() const { return subProgramsMapping; }
@@ -78,6 +97,8 @@ namespace DLV2{ namespace DB{
         DBConnection& getDBConnection() { return connection; }
 
         std::vector<DBRule*> rules;
+        QueryBuilder* queryBuilder;
+        std::vector<QueryObject*> queries;
         SCHEMAMAP schemaMapping;
         SUBPROGRAMSMAP subProgramsMapping;
         
@@ -90,12 +111,28 @@ namespace DLV2{ namespace DB{
         std::ostream& out, 
         const DBProgram& p )
     {
+        out << "RULES:" << std::endl;
         for( unsigned i=0; i<p.rules.size(); i++ )
         {
             if( p.rules[i] != NULL )
-                out << *(p.rules[i]) << std::endl;
+                out << i << ":    " << *(p.rules[i]) << std::endl;
         }
-        out << std::endl;
+        out << std::endl << "SUB-PROGRAMS:" << std::endl;
+        for( DBProgram::SUBPROGRAMSMAP::const_iterator it = p.subProgramsMapping.begin();
+                it != p.subProgramsMapping.end();
+                it++ )
+        {
+            if( it->second != NULL )
+            {
+                out << it->first << ": ";
+                for( std::set<unsigned>::const_iterator it1 = it->second->begin();
+                        it1 != it->second->end();
+                        it1++ )
+                    out << " " << *it1;
+                out << std::endl;
+            }
+        }
+        out << std::endl << "METADATA:" << std::endl;
         for( DBProgram::SCHEMAMAP::const_iterator it = p.schemaMapping.begin();
                 it != p.schemaMapping.end();
                 it++ )

@@ -41,6 +41,7 @@ namespace DLV2{ namespace DB{
         ~DBLiteral();
 
         bool isNaf() const { return isNegative; }
+        bool isBuiltin() const;
         DBAtom* getAtom() const { return atom; }
         bool isAggregate() const { return aggregate; }
         DBTerm* getAggregateLowerGuard() const { return lowerGuard; }
@@ -49,6 +50,7 @@ namespace DLV2{ namespace DB{
         const std::string& getAggregateUpperBinop() const { return upperBinop; }
         const std::string& getAggregateFunction() const { return aggregateFunction; }
         const std::vector<DBAggregateElement*>& getAggregateElements() const { return aggregateElements; }
+        const std::string& getAggregateName() const { return aggregateNameForDepGraph; }
 
     private:
         friend inline std::ostream& operator<< ( std::ostream&, const DBLiteral& );
@@ -58,7 +60,14 @@ namespace DLV2{ namespace DB{
         // Classic literal constructor
         DBLiteral( DBAtom* a, bool neg = false );
         // Aggregate constructor
-        DBLiteral( DBTerm*, const std::string&, DBTerm*, const std::string&, const std::string&, const std::vector<DBAggregateElement*>&, bool neg = false );
+        DBLiteral( 
+            DBTerm*, 
+            const std::string&, 
+            DBTerm*, const std::string&, 
+            const std::string&, 
+            const std::vector<DBAggregateElement*>&, 
+            bool neg = false,
+            const std::string& aggregateName = "" );
         void setIsNaf( bool isNaf ) { isNegative = isNaf; }
         
         DBAtom* atom;
@@ -71,6 +80,7 @@ namespace DLV2{ namespace DB{
         std::string upperBinop;
         std::string aggregateFunction;
         std::vector<DBAggregateElement*> aggregateElements;
+        std::string aggregateNameForDepGraph;
     };
 
     inline

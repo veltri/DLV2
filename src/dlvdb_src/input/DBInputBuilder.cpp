@@ -19,32 +19,61 @@
 
 #include "DBInputBuilder.h"
 #include "../../util/Utils.h"
+#include "../sql/QueryBuilder.h"
 
 using namespace std;
 using namespace DLV2::DB;
     
 DBInputBuilder::DBInputBuilder(
     DBConnection& con ):
-        currentAtom(NULL),    
+        currentAtom(NULL),
+        isChoice(false),
         currentLiteral(NULL),
         query(NULL),
         nTermsForWeight(0),
         nTermsForLevel(0),
         nTermsAfterLevel(0),
         lowerGuard(NULL),
-        upperGuard(NULL)
+        upperGuard(NULL),
+        hasNegation(false),
+        hasAggregates(false),
+        hasBuiltins(false)
 {
     program = new DBProgram(con);
+    queryBuilder = new QueryBuilder(program);
+    program->setQueryBuilder(queryBuilder);
     graph = new LabeledDependencyGraph<>();
 }
     
+DBInputBuilder::~DBInputBuilder()
+{
+    if( queryBuilder != NULL )
+        delete queryBuilder;
+}
 
 void 
 DBInputBuilder::onRule()
 {
-    program->createAndAddRule(head,body);
+    program->createAndAddRule(head,body,hasNegation,hasAggregates,hasBuiltins);
+    // Add an edge from each body literal to each head atom.
+    for( unsigned i=0; i<head.size(); i++ )
+    {
+        for( unsigned j=0; j<body.size(); j++ )
+        {
+            assert_msg( head[i] != NULL, "Trying to create a rule with a null head atom." );
+            assert_msg( body[j] != NULL, "Trying to create a rule with a null body literal." );
+            // An head atom cannot be a builtin.
+            if( head[i]->isTrueNegated() )
+                addEdgeToDepGraph(string("-").append(head[i]->getPredicateName()),body[j]);
+            else
+                addEdgeToDepGraph(head[i]->getPredicateName(),body[j]);
+        }   
+    }
     head.clear();
     body.clear();
+    hasNegation = false;
+    hasAggregates = false;
+    hasBuiltins = false;
 }
 
 void
@@ -119,7 +148,21 @@ DBInputBuilder::onHeadAtom()
 void 
 DBInputBuilder::onHead()
 {
-    
+    vector<unsigned> headVertices;
+    // Add head atoms to the graph in order to keep track of atoms which appear
+    // only in heads of rules without body.
+    for( unsigned i=0; i<head.size(); i++ )
+    {
+        assert_msg( head[i] != NULL, "Null head atom." );
+        headVertices.push_back(
+            graph->addVertex(
+                head[i]->getPredicateName()));
+    }
+    if( !isChoice && head.size() > 1 )
+    {
+        graph->addDisjunctiveHead(headVertices);
+    }
+    isChoice = false;    
 }
 
 void
@@ -141,6 +184,8 @@ DBInputBuilder::onNafLiteral(
 {
     assert_msg( currentAtom, "Trying to finalize a literal without any atom" );
     currentLiteral = program->createLiteral(currentAtom,naf);
+    if( naf )
+        hasNegation = true;
 }
 
 void
@@ -350,11 +395,13 @@ void
 DBInputBuilder::onChoiceAtom()
 {
     // TODO
+    isChoice = true;
 }
     
 void 
 DBInputBuilder::onBuiltinAtom()
 {
+    // FIXME : a builtin is likely to be composed of more than two terms. 
     // The operands should be on top of the terms' stack.
     assert_msg( termStack.size() > 1,
             "Trying to create an invalid builtin atom" );
@@ -366,6 +413,7 @@ DBInputBuilder::onBuiltinAtom()
     currentAtom = program->createBuiltinAtom(leftOperand,binop,rightOperand);
     termStack.clear();
     predName = "";
+    hasBuiltins = true;
 }
  
 void 
@@ -396,6 +444,7 @@ DBInputBuilder::onAggregateFunction(
 {
     assert_msg( functionSymbol, "Trying to create an aggregate with a null function" );
     aggregateFunction.assign(functionSymbol);
+    aggregateLabel << aggregateFunction << "{";
 }
     
 void 
@@ -437,6 +486,26 @@ DBInputBuilder::onAggregateElement()
     DBAggregateElement* element = 
             program->createAggregateElement(aggregateElementTerms,aggregateElementLiterals);
     aggregateElements.push_back(element);
+    // Create the aggregate set string that will be used
+    // during the creation of the dependency graph.
+    if( aggregateLabel.str().at(aggregateLabel.str().length()-1) != '{' )
+        aggregateLabel << ";";
+    for( unsigned i=0; i<aggregateElementTerms.size(); i++ )
+    {
+        assert_msg( aggregateElementTerms[i] != NULL, "Null term in an aggregate set." );
+        aggregateLabel << *aggregateElementTerms[i];
+        if( i < aggregateElementTerms.size()-1 )
+            aggregateLabel << ",";
+    }
+    aggregateLabel << ":";
+    for( unsigned i=0; i<aggregateElementLiterals.size(); i++ )
+    {
+        assert_msg( aggregateElementLiterals[i] != NULL, "Null literal in an aggregate set." );
+        aggregateLabel << *aggregateElementLiterals[i];
+        
+        if( i < aggregateElementLiterals.size()-1 )
+            aggregateLabel << ",";
+    }
     aggregateElementTerms.clear();
     aggregateElementLiterals.clear();
 }
@@ -451,7 +520,10 @@ DBInputBuilder::onAggregate(
             "Trying to finalize an aggregate without elements" );
     assert_msg( lowerGuard || upperGuard, 
             "Trying to finalize an aggregate without any guards" );
-
+    
+    // Create the name that is going to be added to the depgraph for this aggregate atom.
+    aggregateLabel << "}";
+    
     currentLiteral = program->createAggregateLiteral(
             lowerGuard,
             lowerBinop,
@@ -459,13 +531,29 @@ DBInputBuilder::onAggregate(
             upperBinop,
             aggregateFunction,
             aggregateElements,
-            naf);
+            naf,
+            aggregateLabel.str());
+    
+    // Add an edge from each literal in the aggregate set to the aggregate atom.
+    for( unsigned i=0; i<aggregateElements.size(); i++ )
+    {
+        assert_msg( aggregateElements[i] != NULL, "Null element in an aggregate set." );
+        for( unsigned j=0; j<aggregateElements[i]->getLiterals().size(); j++ )
+        {
+            DBLiteral* l = aggregateElements[i]->getLiterals().at(j);
+            assert_msg( l != NULL, "Null literal in an aggregate set." );
+            // An aggregate atom cannot be true negated.
+            addEdgeToDepGraph(aggregateLabel.str(),l);
+        }
+    }
+    aggregateLabel.clear();
     aggregateElements.clear();
     lowerBinop = "";
     lowerGuard = NULL;
     upperBinop = "";
     upperGuard = NULL;
     aggregateFunction = "";
+    hasAggregates = true;
 }
     
 void 
@@ -496,5 +584,31 @@ DBInputBuilder::newTerm(
     if( currentTerm != NULL )
     {
         target.push_back(currentTerm);
+    }
+}
+
+void
+DBInputBuilder::addEdgeToDepGraph(
+    const string& targetLabel, 
+    DBLiteral* source )
+{
+    assert_msg( source != NULL, "Trying to add an edge from a null literal." );
+    if( !source->isBuiltin() )
+    {
+        string sourceLabel;
+        if( source->isAggregate() )
+            sourceLabel = source->getAggregateName();
+        else
+        {
+            assert_msg( source->getAtom() != NULL, "Trying to add an edge from a null atom." );
+            if( source->getAtom()->isTrueNegated() )
+                sourceLabel.append("-").append(source->getAtom()->getPredicateName());
+            else
+                sourceLabel = source->getAtom()->getPredicateName();
+        }
+        if( source->isNaf() )
+            graph->addNegativeEdge(sourceLabel,targetLabel);
+        else
+            graph->addPositiveEdge(sourceLabel,targetLabel);
     }
 }

@@ -57,6 +57,8 @@ namespace DLV2
         unsigned numberOfComponents() const { return graph.numberOfComponents(); }
         
         void addDisjunctiveHead( std::vector<Label> head );
+        void addDisjunctiveHead( std::vector<unsigned> head );
+
 
         // Returns true iff the component with the index componentidx is 
         // head-cycle free (HCF). A component is HCF if it contains no 
@@ -165,6 +167,16 @@ LabeledDependencyGraph<ControlStrategy,Label>::addDisjunctiveHead(
         unsignedHead.push_back(it->second);
     }
     graph.addDisjunctiveHead(unsignedHead);
+}
+
+template <typename ControlStrategy,
+          typename Label>
+void 
+LabeledDependencyGraph<ControlStrategy,Label>::addDisjunctiveHead( 
+    std::vector<unsigned> head )
+{
+    assert_msg( head.size() > 0, "The head is empty." );    
+    graph.addDisjunctiveHead(head);
 }
 
 template <typename ControlStrategy,

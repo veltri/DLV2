@@ -18,15 +18,45 @@
  */
 
 #include "DBRule.h"
+#include <vector>
 
+using namespace std;
 using namespace DLV2::DB;
     
+DBRule::DBRule(
+    const vector<DBAtom*>& h, 
+    const vector<DBLiteral*>& b,
+    bool neg,
+    bool aggr,
+    bool built ):
+        head(h),
+        body(b),
+        negation(neg),
+        aggregates(aggr),
+        builtins(built)
+{
+}
+
+DBRule::DBRule(
+    const DBRule& rule ):
+        head(rule.head),
+        body(rule.body),
+        negation(rule.negation),
+        aggregates(rule.aggregates),
+        builtins(rule.builtins)
+{
+}
+
 DBRule::~DBRule()
 {
     for( unsigned i=0; i<head.size(); i++ )
-        if( head[i] != NULL )
-            delete head[i];
+    {
+        assert_msg( head[i] != NULL, "Trying to destroy a rule with a null head atom." );
+        delete head[i];
+    }
     for( unsigned i=0; i<body.size(); i++ )
-        if( body[i] != NULL )
-            delete body[i];
+    {
+        assert_msg( body[i] != NULL, "Trying to destroy a rule with a null body literal." );
+        delete body[i];
+    }
 }

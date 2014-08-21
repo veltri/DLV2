@@ -20,13 +20,16 @@
 #include "DBProgram.h"
 #include "Metadata.h"
 #include "../../util/DBConnection.h"
+#include "../sql/QueryObject.h"
     
 using namespace std;
 using namespace DLV2::DB;
 
 DBProgram::DBProgram( 
     const DBProgram& p ): 
-        rules(p.rules), 
+        rules(p.rules),
+        queryBuilder(p.queryBuilder),
+        queries(p.queries),
         schemaMapping(p.schemaMapping),
         subProgramsMapping(p.subProgramsMapping),
         connection(p.connection)
@@ -35,22 +38,32 @@ DBProgram::DBProgram(
 
 DBProgram::~DBProgram()
 {
-    for( SCHEMAMAP::iterator it = schemaMapping.begin();
-            it != schemaMapping.end();
-            it++ )
-    {
-        delete it->second;
-    }
-    schemaMapping.clear();
     for( SUBPROGRAMSMAP::iterator it = subProgramsMapping.begin();
             it != subProgramsMapping.end();
             it++ )
     {
+        assert_msg( it->second != NULL, "Trying to destroy a program with a null subprogram." );
         delete it->second;
     }
     subProgramsMapping.clear();
+    for( SCHEMAMAP::iterator it = schemaMapping.begin();
+            it != schemaMapping.end();
+            it++ )
+    {
+        assert_msg( it->second != NULL, "Trying to destroy a program with a null metadata." );
+        delete it->second;
+    }
+    schemaMapping.clear();
+    for( unsigned i=0; i<queries.size(); i++ )
+    {
+        assert_msg( queries[i] != NULL, "Trying to destroy a program with a null query object." );
+        delete queries[i];
+    }
     for( unsigned i=0; i<rules.size(); i++ )
+    {
+        assert_msg( rules[i] != NULL, "Trying to destroy a program with a null rule." );
         delete rules[i];
+    }
 }
     
 DBTerm*
@@ -131,7 +144,8 @@ DBProgram::createAggregateLiteral(
     const string& upperBinop, 
     const string& aggregateFunction, 
     const vector<DBAggregateElement*>& aggregateSet,
-    bool isNegative )
+    bool isNegative,
+    const std::string& name )
 {
     return new DBLiteral(
             lowerGuard,
@@ -140,7 +154,8 @@ DBProgram::createAggregateLiteral(
             upperBinop,
             aggregateFunction,
             aggregateSet,
-            isNegative);
+            isNegative,
+            name);
 }
 
 DBAggregateElement*
@@ -154,17 +169,23 @@ DBProgram::createAggregateElement(
 DBRule*
 DBProgram::createRule( 
     const vector<DBAtom*>& head,
-    const vector<DBLiteral*>& body )
+    const vector<DBLiteral*>& body,
+    bool hasNegation, 
+    bool hasAggregates, 
+    bool hasBuiltins )
 {
-    return new DBRule(head,body);
+    return new DBRule(head,body,hasNegation,hasAggregates,hasBuiltins);
 }
 
 void
 DBProgram::createAndAddRule( 
     const vector<DBAtom*>& head,
-    const std::vector<DBLiteral*>& body )
+    const std::vector<DBLiteral*>& body,
+    bool hasNegation,
+    bool hasAggregates,
+    bool hasBuiltins )
 {
-    addRule(new DBRule(head,body));
+    addRule(new DBRule(head,body,hasNegation,hasAggregates,hasBuiltins));
 }
 
 void
@@ -180,10 +201,31 @@ DBProgram::addRule(
         assert_msg( a != NULL, "Null head atom." );
         // Only standard atoms can be found in the head. 
         // Thus, this control is not necessary.
-        if( !a->isBuiltin() )
-            addToPredicateSubProgram(a->getPredicateName(),a->getArity(),rules.size());
+        assert_msg( !a->isBuiltin(), "A builtin atom occurs in the head." );
+        addToPredicateSubProgram(a->getPredicateName(),a->getArity(),rules.size());
     }
+    // Add rule r...
     rules.push_back(r);
+    // ...and create the correspondent query object.
+    assert_msg( queryBuilder != NULL, "Null query builder" );
+    queryBuilder->rewriteNonRecursiveRule(r);
+    queries.push_back(queryBuilder->getQueryObject());
+}
+
+void
+DBProgram::setQueryBuilder( 
+    QueryBuilder* build )
+{
+    assert_msg( build != NULL, "Null query builder" );
+    queryBuilder = build;
+}
+
+QueryObject*
+DBProgram::getQueryObject( 
+    unsigned i )
+{
+    assert_msg( i<queries.size(), "Index out of range" );
+    return queries[i];
 }
 
 Metadata*

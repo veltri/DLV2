@@ -371,6 +371,7 @@ term_
         }
     | NUMBER DDOT NUMBER
         {
+            director.getParserConstraint()->rangeFacts();
             director.getBuilder()->onTermRange($1, $3);
             delete[] $1;
             delete[] $3;

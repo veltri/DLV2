@@ -60,11 +60,18 @@ Metadata::Metadata(
 {
 }
 
+Metadata::~Metadata() 
+{ 
+    assert_msg( attributeNames != NULL, "Trying to destroy metadata with null attribute names." ); 
+    delete attributeNames;
+}
+
+
 const string&
 Metadata::getAttributeName(
     unsigned index ) const
 {
-    assert_msg( (attributeNames != NULL && index > 0 && index <attributeNames->size()), 
+    assert_msg( (attributeNames != NULL && index >= 0 && index <attributeNames->size()), 
             "Attribute index out of range." );
     return attributeNames->at(index);
 }

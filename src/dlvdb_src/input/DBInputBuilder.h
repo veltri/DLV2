@@ -31,13 +31,14 @@
 #include "../../depgraph/LabeledDependencyGraph.h"
 #include "../../input/InputBuilder.h"
 #include "../../util/DBConnection.h"
+#include <sstream>
 
 namespace DLV2{ namespace DB{
     
     class DBInputBuilder: public InputBuilder {
     public:
         DBInputBuilder( DBConnection& con );
-        virtual ~DBInputBuilder() { }
+        virtual ~DBInputBuilder();
 
         virtual void onDirective( char* directiveName, char* directiveValue ) { }
         virtual void onRule();
@@ -93,12 +94,16 @@ namespace DLV2{ namespace DB{
         LabeledDependencyGraph<>* getLabeledDependencyGraph() { return graph; }
             
     private:
+        void addEdgeToDepGraph( const std::string&, DBLiteral* );
+        
         LabeledDependencyGraph<>* graph;
         DBProgram* program;
+        QueryBuilder* queryBuilder;
         
         std::vector<DBTerm*> termStack;
         std::string predName;
         DBAtom* currentAtom;
+        bool isChoice;
         DBLiteral* currentLiteral;
         std::vector<DBAtom*> head;
         std::vector<DBLiteral*> body;
@@ -115,6 +120,10 @@ namespace DLV2{ namespace DB{
         std::vector<DBTerm*> aggregateElementTerms;
         std::vector<DBLiteral*> aggregateElementLiterals;
         std::vector<DBAggregateElement*> aggregateElements;
+        std::stringstream aggregateLabel;
+        bool hasNegation;
+        bool hasAggregates;
+        bool hasBuiltins;
     };
 
 };};

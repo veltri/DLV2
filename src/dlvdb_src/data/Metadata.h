@@ -37,7 +37,7 @@ namespace DLV2{ namespace DB{
     class Metadata {
     public:
         Metadata( const Metadata& );
-        ~Metadata() { delete attributeNames; }
+        ~Metadata();
         
         const std::string& getPredicateName() const { return predicateName; }
         unsigned getArity() const { return arity; }
