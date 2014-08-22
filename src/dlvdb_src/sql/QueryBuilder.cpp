@@ -32,7 +32,8 @@ QueryBuilder::QueryBuilder(
 {
     assert_msg( p != NULL, "The program is null." );
 }
-    
+
+
 void
 QueryBuilder::rewriteNonRecursiveRule(
     DBRule* rule )
@@ -40,11 +41,11 @@ QueryBuilder::rewriteNonRecursiveRule(
     assert_msg( rule != NULL, "The rule is null." );
     assert_msg( rule->getHead().size() == 1, "Only or-free programs are allowed." );
     query = new QueryObject();
-    query->targetPredicate = rule->getHead().at(0)->getPredicateName();
     if( rule->hasNegation() )
         rewriteRuleWithNegation(rule);
     else
         rewritePositiveRule(rule);
+    reset();
 }
 
 void
@@ -70,169 +71,251 @@ QueryBuilder::rewritePositiveRule(
         // TODO
         assert(0);
     }
-    // Fill Select clause
-    fillAttributesToSelect(rule);
-    // Here, the body is composed of positive standard atoms
+    for( unsigned i=0; i<rule->getHead().size(); i++ )
+        addInHead(rule->getHead().at(i));
     for( unsigned i=0; i<rule->getBody().size(); i++ )
-    {
-        DBLiteral* literal = rule->getBody().at(i);
-        assert_msg( literal != NULL, "Null literal." );
-        DBAtom* atom = literal->getAtom();
-        assert_msg( atom != NULL, "Null atom." );
-        addSourcePredicate(atom->getPredicateName());
-        
-        for( unsigned j=0; j<atom->getTerms().size(); j++ )
-        {
-            Metadata* meta = program->getMetadata(atom->getPredicateName());
-            assert_msg( meta != NULL, "Null metadata for "+atom->getPredicateName() );
-            DBTerm* term = atom->getTerms().at(j);
-            assert_msg( term != NULL, "Null term." );
-            if( term->getType() == DBTerm::Variable )
-            {
-                // Check for self-joins
-                for( unsigned k=j+1; k<atom->getTerms().size(); k++ )
-                {
-                    DBTerm* term1 = atom->getTerms().at(k);
-                    assert_msg( term1 != NULL, "Null term." );                    
-                    if( term1->getType() == DBTerm::Variable &&
-                            term1->getText() == term->getText() )
-                    {
-                        QCondition condition(
-                            atom->getPredicateName()+"."+meta->getAttributeName(j),    
-                            atom->getPredicateName()+"."+meta->getAttributeName(k)
-                            );
-                        query->conditions.push_back(condition);
-                    }
-                }
-                // Check for joins
-                for( unsigned x=i+1; x<rule->getBody().size(); x++ )
-                {
-                    DBLiteral* literal1 = rule->getBody().at(x);
-                    assert_msg( literal1 != NULL, "Null literal." );
-                    DBAtom* atom1 = literal1->getAtom();
-                    assert_msg( atom1 != NULL, "Null atom." );
-                    for( unsigned y=0; y<atom1->getTerms().size(); y++ )
-                    {
-                        Metadata* meta1 = program->getMetadata(atom1->getPredicateName());
-                        assert_msg( meta1 != NULL, "Null metadata for "+atom1->getPredicateName() );
-                        DBTerm* term1 = atom1->getTerms().at(y);
-                        assert_msg( term1 != NULL, "Null term." );
-                        if( term1->getType() == DBTerm::Variable && 
-                                term1->getText() == term->getText() )
-                        {
-                            QCondition condition(
-                                atom->getPredicateName()+"."+meta->getAttributeName(j),
-                                atom1->getPredicateName()+"."+meta1->getAttributeName(y));
-                            query->conditions.push_back(condition);    
-                        }
-                    }
-                }
-            }
-            else if( term->getType() == DBTerm::String )
-            {
-                QCondition condition(
-                    atom->getPredicateName()+"."+meta->getAttributeName(j),
-                    term->getText());
-                query->conditions.push_back(condition);
-            }
-            else
-            {
-                assert_msg( 0, "Only variables and strings are allowed." );
-            }
-        }
-    }
+        addInPositiveBody(rule->getBody().at(i));
 }
 
 void
 QueryBuilder::rewriteRuleWithNegation(
     DBRule* rule )
 {
-    
-}
-
-//void
-//QueryBuilder::rewriteRuleWithBuiltins(
-//    DBRule* rule )
-//{
-//    
-//}
-//
-//void
-//QueryBuilder::rewriteRuleWithAggregates( 
-//    DBRule* rule )
-//{
-//    
-//}
-
-void 
-QueryBuilder::reset()
-{
-}
-
-bool
-QueryBuilder::occursVariable(
-    DBAtom* atom,
-    DBTerm* var )
-{
-    assert_msg( var != NULL, "Null term" );
-    assert_msg( var->getType() == DBTerm::Variable, "Non variable term" );
-    assert_msg( atom != NULL, "Null atom" );
-    for( unsigned i=0; i<atom->getTerms().size(); i++ )
-    {
-        if( atom->getTerms().at(i)->getType() == DBTerm::Variable && 
-               atom->getTerms().at(i)->getText() == var->getText() )
-            return true;
-    }
-    return false;
+    // TODO
+    assert(0);    
 }
 
 void
-QueryBuilder::fillAttributesToSelect(
+QueryBuilder::rewriteRuleWithBuiltins(
     DBRule* rule )
 {
-    assert_msg( rule->getHead().size() == 1, "Only or-free programs are allowed" );
-    assert_msg( query, "The query is null" );
-    DBAtom* head = rule->getHead().at(0);
-    assert_msg( head != NULL, "Null head atom" );
-    for( unsigned i=0; i<head->getTerms().size(); i++ )
+    // TODO
+    assert(0);
+}
+
+void
+QueryBuilder::rewriteRuleWithAggregates( 
+    DBRule* rule )
+{
+    // TODO
+    assert(0);   
+}
+
+
+void
+QueryBuilder::addInHead( 
+    DBAtom* headAtom )
+{
+    assert_msg( headAtom != NULL, "Null head atom" );
+    assert_msg( headVariablesMap.empty(), "Only or-free programs are allowed" );
+    assert_msg( headAtom->getTerms().size() > 0, "Propositional atoms are not allowed" );
+    query->targetPredicate = headAtom->getPredicateName();
+    // The number of attributes which has to be selected 
+    // by the output query is given by the arity of the head predicate.
+    // The vector is resized because in the following we will need 
+    // to access directly to single locations.
+    query->attributesToSelect.resize(headAtom->getTerms().size());
+    for( unsigned i=0; i<headAtom->getTerms().size(); i++ )
     {
-        DBTerm* term = head->getTerms().at(i);
-        assert_msg( term != NULL, "Null term" );
-        assert_msg( term->getType() == DBTerm::Variable, "Not variable term in the head" );
-        // Add only one attribute for each term of the head.
-        bool found = false;
-        for( unsigned j=0; j<rule->getBody().size() && !found; j++ )
+        DBTerm* headTerm = headAtom->getTerms().at(i);
+        COORDINATES termCoordinates;
+        // The head predicate has index 0.
+        termCoordinates.predIndex = 0;
+        termCoordinates.termIndex = i;
+        assert_msg( headTerm != NULL, "Null term" );
+        assert_msg( headTerm->getType() == DBTerm::Variable, "Not variable term in head" );
+        // Check whether it is a self-join.
+        VARIABLEMAP::iterator it = headVariablesMap.find(headTerm->getText());
+        if( it == headVariablesMap.end() )
         {
-            DBLiteral* literal = rule->getBody().at(j);
-            assert_msg( literal != NULL, "Null literal." );
-            DBAtom* atom = literal->getAtom();
-            assert_msg( atom != NULL, "Null atom." );
-            for( unsigned k=0; k<atom->getTerms().size() && !found; k++ )
-            {    
-                DBTerm* term1 = atom->getTerms().at(k);
-                assert_msg( term1 != NULL, "Null term." );
-                if( term1->getType() == DBTerm::Variable &&
-                        term->getText() == term1->getText() )
-                {
-                    found = true;
-                    Metadata* meta = program->getMetadata(atom->getPredicateName());
-                    query->attributesToSelect.push_back(
-                        string(meta->getPredicateName())+"."+meta->getAttributeName(k));
-                }
-            }
+            vector<COORDINATES> v;
+            v.push_back(termCoordinates);
+            headVariablesMap[headTerm->getText()] = v;
+        }
+        else
+        {
+            it->second.push_back(termCoordinates);
+        }
+        // Check whether it appears in the body.
+        // If the body literals' stack were filled out 
+        // after the head, this control would be unnecessary.
+        it = bodyVariablesMap.find(headTerm->getText());
+        if( it != bodyVariablesMap.end() )
+        {
+            assert_msg( it->second.size() > 0, 
+                    "A term without any locations has been added" );
+            // Consider only the first location where it appears.
+            unsigned predIndex = it->second.at(0).predIndex;
+            unsigned termIndex = it->second.at(0).termIndex;
+            assert_msg( predIndex < query->sourcePredicates.size(),
+                    "Index out of range" );
+            string attribute(
+                query->sourcePredicates[predIndex]+
+                "."+
+                getAttributeName(query->sourcePredicates[predIndex],termIndex));
+            query->attributesToSelect[i] = attribute;
         }
     }
 }
 
 void
+QueryBuilder::addInPositiveBody(
+    DBLiteral* literal )
+{
+    assert_msg( literal != NULL, "Null body literal" );
+    assert_msg( !literal->isAggregate(), 
+            "Call addAggregateIn(Positive|Negative)Body to add aggregate literals" );
+    assert_msg( !literal->isBuiltin(), 
+            "Call addBuiltin to add builtins" );
+    assert_msg( !literal->isNaf(), 
+            "Call addInNegativeBody to add negative literals" );
+    DBAtom* currentAtom = literal->getAtom();
+    assert_msg( currentAtom != NULL, "Null body atom" );
+    assert_msg( currentAtom->getTerms().size() > 0, 
+            "Propositional atoms are not allowed" );
+
+    unsigned currentPredIndex = addSourcePredicate(currentAtom->getPredicateName());    
+    for( unsigned i=0; i<currentAtom->getTerms().size(); i++ )
+    {
+        DBTerm* currentTerm = currentAtom->getTerms().at(i);
+        assert_msg( currentTerm != NULL, "Null term" );
+        const string& currentAttributeName =
+            getAttributeName(currentAtom->getPredicateName(),i);
+        if( currentTerm->getType() == DBTerm::Variable &&
+                currentTerm->getText() != "_" )
+        {
+            // First check whether currentTerm appears in the head
+            VARIABLEMAP::const_iterator it = 
+                    headVariablesMap.find(currentTerm->getText());
+            if( it != headVariablesMap.end() )
+            {
+                // Repeat the current attribute name for each location 
+                // of the head where currentTerm appears. Note that the 
+                // locations that have to be considered are stored 
+                // in vector it->second.
+                string attribute(
+                    currentAtom->getPredicateName()+
+                    "."+
+                    currentAttributeName);
+                for( unsigned j=0; j<it->second.size(); j++ )
+                {
+                    unsigned targetTermIndex = it->second.at(j).termIndex;
+                    assert_msg( targetTermIndex < query->attributesToSelect.size(),
+                        "Index out of range" );
+                    query->attributesToSelect[targetTermIndex] = attribute;
+                }
+            }
+            // Once we have done with the current attribute we erase the record 
+            // from the map in order to avoid that one can write
+            // attributes (to select) in the same location more than once.
+            headVariablesMap.erase(it);
+            
+            // Then, check whether currentTerm has been already seen in the body.
+            it = bodyVariablesMap.find(currentTerm->getText());
+            if( it != bodyVariablesMap.end() )
+            {
+                assert_msg( it->second.size() > 0, 
+                    "A term without any locations has been added" );
+                // There should be only one location in it->second.                
+                unsigned targetPredIndex = it->second.at(0).predIndex;
+                unsigned targetTermIndex = it->second.at(0).termIndex;
+                assert_msg( targetPredIndex < query->sourcePredicates.size(),
+                    "Index out of range" );
+                const string& targetAttributeName =
+                    getAttributeName(query->sourcePredicates[targetPredIndex],targetTermIndex);
+                QCondition condition(
+                    currentAtom->getPredicateName()+
+                    "."+
+                    currentAttributeName,
+                    query->sourcePredicates[targetPredIndex]+
+                    "."+
+                    targetAttributeName);
+                query->conditions.push_back(condition);    
+            }
+            
+            // Finally, add the current variable to the map of the body variables
+            COORDINATES currentCoordinates;
+            currentCoordinates.predIndex = currentPredIndex;
+            currentCoordinates.termIndex = i;
+            vector<COORDINATES> v;
+            v.push_back(currentCoordinates);
+            bodyVariablesMap[currentTerm->getText()] = v;
+        }
+        else if( currentTerm->getType() == DBTerm::String )
+        {
+            QCondition condition(
+                currentAtom->getPredicateName()+
+                "."+
+                currentAttributeName,
+                "\""+currentTerm->getText()+"\"");
+            query->conditions.push_back(condition);
+        }
+        else if( currentTerm->getType() == DBTerm::Integer )
+        {
+            QCondition condition(
+                currentAtom->getPredicateName()+
+                "."+
+                currentAttributeName,
+                currentTerm->getText());
+            query->conditions.push_back(condition);
+        }
+    }
+}
+    
+void 
+QueryBuilder::addInNegativeBody( 
+    DBLiteral* literal )
+{
+    
+}
+
+void
+QueryBuilder::addAggregateInPositiveBody( 
+    DBLiteral* literal )
+{
+    
+}
+    
+void 
+QueryBuilder::addAggregateInNegativeBody( 
+    DBLiteral* literal )
+{
+    
+}
+    
+void 
+QueryBuilder::addBuiltin( 
+    DBLiteral* literal )
+{
+    
+}
+
+void 
+QueryBuilder::reset()
+{
+    headVariablesMap.clear();
+    bodyVariablesMap.clear();
+}
+
+unsigned
 QueryBuilder::addSourcePredicate(
     const std::string& pred )
 {
     assert_msg( query, "The query is null" );
-    bool found = false;
-    for( unsigned i=0; i<query->sourcePredicates.size() && !found; i++ )
+    for( unsigned i=0; i<query->sourcePredicates.size(); i++ )
         if( query->sourcePredicates[i] == pred )
-            found = true;
-    if( !found )
-        query->sourcePredicates.push_back(pred);
+            return i;
+    query->sourcePredicates.push_back(pred);
+    return query->sourcePredicates.size()-1;
+}
+
+const string&
+QueryBuilder::getAttributeName(
+    const std::string& predName, 
+    unsigned termIndex)
+{
+    assert_msg( program != NULL, "Null program" );
+    Metadata* meta = program->getMetadata(predName);
+    assert_msg( meta != NULL, "Null metadata" );
+    return meta->getAttributeName(termIndex);
 }

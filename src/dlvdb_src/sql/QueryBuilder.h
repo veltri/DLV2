@@ -29,15 +29,22 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 namespace DLV2{ namespace DB{
     
     class QueryObject;
     class DBProgram;
     class DBRule;
+    class DBLiteral;
     class DBAtom;
     class DBTerm;
     
+    struct COORDINATES {
+        unsigned predIndex;
+        unsigned termIndex;
+    };
+    typedef std::unordered_map<std::string,std::vector<COORDINATES>> VARIABLEMAP;
     typedef std::pair<std::string,std::string> QCondition;
     
     class QueryBuilder {
@@ -45,27 +52,38 @@ namespace DLV2{ namespace DB{
         QueryBuilder( DBProgram* p );
         virtual ~QueryBuilder() { }
         
-        virtual void rewriteNonRecursiveRule( DBRule* );
-        virtual void rewriteRecursiveRule( DBRule* );
+        virtual void rewriteNonRecursiveRule( DBRule* rule );
+        virtual void rewriteRecursiveRule( DBRule* rule );
+        virtual void reset();
         
         virtual QueryObject* getQueryObject() { return query; }        
         virtual DBProgram* getProgram() const { return program; }
     
     protected:
-        virtual void rewritePositiveRule( DBRule* );
-        virtual void rewriteRuleWithNegation( DBRule* );
-        //virtual void rewriteRuleWithBuiltins( DBRule* );
-        //virtual void rewriteRuleWithAggregates( DBRule* );
-        virtual void reset();
+        virtual void rewritePositiveRule( DBRule* rule );
+        virtual void rewriteRuleWithNegation( DBRule* rule );
+        virtual void rewriteRuleWithBuiltins( DBRule* );
+        virtual void rewriteRuleWithAggregates( DBRule* );
+        
+        virtual void addInHead( DBAtom* headAtom );
+        virtual void addInPositiveBody( DBLiteral* literal );
+        virtual void addInNegativeBody( DBLiteral* literal );
+        virtual void addAggregateInPositiveBody( DBLiteral* literal );
+        virtual void addAggregateInNegativeBody( DBLiteral* literal );
+        virtual void addBuiltin( DBLiteral* );
         
         QueryObject* query;
         DBProgram* program;
         
     private:
-        bool occursVariable( DBAtom*, DBTerm* );
-        void fillAttributesToSelect( DBRule* );
-        void addSourcePredicate( const std::string& );
+        unsigned addSourcePredicate( const std::string& predName );
+        const std::string& getAttributeName( 
+            const std::string& predName,
+            unsigned termIndex );
         
+        // Each variable in a rule could appear in more than one location.
+        VARIABLEMAP headVariablesMap;
+        VARIABLEMAP bodyVariablesMap;
     };
 
 };};

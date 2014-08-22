@@ -36,6 +36,8 @@ namespace DLV2{ namespace DB{
         SQLBuilder() { }
         virtual ~SQLBuilder() { }
         
+        // The caller is entrusted with the task 
+        // of destroying the returned string.
         virtual std::string* generateSQL( QueryObject* ) = 0;
     };
 
