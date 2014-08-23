@@ -20,7 +20,7 @@
 #include "DBProgram.h"
 #include "Metadata.h"
 #include "../../util/DBConnection.h"
-#include "../sql/QueryObject.h"
+#include "../queries/QueryObject.h"
     
 using namespace std;
 using namespace DLV2::DB;
@@ -192,6 +192,11 @@ void
 DBProgram::addRule(
     DBRule* r )
 {
+    // Rules are added to the program in a way such that
+    // if a rule is stored in the rules vector at position "i",
+    // its query object is stored at the same position of the 
+    // query objects vector. 
+    
     // Add the index of r to the set of rules having
     // p in the head for each predicate p in the head.
     const std::vector<DBAtom*>& head = r->getHead();
@@ -224,7 +229,7 @@ QueryObject*
 DBProgram::getQueryObject( 
     unsigned i )
 {
-    assert_msg( i<queries.size(), "Index out of range" );
+    assert_msg( i < queries.size(), "Index out of range" );
     return queries[i];
 }
 

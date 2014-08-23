@@ -27,7 +27,7 @@
 #include "input/DepGraphBuilder.h"
 #include "input/EmptyInputBuilder.h"
 #include "dlvdb_src/input/DBInputBuilder.h"
-#include "dlvdb_src/sql/QueryObject.h"
+#include "dlvdb_src/queries/QueryObject.h"
 
 //extern Buffer theBuffer;
 

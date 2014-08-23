@@ -62,15 +62,15 @@ namespace DLV2{ namespace DB{
     protected:
         virtual void rewritePositiveRule( DBRule* rule );
         virtual void rewriteRuleWithNegation( DBRule* rule );
-        virtual void rewriteRuleWithBuiltins( DBRule* );
-        virtual void rewriteRuleWithAggregates( DBRule* );
+        virtual void rewriteRuleWithBuiltins( DBRule* rule );
+        virtual void rewriteRuleWithAggregates( DBRule* rule );
         
         virtual void addInHead( DBAtom* headAtom );
         virtual void addInPositiveBody( DBLiteral* literal );
         virtual void addInNegativeBody( DBLiteral* literal );
-        virtual void addAggregateInPositiveBody( DBLiteral* literal );
-        virtual void addAggregateInNegativeBody( DBLiteral* literal );
-        virtual void addBuiltin( DBLiteral* );
+        virtual void addAggregateInPositiveBody( DBLiteral* aggregate );
+        virtual void addAggregateInNegativeBody( DBLiteral* aggregate );
+        virtual void addBuiltin( DBLiteral* builtin );
         
         QueryObject* query;
         DBProgram* program;

@@ -19,7 +19,7 @@
 
 #include "DBInputBuilder.h"
 #include "../../util/Utils.h"
-#include "../sql/QueryBuilder.h"
+#include "../queries/QueryBuilder.h"
 
 using namespace std;
 using namespace DLV2::DB;

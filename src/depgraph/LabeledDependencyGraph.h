@@ -31,11 +31,7 @@
 #include <unordered_map>
 
 namespace DLV2
-{
-//
-//    template <typename ControlStrategy>
-//    class DependencyGraph;
-    
+{    
     template < typename ControlStrategy = DepGraphNoStrategy, 
                typename Label = std::string >
     class LabeledDependencyGraph {
@@ -59,7 +55,9 @@ namespace DLV2
         void addDisjunctiveHead( std::vector<Label> head );
         void addDisjunctiveHead( std::vector<unsigned> head );
 
-
+        unsigned getVertexDescriptor( Label label );
+        const Label& getLabelOfVertex( unsigned vertexDescriptor );
+        
         // Returns true iff the component with the index componentidx is 
         // head-cycle free (HCF). A component is HCF if it contains no 
         // disjunctions or if it is acyclic.        
@@ -92,6 +90,10 @@ namespace DLV2
         DependencyGraph<ControlStrategy> graph;
         // Maps each predicate name to its vertex_descriptor in the graph.
         std::unordered_map<Label, unsigned> predsMap;
+        // Maps each vertex_descriptor to its record in the previous map.
+        std::unordered_map<
+            unsigned, 
+            typename std::unordered_map<Label, unsigned>::const_iterator > vertexToLabel;
         
         template<typename T, typename L>
         friend inline std::ostream& operator<<( std::ostream&, 
@@ -133,7 +135,10 @@ LabeledDependencyGraph<ControlStrategy,Label>::addVertex(
     if( it == predsMap.end() )
     {
         unsigned descriptor = graph.addVertex();
-        predsMap[p] = descriptor;
+        std::pair<Label,unsigned> element(p,descriptor);
+        std::pair<typename std::unordered_map<Label,unsigned>::const_iterator,bool> ins =
+            predsMap.insert(element);
+        vertexToLabel[descriptor] = ins.first;
         return descriptor;
     }
     else 
@@ -177,6 +182,30 @@ LabeledDependencyGraph<ControlStrategy,Label>::addDisjunctiveHead(
 {
     assert_msg( head.size() > 0, "The head is empty." );    
     graph.addDisjunctiveHead(head);
+}
+
+template <typename ControlStrategy,
+          typename Label>
+unsigned
+LabeledDependencyGraph<ControlStrategy,Label>::getVertexDescriptor( 
+    Label label )
+{
+    typename std::unordered_map<Label, unsigned>::const_iterator it = predsMap.find(label);
+    assert_msg( it != predsMap.end(), "Label not valid" );
+    return it->second;
+}
+template <typename ControlStrategy,
+          typename Label>
+const Label&
+LabeledDependencyGraph<ControlStrategy,Label>::getLabelOfVertex( 
+    unsigned descriptor )
+{
+    typename std::unordered_map< 
+        unsigned,
+        typename std::unordered_map<Label, unsigned>::const_iterator 
+        >::const_iterator it = vertexToLabel.find(descriptor);
+    assert_msg( it != vertexToLabel.end(), "Not valid vertex descriptor" );    
+    return it->second->first;
 }
 
 template <typename ControlStrategy,

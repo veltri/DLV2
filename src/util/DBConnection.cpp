@@ -66,6 +66,7 @@ DBConnection::connect(
     const string& usr,
     const string& pw )
 {
+    assert_msg( !connected, "You are already connected to a datasource." );
     source = src;
     user = usr;
     pwd = pw;
@@ -168,6 +169,7 @@ DBConnection::connect(
 void
 DBConnection::disconnect()
 {
+    assert_msg( connected, "You have to first connect to a datasource." );
     // Free handles, and disconnect.   
     if (hDBc) { 
         SQLDisconnect(hDBc);
@@ -183,11 +185,72 @@ DBConnection::disconnect()
         delete instance;
 }
 
+void
+DBConnection::setAutoCommit( 
+    bool autoCommit )
+{
+    assert_msg( connected, "You have to first connect to a datasource." );
+    if( autoCommit )
+        SQLSetConnectAttr(hDBc,SQL_ATTR_AUTOCOMMIT,(SQLPOINTER)SQL_AUTOCOMMIT_ON,0);
+    else
+        SQLSetConnectAttr(hDBc,SQL_ATTR_AUTOCOMMIT,(SQLPOINTER)SQL_AUTOCOMMIT_OFF,0);
+}
+
+void
+DBConnection::executeSQLStatement(
+    const string& sql )
+{
+    assert_msg( connected, "You have to first connect to a datasource." );
+    SQLRETURN retCode;
+    SQLHSTMT hStmt = 0;
+    try
+    {
+        // Allocate statement handle
+        SQLAllocHandle(SQL_HANDLE_STMT, hDBc, &hStmt);
+        retCode = SQLExecDirect(hStmt,(SQLCHAR*)sql.c_str(),SQL_NTS);
+        if( !SQL_SUCCEEDED(retCode) )
+            throw SQLEXCEPTION(SQL_HANDLE_STMT,hStmt);
+    }
+    catch(SQLEXCEPTION& exception)
+    {
+	SQLSMALLINT i = 1; 
+        SQLSMALLINT MsgLen;
+	SQLINTEGER NativeError;
+	SQLCHAR SqlState[6];
+        SQLCHAR Msg[SQL_MAX_MESSAGE_LENGTH];
+	retCode = SQLGetDiagRec(exception.first, exception.second, i, SqlState, &NativeError,Msg, sizeof(Msg), &MsgLen);
+	if( retCode == SQL_SUCCESS )
+        {
+            cerr << Msg << endl;
+            //ErrorMessage::errorGeneric(string(Msg));
+            exit(0);
+        }
+    }
+    if (hStmt) { 
+        SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
+        hStmt = NULL; 
+    }
+}
+
+void
+DBConnection::commit()
+{
+    assert_msg( connected, "You have to first connect to a datasource." );
+    SQLEndTran(SQL_HANDLE_DBC,hDBc,SQL_COMMIT);
+}
+
+void
+DBConnection::rollback()
+{
+    assert_msg( connected, "You have to first connect to a datasource." );
+    SQLEndTran(SQL_HANDLE_DBC,hDBc,SQL_ROLLBACK);    
+}
+
 vector<string>*
 DBConnection::retrieveTableSchema(
     const std::string& tableName ) 
 {
-    assert_msg( connected, "Not valid connection.");
+    assert_msg( connected, "You have to first connect to a datasource." );
     vector<string>* attributesList = new vector<string>();
     SQLRETURN retCode;
     SQLHSTMT hStmt = 0;
