@@ -28,6 +28,7 @@
 #include "input/EmptyInputBuilder.h"
 #include "dlvdb_src/input/DBInputBuilder.h"
 #include "dlvdb_src/queries/QueryObject.h"
+#include "dlvdb_src/DLVDBFacade.h"
 
 //extern Buffer theBuffer;
 
@@ -177,35 +178,20 @@ DLV2Facade::solve()
     if( getOptions().getInputBuilderPolicy() == BUILDER_DLV_DB )
     {
         DBInputBuilder* dbInputBuilder = static_cast<DBInputBuilder*>(builder);
-        DBProgram* program = NULL;
-        program = dbInputBuilder->getProgram();
-        if( program != NULL )
-            cout << *program;
-        DBAtom* query = NULL;
-        query = dbInputBuilder->getQuery();
-        LabeledDependencyGraph<>* depGraph = dbInputBuilder->getLabeledDependencyGraph();
-        if( depGraph != NULL )
-        {
-            depGraph->computeStronglyConnectedComponents();
-            cout << *depGraph << endl;
-        }
+        DBProgram* program = dbInputBuilder->getProgram();
+        assert_msg( program != NULL, "Null input program" );
+        DBAtom* query = dbInputBuilder->getQuery();
+        
+        DLVDBFacade dlvdbFacade(
+            *program,
+            *DBConnection::globalDBConnection());
+        
+        dlvdbFacade.solve();
+
         if( query != NULL )
-            cout << *query << "?" << endl;
-        cout << endl << "QUERY-OBJECTS:" << endl;
-        for( unsigned i=0; i<program->getQueryObjects().size(); i++ )
-        {
-            QueryObject* queryObject = program->getQueryObjects().at(i);
-            if( queryObject != NULL )
-            {
-                queryObject->setSQLBuilder(queryObject);
-                string* sql = queryObject->getSQL(); 
-                cout << i << ":    " << *sql << endl;
-                delete sql;
-            }
-        }
-        delete depGraph;
-        delete query;
-        delete program;
+            delete query;
+        if( program != NULL )
+            delete program;
     }
     
     if( getOptions().getPrintStatistics() )

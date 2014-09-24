@@ -35,14 +35,13 @@ namespace DLV2{ namespace DB{
 
     class DLVDBFacade {
     public:
-        DLVDBFacade( DBProgram& p, LabeledDependencyGraph<>& dG, DBConnection& con );
+        DLVDBFacade( DBProgram& p, DBConnection& con );
         ~DLVDBFacade() { }
         
         void solve();
         
     private:
         DBProgram& program;
-        LabeledDependencyGraph<>& depGraph;
         DBConnection& connection;
     };
 

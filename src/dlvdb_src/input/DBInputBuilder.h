@@ -28,7 +28,6 @@
 #define	DBINPUTBUILDER_H
 
 #include "../data/DBProgram.h"
-#include "../../depgraph/LabeledDependencyGraph.h"
 #include "../../input/InputBuilder.h"
 #include "../../util/DBConnection.h"
 #include <sstream>
@@ -86,27 +85,24 @@ namespace DLV2{ namespace DB{
         virtual void onAggregateElement();
         virtual void onAggregate( bool naf = false );
         
-        void newTerm( char*, std::vector<DBTerm*>&, bool dash = false );
+        void newTerm( char*, std::vector< DBTerm* >&, bool dash = false );
         static bool isNumeric( const char*, int );
         
         DBProgram* getProgram() { return program; }
         DBAtom* getQuery() { return query; }
-        LabeledDependencyGraph<>* getLabeledDependencyGraph() { return graph; }
             
     private:
-        void addEdgeToDepGraph( const std::string&, DBLiteral* );
         
-        LabeledDependencyGraph<>* graph;
         DBProgram* program;
         QueryBuilder* queryBuilder;
         
-        std::vector<DBTerm*> termStack;
+        std::vector< DBTerm* > termStack;
         std::string predName;
         DBAtom* currentAtom;
         bool isChoice;
         DBLiteral* currentLiteral;
-        std::vector<DBAtom*> head;
-        std::vector<DBLiteral*> body;
+        std::vector< DBAtom* > head;
+        std::vector< DBLiteral* > body;
         DBAtom* query;
         unsigned nTermsForWeight;
         unsigned nTermsForLevel;
@@ -117,9 +113,9 @@ namespace DLV2{ namespace DB{
         DBTerm* lowerGuard;
         DBTerm* upperGuard;
         std::string aggregateFunction;
-        std::vector<DBTerm*> aggregateElementTerms;
-        std::vector<DBLiteral*> aggregateElementLiterals;
-        std::vector<DBAggregateElement*> aggregateElements;
+        std::vector< DBTerm* > aggregateElementTerms;
+        std::vector< DBLiteral* > aggregateElementLiterals;
+        std::vector< DBAggregateElement* > aggregateElements;
         std::stringstream aggregateLabel;
         bool hasNegation;
         bool hasAggregates;

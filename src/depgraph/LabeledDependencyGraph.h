@@ -37,14 +37,15 @@ namespace DLV2
     class LabeledDependencyGraph {
     public:
         LabeledDependencyGraph() {}
+        LabeledDependencyGraph( const LabeledDependencyGraph< ControlStrategy, Label >& ldg );
         ~LabeledDependencyGraph() {}
         
         unsigned addVertex( Label name );
-        void addPositiveEdge( Label p1, Label p2 ) { addEdge(p1,p2,POSITIVE_EDGE); }
-        void addNegativeEdge( Label p1, Label p2 ) { addEdge(p1,p2,NEGATIVE_EDGE); }
-        bool isPositiveEdge( Label p1, Label p2 ) const { return isEdge(p1,p2,POSITIVE_EDGE); }
-        bool isNegativeEdge( Label p1, Label p2 ) const { return isEdge(p1,p2,NEGATIVE_EDGE); }
-        bool isAnyEdge( Label p1, Label p2 ) const;
+        void addPositiveEdge( Label src, Label dest ) { addEdge(src,dest,POSITIVE_EDGE); }
+        void addNegativeEdge( Label src, Label dest ) { addEdge(src,dest,NEGATIVE_EDGE); }
+        bool isPositiveEdge( Label src, Label dest ) const { return isEdge(src,dest,POSITIVE_EDGE); }
+        bool isNegativeEdge( Label src, Label dest ) const { return isEdge(src,dest,NEGATIVE_EDGE); }
+        bool isAnyEdge( Label src, Label dest ) const;
         unsigned numOfVertices() const { return graph.numOfVertices(); }
         void computeStronglyConnectedComponents() { graph.computeStronglyConnectedComponents(); }
         unsigned getAtomComponent( Label name ) const;
@@ -52,8 +53,8 @@ namespace DLV2
         const Components& getComponentList() const { return graph.getComponentList(); }
         unsigned numberOfComponents() const { return graph.numberOfComponents(); }
         
-        void addDisjunctiveHead( std::vector<Label> head );
-        void addDisjunctiveHead( std::vector<unsigned> head );
+        void addDisjunctiveHead( std::vector< Label > head );
+        void addDisjunctiveHead( std::vector< unsigned > head );
 
         unsigned getVertexDescriptor( Label label );
         const Label& getLabelOfVertex( unsigned vertexDescriptor );
@@ -81,37 +82,37 @@ namespace DLV2
         bool isTight() const { return graph.isTight(); }
         
     private:      
-        // Adds an edge from p1 to p2. Notice that, p1 and p2 are strings,
+        // Adds an edge from p1 to p2. Notice that, p1 and p2 are labels,
         // so their vertex_descriptors have to be first retrieved 
         // through 'addVertex'. 
         void addEdge( Label p1, Label p2, unsigned edgeLabel = POSITIVE_EDGE );
         bool isEdge( Label p1, Label p2, unsigned edgeLabel = POSITIVE_EDGE ) const;
         
-        DependencyGraph<ControlStrategy> graph;
+        DependencyGraph< ControlStrategy > graph;
         // Maps each predicate name to its vertex_descriptor in the graph.
-        std::unordered_map<Label, unsigned> predsMap;
+        std::unordered_map< Label, unsigned > predsMap;
         // Maps each vertex_descriptor to its record in the previous map.
         std::unordered_map<
             unsigned, 
-            typename std::unordered_map<Label, unsigned>::const_iterator > vertexToLabel;
+            typename std::unordered_map< Label, unsigned >::const_iterator > vertexToLabel;
         
-        template<typename T, typename L>
+        template< typename T, typename L >
         friend inline std::ostream& operator<<( std::ostream&, 
-                LabeledDependencyGraph<T,L>& );
+                LabeledDependencyGraph< T, L >& );
     };
 
-    template <typename ControlStrategy,
-              typename Label>
+    template < typename ControlStrategy,
+               typename Label >
     std::ostream&
     operator<<( 
         std::ostream& out,
-        LabeledDependencyGraph<ControlStrategy,Label>& labGraph )
+        LabeledDependencyGraph< ControlStrategy, Label >& labGraph )
     {
         out << labGraph.graph << std::endl << std::endl;
         
         // Print the vertex set.
         out << "Predicate names map:" << std::endl;
-        for( typename std::unordered_map<Label,unsigned>::const_iterator it = labGraph.predsMap.begin();
+        for( typename std::unordered_map< Label, unsigned >::const_iterator it = labGraph.predsMap.begin();
              it != labGraph.predsMap.end(); 
              it++ )
             // For each vertex descriptor, print the corresponding predicate name.
@@ -123,20 +124,33 @@ namespace DLV2
     }
 };
 
-using namespace DLV2;
+template < typename ControlStrategy,
+           typename Label >
+DLV2::LabeledDependencyGraph< ControlStrategy, Label >::LabeledDependencyGraph( 
+    const LabeledDependencyGraph< ControlStrategy, Label >& ldg ):
+        graph(ldg.graph),
+        predsMap(ldg.predsMap)
+{
+    for( typename std::unordered_map< Label, unsigned >::const_iterator it = predsMap.begin();
+            it != predsMap.end(); 
+            it++ )
+    {
+        vertexToLabel[it->first] = it;
+    }
+}
 
-template <typename ControlStrategy,
-          typename Label>
+template < typename ControlStrategy,
+           typename Label >
 unsigned
-LabeledDependencyGraph<ControlStrategy,Label>::addVertex(
+DLV2::LabeledDependencyGraph< ControlStrategy, Label >::addVertex(
     Label p )
 {
-    typename std::unordered_map<Label, unsigned>::const_iterator it = predsMap.find(p);
+    typename std::unordered_map< Label, unsigned >::const_iterator it = predsMap.find(p);
     if( it == predsMap.end() )
     {
         unsigned descriptor = graph.addVertex();
-        std::pair<Label,unsigned> element(p,descriptor);
-        std::pair<typename std::unordered_map<Label,unsigned>::const_iterator,bool> ins =
+        std::pair< Label, unsigned > element(p,descriptor);
+        std::pair< typename std::unordered_map< Label, unsigned >::const_iterator, bool > ins =
             predsMap.insert(element);
         vertexToLabel[descriptor] = ins.first;
         return descriptor;
@@ -145,109 +159,109 @@ LabeledDependencyGraph<ControlStrategy,Label>::addVertex(
         return it->second;
 }
 
-template <typename ControlStrategy,
-          typename Label>
+template < typename ControlStrategy,
+           typename Label >
 unsigned
-LabeledDependencyGraph<ControlStrategy,Label>::getAtomComponent(
+DLV2::LabeledDependencyGraph< ControlStrategy, Label >::getAtomComponent(
     Label p ) const
 {
-    typename std::unordered_map<Label, unsigned>::const_iterator it = predsMap.find(p);
+    typename std::unordered_map< Label, unsigned >::const_iterator it = predsMap.find(p);
     assert_msg( it != predsMap.end(), "Unknown predicate name." );
     return graph.getAtomComponent(it->second);
 }
 
-template <typename ControlStrategy,
-          typename Label>
+template < typename ControlStrategy,
+           typename Label >
 void 
-LabeledDependencyGraph<ControlStrategy,Label>::addDisjunctiveHead( 
-    std::vector<Label> head )
+DLV2::LabeledDependencyGraph< ControlStrategy, Label >::addDisjunctiveHead( 
+    std::vector< Label > head )
 {
     assert_msg( head.size() > 0, "The head is empty." );    
 
-    std::vector<unsigned> unsignedHead;
+    std::vector< unsigned > unsignedHead;
     for( unsigned i=0; i<head.size(); i++ )
     {
-        typename std::unordered_map<Label, unsigned>::const_iterator it = predsMap.find(head[i]);
+        typename std::unordered_map< Label, unsigned >::const_iterator it = predsMap.find(head[i]);
         assert_msg( it != predsMap.end(), "Unknown predicate name." );
         unsignedHead.push_back(it->second);
     }
     graph.addDisjunctiveHead(unsignedHead);
 }
 
-template <typename ControlStrategy,
-          typename Label>
+template < typename ControlStrategy,
+           typename Label >
 void 
-LabeledDependencyGraph<ControlStrategy,Label>::addDisjunctiveHead( 
-    std::vector<unsigned> head )
+DLV2::LabeledDependencyGraph< ControlStrategy, Label >::addDisjunctiveHead( 
+    std::vector< unsigned > head )
 {
     assert_msg( head.size() > 0, "The head is empty." );    
     graph.addDisjunctiveHead(head);
 }
 
-template <typename ControlStrategy,
-          typename Label>
+template < typename ControlStrategy,
+           typename Label >
 unsigned
-LabeledDependencyGraph<ControlStrategy,Label>::getVertexDescriptor( 
+DLV2::LabeledDependencyGraph< ControlStrategy, Label >::getVertexDescriptor( 
     Label label )
 {
-    typename std::unordered_map<Label, unsigned>::const_iterator it = predsMap.find(label);
+    typename std::unordered_map< Label, unsigned >::const_iterator it = predsMap.find(label);
     assert_msg( it != predsMap.end(), "Label not valid" );
     return it->second;
 }
-template <typename ControlStrategy,
-          typename Label>
+template < typename ControlStrategy,
+           typename Label >
 const Label&
-LabeledDependencyGraph<ControlStrategy,Label>::getLabelOfVertex( 
+DLV2::LabeledDependencyGraph< ControlStrategy, Label >::getLabelOfVertex( 
     unsigned descriptor )
 {
     typename std::unordered_map< 
         unsigned,
-        typename std::unordered_map<Label, unsigned>::const_iterator 
+        typename std::unordered_map< Label, unsigned >::const_iterator 
         >::const_iterator it = vertexToLabel.find(descriptor);
     assert_msg( it != vertexToLabel.end(), "Not valid vertex descriptor" );    
     return it->second->first;
 }
 
-template <typename ControlStrategy,
-          typename Label>
+template < typename ControlStrategy,
+           typename Label >
 void
-LabeledDependencyGraph<ControlStrategy,Label>::addEdge(
-    Label p1,
-    Label p2,
+DLV2::LabeledDependencyGraph< ControlStrategy, Label >::addEdge(
+    Label src,
+    Label dest,
     unsigned label )
 {
     //assert_msg( strcmp(p1,p2) != 0, "Adding a noose to the depgraph." );
     // Retrieve the vertex descriptors.
-    unsigned v1 = addVertex(p1);
-    unsigned v2 = addVertex(p2);
+    unsigned v1 = addVertex(src);
+    unsigned v2 = addVertex(dest);
     if( !graph.isEdge(v1,v2,label) )
         graph.addEdge(v1,v2,label);
 }
 
-template <typename ControlStrategy,
-          typename Label>
+template < typename ControlStrategy,
+           typename Label >
 bool 
-LabeledDependencyGraph<ControlStrategy, Label>::isEdge( 
-    Label p1, 
-    Label p2, 
+DLV2::LabeledDependencyGraph< ControlStrategy, Label >::isEdge( 
+    Label src, 
+    Label dest, 
     unsigned edgeLabel ) const
 {
     // Retrieve the vertex descriptors.
-    unsigned v1 = addVertex(p1);
-    unsigned v2 = addVertex(p2);
+    unsigned v1 = addVertex(src);
+    unsigned v2 = addVertex(dest);
     return graph.isEdge(v1,v2,edgeLabel);
 }
 
-template <typename ControlStrategy,
-          typename Label>
+template < typename ControlStrategy,
+           typename Label >
 bool 
-LabeledDependencyGraph<ControlStrategy, Label>::isAnyEdge( 
-    Label p1, 
-    Label p2 ) const
+DLV2::LabeledDependencyGraph< ControlStrategy, Label >::isAnyEdge( 
+    Label src, 
+    Label dest ) const
 {
     // Retrieve the vertex descriptors.
-    unsigned v1 = addVertex(p1);
-    unsigned v2 = addVertex(p2);
+    unsigned v1 = addVertex(src);
+    unsigned v2 = addVertex(dest);
     return graph.isAnyEdge(v1,v2);
 }
 

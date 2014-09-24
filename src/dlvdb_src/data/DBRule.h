@@ -36,8 +36,8 @@ namespace DLV2{ namespace DB{
         DBRule( const DBRule& r );
         ~DBRule();
 
-        const std::vector<DBAtom*>& getHead() const { return head; }
-        const std::vector<DBLiteral*>& getBody() const { return body; }
+        const std::vector< DBAtom* >& getHead() const { return head; }
+        const std::vector< DBLiteral* >& getBody() const { return body; }
         bool hasNegation() const { return negation; }
         bool hasAggregates() const { return aggregates; }
         bool hasBuiltins() const { return builtins; }
@@ -47,12 +47,12 @@ namespace DLV2{ namespace DB{
         friend class DBProgram;
         
         // Only class Program can create Rule objects.
-        DBRule( const std::vector<DBAtom*>&, const std::vector<DBLiteral*>&, bool, bool, bool );
+        DBRule( const std::vector< DBAtom* >&, const std::vector< DBLiteral* >&, bool, bool, bool );
         void addToHead( DBAtom* a ) { if( a != NULL ) head.push_back(a); }
         void addToBody( DBLiteral* l ) { if( l != NULL ) body.push_back(l); }
 
-        std::vector<DBAtom*> head;
-        std::vector<DBLiteral*> body;
+        std::vector< DBAtom* > head;
+        std::vector< DBLiteral* > body;
         bool negation;
         bool aggregates;
         bool builtins;

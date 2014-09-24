@@ -30,6 +30,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include "../../util/Constants.h"
 
 namespace DLV2{ namespace DB{
     
@@ -40,19 +41,30 @@ namespace DLV2{ namespace DB{
     class DBAtom;
     class DBTerm;
     
-    struct COORDINATES {
-        unsigned predIndex;
-        unsigned termIndex;
+    struct Coordinates {
+        unsigned predPos;
+        unsigned termPos;
     };
-    typedef std::unordered_map<std::string,std::vector<COORDINATES>> VARIABLEMAP;
-    typedef std::pair<std::string,std::string> QCondition;
+    typedef std::unordered_map< std::string, std::vector< Coordinates > > VariableMap;
+    typedef std::pair< std::string, std::string > QCondition;
     
     class QueryBuilder {
     public:
         QueryBuilder( DBProgram* p );
+        QueryBuilder( const QueryBuilder& qb );
         virtual ~QueryBuilder() { }
         
+        /** This function dinamically instantiates a new query object
+         * which should be retrieved by calling function getQueryObject;
+         * the caller will be responsible of such an object's destruction.
+         * @param rule The rule which is to be translated.
+         */
         virtual void rewriteNonRecursiveRule( DBRule* rule );
+        /** This function dinamically instantiates new query object
+         * which should be retrieved by calling function getQueryObject;
+         * the caller will be responsible of such an object's destruction.
+         * @param rule The rule which is to be translated.
+         */
         virtual void rewriteRecursiveRule( DBRule* rule );
         virtual void reset();
         
@@ -76,14 +88,22 @@ namespace DLV2{ namespace DB{
         DBProgram* program;
         
     private:
-        unsigned addSourcePredicate( const std::string& predName );
-        const std::string& getAttributeName( 
-            const std::string& predName,
-            unsigned termIndex );
+        // Return the position where the predicate is going to be located.
+        unsigned addSource( DBAtom* sourceAtom );
+        const std::string& getTableName( index_t predIndex ) const;
+        std::string getTableAlias( unsigned pos ) const;
+        const std::string& getAttributeName( unsigned predPos, unsigned termPos ) const;
         
-        // Each variable in a rule could appear in more than one location.
-        VARIABLEMAP headVariablesMap;
-        VARIABLEMAP bodyVariablesMap;
+        // Each variable in a rule might appear 
+        // in more than one location.
+        VariableMap headVariablesMap;
+        VariableMap bodyVariablesMap;
+        // We can retrieve name and arity 
+        // of a predicate only by its index.
+        // There is a one-to-one correspondance between 
+        // this vector and the vector of source predicates 
+        // in the current query object.
+        std::vector< index_t > bodyPredicates; 
     };
 
 };};

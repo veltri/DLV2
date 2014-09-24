@@ -31,6 +31,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include "../../util/Constants.h"
 
 namespace DLV2{ namespace DB{
 
@@ -39,24 +40,23 @@ namespace DLV2{ namespace DB{
         Metadata( const Metadata& );
         ~Metadata();
         
-        const std::string& getPredicateName() const { return predicateName; }
-        unsigned getArity() const { return arity; }
-        const std::string& getAttributeName( unsigned index ) const;
-        unsigned getAttributeIndex( const std::string& name ) const;
+        index_t getPredicateIndex() const { return predIndex; }
+        const std::string& getTableName() const;
+        const std::string& getAttributeName( unsigned position ) const;
+        unsigned getAttributePosition( const std::string& name ) const;
         //const std::string& getAttributeType( unsigned index ) const;
         
     private:
         friend class DBProgram;
         // Only class Program can create Metadata objects.
         Metadata() { }
-        Metadata( const std::string& pred, unsigned a, std::vector<std::string>* attrs );
-        Metadata( char* pred, unsigned a, std::vector<std::string>* attrs );
+        Metadata( index_t predIndex, std::string* tableName , std::vector< std::string >* attrs );
         friend inline std::ostream& operator<< ( std::ostream&, const Metadata& );
             
-        std::string predicateName;
-        unsigned arity;
-        std::vector<std::string>* attributeNames;
-        std::unordered_map<std::string,unsigned> attributeIndexes;
+        index_t predIndex;
+        std::string* tableName;
+        std::vector< std::string >* attributeNames;
+        std::unordered_map< std::string, unsigned > attributePositions;
         //std::vector<std::string> attributeTypes;
     };
     
@@ -66,8 +66,8 @@ namespace DLV2{ namespace DB{
         std::ostream& out,
         const Metadata& m )
     {
-        out << "Predicate: " << m.predicateName << std::endl;
-        out << "Arity: " << m.arity << std::endl;
+        out << "Predicate index: " << m.predIndex << std::endl;
+        out << "Actual table name: " << m.tableName << std::endl;
         for( unsigned i=0; i<m.attributeNames->size(); i++ )
             out << i << " --> " << m.attributeNames->at(i) << std::endl;
         return out;

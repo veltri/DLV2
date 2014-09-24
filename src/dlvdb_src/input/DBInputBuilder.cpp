@@ -23,7 +23,7 @@
 
 using namespace std;
 using namespace DLV2::DB;
-    
+
 DBInputBuilder::DBInputBuilder(
     DBConnection& con ):
         currentAtom(NULL),
@@ -42,7 +42,6 @@ DBInputBuilder::DBInputBuilder(
     program = new DBProgram(con);
     queryBuilder = new QueryBuilder(program);
     program->setQueryBuilder(queryBuilder);
-    graph = new LabeledDependencyGraph<>();
 }
     
 DBInputBuilder::~DBInputBuilder()
@@ -55,20 +54,6 @@ void
 DBInputBuilder::onRule()
 {
     program->createAndAddRule(head,body,hasNegation,hasAggregates,hasBuiltins);
-    // Add an edge from each body literal to each head atom.
-    for( unsigned i=0; i<head.size(); i++ )
-    {
-        for( unsigned j=0; j<body.size(); j++ )
-        {
-            assert_msg( head[i] != NULL, "Trying to create a rule with a null head atom." );
-            assert_msg( body[j] != NULL, "Trying to create a rule with a null body literal." );
-            // An head atom cannot be a builtin.
-            if( head[i]->isTrueNegated() )
-                addEdgeToDepGraph(string("-").append(head[i]->getPredicateName()),body[j]);
-            else
-                addEdgeToDepGraph(head[i]->getPredicateName(),body[j]);
-        }   
-    }
     head.clear();
     body.clear();
     hasNegation = false;
@@ -79,6 +64,7 @@ DBInputBuilder::onRule()
 void
 DBInputBuilder::onConstraint()
 {
+    assert_msg( 0, "At the moment, constraints are not supported" );
     // TODO 
     // How to handle constraints?
     
@@ -88,6 +74,7 @@ DBInputBuilder::onConstraint()
 void
 DBInputBuilder::onWeakConstraint()
 {
+    assert_msg( 0, "At the moment, weak constraints are not supported" );
     // TODO
     // How to handle weak constraints?
     
@@ -148,21 +135,7 @@ DBInputBuilder::onHeadAtom()
 void 
 DBInputBuilder::onHead()
 {
-    vector<unsigned> headVertices;
-    // Add head atoms to the graph in order to keep track of atoms which appear
-    // only in heads of rules without body.
-    for( unsigned i=0; i<head.size(); i++ )
-    {
-        assert_msg( head[i] != NULL, "Null head atom." );
-        headVertices.push_back(
-            graph->addVertex(
-                head[i]->getPredicateName()));
-    }
-    if( !isChoice && head.size() > 1 )
-    {
-        graph->addDisjunctiveHead(headVertices);
-    }
-    isChoice = false;    
+   
 }
 
 void
@@ -195,8 +168,10 @@ DBInputBuilder::onAtom(
     assert_msg( predName.length() > 0, 
             "Trying to finalize an atom with a null predicate name" );
 
-    program->addPredicateName(predName,termStack.size());
-    currentAtom = program->createAtom(predName, termStack, isStrongNeg);
+    if( isStrongNeg )
+        currentAtom = program->createNegatedAtom(predName, termStack);
+    else
+        currentAtom = program->createAtom(predName, termStack);
     termStack.clear();
     predName = "";
 }
@@ -204,8 +179,11 @@ DBInputBuilder::onAtom(
 void
 DBInputBuilder::onExistentialAtom()
 {
+    assert_msg( 0, "At the moment, existential atoms are not supported" );
     // TODO
-    program->addPredicateName(predName,termStack.size());
+    // REMINDER... add this statement to function createExistentialAtom 
+    // that you're going to add to the DBProgram interface:
+    // pair< index_t, bool > res = program->addPredicate(predName,termStack.size());
 }
 
 void
@@ -300,6 +278,7 @@ DBInputBuilder::onFunction(
     char* functionSymbol, 
     int nTerms )
 {
+    assert_msg( 0, "At the moment, functions are not supported" );
     // TODO
     // How to handle functions?
     
@@ -311,6 +290,7 @@ DBInputBuilder::onFunction(
 void 
 DBInputBuilder::onTermDash()
 {
+    assert_msg( 0, "At the moment, dashed terms are not supported" );
     // TODO 
     // How to handle dashed terms?
     
@@ -321,6 +301,7 @@ DBInputBuilder::onTermDash()
 void 
 DBInputBuilder::onTermParams()
 {
+    assert_msg( 0, "At the moment, parenthesized terms are not supported" );
     // TODO 
     // How to handle parametric terms?
     
@@ -333,6 +314,7 @@ DBInputBuilder::onTermRange(
     char* lowerBound, 
     char* upperBound )
 {
+    assert_msg( 0, "At the moment, range facts are not supported" );
     // TODO
     // How to handle a terms range?
 }
@@ -341,6 +323,7 @@ void
 DBInputBuilder::onArithmeticOperation( 
     char arithOperator )
 {
+    assert_msg( 0, "At the moment, arithmetic operations are not supported" );
     // TODO
     // How to handle arithmetic operations?
     
@@ -376,7 +359,9 @@ void
 DBInputBuilder::onChoiceElementAtom()
 {
     // TODO
-    program->addPredicateName(predName,termStack.size());
+    // REMINDER... add this statement to function createExistentialAtom 
+    // that you're going to add to the DBProgram interface:
+    // pair< index_t, bool > res = program->addPredicate(predName,termStack.size());
 }
 
 void 
@@ -395,7 +380,7 @@ void
 DBInputBuilder::onChoiceAtom()
 {
     // TODO
-    isChoice = true;
+    assert_msg( 0, "At the moment, choice atoms are not supported" );
 }
     
 void 
@@ -524,28 +509,16 @@ DBInputBuilder::onAggregate(
     // Create the name that is going to be added to the depgraph for this aggregate atom.
     aggregateLabel << "}";
     
-    currentLiteral = program->createAggregateLiteral(
+    currentAtom = program->createAggregateAtom(
             lowerGuard,
             lowerBinop,
             upperGuard,
             upperBinop,
             aggregateFunction,
             aggregateElements,
-            naf,
             aggregateLabel.str());
+    currentLiteral = program->createLiteral(currentAtom,naf);
     
-    // Add an edge from each literal in the aggregate set to the aggregate atom.
-    for( unsigned i=0; i<aggregateElements.size(); i++ )
-    {
-        assert_msg( aggregateElements[i] != NULL, "Null element in an aggregate set." );
-        for( unsigned j=0; j<aggregateElements[i]->getLiterals().size(); j++ )
-        {
-            DBLiteral* l = aggregateElements[i]->getLiterals().at(j);
-            assert_msg( l != NULL, "Null literal in an aggregate set." );
-            // An aggregate atom cannot be true negated.
-            addEdgeToDepGraph(aggregateLabel.str(),l);
-        }
-    }
     aggregateLabel.clear();
     aggregateElements.clear();
     lowerBinop = "";
@@ -554,12 +527,14 @@ DBInputBuilder::onAggregate(
     upperGuard = NULL;
     aggregateFunction = "";
     hasAggregates = true;
+    if( naf )
+        hasNegation = true;
 }
     
 void 
 DBInputBuilder::newTerm( 
     char* value,
-    vector<DBTerm*>& target,
+    vector< DBTerm* >& target,
     bool dash )
 {
     DBTerm* currentTerm = NULL;
@@ -584,31 +559,5 @@ DBInputBuilder::newTerm(
     if( currentTerm != NULL )
     {
         target.push_back(currentTerm);
-    }
-}
-
-void
-DBInputBuilder::addEdgeToDepGraph(
-    const string& targetLabel, 
-    DBLiteral* source )
-{
-    assert_msg( source != NULL, "Trying to add an edge from a null literal." );
-    if( !source->isBuiltin() )
-    {
-        string sourceLabel;
-        if( source->isAggregate() )
-            sourceLabel = source->getAggregateName();
-        else
-        {
-            assert_msg( source->getAtom() != NULL, "Trying to add an edge from a null atom." );
-            if( source->getAtom()->isTrueNegated() )
-                sourceLabel.append("-").append(source->getAtom()->getPredicateName());
-            else
-                sourceLabel = source->getAtom()->getPredicateName();
-        }
-        if( source->isNaf() )
-            graph->addNegativeEdge(sourceLabel,targetLabel);
-        else
-            graph->addPositiveEdge(sourceLabel,targetLabel);
     }
 }

@@ -26,85 +26,36 @@ DBLiteral::DBLiteral(
     DBAtom* a, 
     bool neg ):
         atom(a),
-        isNegative(neg),
-        aggregate(false),
-        lowerGuard(NULL),
-        lowerBinop(""),
-        upperGuard(NULL),
-        upperBinop(""),
-        aggregateFunction(""),
-        aggregateNameForDepGraph("")
+        isNegative(neg)
 {
-}
-
-// Aggregates' constructor
-DBLiteral::DBLiteral( 
-    DBTerm* lGuard, 
-    const string& lOp, 
-    DBTerm* uGuard,
-    const string& uOp,
-    const string& function,
-    const vector<DBAggregateElement*>& aElements,
-    bool naf,
-    const string& name ):
-        atom(NULL),
-        isNegative(naf),
-        aggregate(true),
-        lowerGuard(lGuard),
-        lowerBinop(lOp),
-        upperGuard(uGuard),
-        upperBinop(uOp),
-        aggregateFunction(function),
-        aggregateElements(aElements),
-        aggregateNameForDepGraph(name)
-{
+    assert_msg( a != NULL, "Null atom" );
 }
 
 DBLiteral::DBLiteral( 
     const DBLiteral& l ): 
-        isNegative(l.isNegative),
-        aggregate(l.aggregate),
-        lowerBinop(l.lowerBinop),
-        upperBinop(l.upperBinop),
-        aggregateFunction(l.aggregateFunction),
-        aggregateElements(l.aggregateElements),
-        aggregateNameForDepGraph(l.aggregateNameForDepGraph)
+        isNegative(l.isNegative)
 { 
-    if( l.atom != NULL )
-        atom = new DBAtom(*l.atom);
-    else 
-        atom = NULL;
-    if( l.lowerGuard != NULL )
-        lowerGuard = new DBTerm(*l.lowerGuard);
-    else
-        lowerGuard = NULL;
-    if( l.upperGuard != NULL )
-        upperGuard = new DBTerm(*l.upperGuard);
-    else
-        upperGuard = NULL;
+    assert_msg( l.atom != NULL, "Null atom" );
+    atom = new DBAtom(*l.atom);
 }
 
 DBLiteral::~DBLiteral() 
 {
-    if( lowerGuard != NULL )
-        delete lowerGuard;
-    if( upperGuard != NULL )
-        delete upperGuard;
-    if( atom != NULL )
-        delete atom;
-    for( unsigned i=0; i<aggregateElements.size(); i++ )
-    {
-        assert_msg( aggregateElements[i] != NULL, "Trying to destroy an aggregate literal with a null element." );
-        delete aggregateElements[i];
-    }
+    assert_msg( atom != NULL, "Null atom" );
+    delete atom;
 }
 
 bool
 DBLiteral::isBuiltin() 
 const
 {
-    if( atom == NULL )
-        return false;
-    else
-        return atom->isBuiltin();
+    assert_msg( atom != NULL, "Null atom" );
+    return atom->isBuiltin();
+}
+
+bool
+DBLiteral::isAggregate() const
+{ 
+    assert_msg( atom != NULL, "Null atom" );
+    return atom->isAggregate();
 }

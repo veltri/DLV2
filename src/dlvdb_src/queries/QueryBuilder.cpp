@@ -33,6 +33,13 @@ QueryBuilder::QueryBuilder(
     assert_msg( p != NULL, "The program is null." );
 }
 
+QueryBuilder::QueryBuilder(
+    const QueryBuilder& qb ):
+        query(NULL),
+        program(qb.program)
+{
+    assert_msg( qb.program != NULL, "The program is null." );
+}
 
 void
 QueryBuilder::rewriteNonRecursiveRule(
@@ -53,7 +60,7 @@ QueryBuilder::rewriteRecursiveRule(
     DBRule* rule )
 {
     // TODO
-    assert(0);
+    assert_msg( 0, "Sorry, we aren't able to handle recursion" );
 }
 
 void
@@ -64,12 +71,12 @@ QueryBuilder::rewritePositiveRule(
     if( rule->hasAggregates() )
     {
         // TODO
-        assert(0);
+        assert_msg( 0, "Sorry, we aren't able to handle aggregate atoms" );
     }
     if( rule->hasBuiltins() )
     {
         // TODO
-        assert(0);
+        assert_msg( 0, "Sorry, we aren't able to handle builtins" );
     }
     for( unsigned i=0; i<rule->getHead().size(); i++ )
         addInHead(rule->getHead().at(i));
@@ -82,7 +89,7 @@ QueryBuilder::rewriteRuleWithNegation(
     DBRule* rule )
 {
     // TODO
-    assert(0);    
+    assert_msg( 0, "Sorry, we aren't able to handle negation as failure" );
 }
 
 void
@@ -90,7 +97,7 @@ QueryBuilder::rewriteRuleWithBuiltins(
     DBRule* rule )
 {
     // TODO
-    assert(0);
+    assert_msg( 0, "Sorry, we aren't able to handle builtins" );
 }
 
 void
@@ -98,7 +105,7 @@ QueryBuilder::rewriteRuleWithAggregates(
     DBRule* rule )
 {
     // TODO
-    assert(0);   
+    assert_msg( 0, "Sorry, we aren't able to handle aggregate atoms" );
 }
 
 
@@ -107,9 +114,11 @@ QueryBuilder::addInHead(
     DBAtom* headAtom )
 {
     assert_msg( headAtom != NULL, "Null head atom" );
+    assert_msg( !headAtom->isBuiltin(), "A builtin atom occurs in the head" );
+    assert_msg( !headAtom->isAggregate(), "An aggregate atom occurs in the head" );
     assert_msg( headVariablesMap.empty(), "Only or-free programs are allowed" );
     assert_msg( headAtom->getTerms().size() > 0, "Propositional atoms are not allowed" );
-    query->targetPredicate = headAtom->getPredicateName();
+    query->targetPredicate = getTableName(headAtom->getPredIndex());
     // The number of attributes which has to be selected 
     // by the output query is given by the arity of the head predicate.
     // The vector is resized because in the following we will need 
@@ -118,17 +127,17 @@ QueryBuilder::addInHead(
     for( unsigned i=0; i<headAtom->getTerms().size(); i++ )
     {
         DBTerm* headTerm = headAtom->getTerms().at(i);
-        COORDINATES termCoordinates;
+        Coordinates termCoordinates;
         // The head predicate has index 0.
-        termCoordinates.predIndex = 0;
-        termCoordinates.termIndex = i;
+        termCoordinates.predPos = 0;
+        termCoordinates.termPos = i;
         assert_msg( headTerm != NULL, "Null term" );
-        assert_msg( headTerm->getType() == DBTerm::Variable, "Not variable term in head" );
-        // Check whether it is a self-join.
-        VARIABLEMAP::iterator it = headVariablesMap.find(headTerm->getText());
+        assert_msg( headTerm->getType() == DBTerm::Variable, "Not variable term in the head" );
+        // Check whether it deals with a self-join.
+        VariableMap::iterator it = headVariablesMap.find(headTerm->getText());
         if( it == headVariablesMap.end() )
         {
-            vector<COORDINATES> v;
+            vector< Coordinates > v;
             v.push_back(termCoordinates);
             headVariablesMap[headTerm->getText()] = v;
         }
@@ -137,7 +146,7 @@ QueryBuilder::addInHead(
             it->second.push_back(termCoordinates);
         }
         // Check whether it appears in the body.
-        // If the body literals' stack were filled out 
+        // If the body literals' stack were filled  
         // after the head, this control would be unnecessary.
         it = bodyVariablesMap.find(headTerm->getText());
         if( it != bodyVariablesMap.end() )
@@ -145,14 +154,14 @@ QueryBuilder::addInHead(
             assert_msg( it->second.size() > 0, 
                     "A term without any locations has been added" );
             // Consider only the first location where it appears.
-            unsigned predIndex = it->second.at(0).predIndex;
-            unsigned termIndex = it->second.at(0).termIndex;
-            assert_msg( predIndex < query->sourcePredicates.size(),
+            unsigned predPos = it->second.at(0).predPos;
+            unsigned termPos = it->second.at(0).termPos;
+            assert_msg( predPos < bodyPredicates.size(),
                     "Index out of range" );
             string attribute(
-                query->sourcePredicates[predIndex]+
+                getTableAlias(predPos)+
                 "."+
-                getAttributeName(query->sourcePredicates[predIndex],termIndex));
+                getAttributeName(predPos,termPos));
             query->attributesToSelect[i] = attribute;
         }
     }
@@ -163,29 +172,32 @@ QueryBuilder::addInPositiveBody(
     DBLiteral* literal )
 {
     assert_msg( literal != NULL, "Null body literal" );
-    assert_msg( !literal->isAggregate(), 
-            "Call addAggregateIn(Positive|Negative)Body to add aggregate literals" );
-    assert_msg( !literal->isBuiltin(), 
-            "Call addBuiltin to add builtins" );
     assert_msg( !literal->isNaf(), 
             "Call addInNegativeBody to add negative literals" );
     DBAtom* currentAtom = literal->getAtom();
     assert_msg( currentAtom != NULL, "Null body atom" );
+    assert_msg( !currentAtom->isAggregate(), 
+            "Call addAggregateIn(Positive|Negative)Body to add aggregate atoms" );
+    assert_msg( !currentAtom->isBuiltin(), 
+            "Call addBuiltin to add builtins" );
     assert_msg( currentAtom->getTerms().size() > 0, 
             "Propositional atoms are not allowed" );
-
-    unsigned currentPredIndex = addSourcePredicate(currentAtom->getPredicateName());    
+    // Add the predicate and retrieve the position where 
+    // it appears in the bodyPredicates vector.
+    unsigned currentPredPos = addSource(currentAtom);    
     for( unsigned i=0; i<currentAtom->getTerms().size(); i++ )
     {
         DBTerm* currentTerm = currentAtom->getTerms().at(i);
         assert_msg( currentTerm != NULL, "Null term" );
         const string& currentAttributeName =
-            getAttributeName(currentAtom->getPredicateName(),i);
+            getAttributeName(currentPredPos,i);
+        string currentTableAlias =
+            getTableAlias(currentPredPos);
         if( currentTerm->getType() == DBTerm::Variable &&
                 currentTerm->getText() != "_" )
         {
             // First check whether currentTerm appears in the head
-            VARIABLEMAP::const_iterator it = 
+            VariableMap::const_iterator it = 
                     headVariablesMap.find(currentTerm->getText());
             if( it != headVariablesMap.end() )
             {
@@ -194,21 +206,22 @@ QueryBuilder::addInPositiveBody(
                 // locations that have to be considered are stored 
                 // in vector it->second.
                 string attribute(
-                    currentAtom->getPredicateName()+
+                    currentTableAlias+
                     "."+
                     currentAttributeName);
                 for( unsigned j=0; j<it->second.size(); j++ )
                 {
-                    unsigned targetTermIndex = it->second.at(j).termIndex;
-                    assert_msg( targetTermIndex < query->attributesToSelect.size(),
+                    unsigned targetTermPos = it->second.at(j).termPos;
+                    assert_msg( targetTermPos < query->attributesToSelect.size(),
                         "Index out of range" );
-                    query->attributesToSelect[targetTermIndex] = attribute;
+                    query->attributesToSelect[targetTermPos] = attribute;
                 }
+            
+                // Once we have done with the current attribute we erase the record 
+                // from the map in order to avoid that one could write
+                // attributes (to select) in the same location more than once.
+                headVariablesMap.erase(it);                
             }
-            // Once we have done with the current attribute we erase the record 
-            // from the map in order to avoid that one can write
-            // attributes (to select) in the same location more than once.
-            headVariablesMap.erase(it);
             
             // Then, check whether currentTerm has been already seen in the body.
             it = bodyVariablesMap.find(currentTerm->getText());
@@ -216,44 +229,46 @@ QueryBuilder::addInPositiveBody(
             {
                 assert_msg( it->second.size() > 0, 
                     "A term without any locations has been added" );
-                // There should be only one location in it->second.                
-                unsigned targetPredIndex = it->second.at(0).predIndex;
-                unsigned targetTermIndex = it->second.at(0).termIndex;
-                assert_msg( targetPredIndex < query->sourcePredicates.size(),
-                    "Index out of range" );
+                // There should be only one location in it->second,
+                // because we insert only the last location of each 
+                // body variable into the map. Indeed, you can consider
+                // only the last location of a variable in order to catch
+                // a join.
+                unsigned targetPredPos = it->second.at(0).predPos;
+                unsigned targetTermPos = it->second.at(0).termPos;
                 const string& targetAttributeName =
-                    getAttributeName(query->sourcePredicates[targetPredIndex],targetTermIndex);
+                    getAttributeName(targetPredPos,targetTermPos);
                 QCondition condition(
-                    currentAtom->getPredicateName()+
+                    currentTableAlias+
                     "."+
                     currentAttributeName,
-                    query->sourcePredicates[targetPredIndex]+
+                    getTableAlias(targetPredPos)+
                     "."+
                     targetAttributeName);
                 query->conditions.push_back(condition);    
             }
             
             // Finally, add the current variable to the map of the body variables
-            COORDINATES currentCoordinates;
-            currentCoordinates.predIndex = currentPredIndex;
-            currentCoordinates.termIndex = i;
-            vector<COORDINATES> v;
+            Coordinates currentCoordinates;
+            currentCoordinates.predPos = currentPredPos;
+            currentCoordinates.termPos = i;
+            vector< Coordinates > v;
             v.push_back(currentCoordinates);
             bodyVariablesMap[currentTerm->getText()] = v;
         }
         else if( currentTerm->getType() == DBTerm::String )
         {
             QCondition condition(
-                currentAtom->getPredicateName()+
+                currentTableAlias+
                 "."+
                 currentAttributeName,
-                "\""+currentTerm->getText()+"\"");
+                "'"+currentTerm->getText()+"'");
             query->conditions.push_back(condition);
         }
         else if( currentTerm->getType() == DBTerm::Integer )
         {
             QCondition condition(
-                currentAtom->getPredicateName()+
+                currentTableAlias+
                 "."+
                 currentAttributeName,
                 currentTerm->getText());
@@ -295,27 +310,49 @@ QueryBuilder::reset()
 {
     headVariablesMap.clear();
     bodyVariablesMap.clear();
+    bodyPredicates.clear();
 }
 
 unsigned
-QueryBuilder::addSourcePredicate(
-    const std::string& pred )
+QueryBuilder::addSource(
+    DBAtom* sourceAtom )
 {
-    assert_msg( query, "The query is null" );
-    for( unsigned i=0; i<query->sourcePredicates.size(); i++ )
-        if( query->sourcePredicates[i] == pred )
-            return i;
-    query->sourcePredicates.push_back(pred);
-    return query->sourcePredicates.size()-1;
+    assert_msg( query != NULL, "The query is null" );
+    assert_msg( sourceAtom != NULL, "The source atom is null" );
+    // Return the position where the predicate is going to be located.
+    bodyPredicates.push_back(sourceAtom->getPredIndex());
+    query->sourcePredicates.push_back(
+        getTableName(sourceAtom->getPredIndex())+
+        " AS "+
+        getTableAlias(bodyPredicates.size()-1));
+    return bodyPredicates.size()-1;
+}
+
+const string&
+QueryBuilder::getTableName(
+    index_t predIndex ) const 
+{
+    assert_msg( program != NULL, "Null program" );
+    const Metadata* meta = program->getMetadata(predIndex);
+    assert_msg( meta != NULL, "Null metadata" );
+    return meta->getTableName();
+}
+
+string
+QueryBuilder::getTableAlias(
+    unsigned pos ) const
+{
+    return string("t"+to_string(pos));
 }
 
 const string&
 QueryBuilder::getAttributeName(
-    const std::string& predName, 
-    unsigned termIndex)
+    unsigned predPos,
+    unsigned termPos ) const
 {
+    assert_msg( predPos < bodyPredicates.size(), "Index out of range" );
     assert_msg( program != NULL, "Null program" );
-    Metadata* meta = program->getMetadata(predName);
+    const Metadata* meta = program->getMetadata(bodyPredicates[predPos]);
     assert_msg( meta != NULL, "Null metadata" );
-    return meta->getAttributeName(termIndex);
+    return meta->getAttributeName(termPos);
 }

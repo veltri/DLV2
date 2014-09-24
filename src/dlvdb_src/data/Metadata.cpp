@@ -18,69 +18,66 @@
  */
 
 #include "Metadata.h"
+#include "DBProgram.h"
 #include "../../util/Assert.h"
 
 using namespace std;
 using namespace DLV2::DB;
 
 Metadata::Metadata(
-    const string& pred, 
-    unsigned a, 
-    vector<string>* attrs ):
-        predicateName(pred),
-        arity(a)
+    index_t predIdx,
+    string* tName,
+    vector< string >* attrs ):
+        predIndex(predIdx)
 {
+    assert_msg( tName != NULL, "Null table name");
     assert_msg( attrs != NULL, "Null attribute list");
-    assert_msg( a == attrs->size(), "Invalid arity" );
+    tableName = tName;
     attributeNames = attrs;
     for( unsigned i=0; i<attributeNames->size(); i++ )
-        attributeIndexes[(*attributeNames)[i]] = i;
-}
-
-Metadata::Metadata(
-    char* pred, 
-    unsigned a, 
-    vector<string>* attrs ):
-        predicateName(pred),
-        arity(a)
-{
-    assert_msg( attrs != NULL, "Null attribute list");
-    assert_msg( a == attrs->size(), "Invalid arity" );
-    attributeNames = attrs;
-    for( unsigned i=0; i<attributeNames->size(); i++ )
-        attributeIndexes[(*attributeNames)[i]] = i;
+        attributePositions[(*attributeNames)[i]] = i;
 }
 
 Metadata::Metadata(
     const Metadata& m ):
-        predicateName(m.predicateName),
-        arity(m.arity),
-        attributeNames(m.attributeNames),
-        attributeIndexes(m.attributeIndexes)
+        predIndex(m.predIndex),
+        attributePositions(m.attributePositions)
 {
+    assert_msg( m.tableName != NULL, "Null table name" );
+    assert_msg( m.attributeNames != NULL, "Null attribute names vector" );
+    tableName = new string(*m.tableName);
+    attributeNames = new vector< string >(*m.attributeNames);
 }
 
 Metadata::~Metadata() 
 { 
-    assert_msg( attributeNames != NULL, "Trying to destroy metadata with null attribute names." ); 
+    assert_msg( attributeNames != NULL, "Trying to destroy metadata with null attribute names." );
+    assert_msg( tableName != NULL, "Trying to destroy metadata with null table name." );
+    delete tableName;
     delete attributeNames;
 }
 
+const string&
+Metadata::getTableName() const
+{
+    assert_msg( tableName != NULL, "Null table name" );
+    return *tableName;
+}
 
 const string&
 Metadata::getAttributeName(
     unsigned index ) const
 {
-    assert_msg( (attributeNames != NULL && index <attributeNames->size()), 
+    assert_msg( (attributeNames != NULL && index < attributeNames->size()), 
             "Attribute index out of range." );
     return attributeNames->at(index);
 }
 
 unsigned
-Metadata::getAttributeIndex(
+Metadata::getAttributePosition(
     const string& name ) const
 {
-    unordered_map<string,unsigned>::const_iterator ok = attributeIndexes.find(name);
-    assert_msg( ok != attributeIndexes.end(), "Attribute name not valid." );
+    unordered_map< string, unsigned >::const_iterator ok = attributePositions.find(name);
+    assert_msg( ok != attributePositions.end(), "Attribute name not valid." );
     return ok->second;
 }

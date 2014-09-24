@@ -36,10 +36,11 @@ namespace DLV2{ namespace DB{
 
     class DBConnection {
     public:
-        
-        typedef std::pair<SQLSMALLINT,SQLHANDLE> SQLEXCEPTION;        
+        typedef std::pair<SQLSMALLINT,SQLHANDLE> SQLException;
         
         static DBConnection* globalDBConnection();
+        
+        ~DBConnection();
         
         void connect( const std::string& source, const std::string& user, const std::string& pwd );
         void disconnect();
@@ -48,10 +49,33 @@ namespace DLV2{ namespace DB{
         void executeSQLStatement( const std::string& sql );
         void commit();
         void rollback();
-        // If table "tableName" doesn't exist a pointer to an empty
-        // vector of strings will be returned.
-        std::vector<std::string>* retrieveTableSchema( const std::string& tableName );
-        ~DBConnection();
+        
+        /* MetadataHandler */
+        
+        /** Provide the name of the table matching the input pair <predName,arity>
+         * by querying meta table "tableNames" that must be present in the working
+         * database. If a matching table doesn't exist, it will be created and 
+         * its name will be stored in table "tableNames".
+         * @param predName The predicate's name.
+         * @param arity The predicate's arity.
+         * @param outTableName The name of the matching table.
+         * @return a pointer to a dinamically instantiated string containing 
+         * the name of the matching table; the caller will be responsible of
+         * the destruction of that vector.
+         */
+        std::string* retrieveTableName( 
+            const std::string& predName,
+            unsigned arity );
+        /** Retrive the attributes' names of table <tableName>. 
+         * Notice that, table <tableName> must exist.
+         * @param tableName The name of the table to be investigated.
+         * @param nAttributes USELESS
+         * @return a pointer to a dinamically instantiated vector of strings, 
+         * the caller will be responsible of the destruction of that vector.
+         */ 
+        std::vector<std::string>* retrieveTableSchema( 
+            const std::string& tableName,
+            unsigned nAttributes );
         
     private:
         

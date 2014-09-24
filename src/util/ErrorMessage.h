@@ -53,6 +53,23 @@ namespace DLV2
                 std::cerr << ERROR_GENERIC << ": " << errorMessage << std::endl;
                 exit( ERROR_GENERIC_CODE );
             }
+            
+            static void errorDBConnection( const std::string& errorMessage )
+            {
+                errorGeneric( errorMessage.c_str() );
+            }
+
+            static void errorDBConnection( const char* errorMessage )
+            {
+                std::cerr << ERROR_DB << ": " << errorMessage << std::endl;
+                exit( ERROR_DB_CODE );
+            }
+            
+            static void errorDBConnection( unsigned char* errorMessage )
+            {
+                std::cerr << ERROR_DB << ": " << errorMessage << std::endl;
+                exit( ERROR_DB_CODE );
+            }
     };
 
 };

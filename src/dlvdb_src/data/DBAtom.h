@@ -29,41 +29,88 @@
 
 #include "DBTerm.h"
 #include "../../util/Assert.h"
+#include "../../util/Constants.h"
+
 #include <vector>
 
 namespace DLV2{ namespace DB{
+    
+    class DBProgram;
+    class DBAggregateElement;
+    inline std::ostream& operator<< ( std::ostream&, const DBAggregateElement& );
     
     class DBAtom {
     public:
         DBAtom( const DBAtom& );
         ~DBAtom();
         
-        const std::string& getPredicateName() const { return predicateName; }
-        unsigned getArity() const { return arity; }
+        index_t getPredIndex() const { return predIndex; }
+        const std::string& getPredicateName() const;
+        unsigned getArity() const;
         bool isTrueNegated() const { return trueNegated; }
-        const std::vector<DBTerm*>& getTerms() const { return terms; } 
+        // Standard atoms methods
+        const std::vector< DBTerm* >& getTerms() const { return terms; } 
         bool isBuiltin() const { return builtin; }
+        bool isAggregate() const { return aggregate; }
+        // Builtins methods
         DBTerm* getLeftOperand() const { return leftOp; }
         const std::string& getBinaryOperator() const { return binOp; }
         DBTerm* getRightOperand() const { return rightOp; }
+        // Aggregates methods
+        DBTerm* getAggregateLowerGuard() const { return lowerGuard; }
+        const std::string& getAggregateLowerBinop() const { return lowerBinop; }
+        DBTerm* getAggregateUpperGuard() const { return upperGuard; }
+        const std::string& getAggregateUpperBinop() const { return upperBinop; }
+        const std::string& getAggregateFunction() const { return aggregateFunction; }
+        const std::vector<DBAggregateElement*>& getAggregateElements() const { return aggregateElements; }
+        const std::string& getAggregateName() const;
         
     private:
-        friend inline std::ostream& operator<< ( std::ostream&, const DBAtom& );
+        friend std::ostream& operator<< ( std::ostream&, const DBAtom& );
         friend class DBProgram;
         
         // Only class Program can create Atom objects.
-        DBAtom( DBTerm* leftOp, const std::string& binOp, DBTerm* rightOp );
-        DBAtom( const std::string& predName, const std::vector<DBTerm*>& terms, bool tNeg=false );
-        DBAtom( char* predName, const std::vector<DBTerm*>& terms, bool tNeg=false );
+        // Standard constructor
+        DBAtom( 
+            const DBProgram& ownerProgr,
+            index_t predIdx,
+            const std::vector< DBTerm* >& terms, 
+            bool tNeg=false );
+        // Builtin constructor
+        DBAtom( 
+            const DBProgram& ownerProgr,
+            DBTerm* leftOp,
+            const std::string& binOp,
+            DBTerm* rightOp );
+        // Aggregate constructor
+        DBAtom(
+            const DBProgram& ownerProgr,
+            index_t predIdx,
+            DBTerm* lowerG, 
+            const std::string& lowerB, 
+            DBTerm* upperG, 
+            const std::string& upperB, 
+            const std::string& aggrFunct, 
+            const std::vector< DBAggregateElement* >& aggreSet );
 
-        std::string predicateName;
-        unsigned arity;
+        const DBProgram& ownerProgram;
+        index_t predIndex;
+        // Standard atoms
         bool trueNegated;
-        std::vector<DBTerm*> terms;
+        std::vector< DBTerm* > terms;
+        // Builtin atoms
         bool builtin;
         DBTerm* leftOp;
         std::string binOp;
         DBTerm* rightOp;
+        // Aggregate atoms
+        bool aggregate;
+        DBTerm* lowerGuard;
+        std::string lowerBinop;
+        DBTerm* upperGuard;
+        std::string upperBinop;
+        std::string aggregateFunction;
+        std::vector< DBAggregateElement* > aggregateElements;
     };
     
     inline
@@ -77,6 +124,23 @@ namespace DLV2{ namespace DB{
             assert_msg( (a.leftOp != NULL && a.rightOp != NULL),
                 "Invalid builtin atom, null terms");
             out << *(a.leftOp) << a.binOp << *(a.rightOp);
+        }
+        else if( a.aggregate )
+        {
+            assert_msg( (a.lowerGuard != NULL || a.upperGuard != NULL),
+                "Invalid aggregate literal, null guards");
+            if( a.lowerGuard )
+                out << *(a.lowerGuard) << a.lowerBinop;
+            out << a.aggregateFunction << "{";
+            for( unsigned i=0; i<a.aggregateElements.size(); i++ )
+            {
+                out << *(a.aggregateElements[i]);
+                if( i < a.aggregateElements.size()-1 )
+                    out << ";";
+            }
+            out << "}";
+            if( a.upperGuard )
+                out << a.upperBinop << *(a.upperGuard);
         }
         else
         {

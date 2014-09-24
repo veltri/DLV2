@@ -42,9 +42,9 @@ namespace DLV2{ namespace DB{
         std::string* getSQL();
         
         const std::string& getTargetPredicate() const { return targetPredicate; }
-        const std::vector<std::string>& getAttributesToSelect() const { return attributesToSelect; }
-        const std::vector<std::string>& getSourcePredicates() const { return sourcePredicates; }
-        const std::vector<QCondition>& getConditions() const { return conditions; }
+        const std::vector< std::string >& getAttributesToSelect() const { return attributesToSelect; }
+        const std::vector< std::string >& getSourcePredicates() const { return sourcePredicates; }
+        const std::vector< QCondition >& getConditions() const { return conditions; }
         
     private:
         friend class QueryBuilder;
@@ -55,9 +55,9 @@ namespace DLV2{ namespace DB{
         
         SQLBuilder* sqlBuilder;
         std::string targetPredicate;
-        std::vector<std::string> attributesToSelect;
-        std::vector<std::string> sourcePredicates;
-        std::vector<QCondition> conditions;
+        std::vector< std::string > attributesToSelect;
+        std::vector< std::string > sourcePredicates;
+        std::vector< QCondition > conditions;
     };
 
 };};

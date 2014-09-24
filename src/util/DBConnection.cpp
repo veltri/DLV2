@@ -20,6 +20,7 @@
 #include "DBConnection.h"
 #include "ErrorMessage.h"
 #include "Assert.h"
+#include "Constants.h"
 #include <cstring>
 
 using namespace std;
@@ -81,21 +82,23 @@ DBConnection::connect(
         // Allocate environment handle
         retCode = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &hEnv);
         if( !SQL_SUCCEEDED(retCode) )
-            throw SQLEXCEPTION(SQL_HANDLE_ENV,hEnv);
+            throw SQLException(SQL_HANDLE_ENV,hEnv);
 
         // Set the ODBC version environment attribute
         retCode = SQLSetEnvAttr(hEnv, SQL_ATTR_ODBC_VERSION, (SQLPOINTER*)SQL_OV_ODBC3, 0); 
         if( !SQL_SUCCEEDED(retCode) )
-            throw SQLEXCEPTION(SQL_HANDLE_ENV,hEnv);
+            throw SQLException(SQL_HANDLE_ENV,hEnv);
 
         // Allocate connection handle
         retCode = SQLAllocHandle(SQL_HANDLE_DBC, hEnv, &hDBc); 
         if( !SQL_SUCCEEDED(retCode) )
-            throw SQLEXCEPTION(SQL_HANDLE_DBC,hDBc);
+            throw SQLException(SQL_HANDLE_DBC,hDBc);
 
         // Set login timeout to 5 seconds
-        SQLSetConnectAttr(hDBc, SQL_LOGIN_TIMEOUT, (SQLPOINTER)5, 0);
-
+        retCode = SQLSetConnectAttr(hDBc, SQL_LOGIN_TIMEOUT, (SQLPOINTER)5, 0);
+        if( !SQL_SUCCEEDED(retCode) )
+            throw SQLException(SQL_HANDLE_DBC,hDBc);
+        
         // Connect to the datasource
         retCode = SQLDriverConnect(
             hDBc, 
@@ -107,46 +110,11 @@ DBConnection::connect(
             NULL,
             SQL_DRIVER_NOPROMPT);
         if( !SQL_SUCCEEDED(retCode) )
-            throw SQLEXCEPTION(SQL_HANDLE_DBC,hDBc);
+            throw SQLException(SQL_HANDLE_DBC,hDBc);
         
         connected = true;
-    /*    
-        int row = 0;
-        // Number of columns in result-set
-        SQLSMALLINT columns; 
-        // Retrieve table dogs' rows
-        SQLExecDirect(hStmt,(SQLCHAR*)"SELECT * FROM dogs",SQL_NTS);
-        SQLNumResultCols(hStmt, &columns);
-		
-        // Loop through the rows in the result-set
-        while (SQL_SUCCEEDED(retCode = SQLFetch(hStmt))) 
-        {
-            SQLUSMALLINT i;
-            cout << "Row " << row++ << endl;
-            // Loop through the columns
-            for (i = 1; i <= columns; i++) 
-            {
-                SQLLEN indicator;
-                char buf[512];
-                // Retrieve column data as a string
-                retCode = SQLGetData(hStmt, i, SQL_C_CHAR,buf, sizeof(buf), &indicator);
-                if (SQL_SUCCEEDED(retCode)) 
-                {
-                    // Handle null columns
-                    if (indicator == SQL_NULL_DATA) 
-                        strcpy(buf, "NULL");
-                        
-                    cout << "  Column " << i << " : " << buf << endl;
-                }
-            }
-        }
-        if (hStmt) { 
-            SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
-            hStmt = NULL; 
-        }
-     */
     }
-    catch(SQLEXCEPTION& exception)
+    catch(SQLException& exception)
     {
 	SQLSMALLINT i = 1; 
         SQLSMALLINT MsgLen;
@@ -155,14 +123,9 @@ DBConnection::connect(
         SQLCHAR Msg[SQL_MAX_MESSAGE_LENGTH];
 	retCode = SQLGetDiagRec(exception.first, exception.second, i, SqlState, &NativeError,Msg, sizeof(Msg), &MsgLen);
 	if( retCode == SQL_SUCCESS )
-        {
-            cerr << Msg << endl;
-            //ErrorMessage::errorGeneric(string(Msg));
-            exit(0);
-        }
-    }
-    catch(...)
-    {
+            ErrorMessage::errorDBConnection(Msg);
+        else
+            ErrorMessage::errorDBConnection("Unknown error");
     }
 }
 
@@ -170,19 +133,42 @@ void
 DBConnection::disconnect()
 {
     assert_msg( connected, "You have to first connect to a datasource." );
-    // Free handles, and disconnect.   
-    if (hDBc) { 
-        SQLDisconnect(hDBc);
-        connected = false;
-        SQLFreeHandle(SQL_HANDLE_DBC, hDBc);
-        hDBc = NULL; 
+    SQLRETURN retCode;
+    try{
+        // Free handles, and disconnect.   
+        if (hDBc) { 
+            retCode = SQLDisconnect(hDBc);
+            if( !SQL_SUCCEEDED(retCode) )
+                throw SQLException(SQL_HANDLE_DBC,hDBc);
+            connected = false;
+            
+            retCode = SQLFreeHandle(SQL_HANDLE_DBC, hDBc);
+            if( !SQL_SUCCEEDED(retCode) )
+                throw SQLException(SQL_HANDLE_DBC,hDBc);
+            hDBc = NULL; 
+        }
+        if (hEnv) { 
+            retCode = SQLFreeHandle(SQL_HANDLE_ENV, hEnv);
+            if( !SQL_SUCCEEDED(retCode) )
+                throw SQLException(SQL_HANDLE_DBC,hEnv);
+            hEnv = NULL; 
+        }
+        if( instance != NULL )
+            delete instance;
     }
-    if (hEnv) { 
-        SQLFreeHandle(SQL_HANDLE_ENV, hEnv);
-        hEnv = NULL; 
+    catch(SQLException& exception)
+    {
+	SQLSMALLINT i = 1; 
+        SQLSMALLINT MsgLen;
+	SQLINTEGER NativeError;
+	SQLCHAR SqlState[6];
+        SQLCHAR Msg[SQL_MAX_MESSAGE_LENGTH];
+	retCode = SQLGetDiagRec(exception.first, exception.second, i, SqlState, &NativeError,Msg, sizeof(Msg), &MsgLen);
+	if( retCode == SQL_SUCCESS )
+            ErrorMessage::errorDBConnection(Msg);
+        else
+            ErrorMessage::errorDBConnection("Unknown error");
     }
-    if( instance != NULL )
-        delete instance;
 }
 
 void
@@ -190,10 +176,29 @@ DBConnection::setAutoCommit(
     bool autoCommit )
 {
     assert_msg( connected, "You have to first connect to a datasource." );
-    if( autoCommit )
-        SQLSetConnectAttr(hDBc,SQL_ATTR_AUTOCOMMIT,(SQLPOINTER)SQL_AUTOCOMMIT_ON,0);
-    else
-        SQLSetConnectAttr(hDBc,SQL_ATTR_AUTOCOMMIT,(SQLPOINTER)SQL_AUTOCOMMIT_OFF,0);
+    SQLRETURN retCode;
+    try{
+        if( autoCommit )
+            retCode = SQLSetConnectAttr(hDBc,SQL_ATTR_AUTOCOMMIT,(SQLPOINTER)SQL_AUTOCOMMIT_ON,0);
+        else
+            retCode = SQLSetConnectAttr(hDBc,SQL_ATTR_AUTOCOMMIT,(SQLPOINTER)SQL_AUTOCOMMIT_OFF,0);
+        
+        if( !SQL_SUCCEEDED(retCode) )
+            throw SQLException(SQL_HANDLE_DBC,hDBc);
+    }
+    catch(SQLException& exception)
+    {
+	SQLSMALLINT i = 1; 
+        SQLSMALLINT MsgLen;
+	SQLINTEGER NativeError;
+	SQLCHAR SqlState[6];
+        SQLCHAR Msg[SQL_MAX_MESSAGE_LENGTH];
+	retCode = SQLGetDiagRec(exception.first, exception.second, i, SqlState, &NativeError,Msg, sizeof(Msg), &MsgLen);
+	if( retCode == SQL_SUCCESS )
+            ErrorMessage::errorDBConnection(Msg);
+        else
+            ErrorMessage::errorDBConnection("Unknown error");
+    }    
 }
 
 void
@@ -206,12 +211,19 @@ DBConnection::executeSQLStatement(
     try
     {
         // Allocate statement handle
-        SQLAllocHandle(SQL_HANDLE_STMT, hDBc, &hStmt);
+        retCode = SQLAllocHandle(SQL_HANDLE_STMT, hDBc, &hStmt);
+        if( !SQL_SUCCEEDED(retCode) )
+            throw SQLException(SQL_HANDLE_STMT,hStmt);
+        
         retCode = SQLExecDirect(hStmt,(SQLCHAR*)sql.c_str(),SQL_NTS);
         if( !SQL_SUCCEEDED(retCode) )
-            throw SQLEXCEPTION(SQL_HANDLE_STMT,hStmt);
+            throw SQLException(SQL_HANDLE_STMT,hStmt);
+        
+        retCode = SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
+        if( !SQL_SUCCEEDED(retCode) )
+            throw SQLException(SQL_HANDLE_STMT,hStmt);
     }
-    catch(SQLEXCEPTION& exception)
+    catch(SQLException& exception)
     {
 	SQLSMALLINT i = 1; 
         SQLSMALLINT MsgLen;
@@ -220,15 +232,9 @@ DBConnection::executeSQLStatement(
         SQLCHAR Msg[SQL_MAX_MESSAGE_LENGTH];
 	retCode = SQLGetDiagRec(exception.first, exception.second, i, SqlState, &NativeError,Msg, sizeof(Msg), &MsgLen);
 	if( retCode == SQL_SUCCESS )
-        {
-            cerr << Msg << endl;
-            //ErrorMessage::errorGeneric(string(Msg));
-            exit(0);
-        }
-    }
-    if (hStmt) { 
-        SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
-        hStmt = NULL; 
+            ErrorMessage::errorDBConnection(Msg);
+        else
+            ErrorMessage::errorDBConnection("Unknown error");
     }
 }
 
@@ -236,19 +242,187 @@ void
 DBConnection::commit()
 {
     assert_msg( connected, "You have to first connect to a datasource." );
-    SQLEndTran(SQL_HANDLE_DBC,hDBc,SQL_COMMIT);
+    SQLRETURN retCode;
+    try
+    {
+        retCode = SQLEndTran(SQL_HANDLE_DBC,hDBc,SQL_COMMIT);
+        if( !SQL_SUCCEEDED(retCode) )
+            throw SQLException(SQL_HANDLE_STMT,hDBc);
+    }
+    catch(SQLException& exception)
+    {
+	SQLSMALLINT i = 1; 
+        SQLSMALLINT MsgLen;
+	SQLINTEGER NativeError;
+	SQLCHAR SqlState[6];
+        SQLCHAR Msg[SQL_MAX_MESSAGE_LENGTH];
+	retCode = SQLGetDiagRec(exception.first, exception.second, i, SqlState, &NativeError,Msg, sizeof(Msg), &MsgLen);
+	if( retCode == SQL_SUCCESS )
+            ErrorMessage::errorDBConnection(Msg);
+        else
+            ErrorMessage::errorDBConnection("Unknown error");
+    }    
 }
 
 void
 DBConnection::rollback()
 {
     assert_msg( connected, "You have to first connect to a datasource." );
-    SQLEndTran(SQL_HANDLE_DBC,hDBc,SQL_ROLLBACK);    
+    SQLRETURN retCode;
+    try
+    {
+        retCode = SQLEndTran(SQL_HANDLE_DBC,hDBc,SQL_ROLLBACK);
+        if( !SQL_SUCCEEDED(retCode) )
+            throw SQLException(SQL_HANDLE_STMT,hDBc);
+    }
+    catch(SQLException& exception)
+    {
+	SQLSMALLINT i = 1; 
+        SQLSMALLINT MsgLen;
+	SQLINTEGER NativeError;
+	SQLCHAR SqlState[6];
+        SQLCHAR Msg[SQL_MAX_MESSAGE_LENGTH];
+	retCode = SQLGetDiagRec(exception.first, exception.second, i, SqlState, &NativeError,Msg, sizeof(Msg), &MsgLen);
+	if( retCode == SQL_SUCCESS )
+            ErrorMessage::errorDBConnection(Msg);
+        else
+            ErrorMessage::errorDBConnection("Unknown error");
+    }    
+}
+
+string*
+DBConnection::retrieveTableName(
+    const std::string& predName,
+    unsigned arity )
+{
+    assert_msg( connected, "You have to first connect to a datasource." );
+    string* outTableName = new string();
+    SQLRETURN retCode;
+    SQLHSTMT hStmt = 0;
+    try
+    {
+        // Allocate statement handle
+        retCode = SQLAllocHandle(SQL_HANDLE_STMT, hDBc, &hStmt);
+        if( !SQL_SUCCEEDED(retCode) )
+            throw SQLException(SQL_HANDLE_STMT,hStmt);
+        
+        // FIXME: sql code should not be included in this class.
+        string tableNames(TABLE_NAMES);
+        string sqlId = "SELECT id FROM "+tableNames+" WHERE name='"+predName+"' AND arity="+to_string(arity);
+        retCode = SQLExecDirect(hStmt,(SQLCHAR*)sqlId.c_str(),SQL_NTS);
+        
+        if( !SQL_SUCCEEDED(retCode) )
+            throw SQLException(SQL_HANDLE_STMT,hStmt);
+
+        // Declare buffers for result set data
+        unsigned STR_LEN = 128 + 1;
+        char szTableName[STR_LEN];
+        // Declare buffers for bytes available to return
+        SQLLEN cbTableName;
+        // Bind columns in result set to buffers
+        retCode = SQLBindCol(hStmt, 1, SQL_C_CHAR, szTableName, STR_LEN, &cbTableName);
+        if( !SQL_SUCCEEDED(retCode) )
+            throw SQLException(SQL_HANDLE_STMT,hStmt);
+
+        // There should be at most one record matching the input pair <predName,arity>.
+        // If no matchings are found, create one.
+        retCode = SQLFetch(hStmt);
+        if( SQL_SUCCEEDED(retCode) )
+        {
+            outTableName->assign(szTableName);
+            assert_msg( !SQL_SUCCEEDED(retCode = SQLFetch(hStmt)), 
+                "More than one table matches the input predicate" );
+        }
+        else if( retCode == SQL_NO_DATA )
+        {
+            // If such a matching does not exist, 
+            // insert a new record and create the matching table.
+
+            // FIXME: at the moment we are not able to handle datatype mappings, 
+            // so we create only tables with string attributes.
+
+            setAutoCommit(false);
+            
+            // The id of the table that is gonna be added is built as follows:
+            // <predName_COD>, where COD is the number of tables (included 
+            // in the working database) matching the predicate predName.
+            
+            // Retrieve the number of tables matching the predicate name in input.
+            string sqlCount = "SELECT COUNT(*) FROM "+tableNames+" WHERE name='"+predName+"'";
+            // Close the cursor.
+            SQLCloseCursor(hStmt);
+            retCode = SQLExecDirect(hStmt,(SQLCHAR*)sqlCount.c_str(),SQL_NTS);
+            if( !SQL_SUCCEEDED(retCode) )
+                throw SQLException(SQL_HANDLE_STMT,hStmt);
+
+            SQLUSMALLINT count;
+            SQLLEN countInd;
+            retCode = SQLBindCol(hStmt, 1, SQL_C_USHORT, &count, 0, &countInd);
+            if( !SQL_SUCCEEDED(retCode) )
+                throw SQLException(SQL_HANDLE_STMT,hStmt);
+            
+            retCode = SQLFetch(hStmt);
+            if( !SQL_SUCCEEDED(retCode) )
+                throw SQLException(SQL_HANDLE_STMT,hStmt);
+            
+            outTableName->assign(predName+to_string(count));
+
+            // Create the table.
+            string sqlCreateTable = "CREATE TABLE "+(*outTableName)+" (";
+            for( unsigned i=0; i<arity; i++ )
+            {
+                sqlCreateTable.append("attribute"+to_string(i)+" varchar(255)");
+                if( i < arity-1 )
+                    sqlCreateTable.append(", ");
+            }
+            sqlCreateTable.append(");");
+            // Close the cursor.
+            SQLCloseCursor(hStmt);
+            retCode = SQLExecDirect(hStmt,(SQLCHAR*)sqlCreateTable.c_str(),SQL_NTS);
+            if( !SQL_SUCCEEDED(retCode) )
+                throw SQLException(SQL_HANDLE_STMT,hStmt);
+            
+            // Update table "tableNames".
+            // FIXME: type value is still empty.
+            string sqlUpdateTableNames = "INSERT INTO "+tableNames+
+                    " VALUES ('"+(*outTableName)+"','"+predName+"',"+to_string(arity)+","+"'string');";
+            // Close the cursor.
+            SQLCloseCursor(hStmt);
+            retCode = SQLExecDirect(hStmt,(SQLCHAR*)sqlUpdateTableNames.c_str(),SQL_NTS);
+            if( !SQL_SUCCEEDED(retCode) )
+                throw SQLException(SQL_HANDLE_STMT,hStmt);
+            
+            commit();
+        }
+        else
+            throw SQLException(SQL_HANDLE_STMT,hStmt);
+        
+        retCode = SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
+        if( !SQL_SUCCEEDED(retCode) )
+            throw SQLException(SQL_HANDLE_STMT,hStmt);
+    }
+    catch(SQLException& exception)
+    {
+        delete outTableName;
+        disconnect();
+	SQLSMALLINT i = 1; 
+        SQLSMALLINT MsgLen;
+	SQLINTEGER NativeError;
+	SQLCHAR SqlState[6];
+        SQLCHAR Msg[SQL_MAX_MESSAGE_LENGTH];
+	retCode = SQLGetDiagRec(exception.first, exception.second, i, SqlState, &NativeError,Msg, sizeof(Msg), &MsgLen);
+	if( retCode == SQL_SUCCESS )
+            ErrorMessage::errorDBConnection(Msg);
+        else
+            ErrorMessage::errorDBConnection("Unknown error");      
+    }
+    return outTableName;
 }
 
 vector<string>*
 DBConnection::retrieveTableSchema(
-    const std::string& tableName ) 
+    const std::string& tableName,
+    unsigned nAttributes ) 
 {
     assert_msg( connected, "You have to first connect to a datasource." );
     vector<string>* attributesList = new vector<string>();
@@ -257,32 +431,44 @@ DBConnection::retrieveTableSchema(
     try
     {
         // Allocate statement handle
-        SQLAllocHandle(SQL_HANDLE_STMT, hDBc, &hStmt);
+        retCode = SQLAllocHandle(SQL_HANDLE_STMT, hDBc, &hStmt);
+        if( !SQL_SUCCEEDED(retCode) )
+            throw SQLException(SQL_HANDLE_STMT,hStmt);
+        
         retCode = SQLColumns(hStmt, NULL, 0, NULL, 0, (SQLCHAR*)tableName.c_str(), SQL_NTS, NULL, 0);
-        if( SQL_SUCCEEDED(retCode) )
+        if( !SQL_SUCCEEDED(retCode) )
+            throw SQLException(SQL_HANDLE_STMT,hStmt);
+
+        // Declare buffers for result set data
+        unsigned STR_LEN = 128 + 1;
+        char szColumnName[STR_LEN];
+        //SQLCHAR szTypeName[STR_LEN];
+        // Declare buffers for bytes available to return
+        SQLLEN cbColumnName;
+        //SQLINTEGER cbTypeName;
+        // Bind columns in result set to buffers
+        retCode = SQLBindCol(hStmt, 4, SQL_C_CHAR, szColumnName, STR_LEN, &cbColumnName);
+        if( !SQL_SUCCEEDED(retCode) )
+            throw SQLException(SQL_HANDLE_STMT,hStmt);
+        
+        //SQLBindCol(hstmt, 6, SQL_C_CHAR, szTypeName, STR_LEN, &cbTypeName);
+        while( SQL_SUCCEEDED(retCode = SQLFetch(hStmt)) ) 
         {
-            // Declare buffers for result set data
-            unsigned STR_LEN = 128 + 1;
-            char szColumnName[STR_LEN];
-            //SQLCHAR szTypeName[STR_LEN];
-            // Declare buffers for bytes available to return
-            SQLLEN cbColumnName;
-            //SQLINTEGER cbTypeName;
-            // Bind columns in result set to buffers
-            SQLBindCol(hStmt, 4, SQL_C_CHAR, szColumnName, STR_LEN, &cbColumnName);
-            //SQLBindCol(hstmt, 6, SQL_C_CHAR, szTypeName, STR_LEN, &cbTypeName);
-            while (SQL_SUCCEEDED(retCode = SQLFetch(hStmt))) 
-            {            
-//                cout << "Attribute name: " << szColumnName << endl;
-                attributesList->push_back(string(szColumnName));
-            }
-            // If attributeList is empty, table "tableName" doesn't exist.
+            attributesList->push_back(string(szColumnName));
         }
-        else 
-            throw SQLEXCEPTION(SQL_HANDLE_STMT,hStmt);
+        // If attributeList were empty, table "tableName" would not exist.
+        // Anyway, that is not possible because retrieveTableName is called 
+        // before, and that function creates the table if it doesn't exist. 
+        assert_msg( nAttributes == attributesList->size(), "Wrong arity" );
+        
+        retCode = SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
+        if( !SQL_SUCCEEDED(retCode) )
+            throw SQLException(SQL_HANDLE_STMT,hStmt);
     }
-    catch(SQLEXCEPTION& exception)
+    catch(SQLException& exception)
     {
+        delete attributesList;
+        disconnect();
 	SQLSMALLINT i = 1; 
         SQLSMALLINT MsgLen;
 	SQLINTEGER NativeError;
@@ -290,15 +476,9 @@ DBConnection::retrieveTableSchema(
         SQLCHAR Msg[SQL_MAX_MESSAGE_LENGTH];
 	retCode = SQLGetDiagRec(exception.first, exception.second, i, SqlState, &NativeError,Msg, sizeof(Msg), &MsgLen);
 	if( retCode == SQL_SUCCESS )
-        {
-            cerr << Msg << endl;
-            //ErrorMessage::errorGeneric(string(Msg));
-            exit(0);
-        }
-    }
-    if (hStmt) { 
-        SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
-        hStmt = NULL; 
+            ErrorMessage::errorDBConnection(Msg);
+        else
+            ErrorMessage::errorDBConnection("Unknown error");
     }
     return attributesList;
 }

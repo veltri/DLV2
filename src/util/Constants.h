@@ -27,6 +27,8 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+#include <set>
+
 namespace DLV2
 {
 // Input builder constants
@@ -51,12 +53,25 @@ namespace DLV2
 // Error messages
 #define ERROR_PARSING "\nError during parsing"
 #define ERROR_GENERIC "\nGeneric error"
+#define ERROR_DB "\nDatabase error"
 #define ERROR_PARSING_CODE 100
 #define ERROR_GENERIC_CODE 110
+#define ERROR_DB_CODE 120
     
 // New types
 typedef unsigned int INPUT_BUILDER_POLICY;
 typedef unsigned int OUTPUT_POLICY;
+
+namespace DB{
+    
+    // Database constants
+    #define TABLE_NAMES "table_names"
+    
+    // New types
+    typedef size_t index_t;
+    typedef std::set< unsigned > DBRuleSet;
+};
+
 };
 
 #endif	/* CONSTANTS_H */

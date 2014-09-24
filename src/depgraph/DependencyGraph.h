@@ -37,7 +37,7 @@
 
 namespace DLV2
 {
-    typedef boost::property<boost::edge_name_t, unsigned> EdgeProperty;
+    typedef boost::property< boost::edge_name_t, unsigned > EdgeProperty;
     
     class DirectedGraph: public boost::adjacency_list<
             boost::vecS,
@@ -54,27 +54,28 @@ namespace DLV2
     typedef DirectedGraph::edge_iterator EdgeIterator;
     typedef DirectedGraph::out_edge_iterator OutEdgeIterator;
     
-    typedef std::vector<unsigned> Component;
-    typedef std::vector<Component> Components;
+    typedef std::vector< unsigned > Component;
+    typedef std::vector< Component > Components;
         
     template< typename ControlStrategy = DepGraphNoStrategy >
     class DependencyGraph {
     public:
         DependencyGraph();
+        DependencyGraph( const DependencyGraph& dg );
         ~DependencyGraph();
         
         unsigned addVertex();
-        void addEdge( unsigned, unsigned, unsigned label = POSITIVE_EDGE );
-        bool isEdge( unsigned, unsigned, unsigned label = POSITIVE_EDGE ) const;
-        bool isAnyEdge( unsigned, unsigned ) const;
+        void addEdge( unsigned src, unsigned dest, unsigned label = POSITIVE_EDGE );
+        bool isEdge( unsigned src, unsigned dest, unsigned label = POSITIVE_EDGE ) const;
+        bool isAnyEdge( unsigned src, unsigned dest ) const;
         unsigned numOfVertices() const { return boost::num_vertices(graph); }
         void computeStronglyConnectedComponents();
-        unsigned getAtomComponent( unsigned ) const;
-        const Component& getComponent( unsigned ) const;
+        unsigned getAtomComponent( unsigned vertexIdx ) const;
+        const Component& getComponent( unsigned componentIdx ) const;
         const Components& getComponentList() const;
         unsigned numberOfComponents() const;
         
-        void addDisjunctiveHead( std::vector<unsigned> head );
+        void addDisjunctiveHead( std::vector< unsigned > head );
         
         bool isHCF( unsigned componentIdx ) const;
         bool isHCF() const;
@@ -92,22 +93,22 @@ namespace DLV2
         // It represents vertices by components
         Components stronglyConnectedComponents;
         // It represents components by vertices
-        std::vector<unsigned int> vertexComponents;
+        std::vector< unsigned int > vertexComponents;
         // It represents negated edges in components
-        std::vector<bool> componentHasNegations;
+        std::vector< bool > componentHasNegations;
         // It represents disjunctive heads
-        std::vector<Component> disjunctiveHeads;
+        std::vector< Component > disjunctiveHeads;
         
-        template <typename T> 
-        friend inline std::ostream& operator<<( std::ostream&, DependencyGraph<T>& );
+        template < typename T > 
+        friend inline std::ostream& operator<<( std::ostream&, DependencyGraph< T >& );
         
     };
     
-    template <typename ControlStrategy>
+    template < typename ControlStrategy >
     std::ostream&
     operator<<( 
         std::ostream& out,
-        DependencyGraph<ControlStrategy>& g )
+        DependencyGraph< ControlStrategy >& g )
     {
         out << "DEPGRAPH: (" << g.numOfVertices() << " atoms, " 
             << g.numberOfComponents() << " components)"
@@ -148,32 +149,43 @@ namespace DLV2
     }
 };
     
-using namespace DLV2;
-
-template <typename ControlStrategy>
-DependencyGraph<ControlStrategy>::DependencyGraph():
-    graph( *new DirectedGraph() )
+template < typename ControlStrategy >
+DLV2::DependencyGraph< ControlStrategy >::DependencyGraph():
+        graph( *new DirectedGraph() )
 {
 }
 
-template <typename ControlStrategy>
-DependencyGraph<ControlStrategy>::~DependencyGraph()
+template < typename ControlStrategy >
+DLV2::DependencyGraph< ControlStrategy >::DependencyGraph(
+    const DLV2::DependencyGraph< ControlStrategy >& dg ):
+        controller(dg.controller),
+        graph( *new DirectedGraph(dg.graph) ),
+        stronglyConnectedComponents(dg.stronglyConnectedComponents),
+        vertexComponents(dg.vertexComponents),
+        componentHasNegations(dg.componentHasNegations),
+        disjunctiveHeads(dg.disjunctiveHeads)
+{
+    
+}
+
+template < typename ControlStrategy >
+DLV2::DependencyGraph< ControlStrategy >::~DependencyGraph()
 {
     graph.clear();
     assert_msg( graph.vertex_set().empty(), "The depgraph is not empty." );
     delete &graph;
 }
 
-template <typename ControlStrategy>
+template < typename ControlStrategy >
 unsigned 
-DependencyGraph<ControlStrategy>::addVertex() 
+DLV2::DependencyGraph< ControlStrategy >::addVertex() 
 {
     return boost::add_vertex(graph);
 }
 
-template <typename ControlStrategy>
+template < typename ControlStrategy >
 void 
-DependencyGraph<ControlStrategy>::addEdge( 
+DLV2::DependencyGraph< ControlStrategy >::addEdge( 
     unsigned v1,
     unsigned v2,
     unsigned label )
@@ -186,19 +198,18 @@ DependencyGraph<ControlStrategy>::addEdge(
     boost::add_edge(v1,v2,label,graph);
 }
 
-template <typename ControlStrategy>
+template < typename ControlStrategy >
 bool 
-DependencyGraph<ControlStrategy>::isEdge(
+DLV2::DependencyGraph< ControlStrategy >::isEdge(
     unsigned v1, 
     unsigned v2, 
-    unsigned label 
-) const
+    unsigned label ) const
 {
     assert_msg( (label >= POSITIVE_EDGE && label <= NEGATIVE_EDGE), 
             "Not a valid label for the edge in input." );
     controller.edge(label);
 
-    std::pair<Edge,bool> alreadyExists = boost::edge(v1,v2,graph);
+    std::pair< Edge, bool > alreadyExists = boost::edge(v1,v2,graph);
     if( alreadyExists.second )
     {
         unsigned lab = boost::get(boost::edge_name,graph,alreadyExists.first);
@@ -208,20 +219,19 @@ DependencyGraph<ControlStrategy>::isEdge(
         return false;
 }
 
-template <typename ControlStrategy>
+template < typename ControlStrategy >
 bool 
-DependencyGraph<ControlStrategy>::isAnyEdge(
+DLV2::DependencyGraph< ControlStrategy >::isAnyEdge(
     unsigned v1, 
-    unsigned v2
-) const
+    unsigned v2 ) const
 {
-    std::pair<Edge,bool> alreadyExists = boost::edge(v1,v2,graph);
+    std::pair< Edge, bool > alreadyExists = boost::edge(v1,v2,graph);
     return alreadyExists.second;
 }
 
-template <typename ControlStrategy>
+template < typename ControlStrategy >
 void
-DependencyGraph<ControlStrategy>::computeStronglyConnectedComponents()
+DLV2::DependencyGraph< ControlStrategy >::computeStronglyConnectedComponents()
 {
     assert_msg( stronglyConnectedComponents.size() == 0, 
             "Strongly connected components have been already computed." );
@@ -250,11 +260,10 @@ DependencyGraph<ControlStrategy>::computeStronglyConnectedComponents()
 
 }
 
-template <typename ControlStrategy>
+template < typename ControlStrategy >
 unsigned
-DependencyGraph<ControlStrategy>::getAtomComponent(
-    unsigned vertexId 
-) const
+DLV2::DependencyGraph< ControlStrategy >::getAtomComponent(
+    unsigned vertexId ) const
 {
     assert_msg( vertexComponents.size() > 0, 
             "Strongly connected components have not been computed." );
@@ -264,11 +273,10 @@ DependencyGraph<ControlStrategy>::getAtomComponent(
     return vertexComponents[vertexId];
 }
 
-template <typename ControlStrategy>
-const Component&
-DependencyGraph<ControlStrategy>::getComponent(
-    unsigned componentIdx 
-) const
+template < typename ControlStrategy >
+const DLV2::Component&
+DLV2::DependencyGraph< ControlStrategy >::getComponent(
+    unsigned componentIdx ) const
 {
     assert_msg( stronglyConnectedComponents.size() > 0, 
             "Strongly connected components have not been computed." );
@@ -278,9 +286,9 @@ DependencyGraph<ControlStrategy>::getComponent(
     return stronglyConnectedComponents[componentIdx];
 }
 
-template <typename ControlStrategy>
-const Components&
-DependencyGraph<ControlStrategy>::getComponentList() const
+template < typename ControlStrategy >
+const DLV2::Components&
+DLV2::DependencyGraph< ControlStrategy >::getComponentList() const
 {
     assert_msg( stronglyConnectedComponents.size() > 0, 
             "Strongly connected components have not been computed." );
@@ -288,9 +296,9 @@ DependencyGraph<ControlStrategy>::getComponentList() const
     return stronglyConnectedComponents;
 }
 
-template <typename ControlStrategy>
+template < typename ControlStrategy >
 unsigned
-DependencyGraph<ControlStrategy>::numberOfComponents() const
+DLV2::DependencyGraph< ControlStrategy >::numberOfComponents() const
 {
     assert_msg( stronglyConnectedComponents.size() > 0, 
             "Strongly connected components have not been computed." );
@@ -298,18 +306,18 @@ DependencyGraph<ControlStrategy>::numberOfComponents() const
     return stronglyConnectedComponents.size();
 }
 
-template <typename ControlStrategy>
+template < typename ControlStrategy >
 void
-DependencyGraph<ControlStrategy>::addDisjunctiveHead(
-    std::vector<unsigned> head )
+DLV2::DependencyGraph< ControlStrategy >::addDisjunctiveHead(
+    std::vector< unsigned > head )
 {
     assert_msg( head.size() > 0, "The head is empty." );
     disjunctiveHeads.push_back(head); 
 }
 
-template <typename ControlStrategy>
+template < typename ControlStrategy >
 bool
-DependencyGraph<ControlStrategy>::isHCF(
+DLV2::DependencyGraph< ControlStrategy >::isHCF(
     unsigned componentIdx ) const
 {
     assert_msg( stronglyConnectedComponents.size() > 0, 
@@ -336,9 +344,9 @@ DependencyGraph<ControlStrategy>::isHCF(
     return true;
 }
 
-template <typename ControlStrategy>
+template < typename ControlStrategy >
 bool
-DependencyGraph<ControlStrategy>::isHCF() const
+DLV2::DependencyGraph< ControlStrategy >::isHCF() const
 {
     assert_msg( stronglyConnectedComponents.size() > 0, 
             "Strongly connected components have not been computed." );
@@ -361,9 +369,9 @@ DependencyGraph<ControlStrategy>::isHCF() const
     return true;
 }
 
-template <typename ControlStrategy>
+template < typename ControlStrategy >
 bool 
-DependencyGraph<ControlStrategy>::isStratified(
+DLV2::DependencyGraph< ControlStrategy >::isStratified(
     unsigned componentIdx )
 {
     assert_msg( stronglyConnectedComponents.size() > 0, 
@@ -381,9 +389,9 @@ DependencyGraph<ControlStrategy>::isStratified(
     return !componentHasNegations[componentIdx];
 }
 
-template <typename ControlStrategy>
+template < typename ControlStrategy >
 bool 
-DependencyGraph<ControlStrategy>::isStratified()
+DLV2::DependencyGraph< ControlStrategy >::isStratified()
 {
     assert_msg( stronglyConnectedComponents.size() > 0, 
             "Strongly connencted components have not been computed." );
@@ -397,9 +405,9 @@ DependencyGraph<ControlStrategy>::isStratified()
     return true;
 }
 
-template <typename ControlStrategy>
+template < typename ControlStrategy >
 bool 
-DependencyGraph<ControlStrategy>::isCyclic(
+DLV2::DependencyGraph< ControlStrategy >::isCyclic(
     unsigned componentIdx ) const
 {
     assert_msg( stronglyConnectedComponents.size() > 0, 
@@ -413,9 +421,9 @@ DependencyGraph<ControlStrategy>::isCyclic(
                     stronglyConnectedComponents[componentIdx][0]) ) );
 }
 
-template <typename ControlStrategy>
+template < typename ControlStrategy >
 bool 
-DependencyGraph<ControlStrategy>::isCyclic() const
+DLV2::DependencyGraph< ControlStrategy >::isCyclic() const
 {
     assert_msg( stronglyConnectedComponents.size() > 0, 
             "Strongly connencted components have not been computed." );
@@ -426,22 +434,22 @@ DependencyGraph<ControlStrategy>::isCyclic() const
     return false;
 }
 
-template <typename ControlStrategy>
+template < typename ControlStrategy >
 bool 
-DependencyGraph<ControlStrategy>::isTight() const
+DLV2::DependencyGraph< ControlStrategy >::isTight() const
 {
     return !isCyclic();
 }
 
-template <typename ControlStrategy>
+template < typename ControlStrategy >
 void
-DependencyGraph<ControlStrategy>::computeLabeledEdges()
+DLV2::DependencyGraph< ControlStrategy >::computeLabeledEdges()
 {
     assert_msg( stronglyConnectedComponents.size() > 0, 
             "Strongly connencted components have not been computed." );
 
     componentHasNegations.resize(stronglyConnectedComponents.size());
-    for( unsigned i = 0; i < stronglyConnectedComponents.size(); i++ )
+    for( unsigned i = 0; i<stronglyConnectedComponents.size(); i++ )
         componentHasNegations[i] = false;
 
     // Scan for negated edges

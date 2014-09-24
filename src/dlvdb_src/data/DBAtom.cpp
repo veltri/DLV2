@@ -18,82 +18,138 @@
  */
 
 #include "DBAtom.h"
+#include "DBProgram.h"
 
 using namespace std;
 using namespace DLV2::DB;
     
+// Classical atoms
+DBAtom::DBAtom(
+    const DBProgram& ownerProgr,
+    index_t predIdx, 
+    const vector<DBTerm*>& tList, 
+    bool tNeg ):
+        ownerProgram(ownerProgr),
+        predIndex(predIdx),
+        trueNegated(tNeg),
+        terms(tList),
+        builtin(false),
+        leftOp(NULL),
+        binOp(""),
+        rightOp(NULL),
+        aggregate(false),
+        lowerGuard(NULL),
+        lowerBinop(""),
+        upperGuard(NULL),
+        upperBinop(""),
+        aggregateFunction("")
+{
+}
+
 // Builtins
 DBAtom::DBAtom(
+    const DBProgram& ownerProgr,
     DBTerm* left,
     const string& binop,
     DBTerm* right):
-        predicateName(""),
-        arity(0),
+        ownerProgram(ownerProgr),
         trueNegated(false),
         builtin(true),
         leftOp(left),
         binOp(binop),
-        rightOp(right)
+        rightOp(right),
+        aggregate(false),
+        lowerGuard(NULL),
+        lowerBinop(""),
+        upperGuard(NULL),
+        upperBinop(""),
+        aggregateFunction("")
 {
 }
 
-// Classical atoms
-DBAtom::DBAtom(
-    const string& name, 
-    const vector<DBTerm*>& tList, 
-    bool tNeg ):
-        predicateName(name),
-        arity(tList.size()),
-        trueNegated(tNeg),
-        terms(tList),
+// Aggregates' constructor
+DBAtom::DBAtom( 
+    const DBProgram& ownerProgr,
+    index_t predIdx,
+    DBTerm* lGuard, 
+    const string& lOp, 
+    DBTerm* uGuard,
+    const string& uOp,
+    const string& function,
+    const vector< DBAggregateElement* >& aElements ):
+        ownerProgram(ownerProgr),
+        predIndex(predIdx),
+        trueNegated(false),
         builtin(false),
         leftOp(NULL),
         binOp(""),
-        rightOp(NULL)
-{
-}
-
-// Classical atoms
-DBAtom::DBAtom(
-    char* name, 
-    const vector<DBTerm*>& tList, 
-    bool tNeg ):
-        predicateName(name),
-        arity(tList.size()),
-        trueNegated(tNeg),
-        terms(tList),
-        builtin(false),
-        leftOp(NULL),
-        binOp(""),
-        rightOp(NULL)
+        rightOp(NULL),
+        aggregate(true),
+        lowerGuard(lGuard),
+        lowerBinop(lOp),
+        upperGuard(uGuard),
+        upperBinop(uOp),
+        aggregateFunction(function),
+        aggregateElements(aElements)
 {
 }
 
 // Copy constructor
 DBAtom::DBAtom(
     const DBAtom& a ):
-        predicateName(a.predicateName),
-        arity(a.arity),
+        ownerProgram(a.ownerProgram),
+        predIndex(a.predIndex),
         trueNegated(a.trueNegated),
         terms(a.terms),
         builtin(a.builtin),
-        binOp(a.binOp)
+        binOp(a.binOp),
+        aggregate(a.aggregate),
+        lowerBinop(a.lowerBinop),
+        upperBinop(a.upperBinop),
+        aggregateFunction(a.aggregateFunction),
+        aggregateElements(a.aggregateElements)
 {
     if( a.builtin )
     {
         assert_msg( (a.leftOp != NULL && a.rightOp != NULL), "Builtin operands not valid.");
         leftOp = new DBTerm(*a.leftOp);
         rightOp = new DBTerm(*a.rightOp);
+        lowerGuard = NULL;
+        upperGuard = NULL;
+    }
+    else if( a.aggregate )
+    {
+        leftOp = NULL;
+        rightOp = NULL;
+        if( a.lowerGuard != NULL )
+            lowerGuard = new DBTerm(*a.lowerGuard);
+        else
+            lowerGuard = NULL;
+        if( a.upperGuard != NULL )
+            upperGuard = new DBTerm(*a.upperGuard);
+        else
+            upperGuard = NULL;
     }
     else
     {
         leftOp = NULL;
         rightOp = NULL;
+        lowerGuard = NULL;
+        upperGuard = NULL;
     }
 }
 
 DBAtom::~DBAtom()
 {
+    if( lowerGuard != NULL )
+        delete lowerGuard;
+    if( upperGuard != NULL )
+        delete upperGuard;
+    for( unsigned i=0; i<aggregateElements.size(); i++ )
+    {
+        assert_msg( aggregateElements[i] != NULL, "Trying to destroy an aggregate literal with a null element." );
+        delete aggregateElements[i];
+    }
     if( leftOp != NULL )
         delete leftOp;
     if( rightOp != NULL )
@@ -103,4 +159,25 @@ DBAtom::~DBAtom()
         assert_msg( terms[i] != NULL, "Trying to destroy an atom with a null term." );
         delete terms[i];
     }
+}
+
+const std::string& 
+DBAtom::getPredicateName() const 
+{
+    assert_msg( !isBuiltin(), "Builtin atoms have no names" );
+    return ownerProgram.getPredicateNamesTable().getName(predIndex);
+}
+
+unsigned
+DBAtom::getArity() const
+{
+    assert_msg( (!isBuiltin() && !isAggregate()), "Builtin and aggregate atoms have no arities" );
+    return ownerProgram.getPredicateNamesTable().getArity(predIndex);
+}
+
+const std::string&
+DBAtom::getAggregateName() const
+{
+    assert_msg( isAggregate(), "The atom is not an aggregate" );
+    return ownerProgram.getPredicateNamesTable().getName(predIndex);
 }
