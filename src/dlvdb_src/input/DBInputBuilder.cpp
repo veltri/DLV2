@@ -394,7 +394,7 @@ DBInputBuilder::onBuiltinAtom()
     termStack.pop_back();
     DBTerm* leftOperand = termStack.back();
     termStack.pop_back();
-    
+
     currentAtom = program->createBuiltinAtom(leftOperand,binop,rightOperand);
     termStack.clear();
     predName = "";

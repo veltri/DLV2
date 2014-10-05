@@ -39,8 +39,22 @@ namespace DLV2{ namespace DB{
 
         DBAtom* getAtom() const { return atom; }
         bool isNaf() const { return isNegative; }
+        bool isRegularAtom() const;
+        bool isPropositional() const;
         bool isBuiltin() const;
+        bool isAssignmentBuiltin() const;
         bool isAggregate() const;
+        bool isAssignmentAggregate() const;
+        /** Determines if this DBLiteral can save others.
+         * No, this is not the beginning of a religion.
+         * @return true whether this can provide safety.
+         */
+        bool isSaviour() const;
+        /** Determines if safety must be checked for this DBLiteral.
+         * @return true whether this is either negative,
+         * or builtin, or aggregate.
+         */
+        bool safetyMustBeChecked() const;
 
     private:
         friend inline std::ostream& operator<< ( std::ostream&, const DBLiteral& );

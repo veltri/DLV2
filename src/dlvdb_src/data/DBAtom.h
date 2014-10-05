@@ -44,18 +44,34 @@ namespace DLV2{ namespace DB{
         DBAtom( const DBAtom& );
         ~DBAtom();
         
-        index_t getPredIndex() const { return predIndex; }
+        index_t getPredIndex() const { assert_msg( !builtin, "Builtins has no predicates." ); return predIndex; }
         const std::string& getPredicateName() const;
         unsigned getArity() const;
         bool isTrueNegated() const { return trueNegated; }
+        
         // Standard atoms methods
-        const std::vector< DBTerm* >& getTerms() const { return terms; } 
+        const std::vector< DBTerm* >& getTerms() const { return terms; }
+        bool isRegularAtom() const { return (!isBuiltin() && !isAggregate()); }
+        bool isPropositional() const { return (isRegularAtom() && terms.size() == 0); }
         bool isBuiltin() const { return builtin; }
         bool isAggregate() const { return aggregate; }
+        /** An atom is an assignment aggregate if it's an aggregate of the form: 
+         * X <= aggregate( Vars : Conjunction ) <= X.
+         * @return true whether this atom is an assignment aggregate
+         */
+        bool isAssignmentAggregate() const;
+        /** An atom is an assignment builtin if it's a builtin of the form:
+         * X = string/constant | string/constant = X.
+         * @return true whether this atom is an assignment builtin
+         */
+        bool isAssignmentBuiltin() const;
+        
         // Builtins methods
         DBTerm* getLeftOperand() const { return leftOp; }
         const std::string& getBinaryOperator() const { return binOp; }
         DBTerm* getRightOperand() const { return rightOp; }
+        bool isEqualityBuiltin() const { return isBuiltin() && !binOp.compare("="); }
+        
         // Aggregates methods
         DBTerm* getAggregateLowerGuard() const { return lowerGuard; }
         const std::string& getAggregateLowerBinop() const { return lowerBinop; }
@@ -123,7 +139,7 @@ namespace DLV2{ namespace DB{
         {
             assert_msg( (a.leftOp != NULL && a.rightOp != NULL),
                 "Invalid builtin atom, null terms");
-            out << *(a.leftOp) << a.binOp << *(a.rightOp);
+            out << *a.leftOp << a.binOp << *a.rightOp;
         }
         else if( a.aggregate )
         {

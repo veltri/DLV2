@@ -65,6 +65,7 @@ DBAtom::DBAtom(
         upperBinop(""),
         aggregateFunction("")
 {
+    assert_msg( (left != NULL && right != NULL), "Builtin operands not valid.");
 }
 
 // Aggregates' constructor
@@ -173,6 +174,39 @@ DBAtom::getArity() const
 {
     assert_msg( (!isBuiltin() && !isAggregate()), "Builtin and aggregate atoms have no arities" );
     return ownerProgram.getPredicateNamesTable().getArity(predIndex);
+}
+
+bool
+DBAtom::isAssignmentAggregate() const
+{
+    if( isAggregate() &&
+            lowerGuard != NULL && 
+            upperGuard != NULL && 
+            lowerBinop == "<=" &&
+            upperBinop == "<=" &&
+            *lowerGuard == *upperGuard )
+        return true;
+            
+    return false;
+}
+
+
+bool
+DBAtom::isAssignmentBuiltin() const
+{
+    // Assert: isBuiltin()  <--> (leftOp && rightOp)
+    assert_msg( (!isBuiltin() || (leftOp != NULL && rightOp != NULL) ), "Not a valid builtin" );
+    assert_msg( (!(leftOp != NULL && rightOp != NULL) || isBuiltin()), "Not a valid builtin" );
+    // By means of the above assert we are sure that if
+    // the current atom is a builtin (an equality one,
+    // in this case), then its operands are not null.
+    if( isEqualityBuiltin() &&
+            ( leftOp->isConst() ||
+              leftOp->isInt() ||
+              rightOp->isConst() ||
+              rightOp->isInt() ) )
+        return true;
+    return false;
 }
 
 const std::string&

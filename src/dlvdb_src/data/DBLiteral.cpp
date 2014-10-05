@@ -46,6 +46,22 @@ DBLiteral::~DBLiteral()
 }
 
 bool
+DBLiteral::isRegularAtom()
+const
+{
+    assert_msg( atom != NULL, "Null atom" );
+    return atom->isRegularAtom();
+}
+
+bool
+DBLiteral::isPropositional()
+const
+{
+    assert_msg( atom != NULL, "Null atom" );
+    return atom->isPropositional();
+}
+
+bool
 DBLiteral::isBuiltin() 
 const
 {
@@ -54,8 +70,42 @@ const
 }
 
 bool
+DBLiteral::isAssignmentBuiltin() const
+{
+    assert_msg( atom != NULL, "Null atom" );
+    return atom->isAssignmentBuiltin();
+}
+
+bool
 DBLiteral::isAggregate() const
 { 
     assert_msg( atom != NULL, "Null atom" );
     return atom->isAggregate();
+}
+
+bool
+DBLiteral::isAssignmentAggregate() const
+{
+    assert_msg( atom != NULL, "Null atom" );
+    return atom->isAssignmentAggregate();
+}
+
+bool
+DBLiteral::isSaviour() const
+{
+    // A saviour literal is a positive literal which is neither
+    // builtin nor aggregate (except assignment aggregates, i.e.,
+    // aggregates of the form: X <= aggregate( Vars : Conjunction ) <= X;
+    // because this kind of aggregates fixes a value for X).
+    assert_msg( atom != NULL, "Null atom" );
+    return !isNaf() &&
+            ( !isBuiltin() || isAssignmentBuiltin() ) &&
+            ( !isAggregate() || isAssignmentAggregate() );
+}
+
+bool
+DBLiteral::safetyMustBeChecked() const
+{
+    // For assignment aggregates you must check safety of their aggregate set.
+    return isNaf() || ( isBuiltin() && !isAssignmentBuiltin() )  || isAggregate();
 }

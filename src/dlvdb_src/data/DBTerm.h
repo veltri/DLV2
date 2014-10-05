@@ -28,6 +28,7 @@
 #define	DBTERM_H
 
 #include <string>
+#include "../../util/Assert.h"
 
 namespace DLV2{ namespace DB{
 
@@ -38,16 +39,20 @@ namespace DLV2{ namespace DB{
         DBTerm( const DBTerm& t ): value(t.value), text(t.text), type(t.type) { }
         ~DBTerm() { }
         
-        unsigned getValue() const { return value; }
-        const std::string& getText() const { return text; }
+        unsigned getValue() const { assert_msg( type == Integer, "Not an integer" ); return value; }
+        const std::string& getText() const { assert_msg( type != Integer, "It is an integer" ); return text; }
         Type getType() const { return type; }
+        bool isVar() const { return getType() == Variable; }
+        bool isUnknownVar() const { return getType() == Variable && !text.compare("_"); }
+        bool isInt() const { return getType() == Integer; }
+        bool isConst() const { return getType() == String; }
+        bool operator==( const DBTerm& term ) const;
         
     private:
         friend inline std::ostream& operator<< ( std::ostream&, const DBTerm& );
         friend class DBProgram;
         
         // Only class Program can create Term objects.
-        DBTerm() { }
         // Integer constructor
         DBTerm( int val ): value(val), text(""), type(Integer) { }
         // String constructor

@@ -33,6 +33,7 @@
 #include "../../util/DBConnection.h"
 #include "DBPredicateNames.h"
 #include "DBSubProgram.h"
+#include "SafetyException.h"
 #include <unordered_map>
 #include <set>
 
@@ -84,6 +85,8 @@ namespace DLV2{ namespace DB{
         void addRule( DBRule* r );
         std::pair< index_t, bool > addPredicate( const std::string&, unsigned arity );
         bool addToPredicateRuleSet( index_t predIndex, unsigned ruleIndex );
+        // Check whether rule is safe, throw an exception if it's not.
+        void assertIsRuleSafe( DBRule* rule ) const throw (SafetyException);
         
         const DBPredicateNames& getPredicateNamesTable() const { return predicates; }
         const std::vector< DBRule* >& getRules() const { return rules; }
@@ -109,6 +112,37 @@ namespace DLV2{ namespace DB{
         friend inline std::ostream& operator<< ( std::ostream&, const DBProgram& );
         DBConnection& getDBConnection() { return connection; }
         void addEdgeToDepGraph( DBLiteral* src, index_t targetIdx );
+
+        /** Checks whether conjunction is safe
+         * @return true if such a condition holds, false otherwise
+         */
+        bool checkConjunctionSafety(
+            const std::vector< DBLiteral* >& conjunction ) const;
+        /** Checks whether literals in toBeChecked are safe w.r.t. safeBody
+         * @return true if such a condition holds, false otherwise
+         */
+        bool checkLiteralsSafety(
+            std::vector< DBLiteral* >& safeBody, 
+            std::vector< DBLiteral* >& toBeChecked ) const;
+        bool safeRegularAtom(
+            const std::vector< DBLiteral* >& conjunction,
+            const std::vector< DBTerm* >& params,
+            const unsigned numTermsToCheck ) const;
+        bool safeAggregate(
+            const std::vector< DBLiteral* >& conjunction,
+            const DBLiteral& aggrLit ) const;
+        bool safeBuiltin(
+            const std::vector< DBLiteral* >& conjunction,
+            const DBLiteral& builtinLit ) const;
+        /** Checks whether term is safe in conjunction
+         * @return true if term appears as:
+         * - a variable in a positive literal;
+         * - a variable of an assignment builtin which is bound
+         *   by a constant or integer, for instance X=5 or X=goofie;
+         * - a guard of an assigning aggregate in the 
+         *   range [ conj.begin(), conj.end() ).
+         */
+        bool saves( const std::vector< DBLiteral* >& conjunction, const DBTerm& term ) const;
  
         DBPredicateNames predicates;
         std::vector< DBRule* > rules;

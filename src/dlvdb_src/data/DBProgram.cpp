@@ -21,6 +21,7 @@
 #include "Metadata.h"
 #include "../../util/DBConnection.h"
 #include "../queries/QueryObject.h"
+#include "../../util/ErrorMessage.h"
 
 using namespace std;
 using namespace DLV2::DB;
@@ -221,7 +222,8 @@ DBProgram::createAggregateAtom(
     const vector< DBAggregateElement* >& aggregateSet,
     const std::string& name )
 {
-    pair< index_t, bool > res = addPredicate(name,0);
+    // FIXME: Aggregate predicate names are stored along with standard predicates at the moment.
+    pair< index_t, bool > res = predicates.add(name,0);
     return new DBAtom(
             *this,
             res.first,
@@ -270,13 +272,24 @@ DBProgram::addRule(
     // Rules are added to the program in a way such that
     // if a rule is stored in the rules vector at position "i",
     // its query object is stored at the same position of the 
-    // query objects vector. 
+    // query object vector. 
     assert_msg( r != NULL, "Trying to add a null rule." );
     // Let r be the current rule and p_i be one of its head predicates,
     // add the index of r to the set of rules having p_i in the head.
     const std::vector< DBAtom* >& head = r->getHead();
     const std::vector< DBLiteral* >& body = r->getBody();
-    // If it deals with a fact, add to facts.
+
+    // Check safety!!!
+    try
+    {
+        assertIsRuleSafe(r);
+    }
+    catch( SafetyException& exc )
+    {
+        ErrorMessage::errorDuringParsing(exc.what());
+    }
+    
+    // If it's a fact, add to facts.
     // Otherwise, add to rules.
     if( head.size() == 1 && body.size() == 0 )
     {
@@ -438,7 +451,7 @@ DBProgram::computeComponentSubPrograms()
     // the current rule. Only valid if the componentIndex is also contained
     // in componentsThatReceiveRule. And only then, the field
     // posBodyHasStdAtomOf[componentIndex] was initialized for this rule.
-    bool* posBodyHasStdAtomOf = new bool[components.size()];
+    bool* posBodyHasStdAtomOfComp = new bool[components.size()];
     index_t* componentsThatReceiveRule = new index_t[components.size()];
     unsigned nrRuleReceivers;
     // An element here is true if the component with the corresponding index
@@ -464,6 +477,8 @@ DBProgram::computeComponentSubPrograms()
             assert_msg( headAtom != NULL, "Null head atom" );
                     
             // The index of the component of the current head atom.
+            assert_msg( !headAtom->isBuiltin(),
+                    "Builtins have no corrispetive entries in the dependency graph" );
             unsigned compIndex = graph->getAtomComponent(headAtom->getPredIndex());
 
             // If an atom A appears in the head of the current rule R and it
@@ -474,7 +489,7 @@ DBProgram::computeComponentSubPrograms()
             if( !doesComponentReceiveRule[compIndex] )
             {
                 componentsThatReceiveRule[nrRuleReceivers++] = compIndex;
-                posBodyHasStdAtomOf[compIndex] = false;
+                posBodyHasStdAtomOfComp[compIndex] = false;
                 doesComponentReceiveRule[compIndex] = true;
             }
         }
@@ -482,19 +497,17 @@ DBProgram::computeComponentSubPrograms()
         // Traverse the body and update the array posBodyHasStdAtomOf.
         // Set to true each element of the array whose index corresponds
         // to the component index of the current body atom.
-        if( r->getBody().size() > 0 )
+        for( unsigned j=0; j<r->getBody().size(); j++ )
         {
-            for( unsigned j=0; j<r->getBody().size(); j++ )
-            {
-                DBLiteral* bodyLiteral = r->getBody().at(j);
-                assert_msg( bodyLiteral != NULL, "Null body literal" );
-                DBAtom* bodyAtom = bodyLiteral->getAtom();
-                assert_msg( bodyAtom != NULL, "Null body atom" );
-                
-                // This field is only valid if compIndex was added to
-                // componentsThatReceiveRule.
-                posBodyHasStdAtomOf[graph->getAtomComponent(bodyAtom->getPredIndex())] = true;
-            }
+            DBLiteral* bodyLiteral = r->getBody().at(j);
+            assert_msg( bodyLiteral != NULL, "Null body literal" );
+            DBAtom* bodyAtom = bodyLiteral->getAtom();
+            assert_msg( bodyAtom != NULL, "Null body atom" );
+
+            // This field is only valid if compIndex was added to
+            // componentsThatReceiveRule.
+            if( !bodyAtom->isBuiltin() )
+                posBodyHasStdAtomOfComp[graph->getAtomComponent(bodyAtom->getPredIndex())] = true;
         }
         bool isRecursive = false;
         // Examine all and only the components that receive the current rule
@@ -505,7 +518,7 @@ DBProgram::computeComponentSubPrograms()
             // component C of some of the head atoms then the rule has to be
             // added as recursive to component C. Otherwise, it has to be
             // added as exit rule.
-            if( posBodyHasStdAtomOf[componentsThatReceiveRule[j]] )
+            if( posBodyHasStdAtomOfComp[componentsThatReceiveRule[j]] )
             {
                 componentSubPrograms[componentsThatReceiveRule[j]].addRecursive(i);
                 isRecursive = true;
@@ -519,11 +532,11 @@ DBProgram::computeComponentSubPrograms()
         // recursive and non-recursive rules is easy because we can't find 
         // a rule in two different components (in such a case we could 
         // consider that rule as a recursive rule in one component and as a 
-        // non-recursive rule in the other one).
+        // non-recursive rule in another one).
         assert_msg( nrRuleReceivers <= 1, "We aren't handling disjunction at the moment." );
         isRuleRecursive.push_back(isRecursive);
     }
-    delete[] posBodyHasStdAtomOf;
+    delete[] posBodyHasStdAtomOfComp;
     delete[] componentsThatReceiveRule;
     delete[] doesComponentReceiveRule;
 }
@@ -554,6 +567,338 @@ DBProgram::addToPredicateRuleSet(
         pair< DBRuleSet::const_iterator, bool > res = it->second->insert(ruleIndex);
         return res.second;
     }
+}
+
+void
+DBProgram::assertIsRuleSafe(
+    DBRule* rule ) const
+        throw (SafetyException)
+{
+    assert_msg( rule != NULL, "Null rule" );
+    const vector< DBAtom* >& head = rule->getHead();
+    const vector< DBLiteral* >& body = rule->getBody();
+
+    // For all head elements...
+    for( typename vector< DBAtom* >::const_iterator i=head.begin(); 
+            i != head.end();
+            i++ )
+    {
+        assert_msg( *i != NULL, "Null head atom" );
+        const DBAtom& headAtom = **i; 
+        const std::vector< DBTerm* >& headAtomParams = headAtom.getTerms();
+        // ...and the terms they contain:
+        for( typename vector< DBTerm* >::const_iterator i1=headAtomParams.begin();
+                i1 != headAtomParams.end();
+                i1++ )
+        {
+            assert_msg( *i1 != NULL, "Null head term" );
+            const DBTerm& headTerm = **i1;
+            if( headTerm.isVar() &&
+                    ( body.size() == 0 || !saves(body,headTerm) ) )
+                throw SafetyException(*rule);
+
+            // FIXME: We don't have functions at the moment.
+//            if( headTerm.isFunction()
+//                && !headTerm.getFunctionTerm().isConstantTerm()
+//                && ( body.size() == 0 || !safeFunctionalTerm(body,headTerm) ) )
+//                return false;
+        }
+    }
+    // Check body safety!
+    if( body.size() > 0 && !checkConjunctionSafety(body) )
+        throw SafetyException(*rule);
+}
+
+bool
+DBProgram::checkConjunctionSafety(
+    const vector< DBLiteral* >& conjunction ) const
+{
+    vector< DBLiteral* > safeBody;
+    vector< DBLiteral* > toBeChecked;
+
+    for( typename vector< DBLiteral* >::const_iterator j=conjunction.begin();
+            j != conjunction.end();
+            j++ )
+    {
+        DBLiteral* literal = *j;
+        assert_msg( literal != NULL, "Null literal" );
+        if ( !literal->safetyMustBeChecked() || literal->isPropositional() )
+        {
+            safeBody.push_back(literal);
+        }
+        else
+        {
+            toBeChecked.push_back(literal);
+        }
+    }
+    return checkLiteralsSafety(safeBody,toBeChecked);
+}
+
+bool
+DBProgram::checkLiteralsSafety(
+    vector< DBLiteral* >& safeBody, 
+    vector< DBLiteral* >& toBeChecked ) const
+{
+    bool newSafeLiteral = true;
+
+    while( toBeChecked.size() != 0 && newSafeLiteral )
+    {
+        newSafeLiteral = false;
+        for( typename vector< DBLiteral* >::iterator i=toBeChecked.begin();
+                i != toBeChecked.end();
+                i++ )
+        {
+            DBLiteral* literal = *i;
+            assert_msg( literal != NULL, "Null literal" );
+            DBAtom* atom = literal->getAtom();
+            assert_msg( atom != NULL, "Null atom" );
+            if( literal->isAggregate() )
+            {
+                // Check safety via a proper function
+                if( safeAggregate(safeBody,*literal) )
+                {
+                    newSafeLiteral = true;
+                    safeBody.push_back(literal);
+                    toBeChecked.erase(i);
+                    break;
+                }
+            }
+            else if( literal->isBuiltin() )
+            {
+                if( safeBuiltin(safeBody,*literal) )
+                {
+                    newSafeLiteral = true;
+                    safeBody.push_back(literal);
+                    toBeChecked.erase(i);
+                    break;
+                }
+            }
+            else
+            {
+                assert_msg( !literal->isAggregate(), "This shouldn't be an aggregate" );
+                int numTermsToCheck = atom->getTerms().size();
+                    // FIXME: We don't have complex builtins at the moment.
+//                    if( literal->isBuiltin() && literal->isOutputBuiltin() )
+//                    {
+//                        int k = literal->getBuiltinObject().getNeedToBeBound();
+//                        if ( k < 0 )
+//                        {
+//                            // All arguments but the last k need to be bound
+//                            assert( (numTermsToCheck+k) >= 0 );
+//                            numTermsToCheck = numTermsToCheck+k;
+//                        }
+//                        else
+//                            // First k arguments need to be bound
+//                            numTermsToCheck = k;
+//                    }
+                if( safeRegularAtom(safeBody,atom->getTerms(),numTermsToCheck) )
+                {
+                    newSafeLiteral = true;
+                    safeBody.push_back(literal);
+                    toBeChecked.erase(i);
+                    break;
+                }
+            }
+        }
+    }
+    return !toBeChecked.size();
+}
+
+bool
+DBProgram::safeRegularAtom(
+    const vector< DBLiteral* >& conjunction,
+    const vector< DBTerm* >& params,
+    const unsigned numTermsToCheck ) const
+{
+    unsigned count = 0;
+    for( typename vector< DBTerm* >::const_iterator i=params.begin();
+         i != params.end() && count < numTermsToCheck;
+         i++, count++ )
+    {
+        DBTerm* term = *i;
+        assert_msg( term != NULL, "Null term" );
+        if( term->isVar() && !saves(conjunction,*term) )
+            return false;
+        // FIXME: We don't have functions at the moment.
+//        if( (*i).isFunction() && !safeFunctionalTerm(conjunction,*i) )
+//            return false;
+    }
+    return true;
+}
+
+bool
+DBProgram::safeAggregate(
+    const vector< DBLiteral* >& conjunction,
+    const DBLiteral& aggrLit ) const
+{
+    DBAtom* aggrAtom = aggrLit.getAtom();
+    assert_msg( aggrAtom != NULL, "Null atom" );
+    assert_msg( aggrAtom->isAggregate(), "Not a valid aggregate" );
+    
+    // If aggrAtom is an assignment aggregate, its guard are safe!
+    if( !aggrAtom->isAssignmentAggregate() )
+    {
+        // Otherwise, check safety of both lower guard...
+        if( aggrAtom->getAggregateLowerGuard() != NULL &&
+                aggrAtom->getAggregateLowerGuard()->isVar() &&
+                !saves(conjunction,*aggrAtom->getAggregateLowerGuard()) )
+                    return false;
+    
+        // ...and upper guard.
+        else if( aggrAtom->getAggregateUpperGuard() != NULL &&
+                aggrAtom->getAggregateUpperGuard()->isVar() &&
+                !saves(conjunction,*aggrAtom->getAggregateUpperGuard()) )
+                    return false;
+    }
+//    // Aggregates with ground sets and safe guards are safe.
+//    if( agg_lit.getAggregate().hasGroundSet() )
+//        return true;
+
+    // Check safety of aggregate Conjunction.
+    for( unsigned i=0; i<aggrAtom->getAggregateElements().size(); i++ )
+    {
+        // First of all, check safety of the current free vars.
+        DBAggregateElement* element = aggrAtom->getAggregateElements().at(i);
+        assert_msg( element != NULL, "Null aggregate element" );
+        for( unsigned j=0; j<element->getTerms().size(); j++ )
+        {
+            DBTerm* term = element->getTerms().at(j);
+            assert_msg( term != NULL, "Null aggregate element term" );
+            if( term->isVar() && !saves(element->getLiterals(),*term) )
+                return false;
+        }
+        // Then, check safety of the current conjunction.
+        for( unsigned j=0; j<element->getLiterals().size(); j++ )
+        {
+            DBLiteral* literal = element->getLiterals().at(j);
+            assert_msg( literal != NULL, "Null aggregate element literal" );
+            // For all negative literals, builtins,...
+            if( literal->safetyMustBeChecked() )
+            {
+                DBAtom* atom = literal->getAtom();
+                assert_msg( atom != NULL, "Null aggregate element atom" );
+                if( literal->isRegularAtom() )
+                {
+                    for( unsigned k=0; k<atom->getTerms().size(); k++ )
+                    {
+                        // If the current term is a variable, check whether it appears either in
+                        // a positive literal of conjunction, or in a positive literal
+                        // of the current element conjunction.
+                        DBTerm* term = atom->getTerms().at(k);
+                        assert_msg( term != NULL, "Null aggregate element term" );
+                        if( term->isVar() && !saves(conjunction,*term)
+                                && !saves(element->getLiterals(),*term) )
+                            return false;
+
+                        // FIXME: We don't have functions at the moment.
+//                      if( (*par).isFunction()
+//                                && !safeFunctionalTerm(conjunction,*par)
+//                                && !safeFunctionalTerm(agg_lit.getAggregate().
+//                                        getConjunction(),*par ) )
+//                            return false;
+                    }
+                }
+                else if( literal->isBuiltin() )
+                {
+                    if( !safeBuiltin(conjunction,*literal) &&
+                            !safeBuiltin(element->getLiterals(),*literal) )
+                        return false;
+                }
+                else // Literal is an aggregate
+                {
+                    assert_msg( 0, "Nested aggregates are not allowed" );
+                }
+            }
+        }
+    }
+    return true;
+}
+
+bool
+DBProgram::safeBuiltin(
+    const vector< DBLiteral* >& conjunction,
+    const DBLiteral& builtinLit ) const
+{
+    assert_msg( builtinLit.isBuiltin(), "Not a valid builtin" );
+    DBAtom* builtinAtom = builtinLit.getAtom();
+    assert_msg( builtinAtom != NULL, "Null atom" );
+    DBTerm* leftOp = builtinAtom->getLeftOperand();
+    assert_msg( leftOp != NULL, "Null left operand" );
+    DBTerm* rightOp = builtinAtom->getRightOperand();
+    assert_msg( rightOp != NULL, "Null left operand" );
+
+    if( leftOp->isVar() && !saves(conjunction,*leftOp) )
+        return false;
+    if( rightOp->isVar() && !saves(conjunction,*rightOp) )
+        return false;
+    return true;
+}
+
+bool
+DBProgram::saves(
+    const vector< DBLiteral* >& conjunction,
+    const DBTerm& term ) const
+{
+    if( term.isUnknownVar() )
+        return false;
+
+    bool saved=false;
+
+    for( typename vector< DBLiteral* >::const_iterator j=conjunction.begin();
+            !saved && j != conjunction.end();
+            j++ )
+    {
+        DBLiteral* literal = *j;
+        assert_msg( literal != NULL, "Null literal" );
+        DBAtom* atom = literal->getAtom();
+        assert_msg( atom != NULL, "Null atom" );
+        if( literal->isSaviour() )
+        {
+            if( literal->isAggregate() )
+            {
+                assert_msg( literal->isAssignmentAggregate(),
+                        "This isn't an assignment aggregate" );
+                saved = *(atom->getAggregateLowerGuard()) == term;
+            }
+            else
+            {
+                const vector< DBTerm* >& terms = atom->getTerms();
+                for( typename vector< DBTerm* >::const_iterator j1=terms.begin();
+                        !saved && j1 != terms.end();
+                        j1++ )
+                {
+                    DBTerm* bodyTerm = *j1;
+                    assert_msg( bodyTerm != NULL, "Null term" );
+                    if( bodyTerm->isVar() && *bodyTerm == term )
+                        saved=true;
+                }
+            }
+        }
+        else if( literal->isBuiltin() )
+        {
+            if( atom->isEqualityBuiltin() )
+            {
+                DBTerm* t1 = atom->getRightOperand();
+                DBTerm* t2 = atom->getLeftOperand();
+                assert_msg( t1 != NULL, "Null term" );
+                assert_msg( t2 != NULL, "Null term" );
+                
+                // Handle the case t = integer\constant.
+                if( *t1 == term )
+                    saved = ( t2->isConst() || t2->isInt() );
+
+                // Handle the case integer\constant = t.
+                if( *t2 == term )
+                    saved = ( t1->isConst() || t1->isInt() );
+            }
+            // FIXME: We don't have complex builtins at the moment.
+//            else if( literal.isOutputBuiltin() )
+//            {
+//                saved = literal.isBuiltinOutputVar(term);
+//            }
+        }
+    }
+    return saved;
 }
 
 void

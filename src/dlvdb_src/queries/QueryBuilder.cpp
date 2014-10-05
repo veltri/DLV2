@@ -132,7 +132,7 @@ QueryBuilder::addInHead(
         termCoordinates.predPos = 0;
         termCoordinates.termPos = i;
         assert_msg( headTerm != NULL, "Null term" );
-        assert_msg( headTerm->getType() == DBTerm::Variable, "Not variable term in the head" );
+        assert_msg( headTerm->isVar(), "Not variable term in the head" );
         // Check whether it deals with a self-join.
         VariableMap::iterator it = headVariablesMap.find(headTerm->getText());
         if( it == headVariablesMap.end() )
@@ -193,8 +193,7 @@ QueryBuilder::addInPositiveBody(
             getAttributeName(currentPredPos,i);
         string currentTableAlias =
             getTableAlias(currentPredPos);
-        if( currentTerm->getType() == DBTerm::Variable &&
-                currentTerm->getText() != "_" )
+        if( currentTerm->isVar() && !currentTerm->isUnknownVar() )
         {
             // First check whether currentTerm appears in the head
             VariableMap::const_iterator it = 
@@ -256,7 +255,7 @@ QueryBuilder::addInPositiveBody(
             v.push_back(currentCoordinates);
             bodyVariablesMap[currentTerm->getText()] = v;
         }
-        else if( currentTerm->getType() == DBTerm::String )
+        else if( currentTerm->isConst() )
         {
             QCondition condition(
                 currentTableAlias+
@@ -265,7 +264,7 @@ QueryBuilder::addInPositiveBody(
                 "'"+currentTerm->getText()+"'");
             query->conditions.push_back(condition);
         }
-        else if( currentTerm->getType() == DBTerm::Integer )
+        else if( currentTerm->isInt() )
         {
             QCondition condition(
                 currentTableAlias+
