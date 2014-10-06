@@ -120,6 +120,7 @@ namespace DLV2{ namespace DB{
         bool hasNegation;
         bool hasAggregates;
         bool hasBuiltins;
+        bool hasDisjunction;
     };
 
 };};

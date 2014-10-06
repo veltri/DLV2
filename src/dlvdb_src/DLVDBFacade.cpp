@@ -42,9 +42,12 @@ DLVDBFacade::solve()
     // by the topologically ordered sequence of the strictly
     // connected components of the dependency graph.
     program.computeStrictlyConnectedComponents();
-    // At the moment, only acyclic programs can be handled.
-    assert_msg( !program.isCyclic(), "Only acyclic program are allowed" );
-    assert_msg( program.isStratified(), "Only stratified program are allowed" );
+    if( program.isCyclic() )
+        ErrorMessage::errorGeneric("Only acyclic program are allowed at the moment");
+    if( !program.isStratified() )
+        ErrorMessage::errorGeneric("Only stratified program are allowed at the moment");
+    if( program.isDisjunctive() )
+        ErrorMessage::errorGeneric("Only disjunction-free programs are allowed at the moment");
     // Boost function "strong_components" computes the 
     // SCCs of a graph and returns them in a reverse 
     // topological order.    

@@ -29,6 +29,7 @@ using namespace DLV2::DB;
 DBProgram::DBProgram(
     DBConnection& con ):
         predicates(0),
+        hasDisjunction(false),
         graph(new LabeledDependencyGraph< DepGraphNoStrategy, index_t >()),
         connection(con)
 {
@@ -38,6 +39,7 @@ DBProgram::DBProgram(
 DBProgram::DBProgram( 
     const DBProgram& p ):
         predicates(p.predicates),
+        hasDisjunction(p.hasDisjunction),
         connection(p.connection)
 {
     // Making a copy of a program might be too expensive.
@@ -249,9 +251,16 @@ DBProgram::createRule(
     const vector< DBLiteral* >& body,
     bool hasNegation, 
     bool hasAggregates, 
-    bool hasBuiltins )
+    bool hasBuiltins,
+    bool hasDisjunct )
 {
-    return new DBRule(head,body,hasNegation,hasAggregates,hasBuiltins);
+    return new DBRule(
+            head,
+            body,
+            hasNegation,
+            hasAggregates,
+            hasBuiltins,
+            hasDisjunct);
 }
 
 void
@@ -260,9 +269,16 @@ DBProgram::createAndAddRule(
     const std::vector< DBLiteral* >& body,
     bool hasNegation,
     bool hasAggregates,
-    bool hasBuiltins )
+    bool hasBuiltins,
+    bool hasDisjunct )
 {
-    addRule(new DBRule(head,body,hasNegation,hasAggregates,hasBuiltins));
+    addRule(
+        new DBRule(head,
+            body,
+            hasNegation,
+            hasAggregates,
+            hasBuiltins,
+            hasDisjunct));
 }
 
 void
@@ -324,6 +340,8 @@ DBProgram::addRule(
         }
         // Add rule r...
         rules.push_back(r);
+        if( r->isDisjunctive() )
+            hasDisjunction = true;
     }
 }
 

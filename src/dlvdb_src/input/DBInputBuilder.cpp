@@ -37,7 +37,8 @@ DBInputBuilder::DBInputBuilder(
         upperGuard(NULL),
         hasNegation(false),
         hasAggregates(false),
-        hasBuiltins(false)
+        hasBuiltins(false),
+        hasDisjunction(false)
 {
     program = new DBProgram(con);
     queryBuilder = new QueryBuilder(program);
@@ -53,12 +54,19 @@ DBInputBuilder::~DBInputBuilder()
 void 
 DBInputBuilder::onRule()
 {
-    program->createAndAddRule(head,body,hasNegation,hasAggregates,hasBuiltins);
+    program->createAndAddRule(
+            head,
+            body,
+            hasNegation,
+            hasAggregates,
+            hasBuiltins,
+            hasDisjunction);
     head.clear();
     body.clear();
     hasNegation = false;
     hasAggregates = false;
     hasBuiltins = false;
+    hasDisjunction = false;
 }
 
 void
@@ -135,7 +143,8 @@ DBInputBuilder::onHeadAtom()
 void 
 DBInputBuilder::onHead()
 {
-   
+   if( head.size() > 1 )
+       hasDisjunction = true;
 }
 
 void

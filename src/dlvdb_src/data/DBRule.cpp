@@ -28,12 +28,14 @@ DBRule::DBRule(
     const vector<DBLiteral*>& b,
     bool neg,
     bool aggr,
-    bool built ):
+    bool built,
+    bool disj ):
         head(h),
         body(b),
-        negation(neg),
+        naf(neg),
         aggregates(aggr),
-        builtins(built)
+        builtins(built),
+        disjunction(disj)
 {
 }
 
@@ -41,9 +43,10 @@ DBRule::DBRule(
     const DBRule& rule ):
         head(rule.head),
         body(rule.body),
-        negation(rule.negation),
+        naf(rule.naf),
         aggregates(rule.aggregates),
-        builtins(rule.builtins)
+        builtins(rule.builtins),
+        disjunction(rule.disjunction)
 {
 }
 
@@ -59,4 +62,28 @@ DBRule::~DBRule()
         assert_msg( body[i] != NULL, "Trying to destroy a rule with a null body literal." );
         delete body[i];
     }
+}
+
+void
+DBRule::addToHead(
+    DBAtom* a )
+{
+    assert_msg( a != NULL, "Trying to add a null head atom" );
+    head.push_back(a);
+    if( head.size() > 1 )
+        disjunction = true;
+}
+
+void
+DBRule::addToBody(
+    DBLiteral* l )
+{
+    assert_msg( l != NULL, "Trying to add a null literal" );
+    body.push_back(l);
+    if( l->isNaf() )
+        naf = true;
+    if( l->isAggregate() )
+        aggregates = true;
+    if( l->isBuiltin() )
+        builtins = true;
 }

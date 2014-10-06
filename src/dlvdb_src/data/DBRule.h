@@ -38,24 +38,32 @@ namespace DLV2{ namespace DB{
 
         const std::vector< DBAtom* >& getHead() const { return head; }
         const std::vector< DBLiteral* >& getBody() const { return body; }
-        bool hasNegation() const { return negation; }
+        bool hasNegation() const { return naf; }
         bool hasAggregates() const { return aggregates; }
         bool hasBuiltins() const { return builtins; }
+        bool isDisjunctive() const { return disjunction; }
 
     private:
         friend inline std::ostream& operator<< ( std::ostream&, const DBRule& );
         friend class DBProgram;
         
         // Only class Program can create Rule objects.
-        DBRule( const std::vector< DBAtom* >&, const std::vector< DBLiteral* >&, bool, bool, bool );
-        void addToHead( DBAtom* a ) { if( a != NULL ) head.push_back(a); }
-        void addToBody( DBLiteral* l ) { if( l != NULL ) body.push_back(l); }
+        DBRule(
+                const std::vector< DBAtom* >& head,
+                const std::vector< DBLiteral* >& body,
+                bool isNegative,
+                bool hasAggregates,
+                bool hasBuiltins,
+                bool isDisjunctive );
+        void addToHead( DBAtom* a );
+        void addToBody( DBLiteral* l );
 
         std::vector< DBAtom* > head;
         std::vector< DBLiteral* > body;
-        bool negation;
+        bool naf;
         bool aggregates;
         bool builtins;
+        bool disjunction;
     };
 
     inline

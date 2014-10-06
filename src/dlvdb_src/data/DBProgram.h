@@ -69,19 +69,23 @@ namespace DLV2{ namespace DB{
                                         const std::string& aggregateFunction, 
                                         const std::vector< DBAggregateElement* >& aggregateSet, 
                                         const std::string& name = "" );
-        DBAggregateElement* createAggregateElement( const std::vector< DBTerm* >& terms, const std::vector< DBLiteral* >& lits );
+        DBAggregateElement* createAggregateElement(
+                const std::vector< DBTerm* >& terms,
+                const std::vector< DBLiteral* >& lits );
         DBRule* createRule( 
             const std::vector< DBAtom* >& head, 
             const std::vector< DBLiteral* >& body, 
             bool hasNegation, 
             bool hasAggregates, 
-            bool hasBuiltins);
+            bool hasBuiltins,
+            bool hasDisjunction );
         void createAndAddRule( 
             const std::vector< DBAtom* >& head, 
             const std::vector< DBLiteral* >& body,
             bool hasNegation, 
             bool hasAggregates, 
-            bool hasBuiltins);
+            bool hasBuiltins,
+            bool hasDisjunction );
         void addRule( DBRule* r );
         std::pair< index_t, bool > addPredicate( const std::string&, unsigned arity );
         bool addToPredicateRuleSet( index_t predIndex, unsigned ruleIndex );
@@ -104,6 +108,7 @@ namespace DLV2{ namespace DB{
         bool isStratified() { assert_msg( graph != NULL, "Null graph" ); return graph->isStratified(); }
         bool isCyclic() const { assert_msg( graph != NULL, "Null graph" ); return graph->isCyclic(); }
         bool isTight() const { assert_msg( graph != NULL, "Null graph" ); return graph->isTight(); }
+        bool isDisjunctive() const { return hasDisjunction; }
         
     private:
         typedef std::unordered_map< index_t, Metadata* > SchemaMap;
@@ -150,6 +155,7 @@ namespace DLV2{ namespace DB{
         // false otherwise. Notice that this vector will be initialized only 
         // after components' sub-programs are computed.
         std::vector< bool > isRuleRecursive;
+        bool hasDisjunction;
         std::vector< DBRule* > facts;
         QueryBuilder* queryBuilder;
         std::vector< QueryObject* > ruleQueries;
