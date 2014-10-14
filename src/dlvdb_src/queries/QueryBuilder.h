@@ -66,6 +66,13 @@ namespace DLV2{ namespace DB{
          * @param rule The rule which is to be translated.
          */
         virtual void rewriteRecursiveRule( DBRule* rule );
+        /** This function dinamically instantiates new query object
+         * which should be retrieved by calling function getQueryObject;
+         * the caller will be responsible of such an object's destruction.
+         * @param rule The rule which is to be translated.
+         */
+        virtual void rewriteFact( DBRule* rule );
+
         virtual void reset();
         
         virtual QueryObject* getQueryObject() { return query; }        

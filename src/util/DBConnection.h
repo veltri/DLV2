@@ -31,6 +31,7 @@
 #include <sqlext.h>
 #include <string>
 #include <vector>
+#include "Constants.h"
 
 namespace DLV2{ namespace DB{
 
@@ -44,11 +45,11 @@ namespace DLV2{ namespace DB{
         
         void connect( const std::string& source, const std::string& user, const std::string& pwd );
         void disconnect();
-        bool isConnected() { return connected; }
-        void setAutoCommit( bool autoCommit );
-        void executeSQLStatement( const std::string& sql );
-        void commit();
-        void rollback();
+        bool isConnected() const { return connected; }
+        void setAutoCommit( bool autoCommit ) const;
+        void executeSQLStatement( const std::string& sql ) const;
+        void commit() const;
+        void rollback() const;
         
         /* MetadataHandler */
         
@@ -65,7 +66,7 @@ namespace DLV2{ namespace DB{
          */
         std::string* retrieveTableName( 
             const std::string& predName,
-            unsigned arity );
+            unsigned arity ) const;
         /** Retrive the attributes' names of table <tableName>. 
          * Notice that, table <tableName> must exist.
          * @param tableName The name of the table to be investigated.
@@ -75,7 +76,19 @@ namespace DLV2{ namespace DB{
          */ 
         std::vector<std::string>* retrieveTableSchema( 
             const std::string& tableName,
-            unsigned nAttributes );
+            unsigned nAttributes ) const;
+        /** Retrieve the next valid execution timestamp.
+         * @return such a timestamp
+         */
+        Timestamp retrieveNextExecutionTimestamp();
+        /** Retrieve the next available timestamp to insert
+         * new tuples to table tableName.
+         * @param tableName The name of the table to be investigated
+         * @return the next available timestamp for wich new
+         * tuples can be added to table tableName.
+         */
+        Timestamp retrieveNextTableTimestamp(
+                const std::string& tableName ) const;
         
     private:
         
@@ -90,6 +103,7 @@ namespace DLV2{ namespace DB{
         SQLHENV hEnv;
         SQLHDBC hDBc;
         bool connected;
+        Timestamp currentExecutionTimestamp;
     };
     
 };};

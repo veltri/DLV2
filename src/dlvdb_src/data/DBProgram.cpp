@@ -365,8 +365,8 @@ DBProgram::computeQueryObjects()
     {
         DBRule* fact = facts[i];
         assert_msg( fact != NULL, "Null fact" );
-        // TODO
-        //queryBuilder->rewriteFact();
+        queryBuilder->rewriteFact(fact);
+        // FIXME: the implementation of rewriteFact is still empty.
         //factQueries.push_back(queryBuilder->getQueryObject());
     }
     for( index_t i=0; i<rules.size(); i++ )

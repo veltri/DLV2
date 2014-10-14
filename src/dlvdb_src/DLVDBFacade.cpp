@@ -20,6 +20,7 @@
 #include "DLVDBFacade.h"
 #include "queries/QueryObject.h"
 #include "../util/Assert.h"
+#include "../util/ErrorMessage.h"
 #include <string>
 
 using namespace std;
@@ -58,11 +59,6 @@ DLVDBFacade::solve()
     program.computeQueryObjects();
     const vector< QueryObject* >& factQueries = program.getFactQueryObjects();
     const vector< QueryObject* >& ruleQueries = program.getRuleQueryObjects();
-    
-    // ERASE ME!!!
-//    cout << program << endl
-//         << "QUERY OBJECTS: " << endl
-//         << "Facts: " << endl;
             
     // First of all, execute queries related to the facts in input. 
     for( index_t i=0; i<factQueries.size(); i++ )
@@ -76,10 +72,7 @@ DLVDBFacade::solve()
         connection.executeSQLStatement(*sql);
         delete sql;
     }
-    
-    // ERASE ME!!!
-//    cout << "Rules: " << endl;
-    
+
     // Execute the subprogram related to each member of the current component.
     for( long int i=subPrograms.size()-1; i>=0; i-- )
     {

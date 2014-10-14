@@ -66,10 +66,13 @@ namespace DB{
     
     // Database constants
     #define TABLE_NAMES "table_names"
+    #define EXECUTION_TIMESTAMP "execution_timestamp"
+    #define PREDICATE_TIMESTAMP "predicate_timestamp"
     
     // New types
     typedef size_t index_t;
     typedef std::set< unsigned > DBRuleSet;
+    typedef int64_t Timestamp;
 };
 
 };

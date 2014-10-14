@@ -64,6 +64,13 @@ QueryBuilder::rewriteRecursiveRule(
 }
 
 void
+QueryBuilder::rewriteFact(
+    DBRule* rule )
+{
+    // TODO
+}
+
+void
 QueryBuilder::rewritePositiveRule(
     DBRule* rule )
 {
