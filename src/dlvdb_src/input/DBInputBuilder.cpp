@@ -19,7 +19,6 @@
 
 #include "DBInputBuilder.h"
 #include "../../util/Utils.h"
-#include "../queries/QueryBuilder.h"
 
 using namespace std;
 using namespace DLV2::DB;
@@ -41,14 +40,10 @@ DBInputBuilder::DBInputBuilder(
         hasDisjunction(false)
 {
     program = new DBProgram(con);
-    queryBuilder = new QueryBuilder(program);
-    program->setQueryBuilder(queryBuilder);
 }
     
 DBInputBuilder::~DBInputBuilder()
 {
-    if( queryBuilder != NULL )
-        delete queryBuilder;
 }
 
 void 

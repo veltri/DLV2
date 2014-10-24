@@ -17,123 +17,153 @@
  *
  */
 
-#include "QueryBuilder.h"
-#include "../../util/Assert.h"
-#include "QueryObject.h"
-#include "../data/DBProgram.h"
+/* 
+ * File:   SQLStrategy.cpp
+ * Author: pierfrancesco
+ *
+ * Created on 23/ott/2014, 20:41:41
+ */
+
+#include "SQLStrategy.h"
 
 using namespace std;
 using namespace DLV2::DB;
 
-QueryBuilder::QueryBuilder(
+
+SQLStrategy::SQLStrategy(
     DBProgram* p ):
-        query(NULL),
         program(p)
 {
     assert_msg( p != NULL, "The program is null." );
 }
 
-QueryBuilder::QueryBuilder(
-    const QueryBuilder& qb ):
-        query(NULL),
-        program(qb.program)
+SQLStrategy::SQLStrategy(
+    const SQLStrategy& ss ):
+        program(ss.program)
 {
-    assert_msg( qb.program != NULL, "The program is null." );
+    assert_msg( ss.program != NULL, "The program is null." );
 }
 
 void
-QueryBuilder::rewriteNonRecursiveRule(
-    DBRule* rule )
+SQLStrategy::rewriteRule(
+    const DBRule& rule,
+    string& sqlOutput )
 {
-    assert_msg( rule != NULL, "The rule is null." );
-    assert_msg( rule->getHead().size() == 1, "Only or-free programs are allowed." );
-    query = new QueryObject();
-    if( rule->hasNegation() )
-        rewriteRuleWithNegation(rule);
+    assert_msg( (headVariablesMap.empty() &&
+            bodyVariablesMap.empty() &&
+            bodyPredicates.empty() &&
+            targetTable.empty() &&
+            attributesToSelect.empty() &&
+            sourceTables.empty() &&
+            conditions.empty()),
+            "Not null data structures" );
+
+    if( rule.isRecursive() )
+        rewriteRecursiveRule(rule);
     else
-        rewritePositiveRule(rule);
+        rewriteNonRecursiveRule(rule);
+
+    getRuleInSQL(sqlOutput);
+
     reset();
 }
 
 void
-QueryBuilder::rewriteRecursiveRule( 
-    DBRule* rule )
+SQLStrategy::rewriteFact(
+    const DBRule& rule,
+    string& sql )
+{
+    // TODO
+}
+
+void
+SQLStrategy::rewriteNonRecursiveRule(
+    const DBRule& rule )
+{
+    assert_msg( rule.getHead().size() == 1, "Only or-free programs are allowed." );
+    if( rule.hasNegation() )
+        rewriteNegativeRule(rule);
+    else
+        rewritePositiveRule(rule);
+}
+
+void
+SQLStrategy::rewriteRecursiveRule(
+    const DBRule& rule )
 {
     // TODO
     assert_msg( 0, "Sorry, we aren't able to handle recursion" );
 }
 
 void
-QueryBuilder::rewriteFact(
-    DBRule* rule )
+SQLStrategy::rewritePositiveRule(
+    const DBRule& rule )
 {
-    // TODO
-}
-
-void
-QueryBuilder::rewritePositiveRule(
-    DBRule* rule )
-{
-    assert_msg( rule != NULL, "The rule is null." );
-    if( rule->hasAggregates() )
+    if( rule.hasAggregates() )
     {
         // TODO
         assert_msg( 0, "Sorry, we aren't able to handle aggregate atoms" );
     }
-    if( rule->hasBuiltins() )
+    if( rule.hasBuiltins() )
     {
         // TODO
         assert_msg( 0, "Sorry, we aren't able to handle builtins" );
     }
-    for( unsigned i=0; i<rule->getHead().size(); i++ )
-        addInHead(rule->getHead().at(i));
-    for( unsigned i=0; i<rule->getBody().size(); i++ )
-        addInPositiveBody(rule->getBody().at(i));
+    for( unsigned i=0; i<rule.getHead().size(); i++ )
+    {
+        DBAtom* headAtom = rule.getHead().at(i);
+        assert_msg( headAtom != NULL, "Null heat atom" );
+        addInHead(*headAtom);
+    }
+    for( unsigned i=0; i<rule.getBody().size(); i++ )
+    {
+        DBLiteral* bodyLit = rule.getBody().at(i);
+        assert_msg( bodyLit != NULL, "Null body literal" );
+        addInPositiveBody(*bodyLit);
+    }
 }
 
 void
-QueryBuilder::rewriteRuleWithNegation(
-    DBRule* rule )
+SQLStrategy::rewriteNegativeRule(
+    const DBRule& rule )
 {
     // TODO
     assert_msg( 0, "Sorry, we aren't able to handle negation as failure" );
 }
 
 void
-QueryBuilder::rewriteRuleWithBuiltins(
-    DBRule* rule )
+SQLStrategy::rewriteRuleWithBuiltins(
+    const DBRule& rule )
 {
     // TODO
     assert_msg( 0, "Sorry, we aren't able to handle builtins" );
 }
 
 void
-QueryBuilder::rewriteRuleWithAggregates( 
-    DBRule* rule )
+SQLStrategy::rewriteRuleWithAggregates(
+    const DBRule& rule )
 {
     // TODO
     assert_msg( 0, "Sorry, we aren't able to handle aggregate atoms" );
 }
 
-
 void
-QueryBuilder::addInHead( 
-    DBAtom* headAtom )
+SQLStrategy::addInHead(
+    const DBAtom& headAtom )
 {
-    assert_msg( headAtom != NULL, "Null head atom" );
-    assert_msg( !headAtom->isBuiltin(), "A builtin atom occurs in the head" );
-    assert_msg( !headAtom->isAggregate(), "An aggregate atom occurs in the head" );
+    assert_msg( !headAtom.isBuiltin(), "A builtin atom occurs in the head" );
+    assert_msg( !headAtom.isAggregate(), "An aggregate atom occurs in the head" );
     assert_msg( headVariablesMap.empty(), "Only or-free programs are allowed" );
-    assert_msg( headAtom->getTerms().size() > 0, "Propositional atoms are not allowed" );
-    query->targetPredicate = getTableName(headAtom->getPredIndex());
-    // The number of attributes which has to be selected 
+    assert_msg( headAtom.getTerms().size() > 0, "Propositional atoms are not allowed" );
+    targetTable = getTableName(headAtom.getPredIndex());
+    // The number of attributes which has to be selected
     // by the output query is given by the arity of the head predicate.
-    // The vector is resized because in the following we will need 
+    // The vector is resized because in the following we will need
     // to access directly to single locations.
-    query->attributesToSelect.resize(headAtom->getTerms().size());
-    for( unsigned i=0; i<headAtom->getTerms().size(); i++ )
+    attributesToSelect.resize(headAtom.getTerms().size());
+    for( unsigned i=0; i<headAtom.getTerms().size(); i++ )
     {
-        DBTerm* headTerm = headAtom->getTerms().at(i);
+        DBTerm* headTerm = headAtom.getTerms().at(i);
         Coordinates termCoordinates;
         // The head predicate has index 0.
         termCoordinates.predPos = 0;
@@ -153,12 +183,12 @@ QueryBuilder::addInHead(
             it->second.push_back(termCoordinates);
         }
         // Check whether it appears in the body.
-        // If the body literals' stack were filled  
+        // If the body literals' stack were filled
         // after the head, this control would be unnecessary.
         it = bodyVariablesMap.find(headTerm->getText());
         if( it != bodyVariablesMap.end() )
         {
-            assert_msg( it->second.size() > 0, 
+            assert_msg( it->second.size() > 0,
                     "A term without any locations has been added" );
             // Consider only the first location where it appears.
             unsigned predPos = it->second.at(0).predPos;
@@ -169,29 +199,28 @@ QueryBuilder::addInHead(
                 getTableAlias(predPos)+
                 "."+
                 getAttributeName(predPos,termPos));
-            query->attributesToSelect[i] = attribute;
+            attributesToSelect[i] = attribute;
         }
     }
 }
 
 void
-QueryBuilder::addInPositiveBody(
-    DBLiteral* literal )
+SQLStrategy::addInPositiveBody(
+    const DBLiteral& literal )
 {
-    assert_msg( literal != NULL, "Null body literal" );
-    assert_msg( !literal->isNaf(), 
+    assert_msg( !literal.isNaf(),
             "Call addInNegativeBody to add negative literals" );
-    DBAtom* currentAtom = literal->getAtom();
+    DBAtom* currentAtom = literal.getAtom();
     assert_msg( currentAtom != NULL, "Null body atom" );
-    assert_msg( !currentAtom->isAggregate(), 
+    assert_msg( !currentAtom->isAggregate(),
             "Call addAggregateIn(Positive|Negative)Body to add aggregate atoms" );
-    assert_msg( !currentAtom->isBuiltin(), 
+    assert_msg( !currentAtom->isBuiltin(),
             "Call addBuiltin to add builtins" );
-    assert_msg( currentAtom->getTerms().size() > 0, 
+    assert_msg( currentAtom->getTerms().size() > 0,
             "Propositional atoms are not allowed" );
-    // Add the predicate and retrieve the position where 
+    // Add the predicate and retrieve the position where
     // it appears in the bodyPredicates vector.
-    unsigned currentPredPos = addSource(currentAtom);    
+    unsigned currentPredPos = addSource(*currentAtom);
     for( unsigned i=0; i<currentAtom->getTerms().size(); i++ )
     {
         DBTerm* currentTerm = currentAtom->getTerms().at(i);
@@ -203,13 +232,13 @@ QueryBuilder::addInPositiveBody(
         if( currentTerm->isVar() && !currentTerm->isUnknownVar() )
         {
             // First check whether currentTerm appears in the head
-            VariableMap::const_iterator it = 
+            VariableMap::const_iterator it =
                     headVariablesMap.find(currentTerm->getText());
             if( it != headVariablesMap.end() )
             {
-                // Repeat the current attribute name for each location 
-                // of the head where currentTerm appears. Note that the 
-                // locations that have to be considered are stored 
+                // Repeat the current attribute name for each location
+                // of the head where currentTerm appears. Note that the
+                // locations that have to be considered are stored
                 // in vector it->second.
                 string attribute(
                     currentTableAlias+
@@ -218,25 +247,25 @@ QueryBuilder::addInPositiveBody(
                 for( unsigned j=0; j<it->second.size(); j++ )
                 {
                     unsigned targetTermPos = it->second.at(j).termPos;
-                    assert_msg( targetTermPos < query->attributesToSelect.size(),
+                    assert_msg( targetTermPos < attributesToSelect.size(),
                         "Index out of range" );
-                    query->attributesToSelect[targetTermPos] = attribute;
+                    attributesToSelect[targetTermPos] = attribute;
                 }
-            
-                // Once we have done with the current attribute we erase the record 
+
+                // Once we have done with the current attribute we erase the record
                 // from the map in order to avoid that one could write
                 // attributes (to select) in the same location more than once.
-                headVariablesMap.erase(it);                
+                headVariablesMap.erase(it);
             }
-            
+
             // Then, check whether currentTerm has been already seen in the body.
             it = bodyVariablesMap.find(currentTerm->getText());
             if( it != bodyVariablesMap.end() )
             {
-                assert_msg( it->second.size() > 0, 
+                assert_msg( it->second.size() > 0,
                     "A term without any locations has been added" );
                 // There should be only one location in it->second,
-                // because we insert only the last location of each 
+                // because we insert only the last location of each
                 // body variable into the map. Indeed, you can consider
                 // only the last location of a variable in order to catch
                 // a join.
@@ -251,9 +280,9 @@ QueryBuilder::addInPositiveBody(
                     getTableAlias(targetPredPos)+
                     "."+
                     targetAttributeName);
-                query->conditions.push_back(condition);    
+                conditions.push_back(condition);
             }
-            
+
             // Finally, add the current variable to the map of the body variables
             Coordinates currentCoordinates;
             currentCoordinates.predPos = currentPredPos;
@@ -269,7 +298,7 @@ QueryBuilder::addInPositiveBody(
                 "."+
                 currentAttributeName,
                 "'"+currentTerm->getText()+"'");
-            query->conditions.push_back(condition);
+            conditions.push_back(condition);
         }
         else if( currentTerm->isInt() )
         {
@@ -278,65 +307,55 @@ QueryBuilder::addInPositiveBody(
                 "."+
                 currentAttributeName,
                 currentTerm->getText());
-            query->conditions.push_back(condition);
+            conditions.push_back(condition);
         }
     }
 }
-    
-void 
-QueryBuilder::addInNegativeBody( 
-    DBLiteral* literal )
+
+void
+SQLStrategy::addInNegativeBody(
+    const DBLiteral& literal )
 {
-    
+
 }
 
 void
-QueryBuilder::addAggregateInPositiveBody( 
-    DBLiteral* literal )
+SQLStrategy::addAggregateInPositiveBody(
+    const DBLiteral& literal )
 {
-    
-}
-    
-void 
-QueryBuilder::addAggregateInNegativeBody( 
-    DBLiteral* literal )
-{
-    
-}
-    
-void 
-QueryBuilder::addBuiltin( 
-    DBLiteral* literal )
-{
-    
+
 }
 
-void 
-QueryBuilder::reset()
+void
+SQLStrategy::addAggregateInNegativeBody(
+    const DBLiteral& literal )
 {
-    headVariablesMap.clear();
-    bodyVariablesMap.clear();
-    bodyPredicates.clear();
+
+}
+
+void
+SQLStrategy::addBuiltin(
+    const DBLiteral& literal )
+{
+
 }
 
 unsigned
-QueryBuilder::addSource(
-    DBAtom* sourceAtom )
+SQLStrategy::addSource(
+    const DBAtom& sourceAtom )
 {
-    assert_msg( query != NULL, "The query is null" );
-    assert_msg( sourceAtom != NULL, "The source atom is null" );
     // Return the position where the predicate is going to be located.
-    bodyPredicates.push_back(sourceAtom->getPredIndex());
-    query->sourcePredicates.push_back(
-        getTableName(sourceAtom->getPredIndex())+
+    bodyPredicates.push_back(sourceAtom.getPredIndex());
+    sourceTables.push_back(
+        getTableName(sourceAtom.getPredIndex())+
         " AS "+
         getTableAlias(bodyPredicates.size()-1));
     return bodyPredicates.size()-1;
 }
 
 const string&
-QueryBuilder::getTableName(
-    index_t predIndex ) const 
+SQLStrategy::getTableName(
+    index_t predIndex ) const
 {
     assert_msg( program != NULL, "Null program" );
     const Metadata* meta = program->getMetadata(predIndex);
@@ -345,14 +364,14 @@ QueryBuilder::getTableName(
 }
 
 string
-QueryBuilder::getTableAlias(
+SQLStrategy::getTableAlias(
     unsigned pos ) const
 {
     return string("t"+to_string(pos));
 }
 
 const string&
-QueryBuilder::getAttributeName(
+SQLStrategy::getAttributeName(
     unsigned predPos,
     unsigned termPos ) const
 {
@@ -361,4 +380,16 @@ QueryBuilder::getAttributeName(
     const Metadata* meta = program->getMetadata(bodyPredicates[predPos]);
     assert_msg( meta != NULL, "Null metadata" );
     return meta->getAttributeName(termPos);
+}
+
+void
+SQLStrategy::reset()
+{
+    headVariablesMap.clear();
+    bodyVariablesMap.clear();
+    bodyPredicates.clear();
+    targetTable.clear();
+    attributesToSelect.clear();
+    sourceTables.clear();
+    conditions.clear();
 }

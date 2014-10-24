@@ -38,12 +38,9 @@
 #include <set>
 
 namespace DLV2{ namespace DB{
-    
-    // The definitions of classes QueryObject and QueryBuilder have 
-    // been forwarded in order to avoid cyclic inclusion dependencies.
-    class QueryBuilder;
-    class QueryObject;
-    
+
+    class SQLStrategy;
+
     class DBProgram {
     public:
                 
@@ -94,16 +91,16 @@ namespace DLV2{ namespace DB{
         
         const DBPredicateNames& getPredicateNamesTable() const { return predicates; }
         const std::vector< DBRule* >& getRules() const { return rules; }
-        void setQueryBuilder( QueryBuilder* build );
-        void computeQueryObjects();
-        const std::vector< QueryObject* >& getRuleQueryObjects() const;
-        const std::vector< QueryObject* >& getFactQueryObjects() const;
+        const std::vector< DBRule* >& getFacts() const { return facts; }
+        void setSQLStrategy( SQLStrategy* sqlStrategy );
+        const std::string& getRuleQuery( DBRule* rule );
+        const std::string& getFactQuery( DBRule* fact );
         const Metadata* getMetadata( index_t predIndex ) const;
         const DBRuleSet* getPredicateRuleSet( index_t predIndex ) const;
         
         void computeStrictlyConnectedComponents();
         void computeComponentSubPrograms();
-        const std::vector< DBSubProgram< index_t > >& getComponentSubPrograms() const;
+        const std::vector< DBSubProgram >& getComponentSubPrograms() const;
         bool isHCF() const { assert_msg( graph != NULL, "Null graph" ); return graph->isHCF(); }
         bool isStratified() { assert_msg( graph != NULL, "Null graph" ); return graph->isStratified(); }
         bool isCyclic() const { assert_msg( graph != NULL, "Null graph" ); return graph->isCyclic(); }
@@ -113,6 +110,7 @@ namespace DLV2{ namespace DB{
     private:
         typedef std::unordered_map< index_t, Metadata* > SchemaMap;
         typedef std::unordered_map< index_t, DBRuleSet* > RuleSetsMap;
+        typedef std::unordered_map< DBRule*, std::string > QueryCacheMap;
         
         friend inline std::ostream& operator<< ( std::ostream&, const DBProgram& );
         DBConnection& getDBConnection() { return connection; }
@@ -151,21 +149,15 @@ namespace DLV2{ namespace DB{
  
         DBPredicateNames predicates;
         std::vector< DBRule* > rules;
-        // An element of this vector is true if the corresponding rule is recursive,
-        // false otherwise. Notice that this vector will be initialized only 
-        // after components' sub-programs are computed.
-        std::vector< bool > isRuleRecursive;
-        bool hasDisjunction;
         std::vector< DBRule* > facts;
-        QueryBuilder* queryBuilder;
-        std::vector< QueryObject* > ruleQueries;
-        std::vector< QueryObject* > factQueries;
+        SQLStrategy* queryGeneratorStrategy;
+        bool hasDisjunction;
         SchemaMap schemaMapping;
         RuleSetsMap ruleSetsMapping;
+        QueryCacheMap queryMapping;
         LabeledDependencyGraph< DepGraphNoStrategy, index_t >* graph;
-        // An element here is the subProgram of the component 
-        // with the corresponding index.
-        std::vector< DBSubProgram< index_t > > componentSubPrograms;
+        // An element here is the subProgram of the component with the corresponding index.
+        std::vector< DBSubProgram > componentSubPrograms;
         
         DBConnection& connection;
     };
@@ -212,23 +204,12 @@ namespace DLV2{ namespace DB{
         // SCCs of a graph and returns them in a reverse 
         // topological order.
         out << std::endl << *p.graph;
-        out << std::endl << "COMPONENT-SUB-PROGRAMS (component index --> exit rule indices list, recursive rule indices list):" << std::endl;
+        out << std::endl << "COMPONENT-SUB-PROGRAMS (component index --> exit rule list, recursive rule list):" << std::endl;
         for( int i=p.componentSubPrograms.size()-1; i>=0; i-- )
         {
             out << "Component " 
-                << p.componentSubPrograms.size()-1-i
-                << ": exit{";
-
-            for( DBSubProgram< index_t >::const_iterator it = p.componentSubPrograms[i].exitBegin();
-                    it != p.componentSubPrograms[i].exitEnd();
-                    it++ )
-                out << " " << *it;
-            out << " }, recursive{";
-            for( DBSubProgram< index_t >::const_iterator it = p.componentSubPrograms[i].recBegin();
-                    it != p.componentSubPrograms[i].recEnd();
-                    it++ )
-                out << " " << *it;
-            out << " }" << std::endl;
+                << p.componentSubPrograms.size()-1-i << ":" << std::endl
+                << p.componentSubPrograms[i] << std::endl;
         }
         return out;
     }

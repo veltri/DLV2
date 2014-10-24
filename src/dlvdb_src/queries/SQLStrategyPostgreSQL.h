@@ -18,30 +18,31 @@
  */
 
 /* 
- * File:   SQLBuilder.h
+ * File:   SQLStrategyPostgreSQL.h
  * Author: pierfrancesco
  *
- * Created on 21 agosto 2014, 14.37
+ * Created on 22 ottobre 2014, 16.19
  */
 
-#ifndef SQLBUILDER_H
-#define	SQLBUILDER_H
+#ifndef SQLSTRATEGYPOSTGRESQL_H_
+#define SQLSTRATEGYPOSTGRESQL_H_
+
+#include "SQLStrategy.h"
 
 namespace DLV2{ namespace DB{
-    
-    class QueryObject;
-    
-    class SQLBuilder {
+
+    class SQLStrategyPostgreSQL: public SQLStrategy {
     public:
-        SQLBuilder() { }
-        virtual ~SQLBuilder() { }
-        
-        // The caller is entrusted with the task 
-        // of destroying the returned string.
-        virtual std::string* generateSQL( QueryObject* ) = 0;
+        SQLStrategyPostgreSQL( DBProgram* program ): SQLStrategy(program) { }
+        SQLStrategyPostgreSQL( const SQLStrategyPostgreSQL& ss ): SQLStrategy(ss.program) { }
+        virtual ~SQLStrategyPostgreSQL() { }
+
+    private:
+        virtual void getRuleInSQL( std::string& sqlOutput ) const;
+        virtual void getFactInSQL( std::string& sqlOutput ) const;
+
     };
 
 };};
 
-#endif	/* SQLBUILDER_H */
-
+#endif /* SQLSTRATEGYPOSTGRESQL_H_ */

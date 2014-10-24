@@ -42,6 +42,7 @@ namespace DLV2{ namespace DB{
         bool hasAggregates() const { return aggregates; }
         bool hasBuiltins() const { return builtins; }
         bool isDisjunctive() const { return disjunction; }
+        bool isRecursive() const;
 
     private:
         friend inline std::ostream& operator<< ( std::ostream&, const DBRule& );
@@ -54,9 +55,14 @@ namespace DLV2{ namespace DB{
                 bool isNegative,
                 bool hasAggregates,
                 bool hasBuiltins,
-                bool isDisjunctive );
+                bool isDisjunctive,
+                bool isRecursive = false );
+
         void addToHead( DBAtom* a );
         void addToBody( DBLiteral* l );
+        // The recursive flag could be set after that the dependency graph
+        // has been computed, hence after the creation of the rule itself.
+        void setRecursive( bool rec ) { hasRecursion = rec; }
 
         std::vector< DBAtom* > head;
         std::vector< DBLiteral* > body;
@@ -64,6 +70,7 @@ namespace DLV2{ namespace DB{
         bool aggregates;
         bool builtins;
         bool disjunction;
+        int hasRecursion;
     };
 
     inline

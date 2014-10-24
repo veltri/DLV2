@@ -18,7 +18,7 @@
  */
 
 #include "DLVDBFacade.h"
-#include "queries/QueryObject.h"
+#include "queries/SQLStrategyPostgreSQL.h"
 #include "../util/Assert.h"
 #include "../util/ErrorMessage.h"
 #include <string>
@@ -38,7 +38,6 @@ DLVDBFacade::DLVDBFacade(
 void
 DLVDBFacade::solve()
 {
-    connection.setAutoCommit(false);
     // First of all, consider the query plan given
     // by the topologically ordered sequence of the strictly
     // connected components of the dependency graph.
@@ -49,50 +48,44 @@ DLVDBFacade::solve()
         ErrorMessage::errorGeneric("Only stratified program are allowed at the moment");
     if( program.isDisjunctive() )
         ErrorMessage::errorGeneric("Only disjunction-free programs are allowed at the moment");
+
+    // If the program is executable, start the transaction;
+    connection.setAutoCommit(false);
     // Boost function "strong_components" computes the 
     // SCCs of a graph and returns them in a reverse 
     // topological order.    
     program.computeComponentSubPrograms();
-    const vector< DBSubProgram< index_t > >& subPrograms = program.getComponentSubPrograms();
-    // Distinguishing recursive rules from non-recursive ones is now possible.
-    // Thus, query objects can be computed only here.
-    program.computeQueryObjects();
-    const vector< QueryObject* >& factQueries = program.getFactQueryObjects();
-    const vector< QueryObject* >& ruleQueries = program.getRuleQueryObjects();
-            
+    const vector< DBSubProgram >& subPrograms = program.getComponentSubPrograms();
+    // Before starting the generation of the SQL queries, set the SQL generation strategy.
+    program.setSQLStrategy(new SQLStrategyPostgreSQL(&program));
     // First of all, execute queries related to the facts in input. 
-    for( index_t i=0; i<factQueries.size(); i++ )
+    for( typename vector< DBRule* >::const_iterator factIt = program.getFacts().begin();
+            factIt != program.getFacts().end();
+            factIt++ )
     {
-        QueryObject* queryObject = factQueries.at(i);
-        assert_msg( queryObject != NULL, "Null query object" );
-        // FIXME: That builder can handle only Postgres databases.
-        queryObject->setSQLBuilder(queryObject);
-        string* sql = queryObject->getSQL(); 
-        cout << *sql << endl;
-        connection.executeSQLStatement(*sql);
-        delete sql;
+        assert_msg( *factIt != NULL, "Null fact" );
+        const string& sql = program.getFactQuery(*factIt);
+        cout << sql << endl;
+//        connection.executeSQLStatement(sql);
     }
 
     // Execute the subprogram related to each member of the current component.
     for( long int i=subPrograms.size()-1; i>=0; i-- )
     {
-        for( DBSubProgram< index_t >::const_iterator it = subPrograms[i].exitBegin();
-                it != subPrograms[i].exitEnd();
-                it++ )
+        for( DBSubProgram::const_iterator ruleIt = subPrograms[i].exitBegin();
+                ruleIt != subPrograms[i].exitEnd();
+                ruleIt++ )
         {
-            assert_msg( (0 <= *it && *it < ruleQueries.size()), "Index out of range" );
-            QueryObject* queryObject = ruleQueries.at(*it);
-            assert_msg( queryObject != NULL, "Null query object" );
-            // FIXME: That builder can handle only Postgres databases.
-            queryObject->setSQLBuilder(queryObject);
-            string* sql = queryObject->getSQL(); 
-            cout << *sql << endl;
-            connection.executeSQLStatement(*sql);
-            delete sql;
+            assert_msg( *ruleIt != NULL, "Null rule" );
+            // Distinguishing recursive rules from non-recursive ones is now possible.
+            // Thus, query objects can be computed only here.
+            const string& sql = program.getRuleQuery(*ruleIt);
+            cout << sql << endl;
+//            connection.executeSQLStatement(sql);
         }
-        for( DBSubProgram< index_t >::const_iterator it = subPrograms[i].recBegin();
-                it != subPrograms[i].recEnd();
-                it++ )
+        for( DBSubProgram::const_iterator ruleIt = subPrograms[i].recBegin();
+                ruleIt != subPrograms[i].recEnd();
+                ruleIt++ )
         {
             // TODO ...
         }

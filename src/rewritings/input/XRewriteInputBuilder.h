@@ -18,26 +18,23 @@
  */
 
 /* 
- * File:   DBInputBuilder.h
+ * File:   XRewriteInputBuilder.h
  * Author: pierfrancesco
  *
- * Created on 10 agosto 2014, 19.46
+ * Created on 21 ottobre 2014, 15.52
  */
 
-#ifndef DBINPUTBUILDER_H
-#define	DBINPUTBUILDER_H
+#ifndef XREWRITEINPUTBUILDER_H
+#define XREWRITEINPUTBUILDER_H
 
-#include "../data/DBProgram.h"
 #include "../../input/InputBuilder.h"
-#include "../../util/DBConnection.h"
-#include <sstream>
 
-namespace DLV2{ namespace DB{
-    
-    class DBInputBuilder: public InputBuilder {
+namespace DLV2{ namespace REWRITERS{
+
+    class XRewriteInputBuilder: public InputBuilder {
     public:
-        DBInputBuilder( DBConnection& con );
-        virtual ~DBInputBuilder();
+        XRewriteInputBuilder() { }
+        virtual ~XRewriteInputBuilder() { }
 
         virtual void onDirective( char* directiveName, char* directiveValue ) { }
         virtual void onRule();
@@ -84,46 +81,8 @@ namespace DLV2{ namespace DB{
         virtual void onAggregateNafLiteral();
         virtual void onAggregateElement();
         virtual void onAggregate( bool naf = false );
-        
-        void newTerm( char*, std::vector< DBTerm* >&, bool dash = false );
-        static bool isNumeric( const char*, int );
-        
-        DBProgram* getProgram() { return program; }
-        DBAtom* getQuery() { return query; }
-            
-    private:
-        
-        DBProgram* program;
-        
-        std::vector< DBTerm* > termStack;
-        std::string predName;
-        DBAtom* currentAtom;
-        bool isChoice;
-        DBLiteral* currentLiteral;
-        std::vector< DBAtom* > head;
-        std::vector< DBLiteral* > body;
-        DBAtom* query;
-        unsigned nTermsForWeight;
-        unsigned nTermsForLevel;
-        unsigned nTermsAfterLevel;
-        std::string binop;
-        std::string lowerBinop;
-        std::string upperBinop;
-        DBTerm* lowerGuard;
-        DBTerm* upperGuard;
-        std::string aggregateFunction;
-        std::vector< DBTerm* > aggregateElementTerms;
-        std::vector< DBLiteral* > aggregateElementLiterals;
-        std::vector< DBAggregateElement* > aggregateElements;
-        std::stringstream aggregateLabel;
-        bool hasNegation;
-        bool hasAggregates;
-        bool hasBuiltins;
-        bool hasDisjunction;
     };
 
 };};
 
-
-#endif	/* DBINPUTBUILDER_H */
-
+#endif /* XREWRITEINPUTBUILDER_H */

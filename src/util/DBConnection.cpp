@@ -307,12 +307,12 @@ DBConnection::retrieveTableName(
         retCode = SQLAllocHandle(SQL_HANDLE_STMT, hDBc, &hStmt);
         if( !SQL_SUCCEEDED(retCode) )
             throw SQLException(SQL_HANDLE_STMT,hStmt);
-        
+
         // FIXME: sql code should not be included in this class.
         string tableNames(TABLE_NAMES);
         string sqlId = "SELECT id FROM "+tableNames+" WHERE name='"+predName+"' AND arity="+to_string(arity);
         retCode = SQLExecDirect(hStmt,(SQLCHAR*)sqlId.c_str(),SQL_NTS);
-        
+
         if( !SQL_SUCCEEDED(retCode) )
             throw SQLException(SQL_HANDLE_STMT,hStmt);
 
@@ -332,23 +332,23 @@ DBConnection::retrieveTableName(
         if( SQL_SUCCEEDED(retCode) )
         {
             outTableName->assign(szTableName);
-            assert_msg( !SQL_SUCCEEDED(retCode = SQLFetch(hStmt)), 
+            assert_msg( !SQL_SUCCEEDED(retCode = SQLFetch(hStmt)),
                 "More than one table matches the input predicate" );
         }
         else if( retCode == SQL_NO_DATA )
         {
-            // If such a matching does not exist, 
+            // If such a matching does not exist,
             // insert a new record and create the matching table.
 
-            // FIXME: at the moment we are not able to handle datatype mappings, 
+            // FIXME: at the moment we are not able to handle datatype mappings,
             // so we create only tables with string attributes.
 
             setAutoCommit(false);
-            
+
             // The id of the table that is about to be added is built as follows:
-            // <predName_COD>, where COD is the number of tables (included 
+            // <predName_COD>, where COD is the number of tables (included
             // in the working database) matching predicate predName.
-            
+
             // Retrieve the number of tables matching the predicate name in input.
             // Notice that, this query has to be executed because there might be
             // a table matching predicate predName with a different arity.
@@ -364,7 +364,7 @@ DBConnection::retrieveTableName(
             retCode = SQLBindCol(hStmt, 1, SQL_C_USHORT, &count, 0, &countInd);
             if( !SQL_SUCCEEDED(retCode) )
                 throw SQLException(SQL_HANDLE_STMT,hStmt);
-            
+
             retCode = SQLFetch(hStmt);
             if( !SQL_SUCCEEDED(retCode) )
                 throw SQLException(SQL_HANDLE_STMT,hStmt);
@@ -385,7 +385,7 @@ DBConnection::retrieveTableName(
             retCode = SQLExecDirect(hStmt,(SQLCHAR*)sqlCreateTable.c_str(),SQL_NTS);
             if( !SQL_SUCCEEDED(retCode) )
                 throw SQLException(SQL_HANDLE_STMT,hStmt);
-            
+
             // Update table "tableNames".
             // FIXME: type value is still empty.
             string sqlUpdateTableNames = "INSERT INTO "+tableNames+
@@ -395,12 +395,12 @@ DBConnection::retrieveTableName(
             retCode = SQLExecDirect(hStmt,(SQLCHAR*)sqlUpdateTableNames.c_str(),SQL_NTS);
             if( !SQL_SUCCEEDED(retCode) )
                 throw SQLException(SQL_HANDLE_STMT,hStmt);
-            
+
             commit();
         }
         else
             throw SQLException(SQL_HANDLE_STMT,hStmt);
-        
+
         retCode = SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
         if( !SQL_SUCCEEDED(retCode) )
             throw SQLException(SQL_HANDLE_STMT,hStmt);
@@ -417,7 +417,7 @@ DBConnection::retrieveTableName(
         if( retCode == SQL_SUCCESS )
             ErrorMessage::errorDBConnection(Msg);
         else
-            ErrorMessage::errorDBConnection("Unknown error");      
+            ErrorMessage::errorDBConnection("Unknown error");
     }
     return outTableName;
 }
@@ -437,7 +437,7 @@ DBConnection::retrieveTableSchema(
         retCode = SQLAllocHandle(SQL_HANDLE_STMT, hDBc, &hStmt);
         if( !SQL_SUCCEEDED(retCode) )
             throw SQLException(SQL_HANDLE_STMT,hStmt);
-        
+
         retCode = SQLColumns(hStmt, NULL, 0, NULL, 0, (SQLCHAR*)tableName.c_str(), SQL_NTS, NULL, 0);
         if( !SQL_SUCCEEDED(retCode) )
             throw SQLException(SQL_HANDLE_STMT,hStmt);
@@ -453,19 +453,23 @@ DBConnection::retrieveTableSchema(
         retCode = SQLBindCol(hStmt, 4, SQL_C_CHAR, szColumnName, STR_LEN, &cbColumnName);
         if( !SQL_SUCCEEDED(retCode) )
             throw SQLException(SQL_HANDLE_STMT,hStmt);
-        
+
+        if( retCode == SQL_NO_DATA )
+            throw tableName+": wrong table name! Retrieving its schema is not possible.";
+
         //SQLBindCol(hstmt, 6, SQL_C_CHAR, szTypeName, STR_LEN, &cbTypeName);
-        while( SQL_SUCCEEDED(retCode = SQLFetch(hStmt)) ) 
+        while( SQL_SUCCEEDED(retCode = SQLFetch(hStmt)) )
         {
             attributesList->push_back(string(szColumnName));
         }
+
         // If attributeList were empty, table "tableName" would not exist.
         // That should not be possible because retrieveTableName is called
-        // before, and that function creates the table if it doesn't exist. 
+        // before, and that function creates the table if it doesn't exist.
         // Anyway, someone might call this function with a not valid table name.
-        if( retCode == SQL_NO_DATA || nAttributes == attributesList->size() )
-            throw "Wrong table name! Retrieving its schema is not possible.";
-        
+        if( nAttributes != attributesList->size() )
+            throw tableName+": wrong table name! Its schema does not match the arity.";
+
         retCode = SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
         if( !SQL_SUCCEEDED(retCode) )
             throw SQLException(SQL_HANDLE_STMT,hStmt);
@@ -484,7 +488,7 @@ DBConnection::retrieveTableSchema(
         else
             ErrorMessage::errorDBConnection("Unknown error");
     }
-    catch( const char* genericException )
+    catch( const string& genericException )
     {
         ErrorMessage::errorDBConnection(genericException);
     }

@@ -50,31 +50,31 @@ namespace DLV2{ namespace DB{
         void executeSQLStatement( const std::string& sql ) const;
         void commit() const;
         void rollback() const;
-        
-        /* MetadataHandler */
-        
+
+        /* DataHandler */
+
         /** Provide the name of the table matching the input pair <predName,arity>
          * by querying meta table "tableNames" that must be present in the working
-         * database. If a matching table doesn't exist, it will be created and 
+         * database. If a matching table doesn't exist, it will be created and
          * its name will be stored in table "tableNames".
          * @param predName The predicate's name.
          * @param arity The predicate's arity.
          * @param outTableName The name of the matching table.
-         * @return a pointer to a dinamically instantiated string containing 
+         * @return a pointer to a dinamically instantiated string containing
          * the name of the matching table; the caller will be responsible of
          * the destruction of that vector.
          */
-        std::string* retrieveTableName( 
+        std::string* retrieveTableName(
             const std::string& predName,
             unsigned arity ) const;
-        /** Retrive the attributes' names of table <tableName>. 
+        /** Retrive the attributes' names of table <tableName>.
          * Notice that, table <tableName> must exist.
          * @param tableName The name of the table to be investigated.
          * @param nAttributes USELESS
-         * @return a pointer to a dinamically instantiated vector of strings, 
+         * @return a pointer to a dinamically instantiated vector of strings,
          * the caller will be responsible of the destruction of that vector.
-         */ 
-        std::vector<std::string>* retrieveTableSchema( 
+         */
+        std::vector<std::string>* retrieveTableSchema(
             const std::string& tableName,
             unsigned nAttributes ) const;
         /** Retrieve the next valid execution timestamp.
@@ -89,7 +89,7 @@ namespace DLV2{ namespace DB{
          */
         Timestamp retrieveNextTableTimestamp(
                 const std::string& tableName ) const;
-        
+
     private:
         
         static DBConnection* instance;
@@ -103,7 +103,11 @@ namespace DLV2{ namespace DB{
         SQLHENV hEnv;
         SQLHDBC hDBc;
         bool connected;
+
+        /* DataHandler */
+
         Timestamp currentExecutionTimestamp;
+
     };
     
 };};

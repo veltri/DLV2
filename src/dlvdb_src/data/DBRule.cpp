@@ -29,13 +29,15 @@ DBRule::DBRule(
     bool neg,
     bool aggr,
     bool built,
-    bool disj ):
+    bool disj,
+    bool rec ):
         head(h),
         body(b),
         naf(neg),
         aggregates(aggr),
         builtins(built),
-        disjunction(disj)
+        disjunction(disj),
+        hasRecursion(-1)
 {
 }
 
@@ -46,7 +48,8 @@ DBRule::DBRule(
         naf(rule.naf),
         aggregates(rule.aggregates),
         builtins(rule.builtins),
-        disjunction(rule.disjunction)
+        disjunction(rule.disjunction),
+        hasRecursion(rule.hasRecursion)
 {
 }
 
@@ -86,4 +89,11 @@ DBRule::addToBody(
         aggregates = true;
     if( l->isBuiltin() )
         builtins = true;
+}
+
+bool
+DBRule::isRecursive() const
+{
+    assert_msg( hasRecursion != -1, "Can't establish whether the rule is recursive at the moment" );
+    return hasRecursion;
 }

@@ -20,7 +20,7 @@
 #include "DBProgram.h"
 #include "Metadata.h"
 #include "../../util/DBConnection.h"
-#include "../queries/QueryObject.h"
+#include "../queries/SQLStrategy.h"
 #include "../../util/ErrorMessage.h"
 
 using namespace std;
@@ -53,15 +53,6 @@ DBProgram::DBProgram(
     for( index_t i=0; i<p.facts.size(); i++ )
     {
         facts.push_back(new DBRule(*p.facts[i]));
-    }
-    queryBuilder = new QueryBuilder(*p.queryBuilder);
-    for( index_t i=0; i<p.ruleQueries.size(); i++ )
-    {
-        ruleQueries.push_back(new QueryObject(*p.ruleQueries[i]));
-    }
-    for( index_t i=0; i<p.factQueries.size(); i++ )
-    {
-        factQueries.push_back(new QueryObject(*p.factQueries[i]));
     }
     for( SchemaMap::const_iterator it = p.schemaMapping.begin();
             it != p.schemaMapping.end();
@@ -100,16 +91,6 @@ DBProgram::~DBProgram()
         delete it->second;
     }
     schemaMapping.clear();
-    for( index_t i=0; i<factQueries.size(); i++ )
-    {
-        assert_msg( factQueries[i] != NULL, "Trying to destroy a program with a null (fact) query object." );
-        delete factQueries[i];
-    }
-    for( index_t i=0; i<ruleQueries.size(); i++ )
-    {
-        assert_msg( ruleQueries[i] != NULL, "Trying to destroy a program with a null (rule) query object." );
-        delete ruleQueries[i];
-    }
     for( index_t i=0; i<facts.size(); i++ )
     {
         assert_msg( facts[i] != NULL, "Trying to destroy a program with a null fact." );
@@ -346,52 +327,51 @@ DBProgram::addRule(
 }
 
 void
-DBProgram::setQueryBuilder( 
-    QueryBuilder* build )
+DBProgram::setSQLStrategy(
+    SQLStrategy* sqlGenStrat )
 {
-    assert_msg( build != NULL, "Null query builder" );
-    queryBuilder = build;
+    assert_msg( sqlGenStrat != NULL, "Null sql strategy" );
+    queryGeneratorStrategy = sqlGenStrat;
 }
 
-void
-DBProgram::computeQueryObjects()
+const string&
+DBProgram::getRuleQuery(
+    DBRule* rule )
 {
-    assert_msg( isRuleRecursive.size() == rules.size(), 
-            "Components' subprograms haven't been computed yet." ); 
-    assert_msg( queryBuilder != NULL, "Null query builder" );
-    
-    // Iterate program rules/facts and generate their associated queries
-    for( index_t i=0; i<facts.size(); i++ )
+    assert_msg( rule != NULL, "Null rule" );
+    QueryCacheMap::const_iterator it = queryMapping.find(rule);
+    if( it == queryMapping.end() )
     {
-        DBRule* fact = facts[i];
-        assert_msg( fact != NULL, "Null fact" );
-        queryBuilder->rewriteFact(fact);
-        // FIXME: the implementation of rewriteFact is still empty.
-        //factQueries.push_back(queryBuilder->getQueryObject());
+        assert_msg( queryGeneratorStrategy != NULL, "SQL strategy not set yet" );
+        string sql;
+        queryGeneratorStrategy->rewriteRule(*rule,sql);
+        pair< QueryCacheMap::const_iterator, bool > res =
+                queryMapping.insert(pair< DBRule*, string >(rule,sql));
+        assert_msg( res.second, "Failed insertion" );
+        return res.first->second;
     }
-    for( index_t i=0; i<rules.size(); i++ )
+    else
+        return it->second;
+}
+
+const string&
+DBProgram::getFactQuery(
+    DBRule* fact )
+{
+    assert_msg( fact != NULL, "Null fact" );
+    QueryCacheMap::const_iterator it = queryMapping.find(fact);
+    if( it == queryMapping.end() )
     {
-        DBRule* rule = rules[i];
-        assert_msg( rule != NULL, "Null rule" );
-        if( isRuleRecursive[i] )
-            queryBuilder->rewriteRecursiveRule(rule);
-        else
-            queryBuilder->rewriteNonRecursiveRule(rule);
-        
-        ruleQueries.push_back(queryBuilder->getQueryObject());
+        assert_msg( queryGeneratorStrategy != NULL, "SQL strategy not set yet" );
+        string sql;
+        queryGeneratorStrategy->rewriteFact(*fact,sql);
+        pair< QueryCacheMap::const_iterator, bool > res =
+                queryMapping.insert(pair< DBRule*, string >(fact,sql));
+        assert_msg( res.second, "Failed insertion" );
+        return res.first->second;
     }
-}
-
-const std::vector< QueryObject* >&
-DBProgram::getRuleQueryObjects() const
-{
-    return ruleQueries;
-}
-
-const std::vector< QueryObject* >&
-DBProgram::getFactQueryObjects() const
-{
-    return factQueries;
+    else
+        return it->second;
 }
 
 const Metadata*
@@ -437,6 +417,7 @@ DBProgram::addPredicate(
         vector< string >* attributeNames = NULL;
         // If a predicate name is negative, just remind that the real name 
         // is the one starting after the first char ('-').
+
         attributeNames = getDBConnection().retrieveTableSchema(*actualTableName,arity);
         assert_msg( attributeNames != NULL, "Invalid attribute list" );
         assert_msg( attributeNames->size() == arity, "Invalid arity" );
@@ -477,21 +458,23 @@ DBProgram::computeComponentSubPrograms()
     bool* doesComponentReceiveRule = new bool[components.size()];
     for( unsigned componentIdx = 0; componentIdx < components.size(); componentIdx++ )
     {
-        componentSubPrograms.push_back(DBSubProgram< index_t >());
+        componentSubPrograms.push_back(DBSubProgram());
         doesComponentReceiveRule[componentIdx] = false;
     }
 
-    for( index_t i=0; i<rules.size(); i++ )
+    for( vector< DBRule* >::const_iterator ruleIt = rules.begin();
+            ruleIt != rules.end();
+            ruleIt++ )
     {
-        DBRule* r = rules[i];
-        assert_msg( r != NULL, "Null rule" );
+        DBRule* rule = *ruleIt;
+        assert_msg( rule != NULL, "Null rule" );
         
         // Count the number of components that receive the rule.
         nrRuleReceivers = 0;
 
-        for( unsigned j=0; j<r->getHead().size(); j++ )
+        for( unsigned j=0; j<rule->getHead().size(); j++ )
         {
-            DBAtom* headAtom = r->getHead().at(j);
+            DBAtom* headAtom = rule->getHead().at(j);
             assert_msg( headAtom != NULL, "Null head atom" );
                     
             // The index of the component of the current head atom.
@@ -515,9 +498,9 @@ DBProgram::computeComponentSubPrograms()
         // Traverse the body and update the array posBodyHasStdAtomOf.
         // Set to true each element of the array whose index corresponds
         // to the component index of the current body atom.
-        for( unsigned j=0; j<r->getBody().size(); j++ )
+        for( unsigned j=0; j<rule->getBody().size(); j++ )
         {
-            DBLiteral* bodyLiteral = r->getBody().at(j);
+            DBLiteral* bodyLiteral = rule->getBody().at(j);
             assert_msg( bodyLiteral != NULL, "Null body literal" );
             DBAtom* bodyAtom = bodyLiteral->getAtom();
             assert_msg( bodyAtom != NULL, "Null body atom" );
@@ -538,11 +521,11 @@ DBProgram::computeComponentSubPrograms()
             // added as exit rule.
             if( posBodyHasStdAtomOfComp[componentsThatReceiveRule[j]] )
             {
-                componentSubPrograms[componentsThatReceiveRule[j]].addRecursive(i);
+                componentSubPrograms[componentsThatReceiveRule[j]].addRecursive(rule);
                 isRecursive = true;
             }
             else
-                componentSubPrograms[componentsThatReceiveRule[j]].addExit(i);
+                componentSubPrograms[componentsThatReceiveRule[j]].addExit(rule);
 
             doesComponentReceiveRule[componentsThatReceiveRule[j]] = false;
         }
@@ -552,14 +535,14 @@ DBProgram::computeComponentSubPrograms()
         // consider that rule as a recursive rule in one component and as a 
         // non-recursive rule in another one).
         assert_msg( nrRuleReceivers <= 1, "We aren't handling disjunction at the moment." );
-        isRuleRecursive.push_back(isRecursive);
+        rule->setRecursive(isRecursive);
     }
     delete[] posBodyHasStdAtomOfComp;
     delete[] componentsThatReceiveRule;
     delete[] doesComponentReceiveRule;
 }
 
-const std::vector< DBSubProgram< index_t > >&
+const std::vector< DBSubProgram >&
 DBProgram::getComponentSubPrograms() const
 {
     assert_msg( componentSubPrograms.size() > 0, 
