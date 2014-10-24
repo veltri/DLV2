@@ -38,6 +38,7 @@ namespace DLV2
 #define BUILDER_SELECTOR 3
 #define BUILDER_DEPGRAPH 4
 #define BUILDER_EMPTY 5
+#define BUILDER_DATALOGPM 6
     
 // Output builder constants
 #define OUTPUT_ASPCORE2 0
@@ -59,8 +60,8 @@ namespace DLV2
 #define ERROR_DB_CODE 120
     
 // New types
-typedef unsigned int INPUT_BUILDER_POLICY;
-typedef unsigned int OUTPUT_POLICY;
+typedef int INPUT_BUILDER_POLICY;
+typedef int OUTPUT_POLICY;
 
 namespace DB{
     

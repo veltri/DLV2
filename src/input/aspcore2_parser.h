@@ -85,7 +85,8 @@ extern int yydebug;
     AT = 295,
     WCONS = 296,
     VEL = 297,
-    EXISTS = 298
+    EXISTS = 298,
+    AND = 299
   };
 #endif
 /* Tokens.  */
@@ -130,6 +131,7 @@ extern int yydebug;
 #define WCONS 296
 #define VEL 297
 #define EXISTS 298
+#define AND 299
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -142,7 +144,7 @@ union YYSTYPE
     char single_char;
     int integer;
 
-#line 146 "src/input/aspcore2_parser.h" /* yacc.c:1909  */
+#line 148 "src/input/aspcore2_parser.h" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1

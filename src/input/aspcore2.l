@@ -74,6 +74,7 @@ NUMBER              ([0-9]+)
 ":"                     { return COLON; }
 "@"                     { return AT; }
 "\\E"                   { return EXISTS; }
+"^"                     { return AND; }
 
 "not"                   { return NAF; }
 

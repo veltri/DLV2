@@ -45,6 +45,8 @@ namespace DLV2
 
         bool isAspCore2Strict() const { return aspCore2Strict; }
 
+        bool isDatalogPM() const { return datalogpm; }
+
         const std::vector<const char*>& getInputFiles() const { return inputFiles; }
         
         bool getPrintProgram() const { return printProgram; }
@@ -83,10 +85,14 @@ namespace DLV2
 
         void setAspCore2Strict(bool strict) { aspCore2Strict = strict;	}
 
+        void setDatalogPM(bool datpm) { datalogpm = datpm;  }
+
         std::vector< const char* > inputFiles;
 
         bool aspCore2Strict;
         
+        bool datalogpm;
+
         bool printProgram;
         
         bool printDepGraph;

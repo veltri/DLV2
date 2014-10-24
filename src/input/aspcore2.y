@@ -55,7 +55,7 @@ This file is part of the ASPCOMP2013 ASP-Core-2 validator (validator in the foll
 
 %token DASH COMMA NAF AT WCONS
 
-%token VEL EXISTS
+%token VEL EXISTS AND
 
 %left PLUS DASH
 %left TIMES SLASH
@@ -63,7 +63,8 @@ This file is part of the ASPCOMP2013 ASP-Core-2 validator (validator in the foll
 %start program
 %%
 
-HEAD_SEPARATOR  : VEL;
+HEAD_OR_SEPARATOR  : VEL;
+HEAD_AND_SEPARATOR : AND;
 
 program
     : 
@@ -106,8 +107,35 @@ rule
     ;
 
 head
-    : disjunction
+    : classic_literal
         {
+            director.getBuilder()->onHeadAtom();
+   	        director.getBuilder()->onAtomicHead();
+            director.getBuilder()->onHead();		
+        }
+    | disjunctive_head classic_literal
+        {
+            director.getBuilder()->onHeadAtom();
+            director.getBuilder()->onDisjunctiveHead();
+            director.getBuilder()->onHead();		
+        }
+    | existential_atom
+        {
+            director.getBuilder()->onHeadAtom();
+            director.getBuilder()->onAtomicHead();
+            director.getBuilder()->onHead();		
+        }
+    | disjunctive_head existential_atom
+        {
+            director.getBuilder()->onHeadAtom();
+            director.getBuilder()->onDisjunctiveHead();
+            director.getBuilder()->onHead();		
+        }
+    | conjunctive_head classic_literal
+        {
+            director.getParserConstraint()->conjunctiveHeads();
+            director.getBuilder()->onHeadAtom();
+            director.getBuilder()->onConjunctiveHead();
             director.getBuilder()->onHead();
         }
     | choice_atom 
@@ -156,25 +184,36 @@ levels_and_terms
         } 
     ;
           
-disjunction
-    : classic_literal 
+disjunctive_head
+    : classic_literal HEAD_OR_SEPARATOR 
         { 
             director.getBuilder()->onHeadAtom(); 
         }
-    | disjunction HEAD_SEPARATOR classic_literal 
+    | disjunctive_head classic_literal HEAD_OR_SEPARATOR 
         { 
             director.getBuilder()->onHeadAtom(); 
         }
-    | existential_atom 
+    | existential_atom HEAD_OR_SEPARATOR 
         { 
             director.getBuilder()->onHeadAtom(); 
         }
-    | disjunction HEAD_SEPARATOR existential_atom 
+    | disjunctive_head existential_atom HEAD_OR_SEPARATOR 
         { 
             director.getBuilder()->onHeadAtom(); 
         }
     ;
 
+conjunctive_head
+    : classic_literal HEAD_AND_SEPARATOR
+        {
+            director.getBuilder()->onHeadAtom();
+        }
+    | conjunctive_head classic_literal HEAD_AND_SEPARATOR
+        {
+            director.getBuilder()->onHeadAtom();
+        }
+    ;
+	
 conjunction
     : naf_literal_aggregate 
         { 

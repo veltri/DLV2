@@ -28,6 +28,8 @@
 #include "input/EmptyInputBuilder.h"
 #include "dlvdb_src/input/DBInputBuilder.h"
 #include "dlvdb_src/DLVDBFacade.h"
+#include "rewritings/input/ParserConstraintDatalogPM.h"
+#include "rewritings/input/XRewriteInputBuilder.h"
 
 //extern Buffer theBuffer;
 
@@ -39,6 +41,7 @@
 using namespace std;
 using namespace DLV2;
 using namespace DLV2::DB;
+using namespace DLV2::REWRITERS;
 
 void 
 DLV2Facade::parseOptions(
@@ -61,6 +64,8 @@ DLV2Facade::readInput()
 {
     if( getOptions().isAspCore2Strict() )
         director.setParserConstraint(new ParserConstraintAspCore2Strict());
+    else if( getOptions().isDatalogPM() )
+        director.setParserConstraint(new ParserConstraintDatalogPM());
         
     switch( getOptions().getInputBuilderPolicy() )
     {
@@ -91,6 +96,10 @@ DLV2Facade::readInput()
             
         case BUILDER_EMPTY:
             builder = new EmptyInputBuilder();
+            break;
+
+        case BUILDER_DATALOGPM:
+            builder = new XRewriteInputBuilder();
             break;
 
         default:
@@ -193,6 +202,12 @@ DLV2Facade::solve()
             delete program;
     }
     
+    if( getOptions().getInputBuilderPolicy() == BUILDER_DATALOGPM )
+    {
+        //XRewriteInputBuilder* dbInputBuilder = static_cast<XRewriteInputBuilder*>(builder);
+        // TODO ...
+    }
+
     if( getOptions().getPrintStatistics() )
     {
         cerr << endl << "***FINAL STATISTICS***" << endl;

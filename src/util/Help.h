@@ -42,6 +42,7 @@ namespace DLV2
             std::cout << "--inmemory                             - Enable the input builder for the in-memory version. (default choice)" << std::endl;
             std::cout << "--dlv-db                               - Enable the input builder for the DB-based version." << std::endl;
             std::cout << "--test-parser                          - Enable an empty input builder in order to test just parsing functionalities." << std::endl;
+            std::cout << "--datalogpm                            - Enable the input builder for Datalog+/-." << std::endl;
             std::cout << separator << std::endl;
 
             std::cout << "Output options                         " << std::endl << std::endl;

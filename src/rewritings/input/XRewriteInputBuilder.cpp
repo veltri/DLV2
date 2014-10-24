@@ -55,6 +55,21 @@ XRewriteInputBuilder::onHeadAtom()
 }
 
 void
+XRewriteInputBuilder::onAtomicHead()
+{
+}
+
+void
+XRewriteInputBuilder::onDisjunctiveHead()
+{
+}
+
+void
+XRewriteInputBuilder::onConjunctiveHead()
+{
+}
+
+void
 XRewriteInputBuilder::onHead()
 {
 }

@@ -42,6 +42,9 @@ namespace DLV2{ namespace REWRITERS{
         virtual void onWeakConstraint();
         virtual void onQuery();
         virtual void onHeadAtom();
+        virtual void onAtomicHead();
+        virtual void onDisjunctiveHead();
+        virtual void onConjunctiveHead();
         virtual void onHead();
         virtual void onBodyLiteral();
         virtual void onBody();

@@ -36,6 +36,7 @@ namespace DLV2
 #define OPTIONID_inmemory ( 'z' + 2 )
 #define OPTIONID_dlvdb ( 'z' + 3 )
 #define OPTIONID_testparser ( 'z' + 4 )
+#define OPTIONID_datalogpm ( 'z' + 5 )
 
 /* OUTPUT OPTIONS */
 #define OPTIONID_silent ( 'z' + 10 )
@@ -81,12 +82,13 @@ Options::finalizeGlobalOptions()
 
 
 Options::Options(): 
-        aspCore2Strict(false), 
+        aspCore2Strict(false),
+        datalogpm(false),
         printProgram(false),
         printDepGraph(false),
         printStatistics(false),
-        inputPolicy(BUILDER_IN_MEMORY),
-        outputPolicy(OUTPUT_ASPCORE2) 
+        inputPolicy(-1),
+        outputPolicy(-1)
 {
 
 }
@@ -94,6 +96,7 @@ Options::Options():
 Options::Options(
     const Options& o):
         aspCore2Strict(o.aspCore2Strict),
+        datalogpm(o.datalogpm),
         printProgram(o.printProgram),
         printDepGraph(o.printDepGraph),
         printStatistics(o.printStatistics),
@@ -122,6 +125,7 @@ Options::init(
         { "inmemory", no_argument, NULL, OPTIONID_inmemory },
         { "dlvdb", no_argument, NULL, OPTIONID_dlvdb },
         { "test-parser", no_argument, NULL, OPTIONID_testparser },
+        { "datalogpm", no_argument, NULL, OPTIONID_datalogpm },
 
         /* OUTPUT OPTIONS */
         { "silent", no_argument, NULL, OPTIONID_silent },
@@ -155,38 +159,61 @@ Options::init(
                 // All the lines were parsed
                 break;
             case OPTIONID_aspcore2strict:
+                if( datalogpm )
+                    ErrorMessage::errorGeneric( "Options --datalogpm and --aspcore2strict collide one another" );
                 aspCore2Strict = true;
                 break;
             
             case OPTIONID_inmemory:
+                if( inputPolicy != -1 )
+                    ErrorMessage::errorGeneric( "Options about input policy must be set at most once" );
                 inputPolicy = BUILDER_IN_MEMORY;
                 break;
                 
-            case OPTIONID_dlvdb:     
+            case OPTIONID_dlvdb:
+                if( inputPolicy != -1 )
+                    ErrorMessage::errorGeneric( "Options about input policy must be set at most once" );
                 inputPolicy = BUILDER_DLV_DB;
                 break;
                 
             case OPTIONID_testparser:
+                if( inputPolicy != -1 )
+                    ErrorMessage::errorGeneric( "Options about input policy must be set at most once" );
                 inputPolicy = BUILDER_EMPTY;
                 printStatistics = true;
                 break;
                 
+            case OPTIONID_datalogpm:
+                if( inputPolicy != -1 )
+                    ErrorMessage::errorGeneric( "Options about input policy must be set at most once" );
+                if( aspCore2Strict )
+                    ErrorMessage::errorGeneric( "Options --datalogpm and --aspcore2strict collide one another" );
+                inputPolicy = BUILDER_DATALOGPM;
+                datalogpm = true;
+                break;
+
             case OPTIONID_silent:
                 outputPolicy = OUTPUT_SILENT;
                 break;
                 
             case OPTIONID_printprogram:
+                if( inputPolicy != -1 )
+                    ErrorMessage::errorGeneric( "Options about input policy must be set at most once" );
                 inputPolicy = BUILDER_MOCK_OBJECTS;
                 printProgram = true;
                 break;
                 
             case OPTIONID_selector:
+                if( inputPolicy != -1 )
+                    ErrorMessage::errorGeneric( "Options about input policy must be set at most once" );
                 inputPolicy = BUILDER_SELECTOR;
                 printProgram = true;
                 namedpipe = atoi( optarg );
                 break;
                 
             case OPTIONID_printdepgraph:
+                if( inputPolicy != -1 )
+                    ErrorMessage::errorGeneric( "Options about input policy must be set at most once" );
                 inputPolicy = BUILDER_DEPGRAPH;
                 printDepGraph = true;
                 break;
@@ -222,6 +249,12 @@ Options::init(
         }
     }while( code != -1 );
     
+    // Default policy
+    if( inputPolicy == -1 )
+        inputPolicy = BUILDER_IN_MEMORY;
+    if( outputPolicy == -1 )
+        outputPolicy = OUTPUT_ASPCORE2;
+
     // Manage the reminder options (probably, they are all input files).
     for( int i = optind; i < argc; i++ )
     {

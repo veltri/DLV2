@@ -18,38 +18,29 @@
  */
 
 /* 
- * File:   ParserConstraint.h
- * Author: cesco
+ * File:   ParserConstraintDatalogPM.h
+ * Author: pierfrancesco
  *
- * Created on 12 maggio 2014, 18.32
+ * Created on 24 ottobre 2014, 17.51
  */
 
-#ifndef PARSERCONSTRAINT_H
-#define	PARSERCONSTRAINT_H
+#ifndef PARSERCONSTRAINTDATALOGPM_H_
+#define PARSERCONSTRAINTDATALOGPM_H_
 
-#include "../util/Options.h"
-#include "../util/ErrorMessage.h"
+#include "../../input/ParserConstraint.h"
 
-namespace DLV2
-{
+namespace DLV2{ namespace REWRITERS{
 
-    class ParserConstraint {
+    class ParserConstraintDatalogPM: public ParserConstraint {
     public:
-        ParserConstraint() {}
-        virtual ~ParserConstraint() {}
-        
+        ParserConstraintDatalogPM() {}
+        virtual ~ParserConstraintDatalogPM() {}
+
         inline virtual void rangeFacts() {}
         inline virtual void directives() {}
-        inline virtual void conjunctiveHeads();
+        inline virtual void conjunctiveHeads() {}
     };
-    
-};
 
-void
-DLV2::ParserConstraint::conjunctiveHeads()
-{
-    DLV2::ErrorMessage::errorDuringParsing("conjunctive heads are not in the DLV2.0 standard! Use --datalogpm option");
-}
+};};
 
-#endif	/* PARSERCONSTRAINT_H */
-
+#endif /* PARSERCONSTRAINTDATALOGPM_H_ */

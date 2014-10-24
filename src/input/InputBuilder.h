@@ -41,6 +41,9 @@ namespace DLV2
         virtual void onWeakConstraint() = 0;
         virtual void onQuery() = 0;
         virtual void onHeadAtom() = 0;
+        virtual void onAtomicHead() = 0;
+        virtual void onDisjunctiveHead() = 0;
+        virtual void onConjunctiveHead() = 0;
         virtual void onHead() = 0;
         virtual void onBodyLiteral() = 0;
         virtual void onBody() = 0;
