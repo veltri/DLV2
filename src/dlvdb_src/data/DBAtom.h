@@ -78,7 +78,7 @@ namespace DLV2{ namespace DB{
         DBTerm* getAggregateUpperGuard() const { return upperGuard; }
         const std::string& getAggregateUpperBinop() const { return upperBinop; }
         const std::string& getAggregateFunction() const { return aggregateFunction; }
-        const std::vector<DBAggregateElement*>& getAggregateElements() const { return aggregateElements; }
+        const std::vector< DBAggregateElement* >& getAggregateElements() const { return aggregateElements; }
         const std::string& getAggregateName() const;
         
     private:
