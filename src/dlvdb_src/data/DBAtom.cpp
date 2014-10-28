@@ -27,7 +27,7 @@ using namespace DLV2::DB;
 DBAtom::DBAtom(
     const DBProgram& ownerProgr,
     index_t predIdx, 
-    const vector<DBTerm*>& tList, 
+    const vector< DBTerm* >& tList,
     bool tNeg ):
         ownerProgram(ownerProgr),
         predIndex(predIdx),
@@ -101,14 +101,12 @@ DBAtom::DBAtom(
         ownerProgram(a.ownerProgram),
         predIndex(a.predIndex),
         trueNegated(a.trueNegated),
-        terms(a.terms),
         builtin(a.builtin),
         binOp(a.binOp),
         aggregate(a.aggregate),
         lowerBinop(a.lowerBinop),
         upperBinop(a.upperBinop),
-        aggregateFunction(a.aggregateFunction),
-        aggregateElements(a.aggregateElements)
+        aggregateFunction(a.aggregateFunction)
 {
     if( a.builtin )
     {
@@ -130,6 +128,11 @@ DBAtom::DBAtom(
             upperGuard = new DBTerm(*a.upperGuard);
         else
             upperGuard = NULL;
+        for( unsigned i=0; i<a.aggregateElements.size(); i++ )
+        {
+            assert_msg( a.aggregateElements[i] != NULL, "Null aggregate element" );
+            aggregateElements.push_back(new DBAggregateElement(*a.aggregateElements[i]));
+        }
     }
     else
     {
@@ -137,6 +140,11 @@ DBAtom::DBAtom(
         rightOp = NULL;
         lowerGuard = NULL;
         upperGuard = NULL;
+        for( unsigned i=0; i<a.terms.size(); i++ )
+        {
+            assert_msg( a.terms[i] != NULL, "Null term" );
+            terms.push_back(new DBTerm(*a.terms[i]));
+        }
     }
 }
 
