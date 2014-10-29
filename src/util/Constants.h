@@ -76,6 +76,13 @@ namespace DB{
     typedef int64_t Timestamp;
 };
 
+namespace REWRITERS{
+
+    // New types
+    typedef size_t index_t;
+
+};
+
 };
 
 #endif	/* CONSTANTS_H */
