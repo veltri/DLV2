@@ -29,8 +29,7 @@ DBRule::DBRule(
     bool neg,
     bool aggr,
     bool built,
-    bool disj,
-    bool rec ):
+    bool disj ):
         head(h),
         body(b),
         naf(neg),

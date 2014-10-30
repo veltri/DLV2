@@ -55,8 +55,7 @@ namespace DLV2{ namespace DB{
                 bool isNegative,
                 bool hasAggregates,
                 bool hasBuiltins,
-                bool isDisjunctive,
-                bool isRecursive = false );
+                bool isDisjunctive );
 
         void addToHead( DBAtom* a );
         void addToBody( DBLiteral* l );
