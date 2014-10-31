@@ -49,33 +49,6 @@ XLiteral::~XLiteral()
 }
 
 bool
-XLiteral::isRegularAtom()
-const
-{
-    return atom.isRegularAtom();
-}
-
-bool
-XLiteral::isPropositional()
-const
-{
-    return atom.isPropositional();
-}
-
-bool
-XLiteral::isBuiltin()
-const
-{
-    return atom.isBuiltin();
-}
-
-bool
-XLiteral::isAggregate() const
-{
-    return atom.isAggregate();
-}
-
-bool
 XLiteral::isSaviour() const
 {
     // A saviour literal is a positive literal which is neither
@@ -92,7 +65,7 @@ XLiteral::safetyMustBeChecked() const
 {
     // For assignment aggregates you must check safety of their aggregate set.
 //    return isNaf() || ( isBuiltin() && !isAssignmentBuiltin() )  || isAggregate();
-    return isNaf() || isBuiltin() || isAggregate();
+    return isNaf();
 }
 
 bool

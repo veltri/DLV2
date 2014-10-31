@@ -80,6 +80,7 @@ namespace REWRITERS{
 
     // New types
     typedef size_t index_t;
+    typedef size_t XRuleIndex;
 
 };
 

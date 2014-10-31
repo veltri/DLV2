@@ -108,18 +108,21 @@ XRule::hasNegation()
 bool
 XRule::hasAtomicHead() const
 {
+    assert_msg( head != NULL, "Rules must have at least the head" );
     return head->isAtomic();
 }
 
 bool
 XRule::hasDisjunctiveHead() const
 {
+    assert_msg( head != NULL, "Rules must have at least the head" );
     return head->isDisjunctive();
 }
 
 bool
 XRule::hasConjunctiveHead() const
 {
+    assert_msg( head != NULL, "Rules must have at least the head" );
     return head->isConjunctive();
 }
 
@@ -128,4 +131,15 @@ XRule::isRecursive() const
 {
     assert_msg( recursion != -1, "Can't establish whether the rule is recursive at the moment" );
     return recursion;
+}
+
+bool
+XRule::isGround() const
+{
+    assert_msg( head != NULL, "Rules must have at least the head" );
+    if( !head->isGround() )
+            return false;
+    if( body != NULL && !body->isGround() )
+        return false;
+    return true;
 }

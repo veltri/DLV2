@@ -27,24 +27,24 @@
 #ifndef XRULE_H
 #define XRULE_H
 
+#include "XHead.h"
 #include "XBody.h"
 
 namespace DLV2{ namespace REWRITERS{
-
-    class XHead;
 
     class XRule {
     public:
         XRule( const XRule& rule );
         ~XRule();
 
-        XHead* const getHead() const { return head; }
-        XBody* const getBody() const { return body; }
+        const XHead* getHead() const { return head; }
+        const XBody* getBody() const { return body; }
         bool hasNegation();
         bool hasAtomicHead() const;
         bool hasDisjunctiveHead() const;
         bool hasConjunctiveHead() const;
         bool isRecursive() const;
+        bool isGround() const;
 
     private:
         friend inline std::ostream& operator<< ( std::ostream&, const XRule& );
@@ -62,6 +62,50 @@ namespace DLV2{ namespace REWRITERS{
         int recursion;
 
     };
+
+    inline
+    std::ostream&
+    operator<< (
+        std::ostream& out,
+        const XRule& r )
+    {
+        assert_msg( r.head != NULL, "Rules must have at least the head" );
+        if( r.hasDisjunctiveHead() )
+        {
+            for( unsigned i=0; i<r.head->size(); i++ )
+            {
+                out << (*r.head)[i] << " ";
+                if( i<r.head->size()-1 )
+                    out << "| ";
+            }
+        }
+        else if( r.hasConjunctiveHead() )
+        {
+            for( unsigned i=0; i<r.head->size(); i++ )
+            {
+                out << (*r.head)[i] << " ";
+                if( i<r.head->size()-1 )
+                    out << "^ ";
+            }
+        }
+        else
+        {
+            assert_msg( r.head->size() == 1, "Atomic heads must have exactly one atom" );
+            out << (*r.head)[0] << " ";
+        }
+        if( r.body != NULL && r.body->size() > 0 )
+        {
+            out << ":- ";
+            for( unsigned i=0; i<r.body->size(); i++ )
+            {
+                out << (*r.body)[i];
+                if( i<r.body->size()-1 )
+                    out << ", ";
+            }
+        }
+        out << ".";
+        return out;
+    }
 
 };};
 

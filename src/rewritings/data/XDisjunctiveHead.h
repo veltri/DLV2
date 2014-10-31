@@ -33,7 +33,7 @@ namespace DLV2{ namespace REWRITERS{
 
     class XDisjunctiveHead: public XHead {
     public:
-        XDisjunctiveHead( const XConjunctiveHead& head ): XHead(head) { }
+        XDisjunctiveHead( const XDisjunctiveHead& head ): XHead(head) { }
         virtual ~XDisjunctiveHead() { }
 
         virtual bool isAtomic() const { return false; }
@@ -41,7 +41,7 @@ namespace DLV2{ namespace REWRITERS{
         virtual bool isConjunctive() const { return false; }
 
     private:
-        friend std::ostream& operator<< ( std::ostream&, const XDisjunctiveHead& );
+        friend inline std::ostream& operator<< ( std::ostream&, const XDisjunctiveHead& );
         friend class XProgram;
 
         XDisjunctiveHead(): XHead() { }

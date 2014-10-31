@@ -38,6 +38,11 @@ namespace DLV2{ namespace REWRITERS{
     class XNamesTable
     {
     private:
+        friend class XProgram;
+        friend class XPredicateNames;
+
+        XNamesTable( index_t startIndex = 0 );
+
         typedef std::unordered_map< T, index_t > LookupT;
         typedef std::vector< typename LookupT::const_iterator > IndexedT;
 
@@ -69,7 +74,6 @@ namespace DLV2{ namespace REWRITERS{
             typename LookupT::const_iterator it;
         };
 
-        XNamesTable( index_t startIndex = 0 );
         XNamesTable( const XNamesTable< T >& n2 );
 
         XNamesTable& operator=( const XNamesTable< T >& n2 );

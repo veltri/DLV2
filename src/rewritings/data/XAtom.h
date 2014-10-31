@@ -46,15 +46,13 @@ namespace DLV2{ namespace REWRITERS{
         unsigned getArity() const;
         bool isTrueNegated() const { return trueNegated; }
         const std::vector< XTerm >& getTerms() const { return terms; }
-        bool isRegularAtom() const { return (!isBuiltin() && !isAggregate()); }
-        bool isPropositional() const { return (isRegularAtom() && terms.size() == 0); }
-        bool isBuiltin() const { return builtin; }
-        bool isAggregate() const { return aggregate; }
+        bool isGround() const;
+        bool isPropositional() const { return terms.size() == 0; }
         bool operator==( const XAtom& atom ) const;
         bool operator!=( const XAtom& atom ) const;
 
     private:
-        friend std::ostream& operator<< ( std::ostream&, const XAtom& );
+        friend inline std::ostream& operator<< ( std::ostream&, const XAtom& );
         friend class XProgram;
 
         // Only class XProgram can create XAtom objects.
@@ -69,9 +67,6 @@ namespace DLV2{ namespace REWRITERS{
         index_t predIndex;
         bool trueNegated;
         std::vector< XTerm > terms;
-
-        bool builtin;
-        bool aggregate;
 
     };
 

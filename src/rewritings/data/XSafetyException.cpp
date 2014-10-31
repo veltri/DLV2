@@ -18,22 +18,24 @@
  */
 
 /* 
- * File:   XBody.cpp
+ * File:   XSafetyException.cpp
  * Author: pierfrancesco
  *
- * Created on 28 ottobre 2014, 17.23
+ * Created on 30 ottobre 2014, 15.46
  */
 
-#include "XBody.h"
+#include "XSafetyException.h"
+#include <sstream>
 
-using namespace std;
 using namespace DLV2::REWRITERS;
+using namespace std;
 
-bool
-XBody::isGround() const
+const char*
+XSafetyException::what() const
+    throw()
 {
-    for( unsigned i=0; i<literals.size(); i++ )
-        if( !literals[i].isGround() )
-            return false;
-    return true;
+    stringstream ss;
+    ss << "the following rule is not safe: " << rule << endl;
+    return ss.str().c_str();
 }
+

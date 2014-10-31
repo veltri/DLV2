@@ -45,6 +45,7 @@ namespace DLV2{ namespace REWRITERS{
         const XAtom& operator[]( index_t index ) const;
 
         virtual void addAtom( const XAtom& atom );
+        bool isGround() const;
         virtual bool isAtomic() const = 0;
         virtual bool isDisjunctive() const = 0;
         virtual bool isConjunctive() const = 0;

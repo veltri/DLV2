@@ -59,3 +59,12 @@ XHead::addAtom(
 {
     atoms.push_back(atom);
 }
+
+bool
+XHead::isGround() const
+{
+    for( unsigned i=0; i<atoms.size(); i++ )
+        if( !atoms[i].isGround() )
+            return false;
+    return true;
+}

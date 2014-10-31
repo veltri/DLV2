@@ -125,3 +125,11 @@ XPredicateNames::getItem(
     return preds.getItem(index);
 }
 
+bool
+XPredicateNames::isValidIndex(
+    index_t index ) const
+{
+    if( index < preds.size() )
+        return true;
+    return false;
+}

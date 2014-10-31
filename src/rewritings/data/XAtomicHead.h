@@ -23,7 +23,7 @@ namespace DLV2{ namespace REWRITERS{
         virtual bool isConjunctive() const { return false; }
 
     private:
-        friend std::ostream& operator<< ( std::ostream&, const XAtomicHead& );
+        friend inline std::ostream& operator<< ( std::ostream&, const XAtomicHead& );
         friend class XProgram;
 
         XAtomicHead(): XHead() { }

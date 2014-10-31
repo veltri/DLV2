@@ -18,22 +18,30 @@
  */
 
 /* 
- * File:   XBody.cpp
+ * File:   XSafetyException.h
  * Author: pierfrancesco
  *
- * Created on 28 ottobre 2014, 17.23
+ * Created on 30 ottobre 2014, 15.44
  */
 
-#include "XBody.h"
+#ifndef XSAFETYEXCEPTION_H
+#define XSAFETYEXCEPTION_H
 
-using namespace std;
-using namespace DLV2::REWRITERS;
+#include "XRule.h"
 
-bool
-XBody::isGround() const
-{
-    for( unsigned i=0; i<literals.size(); i++ )
-        if( !literals[i].isGround() )
-            return false;
-    return true;
-}
+namespace DLV2{ namespace REWRITERS{
+
+    class XSafetyException : public std::exception {
+    public:
+        XSafetyException( const XRule& r ): rule(r) { }
+        ~XSafetyException() { }
+
+        virtual const char* what() const throw();
+
+    private:
+        const XRule& rule;
+    };
+
+};};
+
+#endif /* XSAFETYEXCEPTION_H */

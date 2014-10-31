@@ -27,37 +27,50 @@
 #ifndef XBODY_H
 #define XBODY_H
 
-#include <unordered_set>
-#include <vector>
+#include "XRandomAccessSet.h"
 #include "XLiteral.h"
 
 namespace DLV2{ namespace REWRITERS{
 
     class XBody {
     public:
-        typedef typename std::unordered_set< XLiteral >::const_iterator const_iterator;
+        XBody( const XBody& body ): literals(body.literals) { }
+        virtual ~XBody() { }
 
-        XBody( const XBody& body );
-        virtual ~XBody();
-
-        const_iterator begin() const { return literals.begin(); }
-        const_iterator end() const { return literals.end(); }
-        size_t size() const { return literalPtrs.size(); }
-        const XLiteral& operator[]( index_t index ) const;
-        void addLiteral( const XLiteral& literal );
+        size_t size() const { return literals.size(); }
+        const XLiteral& operator[]( index_t index ) const { return literals[index]; }
+        bool isGround() const;
+        bool pushLiteral( const XLiteral& literal ) { return literals.pushItem(literal); }
+        bool popLiteral() { return literals.popItem(); }
+        bool insertLiteral( index_t pos, const XLiteral& literal ) { return literals.insertItem(pos,literal); }
+        bool removeLiteral( unsigned position ) { return literals.removeItem(position); }
 
     protected:
-        std::unordered_set< XLiteral > literals;
-        std::vector< const_iterator > literalPtrs;
+        XRandomAccessSet< XLiteral > literals;
 
     private:
-        friend std::ostream& operator<< ( std::ostream&, const XBody& );
+        friend inline std::ostream& operator<< ( std::ostream&, const XBody& );
         friend class XProgram;
 
-        XBody(): literals(), literalPtrs() { }
-        XBody( const std::unordered_set< XLiteral >& atoms2 );
+        XBody(): literals() { }
+        XBody( const XRandomAccessSet< XLiteral >& literals2 ): literals(literals2) { }
 
     };
+
+    inline
+    std::ostream& operator<< (
+        std::ostream& out,
+        const XBody& body )
+    {
+        for( unsigned i=0; i<body.size(); i++ )
+        {
+            out << body[i];
+            if( i < body.size()-1 )
+                out << " , ";
+        }
+        out << ".";
+        return out;
+    }
 
 };};
 

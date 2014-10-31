@@ -38,7 +38,6 @@ namespace DLV2{ namespace REWRITERS{
     public:
         typedef XNamesTable< XNamesItem >::const_iterator const_iterator;
 
-        XPredicateNames( unsigned startIdx = 0 ): startIndex(startIdx), preds(startIdx), internal() { }
         XPredicateNames( const XPredicateNames& pn2 );
         ~XPredicateNames() { }
 
@@ -50,6 +49,7 @@ namespace DLV2{ namespace REWRITERS{
         bool isInternal( index_t index ) const;
         void print( index_t index, std::ostream& o ) const;
         const XNamesItem& getItem( index_t index ) const;
+        bool isValidIndex( index_t index ) const;
 
         std::pair< index_t, bool > add( const char* name, unsigned arity, bool internal = false );
         std::pair< index_t, bool > add( const std::string& name, unsigned arity, bool internal = false );
@@ -62,6 +62,9 @@ namespace DLV2{ namespace REWRITERS{
 
     private:
         friend inline std::ostream& operator<< ( std::ostream&, const XPredicateNames& );
+        friend class XProgram;
+
+        XPredicateNames( unsigned startIdx = 0 ): startIndex(startIdx), preds(startIdx), internal() { }
 
         unsigned startIndex;
         XNamesTable< XNamesItem > preds;

@@ -31,10 +31,9 @@ XAtom::XAtom(
         ownerProgram(ownerProgr),
         predIndex(predIdx),
         trueNegated(tNeg),
-        terms(tList),
-        builtin(false),
-        aggregate(false)
+        terms(tList)
 {
+    assert_msg( ownerProgr.getPredicateNamesTable().isValidIndex(predIdx), "Predicate index not valid" );
     assert_msg( ( !tNeg || ownerProgr.getPredicateNamesTable().getItem(predIdx).isNegative() ),
             "Adding a negative predicate name like a non-negated atom" );
 }
@@ -45,9 +44,7 @@ XAtom::XAtom(
         ownerProgram(a.ownerProgram),
         predIndex(a.predIndex),
         trueNegated(a.trueNegated),
-        terms(a.terms),
-        builtin(a.builtin),
-        aggregate(a.aggregate)
+        terms(a.terms)
 {
 }
 
@@ -58,15 +55,22 @@ XAtom::~XAtom()
 const std::string&
 XAtom::getPredicateName() const
 {
-    assert_msg( !isBuiltin(), "Builtin atoms have no names" );
-    return ownerProgram.getPredicateNamesTable().getName(predIndex);
+    return ownerProgram.getPredicateName(predIndex);
 }
 
 unsigned
 XAtom::getArity() const
 {
-    assert_msg( (!isBuiltin() && !isAggregate()), "Builtin and aggregate atoms have no arities" );
-    return ownerProgram.getPredicateNamesTable().getArity(predIndex);
+    return ownerProgram.getPredicateArity(predIndex);
+}
+
+bool
+XAtom::isGround() const
+{
+    for( unsigned i=0; i<terms.size(); i++ )
+        if( terms[i].isVar() )
+            return false;
+    return true;
 }
 
 bool
@@ -82,10 +86,6 @@ XAtom::operator==(
     for( unsigned i=0; i<terms.size(); i++ )
         if( terms[i] != atom.terms[i] )
             return false;
-    if( builtin != atom.builtin )
-        return false;
-    if( aggregate != atom.aggregate )
-        return false;
     return true;
 }
 

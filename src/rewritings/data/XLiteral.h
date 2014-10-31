@@ -39,10 +39,8 @@ namespace DLV2{ namespace REWRITERS{
 
         const XAtom& getAtom() const { return atom; }
         bool isNaf() const { return isNegative; }
-        bool isRegularAtom() const;
-        bool isPropositional() const;
-        bool isBuiltin() const;
-        bool isAggregate() const;
+        bool isPropositional() const { return atom.isPropositional(); }
+        bool isGround() const { return atom.isGround(); }
         /** Determines if this XLiteral can save others.
          * No, this is not the beginning of a religion.
          * @return true whether this can provide safety.

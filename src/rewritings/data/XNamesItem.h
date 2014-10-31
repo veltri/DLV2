@@ -35,10 +35,7 @@ namespace DLV2{ namespace REWRITERS{
     class XNamesItem
     {
     public:
-        XNamesItem(): name(), arity(0) { assert( 0 ); }
         XNamesItem( const XNamesItem &item2 );
-        XNamesItem( const std::string& name2, unsigned arity2 ): name(name2), arity(arity2) { }
-        XNamesItem( const char *name2, unsigned arity2 ): name(name2), arity(arity2) { }
 
         void operator=(const XNamesItem&) { assert( 0 ); }
         bool operator==(const XNamesItem &n) const;
@@ -69,6 +66,13 @@ namespace DLV2{ namespace REWRITERS{
 
     private:
         friend inline std::ostream& operator<< ( std::ostream&, const XNamesItem& );
+        friend class XProgram;
+        friend class XPredicateNames;
+
+        XNamesItem(): name(), arity(0) { assert( 0 ); }
+        XNamesItem( const std::string& name2, unsigned arity2 ): name(name2), arity(arity2) { }
+        XNamesItem( const char *name2, unsigned arity2 ): name(name2), arity(arity2) { }
+
         // In the ASP standard, each predicate is identified by a pair <name,arity>
         std::string name;
         unsigned arity;
