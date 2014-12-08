@@ -39,15 +39,33 @@ XRule::XRule(
         head(h),
         body(b),
         naf(-1),
-        recursion(-1)
+        recursive(-1)
 {
-    assert_msg( h != NULL, "Rules must have at least the head" );
+    assert_msg( head != NULL, "Rules must have at least the head" );
+    for( unsigned i=0; i<head->size(); i++ )
+    {
+        const vector< XTerm >& terms = head->at(i).getTerms();
+        for( unsigned j=0; j<terms.size(); j++ )
+            if( terms[j].isStandardVar() )
+                existVars.insert(terms[j]);
+    }
+    if( body != NULL )
+    {
+        for( unsigned i=0; i<body->size(); i++ )
+        {
+            const vector< XTerm >& terms = body->at(i).getAtom().getTerms();
+            for( unsigned j=0; j<terms.size(); j++ )
+                if( terms[j].isStandardVar() )
+                    existVars.erase(terms[j]);
+        }
+    }
 }
 
 XRule::XRule(
     const XRule& rule ):
+        existVars(rule.existVars),
         naf(rule.naf),
-        recursion(rule.recursion)
+        recursive(rule.recursive)
 {
     assert_msg( rule.head != NULL, "Null rule head" );
     try{
@@ -90,6 +108,15 @@ XRule::~XRule()
 }
 
 bool
+XRule::isExistential(
+    const XTerm& var ) const
+{
+    if( var.isStandardVar() && existVars.find(var) != existVars.end() )
+            return true;
+    return false;
+}
+
+bool
 XRule::hasNegation()
 {
     if( naf == -1 )
@@ -129,8 +156,8 @@ XRule::hasConjunctiveHead() const
 bool
 XRule::isRecursive() const
 {
-    assert_msg( recursion != -1, "Can't establish whether the rule is recursive at the moment" );
-    return recursion;
+    assert_msg( recursive != -1, "Can't establish whether the rule is recursive at the moment" );
+    return recursive;
 }
 
 bool

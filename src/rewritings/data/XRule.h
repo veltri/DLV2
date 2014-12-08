@@ -39,10 +39,12 @@ namespace DLV2{ namespace REWRITERS{
 
         const XHead* getHead() const { return head; }
         const XBody* getBody() const { return body; }
+        bool isExistential( const XTerm& var ) const;
         bool hasNegation();
         bool hasAtomicHead() const;
         bool hasDisjunctiveHead() const;
         bool hasConjunctiveHead() const;
+        bool hasExistentialVariables() const { return existVars.size() > 0; }
         bool isRecursive() const;
         bool isGround() const;
 
@@ -50,16 +52,17 @@ namespace DLV2{ namespace REWRITERS{
         friend inline std::ostream& operator<< ( std::ostream&, const XRule& );
         friend class XProgram;
 
-        XRule(): head(NULL), body(NULL), naf(false), recursion(false) { assert(0); }
+        XRule(): head(NULL), body(NULL), existVars(), naf(false), recursive(false) { assert(0); }
         XRule( XHead* head, XBody* body );
         // The recursive flag could be set after that the dependency graph
         // has been computed, hence after the creation of the rule itself.
-        void setRecursive( bool rec ) { recursion = rec; }
+        void setRecursive( bool rec ) { recursive = rec; }
 
         XHead* head;
         XBody* body;
+        std::unordered_set< XTerm > existVars;
         int naf;
-        int recursion;
+        int recursive;
 
     };
 
@@ -108,5 +111,31 @@ namespace DLV2{ namespace REWRITERS{
     }
 
 };};
+
+// FIXME: ask giorgio to check it..
+namespace std {
+
+    template <>
+    struct hash< DLV2::REWRITERS::XRule >
+    {
+        size_t operator()( const DLV2::REWRITERS::XRule& rule ) const
+        {
+            std::hash< DLV2::REWRITERS::XAtom > atomHasher;
+            assert_msg( rule.getHead() != NULL, "Null head" );
+            size_t h = 1;
+            for( unsigned i=0; i<rule.getHead()->size(); i++ )
+                h = h*5+atomHasher(rule.getHead()->at(i));
+            if( rule.getBody() != NULL )
+            {
+                std::hash< DLV2::REWRITERS::XLiteral > litHasher;
+                for( unsigned i=0; i<rule.getBody()->size(); i++ )
+                    h = h*5+litHasher(rule.getBody()->at(i));
+            }
+            return h;
+        }
+    };
+
+};
+
 
 #endif /* XRULE_H */

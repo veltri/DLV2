@@ -31,6 +31,7 @@
 #include "../../util/Assert.h"
 #include "../../util/Constants.h"
 #include "XTerm.h"
+#include "XAtomType.h"
 
 namespace DLV2{ namespace REWRITERS{
 
@@ -46,6 +47,7 @@ namespace DLV2{ namespace REWRITERS{
         unsigned getArity() const;
         bool isTrueNegated() const { return trueNegated; }
         const std::vector< XTerm >& getTerms() const { return terms; }
+        const XAtomType& getType() const { return type; }
         bool isGround() const;
         bool isPropositional() const { return terms.size() == 0; }
         bool operator==( const XAtom& atom ) const;
@@ -67,7 +69,7 @@ namespace DLV2{ namespace REWRITERS{
         index_t predIndex;
         bool trueNegated;
         std::vector< XTerm > terms;
-
+        XAtomType type;
     };
 
     inline

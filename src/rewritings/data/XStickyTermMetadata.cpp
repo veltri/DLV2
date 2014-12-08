@@ -18,61 +18,36 @@
  */
 
 /* 
- * File:   XHead.cpp
+ * File:   XStickyTermMetadata.cpp
  * Author: pierfrancesco
  *
- * Created on 28 ottobre 2014, 13.35
+ * Created on 05 novembre 2014, 15.40
  */
 
-#include "XHead.h"
+#include "XStickyTermMetadata.h"
 
 using namespace std;
 using namespace DLV2::REWRITERS;
 
-XHead::XHead(
-    const vector< XAtom >& atoms2 ):
-        atoms(atoms2)
+XStickyTermMetadata::XStickyTermMetadata(
+    const XStickyTermMetadata& meta ):
+        term(meta.term),
+        nHeadOccurrences(meta.nHeadOccurrences),
+        nBodyOccurrences(meta.nBodyOccurrences),
+        marked(meta.marked),
+        headPositions(meta.headPositions),
+        bodyPositions(meta.bodyPositions)
 {
 }
 
-XHead::XHead(
-    const XHead& head ):
-        atoms(head.atoms)
+XStickyTermMetadata::XStickyTermMetadata(
+    const XTerm& t ):
+        term(t),
+        nHeadOccurrences(0),
+        nBodyOccurrences(0),
+        marked(false),
+        headPositions(),
+        bodyPositions()
 {
-}
 
-XHead::~XHead()
-{
-}
-
-const XAtom&
-XHead::operator[](
-    index_t index ) const
-{
-    assert_msg( index < atoms.size(), "Index out of range" );
-    return atoms[index];
-}
-
-const XAtom&
-XHead::at(
-    index_t index ) const
-{
-    assert_msg( index < atoms.size(), "Index out of range" );
-    return atoms[index];
-}
-
-void
-XHead::addAtom(
-    const XAtom& atom )
-{
-    atoms.push_back(atom);
-}
-
-bool
-XHead::isGround() const
-{
-    for( unsigned i=0; i<atoms.size(); i++ )
-        if( !atoms[i].isGround() )
-            return false;
-    return true;
 }

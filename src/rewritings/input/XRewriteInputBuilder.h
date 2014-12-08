@@ -28,13 +28,14 @@
 #define XREWRITEINPUTBUILDER_H
 
 #include "../../input/InputBuilder.h"
+#include "../data/XProgram.h"
 
 namespace DLV2{ namespace REWRITERS{
 
     class XRewriteInputBuilder: public InputBuilder {
     public:
-        XRewriteInputBuilder() { }
-        virtual ~XRewriteInputBuilder() { }
+        XRewriteInputBuilder();
+        virtual ~XRewriteInputBuilder();
 
         virtual void onDirective( char* directiveName, char* directiveValue ) { }
         virtual void onRule();
@@ -84,6 +85,30 @@ namespace DLV2{ namespace REWRITERS{
         virtual void onAggregateNafLiteral();
         virtual void onAggregateElement();
         virtual void onAggregate( bool naf = false );
+
+        XProgram* getProgram() { return program; }
+        XAtom* getQuery() { return query; }
+
+    private:
+        void newTerm( char* value, std::vector< XTerm >& target, bool dash = false );
+
+        XProgram* program;
+        XAtom* query;
+        std::vector< XTerm > termStack;
+        std::string predName;
+        std::vector< XAtom > atomStack;
+        XRandomAccessSet< XLiteral > literalStack;
+        unsigned currentBodyLiterals;
+        unsigned currentHeadAtoms;
+        bool isDisjunctiveCurrentHead;
+        bool isConjunctiveCurrentHead;
+        unsigned nTermsForWeight;
+        unsigned nTermsForLevel;
+        unsigned nTermsAfterLevel;
+        bool hasNegation;
+        bool hasDisjunction;
+        bool hasConjunction;
+        std::unordered_map< std::string, std::string > varsRenaming;
     };
 
 };};

@@ -61,14 +61,6 @@ XLiteral::isSaviour() const
 }
 
 bool
-XLiteral::safetyMustBeChecked() const
-{
-    // For assignment aggregates you must check safety of their aggregate set.
-//    return isNaf() || ( isBuiltin() && !isAssignmentBuiltin() )  || isAggregate();
-    return isNaf();
-}
-
-bool
 XLiteral::operator==(
     const XLiteral& literal ) const
 {

@@ -39,11 +39,14 @@ namespace DLV2{ namespace REWRITERS{
 
         size_t size() const { return literals.size(); }
         const XLiteral& operator[]( index_t index ) const { return literals[index]; }
+        const XLiteral& at( index_t index ) const { return literals.at(index); }
         bool isGround() const;
         bool pushLiteral( const XLiteral& literal ) { return literals.pushItem(literal); }
         bool popLiteral() { return literals.popItem(); }
         bool insertLiteral( index_t pos, const XLiteral& literal ) { return literals.insertItem(pos,literal); }
         bool removeLiteral( unsigned position ) { return literals.removeItem(position); }
+        bool findLiteral( const XLiteral& literal ) { return literals.find(literal); }
+        void clear() { literals.clear(); }
 
     protected:
         XRandomAccessSet< XLiteral > literals;
@@ -54,6 +57,7 @@ namespace DLV2{ namespace REWRITERS{
 
         XBody(): literals() { }
         XBody( const XRandomAccessSet< XLiteral >& literals2 ): literals(literals2) { }
+        XBody( const std::vector< XLiteral >& literals2 ): literals(literals2) { }
 
     };
 

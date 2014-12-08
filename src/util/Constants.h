@@ -28,6 +28,7 @@
 #define CONSTANTS_H
 
 #include <set>
+#include <unordered_map>
 
 namespace DLV2
 {
@@ -81,7 +82,10 @@ namespace REWRITERS{
     // New types
     typedef size_t index_t;
     typedef size_t XRuleIndex;
-
+    struct XStickyCoordinates {
+        unsigned atomPos;
+        unsigned termPos;
+    };
 };
 
 };

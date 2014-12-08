@@ -189,7 +189,7 @@ const T&
 DLV2::REWRITERS::XNamesTable< T >::getItem(
     DLV2::REWRITERS::index_t index ) const
 {
-    assert_msg(index < indexed.size(), "Index out of range");
+    assert_msg( index < indexed.size(), "Index out of range" );
     return (*(indexed[index])).first;
 }
 

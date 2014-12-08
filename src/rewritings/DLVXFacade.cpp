@@ -18,61 +18,26 @@
  */
 
 /* 
- * File:   XHead.cpp
+ * File:   DLVXFacade.cpp
  * Author: pierfrancesco
  *
- * Created on 28 ottobre 2014, 13.35
+ * Created on 03 novembre 2014, 18.44
  */
 
-#include "XHead.h"
+#include "DLVXFacade.h"
 
 using namespace std;
 using namespace DLV2::REWRITERS;
 
-XHead::XHead(
-    const vector< XAtom >& atoms2 ):
-        atoms(atoms2)
-{
-}
-
-XHead::XHead(
-    const XHead& head ):
-        atoms(head.atoms)
-{
-}
-
-XHead::~XHead()
-{
-}
-
-const XAtom&
-XHead::operator[](
-    index_t index ) const
-{
-    assert_msg( index < atoms.size(), "Index out of range" );
-    return atoms[index];
-}
-
-const XAtom&
-XHead::at(
-    index_t index ) const
-{
-    assert_msg( index < atoms.size(), "Index out of range" );
-    return atoms[index];
-}
-
 void
-XHead::addAtom(
-    const XAtom& atom )
+DLVXFacade::solve()
 {
-    atoms.push_back(atom);
-}
-
-bool
-XHead::isGround() const
-{
-    for( unsigned i=0; i<atoms.size(); i++ )
-        if( !atoms[i].isGround() )
-            return false;
-    return true;
+    // TODO
+    cout << program << endl;
+    if( query != NULL )
+        cout << query << endl;
+    if( inputClassChecker->check() )
+        cout << "Sticky join" << endl;
+    else
+        cout << "Not Sticky join" << endl;
 }

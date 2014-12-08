@@ -46,11 +46,6 @@ namespace DLV2{ namespace REWRITERS{
          * @return true whether this can provide safety.
          */
         bool isSaviour() const;
-        /** Determines if safety must be checked for this XLiteral.
-         * @return true whether this is either negative,
-         * or builtin, or aggregate.
-         */
-        bool safetyMustBeChecked() const;
         bool operator==( const XLiteral& literal ) const;
         bool operator!=( const XLiteral& literal ) const;
 
@@ -59,7 +54,6 @@ namespace DLV2{ namespace REWRITERS{
         friend class XProgram;
 
         // Only class XProgram can create XLiteral objects.
-        // Classic literal constructor
         XLiteral( const XAtom& a, bool neg = false );
         void setIsNaf( bool isNaf ) { isNegative = isNaf; }
 

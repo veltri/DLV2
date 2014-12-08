@@ -30,6 +30,7 @@
 #include "dlvdb_src/DLVDBFacade.h"
 #include "rewritings/input/ParserConstraintDatalogPM.h"
 #include "rewritings/input/XRewriteInputBuilder.h"
+#include "rewritings/DLVXFacade.h"
 
 //extern Buffer theBuffer;
 
@@ -204,8 +205,18 @@ DLV2Facade::solve()
     
     if( getOptions().getInputBuilderPolicy() == BUILDER_DATALOGPM )
     {
-        //XRewriteInputBuilder* dbInputBuilder = static_cast<XRewriteInputBuilder*>(builder);
-        // TODO ...
+        XRewriteInputBuilder* xInputBuilder = static_cast<XRewriteInputBuilder*>(builder);
+        XProgram* program = xInputBuilder->getProgram();
+        assert_msg( program != NULL, "Null input program" );
+        XAtom* query = xInputBuilder->getQuery();
+
+        DLVXFacade dlvxFacade(*program,query);
+
+        dlvxFacade.solve();
+
+        if( query != NULL )
+            delete query;
+        delete program;
     }
 
     if( getOptions().getPrintStatistics() )

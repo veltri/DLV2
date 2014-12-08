@@ -33,8 +33,12 @@
 #include "XRule.h"
 #include "XSafetyException.h"
 #include "../../util/Constants.h"
+#include "XStickyUnifier.h"
 
 namespace DLV2{ namespace REWRITERS{
+
+    class XStickyLabel;
+    class XStickyExpandedRule;
 
     class XProgram {
     public:
@@ -44,27 +48,35 @@ namespace DLV2{ namespace REWRITERS{
         XProgram( const XProgram& program );
         ~XProgram();
 
-        XTerm* createIntegerConstant( int val );
-        XTerm* createStringConstant( const std::string& val );
-        XTerm* createStringConstant( char* val );
-        XTerm* createVariable( const std::string& name );
-        XTerm* createVariable( char* name );
-        XTerm* createNull( const std::string& name );
-        XTerm* createNull( char* name );
-        XAtom* createAtom( index_t predIndex, const std::vector< XTerm >& terms, bool trueNegated = false );
-        XLiteral* createLiteral( const XAtom& a, bool naf = false );
-        XHead* createAtomicHead( const XAtom& a );
-        XHead* createDisjunctiveHead( const std::vector< XAtom >& atoms );
-        XHead* createConjunctiveHead( const std::vector< XAtom >& atoms );
-        XBody* createBody( const XRandomAccessSet< XLiteral >& lits );
-        XRule* createRule( XHead* head, XBody* body );
+        XTerm* createIntegerConstant( int val ) const;
+        XTerm* createStringConstant( const std::string& val ) const;
+        XTerm* createStringConstant( char* val ) const;
+        XTerm* createStandardVariable( const std::string& name ) const;
+        XTerm* createStandardVariable( char* name ) const;
+        XTerm* createUnknownVariable() const;
+        XTerm* createNull( const std::string& name ) const;
+        XTerm* createNull( char* name ) const;
+        XAtom* createAtom( index_t predIndex, const std::vector< XTerm >& terms, bool trueNegated = false ) const;
+        XLiteral* createLiteral( const XAtom& a, bool naf = false ) const;
+        XHead* createAtomicHead( const XAtom& a ) const;
+        XHead* createDisjunctiveHead( const std::vector< XAtom >& atoms ) const;
+        XHead* createConjunctiveHead( const std::vector< XAtom >& atoms ) const;
+        XBody* createBody( const XRandomAccessSet< XLiteral >& lits ) const;
+        XBody* createBody( const std::vector< XLiteral >& lits ) const;
+        XRule* createRule( XHead* head, XBody* body ) const;
+        // The following methods create objects for the algorithm which checks the {sticky-join}-ness.
+        XStickyLabel* createStickyLabel( const XRuleIndex& ruleIndex, const XAtom& atom ) const;
+        XStickyExpandedRule* createStickyExpandedRule( const XRule& rule ) const;
+        XStickyUnifier* createStickyUnifier( const XAtom& headAt, const XAtom& bodyAt, const XMapping& subst ) const;
 
         void addRule( const XRule& r );
-        std::pair< index_t, bool > addPredicate( const std::string& name, unsigned arity );
+        std::pair< index_t, bool > addPredicate( const std::string& name, unsigned arity, bool internal = false );
         bool addToPredicateRuleSet( index_t predIndex, XRuleIndex ruleIndex );
+        unsigned incrementVariablesCounter() { return varsCounter++; }
         // Check whether rule is safe, throw an exception if it's not.
-        void assertIsRuleSafe( const XRule& rule ) const throw (XSafetyException);
+        void checkSafety( const XRule& rule ) const throw (XSafetyException);
 
+        unsigned getVariablesCounter() const { return varsCounter; }
         const XPredicateNames& getPredicateNamesTable() const { return predicates; }
         const std::string& getPredicateName( index_t predIndex ) const;
         unsigned getPredicateArity( index_t predIndex ) const;
@@ -85,6 +97,7 @@ namespace DLV2{ namespace REWRITERS{
         bool hasDisjunction;
         bool hasConjunction;
         XPredicateToXRulesetMap predicateToRulesMapping;
+        unsigned varsCounter;
 
     };
 
@@ -107,17 +120,17 @@ namespace DLV2{ namespace REWRITERS{
             out << i << "  -->  " << p.facts[i] << std::endl;
         }
         if( p.predicateToRulesMapping.size() > 0 )
-            out << std::endl << "PREDICATE-RULE-SET (predicate --> rule set):" << std::endl;
+            out << std::endl << "PREDICATE-RULE-SET (<predicate> : {rule set}):" << std::endl;
         for( XProgram::XPredicateToXRulesetMap::const_iterator it = p.predicateToRulesMapping.begin();
                 it != p.predicateToRulesMapping.end();
                 it++ )
         {
             out << "(" << p.getPredicateName(it->first)
                 << "," << p.getPredicateArity(it->first)
-                << ") --> " << std::endl;
+                << "): {" << std::endl;
             for( XRuleIndex i=0; i<it->second.size(); i++ )
                 out << p.getRule(it->second[i]) << std::endl;
-            out << std::endl;
+            out << "}" << std::endl << std::endl;
         }
         return out;
     }

@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <climits>
 #include <sstream>
+#include <cstring>
 
 using namespace std;
 using namespace DLV2;
@@ -62,4 +63,15 @@ Utils::isNumeric(
  
     // Was all the input successfully consumed/converted?
     return ( iss.rdbuf()->in_avail() == 0 );
+}
+
+const char*
+Utils::getNegativeName(
+    const string& name )
+{
+    char* temp;
+    temp = new char[name.length()+2];
+    temp[0] = '-';
+    strcpy(temp+1,name.c_str());
+    return temp;
 }

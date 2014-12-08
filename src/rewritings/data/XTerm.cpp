@@ -68,3 +68,13 @@ XTerm::operator!=(
 {
     return !(*this == term);
 }
+
+XTerm&
+XTerm::operator=(
+    const XTerm& term )
+{
+    value = term.value;
+    text = term.text;
+    type = term.type;
+    return *this;
+}

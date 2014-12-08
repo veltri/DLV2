@@ -43,6 +43,9 @@ namespace DLV2{ namespace REWRITERS{
         const_iterator end() const { return atoms.end(); }
         size_t size() const { return atoms.size(); }
         const XAtom& operator[]( index_t index ) const;
+        const XAtom& at( index_t index ) const;
+        void clear() { atoms.clear(); }
+        const std::vector< XAtom > getAtoms() const { return atoms; }
 
         virtual void addAtom( const XAtom& atom );
         bool isGround() const;

@@ -41,15 +41,19 @@ namespace DLV2{ namespace REWRITERS{
         typedef typename std::unordered_set< T >::const_iterator const_iterator;
 
         XRandomAccessSet(): items(), itemIterators() { }
-        XRandomAccessSet( const XRandomAccessSet& set );
+        XRandomAccessSet( const XRandomAccessSet< T >& set );
+        XRandomAccessSet( const std::vector< T >& vec );
         ~XRandomAccessSet() { }
 
         size_t size() const { return itemIterators.size(); }
         const T& operator[]( index_t pos ) const;
+        const T& at( index_t pos ) const;
         bool pushItem( const T& item );
         bool popItem();
         bool insertItem( index_t pos, const T& item );
         bool removeItem( index_t pos );
+        bool find( const T& item ) const;
+        void clear() { items.clear(); itemIterators.clear(); }
 
     private:
         const_iterator cbegin() const { return items.cbegin(); }
@@ -65,9 +69,19 @@ template < typename T >
 DLV2::REWRITERS::XRandomAccessSet< T >::XRandomAccessSet(
     const DLV2::REWRITERS::XRandomAccessSet< T >& set )
 {
-    for( const_iterator it=set.cbegin(); it!=set.cend(); it++ )
+    for( index_t i=0; i<set.size(); i++ )
     {
-        pushItem(*it);
+        pushItem(set[i]);
+    }
+}
+
+template < typename T >
+DLV2::REWRITERS::XRandomAccessSet< T >::XRandomAccessSet(
+    const std::vector< T >& vec )
+{
+    for( index_t i=0; i<vec.size(); i++ )
+    {
+        pushItem(vec[i]);
     }
 }
 
@@ -76,7 +90,16 @@ const T&
 DLV2::REWRITERS::XRandomAccessSet< T >::operator[](
     index_t pos ) const
 {
-    assert_msg( (0 <= pos && pos < itemIterators.size()), "Index out of range" );
+    assert_msg( pos < itemIterators.size(), "Index out of range" );
+    return *itemIterators[pos];
+}
+
+template < typename T >
+const T&
+DLV2::REWRITERS::XRandomAccessSet< T >::at(
+    index_t pos ) const
+{
+    assert_msg( pos < itemIterators.size(), "Index out of range" );
     return *itemIterators[pos];
 }
 
@@ -139,6 +162,16 @@ DLV2::REWRITERS::XRandomAccessSet< T >::removeItem(
     }
     else
         return false;
+}
+
+template < typename T >
+bool
+DLV2::REWRITERS::XRandomAccessSet< T >::find(
+    const T& t ) const
+{
+    if( items.find(t) != items.end() )
+        return true;
+    return false;
 }
 
 #endif /* XRANDOMACCESSSET_H */

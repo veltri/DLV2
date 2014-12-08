@@ -38,11 +38,14 @@ namespace DLV2{ namespace REWRITERS{
         ~XRuleIndicesCollection() { }
 
         size_t size() const { return indices.size(); }
-        XRuleIndex operator[]( index_t pos ) const { return indices[pos]; }
-        bool pushRuleIndex( XRuleIndex ruleIndex ) { return indices.pushItem(ruleIndex); }
+        const XRuleIndex& operator[]( index_t pos ) const { return indices[pos]; }
+        const XRuleIndex& at( index_t pos ) const { return indices.at(pos); }
+        bool pushRuleIndex( const XRuleIndex& ruleIndex ) { return indices.pushItem(ruleIndex); }
         bool popRuleIndex() { return indices.popItem(); }
-        bool insertRuleIndex( index_t pos, XRuleIndex ruleIndex ) { return indices.insertItem(pos,ruleIndex); }
+        bool insertRuleIndex( index_t pos, const XRuleIndex& ruleIndex ) { return indices.insertItem(pos,ruleIndex); }
         bool removeRuleIndex( index_t pos ) { return indices.removeItem(pos); }
+        bool find( const XRuleIndex& ruleIndex ) const { return indices.find(ruleIndex); }
+        void clear() { indices.clear(); }
 
     private:
         friend class XProgram;

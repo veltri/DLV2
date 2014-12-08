@@ -39,6 +39,13 @@ namespace DLV2
          * @return true if the check was ok
          */
         static bool isNumeric( const char* value, int baseN );
+        /** Return the negative version of a predicate name
+         * @param name The predicate name to be converted
+         * @return the name with a leading negation symbol.
+         * The name is allocated dynamically and should
+         * be deallocated by the caller.
+         */
+        static const char* getNegativeName( const std::string& name );
     };
     
 };

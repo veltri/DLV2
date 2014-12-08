@@ -28,6 +28,8 @@
 #include "XAtomicHead.h"
 #include "XDisjunctiveHead.h"
 #include "XConjunctiveHead.h"
+#include "XStickyLabel.h"
+#include "XStickyExpandedRule.h"
 #include "../../util/ErrorMessage.h"
 
 using namespace std;
@@ -39,7 +41,8 @@ XProgram::XProgram():
         facts(),
         hasDisjunction(false),
         hasConjunction(false),
-        predicateToRulesMapping()
+        predicateToRulesMapping(),
+        varsCounter(0)
 {
 }
 
@@ -50,7 +53,8 @@ XProgram::XProgram(
         facts(program.facts),
         hasDisjunction(program.hasDisjunction),
         hasConjunction(program.hasConjunction),
-        predicateToRulesMapping(program.predicateToRulesMapping)
+        predicateToRulesMapping(program.predicateToRulesMapping),
+        varsCounter(program.varsCounter)
 {
 
 }
@@ -61,49 +65,55 @@ XProgram::~XProgram()
 
 XTerm*
 XProgram::createIntegerConstant(
-    int val )
+    int val ) const
 {
     return new XTerm(val);
 }
 
 XTerm*
 XProgram::createStringConstant(
-    const string& val )
+    const string& val ) const
 {
     return new XTerm(XTerm::String,val);
 }
 
 XTerm*
 XProgram::createStringConstant(
-    char* val )
+    char* val ) const
 {
     return new XTerm(XTerm::String,val);
 }
 
 XTerm*
-XProgram::createVariable(
-    const string& name )
+XProgram::createStandardVariable(
+    const string& name ) const
 {
     return new XTerm(XTerm::Variable,name);
 }
 
 XTerm*
-XProgram::createVariable(
-    char* name )
+XProgram::createStandardVariable(
+    char* name ) const
 {
     return new XTerm(XTerm::Variable,name);
+}
+
+XTerm*
+XProgram::createUnknownVariable() const
+{
+    return new XTerm(XTerm::Variable,string("_"));
 }
 
 XTerm*
 XProgram::createNull(
-    const std::string& name )
+    const std::string& name ) const
 {
     return new XTerm(XTerm::Null,name);
 }
 
 XTerm*
 XProgram::createNull(
-    char* name )
+    char* name ) const
 {
     return new XTerm(XTerm::Null,name);
 }
@@ -112,7 +122,7 @@ XAtom*
 XProgram::createAtom(
     index_t predIndex,
     const vector< XTerm >& terms,
-    bool trueNegated )
+    bool trueNegated ) const
 {
     return new XAtom(*this,predIndex,terms,trueNegated);
 }
@@ -120,35 +130,42 @@ XProgram::createAtom(
 XLiteral*
 XProgram::createLiteral(
     const XAtom& a,
-    bool naf )
+    bool naf ) const
 {
     return new XLiteral(a,naf);
 }
 
 XHead*
 XProgram::createAtomicHead(
-    const XAtom& a )
+    const XAtom& a ) const
 {
     return new XAtomicHead(a);
 }
 
 XHead*
 XProgram::createDisjunctiveHead(
-    const vector< XAtom >& atoms )
+    const vector< XAtom >& atoms ) const
 {
     return new XDisjunctiveHead(atoms);
 }
 
 XHead*
 XProgram::createConjunctiveHead(
-    const vector< XAtom >& atoms )
+    const vector< XAtom >& atoms ) const
 {
     return new XConjunctiveHead(atoms);
 }
 
 XBody*
 XProgram::createBody(
-    const XRandomAccessSet< XLiteral >& lits )
+    const XRandomAccessSet< XLiteral >& lits ) const
+{
+    return new XBody(lits);
+}
+
+XBody*
+XProgram::createBody(
+    const vector< XLiteral >& lits ) const
 {
     return new XBody(lits);
 }
@@ -156,9 +173,33 @@ XProgram::createBody(
 XRule*
 XProgram::createRule(
     XHead* head,
-    XBody* body )
+    XBody* body ) const
 {
     return new XRule(head,body);
+}
+
+XStickyLabel*
+XProgram::createStickyLabel(
+    const XRuleIndex& ruleIndex,
+    const XAtom& atom ) const
+{
+    return new XStickyLabel(ruleIndex,atom);
+}
+
+XStickyExpandedRule*
+XProgram::createStickyExpandedRule(
+    const XRule& rule ) const
+{
+    return new XStickyExpandedRule(rule);
+}
+
+XStickyUnifier*
+XProgram::createStickyUnifier(
+    const XAtom& headAt,
+    const XAtom& bodyAt,
+    const XMapping& subst ) const
+{
+    return new XStickyUnifier(headAt,bodyAt,subst);
 }
 
 void
@@ -168,7 +209,7 @@ XProgram::addRule(
     // First of all, check its safety!!!
     try
     {
-        assertIsRuleSafe(r);
+        checkSafety(r);
     }
     catch( XSafetyException& exc )
     {
@@ -201,10 +242,11 @@ XProgram::addRule(
 pair< index_t, bool >
 XProgram::addPredicate(
     const string& name,
-    unsigned arity )
+    unsigned arity,
+    bool internal )
 {
     assert_msg( arity > 0, "Propositional atoms are not allowed" );
-    pair< index_t, bool > res = predicates.add(name,arity);
+    pair< index_t, bool > res = predicates.add(name,arity,internal);
     return res;
 }
 
@@ -230,10 +272,51 @@ XProgram::addToPredicateRuleSet(
 }
 
 void
-XProgram::assertIsRuleSafe(
-    const XRule& rule ) const throw (XSafetyException)
+XProgram::checkSafety(
+    const XRule& rule ) const
+        throw (XSafetyException)
 {
-    // TODO
+    unordered_set< XTerm > safeVars;
+    unordered_set< XTerm > unsafeVars;
+    const XHead* head = rule.getHead();
+    assert_msg( head != NULL, "Null head" );
+    for( unsigned i=0; i<head->size(); i++ )
+    {
+        const vector< XTerm >& terms = head->at(i).getTerms();
+        for( unsigned j=0; j<terms.size(); j++ )
+        {
+            if( terms[j].isUnknownVar() )
+                throw XSafetyException(rule);
+            else if( terms[j].isVar() && !rule.isExistential(terms[j]) )
+                unsafeVars.insert(terms[j]);
+        }
+    }
+    if( rule.getBody() != NULL )
+    {
+        const XBody* body = rule.getBody();
+        for( unsigned i=0; i<body->size(); i++ )
+        {
+            const vector< XTerm >& terms = body->at(i).getAtom().getTerms();
+            for( unsigned j=0; j<terms.size(); j++ )
+            {
+                if( body->at(i).isSaviour() )
+                {
+                    if( terms[j].isStandardVar() )
+                    {
+                        unsafeVars.erase(terms[j]);
+                        safeVars.insert(terms[j]);
+                    }
+                }
+                else
+                {
+                    if( terms[j].isUnknownVar() )
+                        throw XSafetyException(rule);
+                    else if( terms[j].isVar() && safeVars.find(terms[j]) == safeVars.end() )
+                        unsafeVars.insert(terms[j]);
+                }
+            }
+        }
+    }
 }
 
 const string&
@@ -254,7 +337,7 @@ const XRule&
 XProgram::getRule(
     XRuleIndex ruleIndex ) const
 {
-    assert_msg( ( 0 <= ruleIndex && ruleIndex < rules.size() ), "Index out of range" );
+    assert_msg( ruleIndex < rules.size(), "Index out of range" );
     return rules[ruleIndex];
 
 }
@@ -263,7 +346,7 @@ const XRule&
 XProgram::getFact(
     index_t factIndex ) const
 {
-    assert_msg( ( 0 <= factIndex && factIndex < facts.size() ), "Index out of range" );
+    assert_msg( factIndex < facts.size(), "Index out of range" );
     return facts[factIndex];
 }
 

@@ -44,12 +44,15 @@ namespace DLV2{ namespace REWRITERS{
         const std::string& getText() const { assert_msg( type != Integer, "It is an integer" ); return text; }
         Type getType() const { return type; }
         bool isVar() const { return getType() == Variable; }
+        bool isStandardVar() const { return getType() == Variable && text.compare("_") != 0;  }
         bool isUnknownVar() const { return getType() == Variable && !text.compare("_"); }
         bool isInt() const { return getType() == Integer; }
-        bool isConst() const { return getType() == String; }
+        bool isString() const { return getType() == String; }
+        bool isConst() const { return getType() == String || getType() == Integer; }
         bool isNull() const { return getType() == Null; }
         bool operator==( const XTerm& term ) const;
         bool operator!=( const XTerm& term ) const;
+        XTerm& operator=( const XTerm& term );
 
     private:
         friend inline std::ostream& operator<< ( std::ostream&, const XTerm& );

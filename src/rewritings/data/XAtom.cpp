@@ -36,6 +36,16 @@ XAtom::XAtom(
     assert_msg( ownerProgr.getPredicateNamesTable().isValidIndex(predIdx), "Predicate index not valid" );
     assert_msg( ( !tNeg || ownerProgr.getPredicateNamesTable().getItem(predIdx).isNegative() ),
             "Adding a negative predicate name like a non-negated atom" );
+    for( unsigned i=0; i<terms.size(); i++ )
+    {
+        type.addToSchema(terms[i].getType());
+        if( terms[i].isConst() )
+            type.addToConstantPositions(i);
+        else if( terms[i].isVar() )
+            type.addToVariablePositions(i);
+        else
+            type.addToNullPositions(i);
+    }
 }
 
 // Copy constructor
@@ -44,7 +54,8 @@ XAtom::XAtom(
         ownerProgram(a.ownerProgram),
         predIndex(a.predIndex),
         trueNegated(a.trueNegated),
-        terms(a.terms)
+        terms(a.terms),
+        type(a.type)
 {
 }
 
