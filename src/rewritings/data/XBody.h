@@ -38,8 +38,8 @@ namespace DLV2{ namespace REWRITERS{
         virtual ~XBody() { }
 
         size_t size() const { return literals.size(); }
-        const XLiteral& operator[]( index_t index ) const { return literals[index]; }
-        const XLiteral& at( index_t index ) const { return literals.at(index); }
+        const XLiteral& operator[]( index_t index ) const;
+        const XLiteral& at( index_t index ) const;
         bool isGround() const;
         bool pushLiteral( const XLiteral& literal ) { return literals.pushItem(literal); }
         bool popLiteral() { return literals.popItem(); }

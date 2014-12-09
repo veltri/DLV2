@@ -257,7 +257,6 @@ IsomorphismCheckByWasp::areUnifiable(
             mguCache.insert(atoms1,atoms2);
             return pair< const XMapping*, bool >(NULL,false);
         }
-
         for( unsigned i=0; i<atoms1.size(); i++ )
         {
             if( atoms1[i].getPredIndex() != atoms2[i].getPredIndex()
@@ -291,7 +290,6 @@ IsomorphismCheckByWasp::areUnifiable(
                     return pair< const XMapping*, bool >(NULL,false);
                 }
         }
-
         // Rename the variables of the second atom set in order to avoid undesirable clutter.
         pair< const XMapping&, vector< XAtom >* > renamingResult = renameInput(rule2,atoms2);
     //    XMapping* renaming = renamingResult.first;
@@ -303,10 +301,10 @@ IsomorphismCheckByWasp::areUnifiable(
         XMapping substitution;
         for( unsigned i=0; i<atoms1.size(); i++ )
             for( unsigned j=0; j<atoms1[i].getTerms().size(); j++ )
-                substitution.insert(pair< XTerm, XTerm >(atoms1[i].getTerms().at(j),atoms1[i].getTerms().at(j)));
+                substitution.insert(pair< const XTerm&, const XTerm& >(atoms1[i].getTerms().at(j),atoms1[i].getTerms().at(j)));
         for( unsigned i=0; i<renamedAtoms2->size(); i++ )
             for( unsigned j=0; j<renamedAtoms2->at(i).getTerms().size(); j++ )
-                substitution.insert(pair< XTerm, XTerm >(renamedAtoms2->at(i).getTerms().at(j),renamedAtoms2->at(i).getTerms().at(j)));
+                substitution.insert(pair< const XTerm&, const XTerm& >(renamedAtoms2->at(i).getTerms().at(j),renamedAtoms2->at(i).getTerms().at(j)));
 
         // Assume the atom sets have been already ordered.
         bool ok = true;
@@ -363,13 +361,13 @@ IsomorphismCheckByWasp::unify(
     else if( s.isConst() )
         return unify(t,s,substitution);
 
-    substitution.substitute(pair< XTerm, XTerm >(s,t));
+    substitution.substitute(pair< const XTerm&, const XTerm& >(s,t));
     for( unsigned i=0; i<substitution.size(); i++ )
     {
         XMapping::iterator it = substitution.at(i);
         if( it->second == s )
         {
-            substitution.substitute(pair< XTerm, XTerm >(it->first,t));
+            substitution.substitute(pair< const XTerm&, const XTerm& >(it->first,t));
         }
     }
     return true;
@@ -414,7 +412,7 @@ IsomorphismCheckByWasp::computeHomomorphisms(
                 else
                     assert_msg( 0, "Nulls and unknown variables are not allowed here" );
 
-                tetaDatabase.insert(pair< XTerm, XTerm >(atoms1[i].getTerms().at(j),*dbTerm));
+                tetaDatabase.insert(pair< const XTerm&, const XTerm& >(atoms1[i].getTerms().at(j),*dbTerm));
                 programToBeChecked << (*dbTerm);
                 delete dbTerm;
             }
@@ -477,7 +475,7 @@ IsomorphismCheckByWasp::computeHomomorphisms(
     }
     programToBeChecked << ") :- " << queryBody.str();
 
-    cout << "Input: " << endl << programToBeChecked.str() << endl;
+//    cout << "Input: " << endl << programToBeChecked.str() << endl;
 
     char outputBuffer[BUFFER_MAX_LENGTH];
     // Gringo is used to get a ground version of the input program.
@@ -501,7 +499,7 @@ IsomorphismCheckByWasp::computeHomomorphisms(
     // our variable renaming algorithm guarantees that such a substitution is an homomorphism.
     XMapping tetaDatabaseInverse;
     for( unsigned i=0; i<tetaDatabase.size(); i++ )
-        tetaDatabaseInverse.insert(pair< XTerm, XTerm >(tetaDatabase[i]->second,tetaDatabase[i]->first));
+        tetaDatabaseInverse.insert(pair< const XTerm&, const XTerm& >(tetaDatabase[i]->second,tetaDatabase[i]->first));
 
     vector< XMapping* > hList;
     for( unsigned i=0; i<tetaList.size(); i++ )
@@ -528,7 +526,7 @@ IsomorphismCheckByWasp::computeHomomorphisms(
             termImage = &mapIterator->second;
 
             assert_msg( ( term != NULL && termImage != NULL ), "Something went wrong." );
-            h->insert(pair< XTerm, XTerm >(*term,*termImage));
+            h->insert(pair< const XTerm&, const XTerm& >(*term,*termImage));
         }
         delete tetaList[i];
         hList.push_back(h);
@@ -615,7 +613,7 @@ IsomorphismCheckByWasp::executeExternalProgram(
             if (count >= 0)
             {
                 outputBuffer[count] = '\0';
-                cout << outputBuffer;
+//                cout << outputBuffer;
             }
             else
                 ErrorMessage::errorGeneric("IO Error");
@@ -669,7 +667,7 @@ IsomorphismCheckByWasp::extractMappings(
             assert_msg( termCounter < termsMapped.size(), "Not valid mapping" );
             // Don't take care of eventual duplicate variables because wasp
             // maps exactly each variable to one constant term.
-            pair< XTerm, XTerm > mapping(termsMapped[termCounter++],*term);
+            pair< const XTerm&, const XTerm& > mapping(termsMapped[termCounter++],*term);
             homomorphismPtrs.back()->insert(mapping);
             delete term;
         }
@@ -701,7 +699,7 @@ IsomorphismCheckByWasp::isInvertible(
                 && homomorphism.at(i)->second != homomorphism.at(i)->first )
             return false;
 
-        pair< XTerm, XTerm > inverseSubstitution(homomorphism.at(i)->second,homomorphism.at(i)->first);
+        pair< const XTerm&, const XTerm& > inverseSubstitution(homomorphism.at(i)->second,homomorphism.at(i)->first);
         inverse.insert(inverseSubstitution);
     }
     return isEquivalentTo(inverse,atoms2,atoms1);
@@ -748,7 +746,7 @@ IsomorphismCheckByWasp::isExtensibleToHead(
                 else
                     assert_msg( 0, "Nulls and unknown variables are not allowed here" );
 
-                tetaDatabase.insert(pair< XTerm, XTerm >(head1Atoms[i].getTerms().at(j),*dbTerm));
+                tetaDatabase.insert(pair< const XTerm&, const XTerm& >(head1Atoms[i].getTerms().at(j),*dbTerm));
                 extendedHeadAtomsTerms1.push_back(*dbTerm);
                 delete dbTerm;
             }
@@ -846,7 +844,7 @@ IsomorphismCheckByWasp::isExtensibleToHead(
                 assert_msg( homomorphism.find(headHomomorphisms[indexValidIsomorphism]->at(i)->first) == homomorphism.end(),
                         "This variable should have been avoided" );
                 homomorphism.insert(
-                        pair< XTerm, XTerm >(
+                        pair< const XTerm&, const XTerm& >(
                                 headHomomorphisms[indexValidIsomorphism]->at(i)->first,
                                 headHomomorphisms[indexValidIsomorphism]->at(i)->second));
             }
@@ -933,7 +931,7 @@ IsomorphismCheckByWasp::renameInput(
                         ss << "V" << varCounter++;
                         XTerm* renamedTerm = program.createStandardVariable(ss.str());
                         renamedTerms.push_back(*renamedTerm);
-                        renaming.insert(pair< XTerm, XTerm >(headAtoms[i].getTerms().at(j),*renamedTerm));
+                        renaming.insert(pair< const XTerm&, const XTerm& >(headAtoms[i].getTerms().at(j),*renamedTerm));
 //                        inverseRenaming->insert(pair< XTerm, XTerm >(*renamedTerm,headAtoms[i].getTerms().at(j)));
                         delete renamedTerm;
                     }
@@ -980,7 +978,7 @@ IsomorphismCheckByWasp::renameInput(
                             ss << "V" << varCounter++;
                             XTerm* renamedTerm = program.createStandardVariable(ss.str());
                             renamedTerms.push_back(*renamedTerm);
-                            renaming.insert(pair< XTerm, XTerm >(body->at(i).getAtom().getTerms().at(j),*renamedTerm));
+                            renaming.insert(pair< const XTerm&, const XTerm& >(body->at(i).getAtom().getTerms().at(j),*renamedTerm));
 //                            inverseRenaming->insert(pair< XTerm, XTerm >(*renamedTerm,body->at(i).getAtom().getTerms().at(j)));
                             delete renamedTerm;
                         }
@@ -1076,13 +1074,13 @@ IsomorphismCheckByWasp::unrenameOutput(
         if( itOutput->first.isConst() )
         {
             assert_msg( itOutput->first == itOutput->second, "Not valid homomorphism" );
-            unrenamedOutput->insert(pair< XTerm, XTerm >(itOutput->first,itOutput->second));
+            unrenamedOutput->insert(pair< const XTerm&, const XTerm& >(itOutput->first,itOutput->second));
         }
         else if( itOutput->second.isConst() )
         {
             XMapping::const_iterator itRenamingFirst = inverseRenaming->find(itOutput->first);
             assert_msg( itRenamingFirst != inverseRenaming->end(), "Variable renaming not found!" );
-            unrenamedOutput->insert(pair< XTerm, XTerm >(itRenamingFirst->second,itOutput->second));
+            unrenamedOutput->insert(pair< const XTerm&, const XTerm& >(itRenamingFirst->second,itOutput->second));
         }
         else
         {
@@ -1090,7 +1088,7 @@ IsomorphismCheckByWasp::unrenameOutput(
             XMapping::const_iterator itRenamingSecond = inverseRenaming->find(itOutput->second);
             assert_msg( ( itRenamingFirst != inverseRenaming->end() && itRenamingSecond != inverseRenaming->end() ),
                     "Variable renaming not found!" );
-            unrenamedOutput->insert(pair< XTerm, XTerm >(itRenamingFirst->second,itRenamingSecond->second));
+            unrenamedOutput->insert(pair< const XTerm&, const XTerm& >(itRenamingFirst->second,itRenamingSecond->second));
         }
     }
     return unrenamedOutput;

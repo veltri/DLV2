@@ -53,9 +53,9 @@ StickyJoinCheckingStrategy::TGDExpansion(
 {
     // First of all, add each rule of the input program to the
     // expanded rule set as an expanded rule labeled by the /emptyset.
-    for( XRuleIndex i=0; i<program.rulesSize(); i++ )
+    for( XRule::const_iterator it=program.beginRules(); it!=program.endRules(); it++ )
     {
-        const XRule& rule = program.getRule(i);
+        const XRule& rule = *it;
         XStickyExpandedRule* expandedRule = program.createStickyExpandedRule(rule);
         expandedRules.push_back(*expandedRule);
         delete expandedRule;
@@ -66,12 +66,12 @@ StickyJoinCheckingStrategy::TGDExpansion(
     index_t deltaStart = 0;
     while( currMax > deltaStart )
     {
-        for( XRuleIndex i=0; i<program.rulesSize(); i++ )
+        for( XRule::const_iterator rIt=program.beginRules(); rIt!=program.endRules(); rIt++ )
         {
-            for( XRuleIndex j=deltaStart; j<currMax; j++ )
+            for( index_t j=deltaStart; j<currMax; j++ )
             {
-                const XRule& originalRule = program.getRule(i);
-                const XRule& expandedRule = expandedRules.at(j).getRule();
+                const XRule& originalRule = *rIt;
+                const XRule& expandedRule = expandedRules[j].getRule();
                 // For each pair of TGDs <originalRule,expandedRule> \in {inputProgram}X{expandedRules},
                 // if 'originalRule' is applicable to 'expandedRule' due to the atoms
                 // 'a' \in head(originalRule) and 'b' \in body(expandedRule), then let 'extraRule'
@@ -98,13 +98,14 @@ StickyJoinCheckingStrategy::TGDExpansion(
                                 // If expandendRules already contains a labeled TGD \sigma'' isomorphic to 'extraRule',
                                 // then the pair <expandedRule,b> is added to the label set of \sigma''.
                                 assert_msg( extraRule != NULL, "Null generated extra rule" );
-                                pair< XRuleIndex, bool > iso = findIsomorphicTGD(*extraRule,expandedRules);
+                                pair< index_t, bool > iso = findIsomorphicTGD(*extraRule,expandedRules);
                                 XStickyLabel* extraLabel = program.createStickyLabel(j,mgu->getBodyAtom());
-                                cout << "adding label: " << *extraLabel << endl;
+//                                cout << "adding label: " << *extraLabel << endl;
                                 if( iso.second )
                                 {
+                                    assert_msg( iso.first < expandedRules.size(), "Index out of range" );
                                     expandedRules[iso.first].addLabel(*extraLabel);
-                                    cout << "added to: " << expandedRules[iso.first] << endl;
+//                                    cout << "added to: " << expandedRules[iso.first] << endl;
                                 }
                                 // Otherwise, the TGD 'extraRule' labeled by {<expandedRule,b>} is added to 'expandedRules'.
                                 else
@@ -112,7 +113,7 @@ StickyJoinCheckingStrategy::TGDExpansion(
                                     XStickyExpandedRule* extraExpandedRule = program.createStickyExpandedRule(*extraRule);
                                     extraExpandedRule->addLabel(*extraLabel);
                                     expandedRules.push_back(*extraExpandedRule);
-                                    cout << "added to the new rule: " << *extraExpandedRule << endl;
+//                                    cout << "added to the new rule: " << *extraExpandedRule << endl;
                                     delete extraExpandedRule;
                                 }
                                 delete extraLabel;
@@ -126,10 +127,10 @@ StickyJoinCheckingStrategy::TGDExpansion(
         }
         deltaStart = currMax;
         currMax = expandedRules.size();
-        cout << "currMax: " << currMax << "; deltaStart: " << deltaStart << endl;
+//        cout << "currMax: " << currMax << "; deltaStart: " << deltaStart << endl;
     }
-    for( unsigned i=0; i<expandedRules.size(); i++ )
-        cout << expandedRules[i] << endl;
+//    for( index_t i=0; i<expandedRules.size(); i++ )
+//        cout << expandedRules[i] << endl;
 }
 
 pair< XStickyUnifier*, bool >
@@ -158,7 +159,7 @@ StickyJoinCheckingStrategy::isApplicable(
     }
     else
     {
-        cout << rule1 << " is unifiable to " << rule2 << " by means of the head atom " << atom1 << " and the body atom " << atom2 << endl;
+//        cout << rule1 << " is unifiable to " << rule2 << " by means of the head atom " << atom1 << " and the body atom " << atom2 << endl;
         assert_msg( res.first != NULL, "Null mapping" );
         assert_msg( atom1.getArity() == atom2.getArity(), "These atoms should not have been unified" );
         typedef vector< unsigned > Positions;
@@ -179,7 +180,7 @@ StickyJoinCheckingStrategy::isApplicable(
                 {
                     Positions pos;
                     pos.push_back(i);
-                    termsPositions.insert(pair< XTerm, Positions >(atom2.getTerms().at(i),pos));
+                    termsPositions.insert(pair< const XTerm&, const Positions& >(atom2.getTerms().at(i),pos));
                 }
                 else
                     it->second.push_back(i);
@@ -219,7 +220,7 @@ StickyJoinCheckingStrategy::isApplicable(
         }
         // If they have passed all the checks they are applicable.
         XStickyUnifier* unifier = program.createStickyUnifier(atom1,atom2,*res.first);
-        cout << "Ok unified" << endl;
+//        cout << "Ok unified" << endl;
         return pair< XStickyUnifier*, bool >(unifier,true);
     }
 }
@@ -248,7 +249,7 @@ StickyJoinCheckingStrategy::generateExtraRule(
                 stringstream ss;
                 ss << "X" << varsCounter++;
                 XTerm* extraTerm = program.createStandardVariable(ss.str());
-                newRuleRenaming.insert(pair< string, XTerm >(res->second.getText(),*extraTerm));
+                newRuleRenaming.insert(pair< const string&, const XTerm& >(res->second.getText(),*extraTerm));
                 extraHeadTerms.push_back(*extraTerm);
                 delete extraTerm;
             }
@@ -296,7 +297,7 @@ StickyJoinCheckingStrategy::generateExtraRule(
                         stringstream ss;
                         ss << "X" << varsCounter++;
                         XTerm* extraTerm = program.createStandardVariable(ss.str());
-                        newRuleRenaming.insert(pair< string, XTerm >(term->getText(),*extraTerm));
+                        newRuleRenaming.insert(pair< const string&, const XTerm& >(term->getText(),*extraTerm));
                         extraBodyTerms.push_back(*extraTerm);
                         delete extraTerm;
                     }
@@ -325,7 +326,7 @@ StickyJoinCheckingStrategy::generateExtraRule(
     return extraRule;
 }
 
-pair< XRuleIndex, bool >
+pair< index_t, bool >
 StickyJoinCheckingStrategy::findIsomorphicTGD(
     const XRule& rule,
     vector< XStickyExpandedRule >& expandedRules ) const
@@ -337,10 +338,10 @@ StickyJoinCheckingStrategy::findIsomorphicTGD(
         {
             assert_msg( resIso.first != NULL, "Null isomorphism" );
             delete resIso.first;
-            return pair< XRuleIndex, bool >(i,true);
+            return pair< index_t, bool >(i,true);
         }
     }
-    return pair< XRuleIndex, bool >(0,false);
+    return pair< index_t, bool >(expandedRules.size(),false);
 }
 
 void
@@ -391,8 +392,8 @@ StickyJoinCheckingStrategy::SJMarking(
                 // Every expanded rule with a non-empty label set has an atomic head.
                 assert_msg( (rule.getHead() != NULL && rule.getHead()->size() == 1),
                         "Not valid expanded rule" );
-                assert_msg( labels[j].getRuleIndex() < expandedRules.size(), "Not a valid rule in the current label" );
-                const XStickyExpandedRule& labelExpandedRule = expandedRules[labels[j].getRuleIndex()];
+                assert_msg( labels[j].getExpandedRuleIndex() < expandedRules.size(), "Not a valid rule in the current label" );
+                const XStickyExpandedRule& labelExpandedRule = expandedRules[labels[j].getExpandedRuleIndex()];
                 const XAtom& labelAtom = labels[j].getAtom();
                 const vector< XTerm >& labelAtomTerms = labelAtom.getTerms();
 
@@ -447,7 +448,7 @@ bool
 StickyJoinCheckingStrategy::isStickyJoin(
     vector< XStickyExpandedRule >& expandedRules ) const
 {
-    for( unsigned i=0; i<expandedRules.size(); i++ )
+    for( index_t i=0; i<expandedRules.size(); i++ )
     {
         const XRule& rule = expandedRules[i].getRule();
         const XBody* body = rule.getBody();

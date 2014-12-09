@@ -32,7 +32,6 @@ using namespace std;
 using namespace DLV2::REWRITERS;
 
 XRewriteInputBuilder::XRewriteInputBuilder():
-        query(NULL),
         termStack(),
         predName(),
         atomStack(),
@@ -167,12 +166,7 @@ void
 XRewriteInputBuilder::onQuery()
 {
     assert_msg( atomStack.size() > 0, "Trying to adding a null query atom" );
-    if( query != NULL )
-    {
-        cout << "Query " << atomStack.back() << " replaces " << *query << endl;
-        delete query;
-    }
-    query = new XAtom(atomStack.back());
+    program->addQuery(atomStack.back());
     atomStack.pop_back();
     varsRenaming.clear();
 }
@@ -567,6 +561,14 @@ XRewriteInputBuilder::onAggregate(
     // How to handle aggregate atoms?
 }
 
+XProgram*
+XRewriteInputBuilder::getProgram()
+{
+    assert_msg( program != NULL, "Null program" );
+    program->computeQueryRules();
+    return program;
+}
+
 void
 XRewriteInputBuilder::newTerm(
     char* value,
@@ -587,7 +589,7 @@ XRewriteInputBuilder::newTerm(
         {
             stringstream ss;
             ss << "X" << program->incrementVariablesCounter();
-            varsRenaming.insert(pair< string, string >(varName,ss.str()));
+            varsRenaming.insert(pair< const string&, const string& >(varName,ss.str()));
             currentTerm = program->createStandardVariable(ss.str());
 
         }

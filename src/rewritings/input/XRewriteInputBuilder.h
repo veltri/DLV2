@@ -86,14 +86,12 @@ namespace DLV2{ namespace REWRITERS{
         virtual void onAggregateElement();
         virtual void onAggregate( bool naf = false );
 
-        XProgram* getProgram() { return program; }
-        XAtom* getQuery() { return query; }
+        XProgram* getProgram();
 
     private:
         void newTerm( char* value, std::vector< XTerm >& target, bool dash = false );
 
         XProgram* program;
-        XAtom* query;
         std::vector< XTerm > termStack;
         std::string predName;
         std::vector< XAtom > atomStack;

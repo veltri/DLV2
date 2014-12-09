@@ -62,7 +62,7 @@ XStickyExpandedRule::XStickyExpandedRule(
 
                 // If the variable has already an associated metadata, that won't be overwritten.
                 pair< XStickyTermMetadataMap::iterator, bool > lookUp =
-                        termsMetadata.insert(pair< XTerm, XStickyTermMetadata >(term,XStickyTermMetadata(term)));
+                        termsMetadata.insert(pair< const XTerm&, const XStickyTermMetadata& >(term,XStickyTermMetadata(term)));
 
                 // Store the current position of the variable.
                 XStickyTermMetadataMap::iterator termMetadataIt = lookUp.first;
@@ -100,7 +100,7 @@ XStickyExpandedRule::XStickyExpandedRule(
 
                     // If the variable has already an associated metadata, that won't be overwritten.
                     pair< XStickyTermMetadataMap::iterator, bool > lookUp =
-                            termsMetadata.insert(pair< XTerm, XStickyTermMetadata >(term,XStickyTermMetadata(term)));
+                            termsMetadata.insert(pair< const XTerm&, const XStickyTermMetadata& >(term,XStickyTermMetadata(term)));
 
                     // Store the current position of the variable.
                     XStickyTermMetadataMap::iterator termMetadataIt = lookUp.first;

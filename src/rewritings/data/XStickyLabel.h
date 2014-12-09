@@ -27,8 +27,8 @@
 #ifndef XSTICKYLABEL_H
 #define XSTICKYLABEL_H
 
-#include "../../util/Constants.h"
 #include "XLiteral.h"
+#include "../../util/Constants.h"
 
 namespace DLV2{ namespace REWRITERS{
 
@@ -37,7 +37,7 @@ namespace DLV2{ namespace REWRITERS{
         XStickyLabel( const XStickyLabel& label ): ruleIndex(label.ruleIndex), atom(label.atom) { }
         ~XStickyLabel() { }
 
-        const XRuleIndex& getRuleIndex() const { return ruleIndex; }
+        index_t getExpandedRuleIndex() const { return ruleIndex; }
         const XAtom& getAtom() const { return atom; }
 
         bool operator==( const XStickyLabel& label ) const { return (ruleIndex==label.ruleIndex && atom==label.atom); }
@@ -46,9 +46,9 @@ namespace DLV2{ namespace REWRITERS{
         friend inline std::ostream& operator<< ( std::ostream&, const XStickyLabel& );
         friend class XProgram;
 
-        XStickyLabel( const XRuleIndex& rIndex, const XAtom& at ): ruleIndex(rIndex), atom(at) { }
+        XStickyLabel( index_t rIndex, const XAtom& at ): ruleIndex(rIndex), atom(at) { }
 
-        XRuleIndex ruleIndex;
+        index_t ruleIndex;
         XAtom atom;
 
     };
@@ -59,7 +59,7 @@ namespace DLV2{ namespace REWRITERS{
         std::ostream& out,
         const XStickyLabel& label )
     {
-        out << "<\\sigma_" << label.getRuleIndex() << "," << label.getAtom() << ">";
+        out << "<\\sigma_" << label.getExpandedRuleIndex() << "," << label.getAtom() << ">";
         return out;
     }
 
@@ -73,8 +73,8 @@ namespace std {
     {
         size_t operator()( const DLV2::REWRITERS::XStickyLabel& label ) const
         {
-            std::hash< DLV2::REWRITERS::XRuleIndex > ruleIndexHasher;
-            size_t h = ruleIndexHasher(label.getRuleIndex());
+            std::hash< DLV2::REWRITERS::index_t > ruleIndexHasher;
+            size_t h = ruleIndexHasher(label.getExpandedRuleIndex());
             std::hash< DLV2::REWRITERS::XAtom > atomHasher;
             h = h*5+atomHasher(label.getAtom());
             return h;

@@ -25,9 +25,26 @@
  */
 
 #include "XBody.h"
+#include "../../util/Assert.h"
 
 using namespace std;
 using namespace DLV2::REWRITERS;
+
+const XLiteral&
+XBody::operator[](
+    index_t index ) const
+{
+    assert_msg( index < literals.size(), "Index out of range" );
+    return literals[index];
+}
+
+const XLiteral&
+XBody::at(
+    index_t index ) const
+{
+    assert_msg( index < literals.size(), "Index out of range" );
+    return literals.at(index);
+}
 
 bool
 XBody::isGround() const

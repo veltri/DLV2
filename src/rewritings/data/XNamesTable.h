@@ -166,7 +166,7 @@ DLV2::REWRITERS::XNamesTable< T >::add(
     // Try to insert the item with the next available index (if a
     // copy of item already exists, the index is not overwritten!)
     std::pair< typename LookupT::const_iterator, bool > result =
-        lookup.insert(std::pair< T, index_t >(item,indexCount));
+        lookup.insert(std::pair< const T&, index_t >(item,indexCount));
 
     // See whether this item already existed in the datastructures.
     if(result.second)

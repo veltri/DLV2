@@ -27,12 +27,12 @@
 #ifndef XPROGRAM_H
 #define XPROGRAM_H
 
-#include <vector>
-#include "XRuleIndicesCollection.h"
+#include <list>
 #include "XPredicateNames.h"
 #include "XRule.h"
 #include "XSafetyException.h"
 #include "../../util/Constants.h"
+#include "XRulePointersCollection.h"
 #include "XStickyUnifier.h"
 
 namespace DLV2{ namespace REWRITERS{
@@ -42,7 +42,7 @@ namespace DLV2{ namespace REWRITERS{
 
     class XProgram {
     public:
-        typedef typename std::unordered_map< index_t, XRuleIndicesCollection > XPredicateToXRulesetMap;
+        typedef typename std::unordered_map< index_t, XRulePointersCollection > XPredicateToXRulesetMap;
 
         XProgram();
         XProgram( const XProgram& program );
@@ -65,39 +65,50 @@ namespace DLV2{ namespace REWRITERS{
         XBody* createBody( const std::vector< XLiteral >& lits ) const;
         XRule* createRule( XHead* head, XBody* body ) const;
         // The following methods create objects for the algorithm which checks the {sticky-join}-ness.
-        XStickyLabel* createStickyLabel( const XRuleIndex& ruleIndex, const XAtom& atom ) const;
+        XStickyLabel* createStickyLabel( index_t expRuleIndex, const XAtom& atom ) const;
         XStickyExpandedRule* createStickyExpandedRule( const XRule& rule ) const;
         XStickyUnifier* createStickyUnifier( const XAtom& headAt, const XAtom& bodyAt, const XMapping& subst ) const;
 
         void addRule( const XRule& r );
+        void addQuery( const XAtom& q );
         std::pair< index_t, bool > addPredicate( const std::string& name, unsigned arity, bool internal = false );
-        bool addToPredicateRuleSet( index_t predIndex, XRuleIndex ruleIndex );
         unsigned incrementVariablesCounter() { return varsCounter++; }
-        // Check whether rule is safe, throw an exception if it's not.
-        void checkSafety( const XRule& rule ) const throw (XSafetyException);
+        void computeQueryRules();
 
         unsigned getVariablesCounter() const { return varsCounter; }
         const XPredicateNames& getPredicateNamesTable() const { return predicates; }
         const std::string& getPredicateName( index_t predIndex ) const;
         unsigned getPredicateArity( index_t predIndex ) const;
-        const XRule& getRule( XRuleIndex ruleIndex ) const;
+        XRule::const_iterator beginRules() const { return rules.begin(); }
+        XRule::const_iterator endRules() const { return rules.end(); }
         size_t rulesSize() const { return rules.size(); }
-        const XRule& getFact( index_t factIndex ) const;
+        XRule::const_iterator beginFacts() const { return facts.begin(); }
+        XRule::const_iterator endFacts() const { return facts.end(); }
         size_t factsSize() const { return facts.size(); }
         bool isDisjunctive() const { return hasDisjunction; }
         bool isConjunctive() const { return hasConjunction; }
-        const XRuleIndicesCollection& getPredicateRuleIndices( index_t predIndex ) const;
+        const XRulePointersCollection& getPredicateRulePointers( index_t predIndex ) const;
+        const XAtom* getQuery() const { return query; }
+        XRule::const_iterator beginQueryRules() const { return queryRules.begin(); }
+        XRule::const_iterator endQueryRules() const { return queryRules.end(); }
+        size_t queryRulesSize() const { return queryRules.size(); }
 
     private:
         friend inline std::ostream& operator<< ( std::ostream&, const XProgram& );
 
+        bool addToPredicateRuleSet( index_t predIndex, XRule::const_iterator ruleIt );
+        // Check whether rule is safe, throw an exception if it's not.
+        void checkSafety( const XRule& rule ) const throw (XSafetyException);
+
         XPredicateNames predicates;
-        std::vector< XRule > rules;
-        std::vector< XRule > facts;
+        std::list< XRule > rules;
+        std::list< XRule > facts;
         bool hasDisjunction;
         bool hasConjunction;
         XPredicateToXRulesetMap predicateToRulesMapping;
         unsigned varsCounter;
+        XAtom* query;
+        std::list< XRule > queryRules;
 
     };
 
@@ -109,15 +120,17 @@ namespace DLV2{ namespace REWRITERS{
     {
         if( p.rules.size() > 0 )
             out << "RULES (ruleIndex --> rule):" << std::endl;
-        for( unsigned i=0; i<p.rules.size(); i++ )
+        unsigned counter = 0;
+        for( XRule::const_iterator it=p.rules.begin(); it!=p.rules.end(); it++ )
         {
-            out << i << "  -->  " << p.rules[i] << std::endl;
+            out << counter++ << "  -->  " << *it << std::endl;
         }
         if( p.facts.size() > 0 )
             out << "FACTS (factIndex --> fact):" << std::endl;
-        for( unsigned i=0; i<p.facts.size(); i++ )
+        counter = 0;
+        for( XRule::const_iterator it=p.facts.begin(); it!=p.facts.end(); it++ )
         {
-            out << i << "  -->  " << p.facts[i] << std::endl;
+            out << counter << "  -->  " << *it << std::endl;
         }
         if( p.predicateToRulesMapping.size() > 0 )
             out << std::endl << "PREDICATE-RULE-SET (<predicate> : {rule set}):" << std::endl;
@@ -128,8 +141,8 @@ namespace DLV2{ namespace REWRITERS{
             out << "(" << p.getPredicateName(it->first)
                 << "," << p.getPredicateArity(it->first)
                 << "): {" << std::endl;
-            for( XRuleIndex i=0; i<it->second.size(); i++ )
-                out << p.getRule(it->second[i]) << std::endl;
+            for( index_t i=0; i<it->second.size(); i++ )
+                out << *(it->second[i]) << std::endl;
             out << "}" << std::endl << std::endl;
         }
         return out;

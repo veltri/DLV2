@@ -34,8 +34,8 @@ DLVXFacade::solve()
 {
     // TODO
     cout << program << endl;
-    if( query != NULL )
-        cout << query << endl;
+    if( program.getQuery() != NULL )
+        cout << *program.getQuery() << endl;
     if( inputClassChecker->check() )
         cout << "Sticky join" << endl;
     else

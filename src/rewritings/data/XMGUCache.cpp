@@ -29,7 +29,8 @@ XMGUCache::insert(
 {
     size_t key = getHashCode(keySet1,keySet2);
     assert_msg( mguMap.find(key) == mguMap.end(), "Not valid entry, this mgu has already been cached" );
-    pair< iterator, bool > res = mguMap.insert(pair< size_t, XMGUCacheElement >(key,XMGUCacheElement(mgu)));
+    XMGUCacheElement element(mgu);
+    pair< iterator, bool > res = mguMap.insert(pair< size_t, const XMGUCacheElement& >(key,element));
     return res.first;
 }
 
@@ -40,7 +41,7 @@ XMGUCache::insert(
 {
     size_t key = getHashCode(keySet1,keySet2);
     assert_msg( mguMap.find(key) == mguMap.end(), "Not valid entry, this mgu has already been cached" );
-    pair< iterator, bool > res = mguMap.insert(pair< size_t, XMGUCacheElement >(key,XMGUCacheElement()));
+    pair< iterator, bool > res = mguMap.insert(pair< size_t, const XMGUCacheElement& >(key,XMGUCacheElement()));
     return res.first;
 }
 

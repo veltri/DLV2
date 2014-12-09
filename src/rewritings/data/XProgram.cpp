@@ -42,7 +42,9 @@ XProgram::XProgram():
         hasDisjunction(false),
         hasConjunction(false),
         predicateToRulesMapping(),
-        varsCounter(0)
+        varsCounter(0),
+        query(NULL),
+        queryRules()
 {
 }
 
@@ -54,13 +56,19 @@ XProgram::XProgram(
         hasDisjunction(program.hasDisjunction),
         hasConjunction(program.hasConjunction),
         predicateToRulesMapping(program.predicateToRulesMapping),
-        varsCounter(program.varsCounter)
+        varsCounter(program.varsCounter),
+        queryRules(program.queryRules)
 {
-
+    if( program.query != NULL )
+    {
+        query = createAtom(program.query->getPredIndex(),program.query->getTerms(),program.query->isTrueNegated());
+    }
 }
 
 XProgram::~XProgram()
 {
+    if( query != NULL )
+        delete query;
 }
 
 XTerm*
@@ -180,10 +188,10 @@ XProgram::createRule(
 
 XStickyLabel*
 XProgram::createStickyLabel(
-    const XRuleIndex& ruleIndex,
+    index_t expRuleIndex,
     const XAtom& atom ) const
 {
-    return new XStickyLabel(ruleIndex,atom);
+    return new XStickyLabel(expRuleIndex,atom);
 }
 
 XStickyExpandedRule*
@@ -222,21 +230,32 @@ XProgram::addRule(
     }
     else
     {
-        rules.push_back(r);
+        XRule::iterator rIt = rules.insert(rules.end(),r);
 
         // Add the current rule to the ruleSets of its head predicates
-        XRuleIndex rIndex = rules.size()-1;
         const XHead* head = r.getHead();
         assert_msg( head != NULL, "Heads must not be null" );
         for( unsigned i=0; i<head->size(); i++ )
         {
-            addToPredicateRuleSet((*head)[i].getPredIndex(),rIndex);
+            addToPredicateRuleSet((*head)[i].getPredIndex(),rIt);
         }
         if( r.hasDisjunctiveHead() )
             hasDisjunction = true;
         else if( r.hasConjunctiveHead() )
             hasConjunction = true;
     }
+}
+
+void
+XProgram::addQuery(
+    const XAtom& q )
+{
+    if( query != NULL )
+    {
+        cout << "Query " << q << " replaces " << *query << endl;
+        delete query;
+    }
+    query = new XAtom(q);
 }
 
 pair< index_t, bool >
@@ -250,24 +269,105 @@ XProgram::addPredicate(
     return res;
 }
 
+void
+XProgram::computeQueryRules()
+{
+    if( query != NULL )
+    {
+        // Look up rules with the query predicate in their atomic head.
+        // Every of these should be considered as query rule, so they
+        // are not part of the input program.
+        bool ok = true;
+        vector< XRule::iterator > rulesToBeMoved;
+        for( XRule::iterator it=rules.begin(); it!=rules.end() && ok; it++ )
+        {
+            assert_msg( it->getHead() != NULL, "Null head" );
+            if( it->hasAtomicHead() )
+            {
+                if( it->getHead()->at(0).getPredIndex() == query->getPredIndex() )
+                    rulesToBeMoved.push_back(it);
+            }
+            else
+            {
+                // If the query predicate appears in the non-atomic
+                // head of a rule, the query will be considered as atomic.
+                for( unsigned i=0; i<it->getHead()->size() && ok; i++ )
+                    if( it->getHead()->at(i).getPredIndex() == query->getPredIndex() )
+                        ok = false;
+            }
+            // If the query predicate appears in any body atom
+            // of a rule, the query will be considered as atomic.
+            if( it->getBody() != NULL )
+                for( unsigned i=0; i<it->getBody()->size() && ok; i++ )
+                    if( it->getBody()->at(i).getAtom().getPredIndex() == query->getPredIndex() )
+                        ok = false;
+        }
+        // If the query predicate appears only in atomic rule heads,
+        // move such rules to 'queryRules' because they are not part
+        // of the input program (they might be non-sticky, non-linear, and so on).
+        if( ok )
+        {
+            // Erase pointers to rules stored in 'rules' (those whose head predicate
+            // is equal to the new query predicate), because such rules are about to be
+            // moved to 'queryRules', so their pointers will be invalidated.
+            XPredicateToXRulesetMap::iterator it = predicateToRulesMapping.find(query->getPredIndex());
+            if( it != predicateToRulesMapping.end() )
+                it->second.clear();
+            // Move rules to 'queryRules'.
+            for( unsigned i=0; i<rulesToBeMoved.size(); i++ )
+            {
+                XRule::iterator qIt = queryRules.insert(queryRules.end(),*rulesToBeMoved[i]);
+                rules.erase(rulesToBeMoved[i]);
+                addToPredicateRuleSet(query->getPredIndex(),qIt);
+            }
+        }
+        else
+            cout << "Warning: added an atomic query whose predicate appears either "
+                    "in the non-atomic head or in the body of a rule" << endl;
+    }
+}
+
+const string&
+XProgram::getPredicateName(
+    index_t predIndex ) const
+{
+    return predicates.getName(predIndex);
+}
+
+unsigned
+XProgram::getPredicateArity(
+    index_t predIndex ) const
+{
+    return predicates.getArity(predIndex);
+}
+
+const XRulePointersCollection&
+XProgram::getPredicateRulePointers(
+    index_t predIndex ) const
+{
+    XPredicateToXRulesetMap::const_iterator it = predicateToRulesMapping.find(predIndex);
+    assert_msg( it != predicateToRulesMapping.end(), "Predicate index not valid" );
+    return it->second;
+}
+
 bool
 XProgram::addToPredicateRuleSet(
     index_t predIndex,
-    XRuleIndex ruleIndex )
+    XRule::const_iterator ruleIt )
 {
     XPredicateToXRulesetMap::iterator it = predicateToRulesMapping.find(predIndex);
     if( it == predicateToRulesMapping.end() )
     {
-        XRuleIndicesCollection ruleIndices;
-        ruleIndices.pushRuleIndex(ruleIndex);
-        pair< index_t, XRuleIndicesCollection > newMapping(predIndex,ruleIndices);
+        XRulePointersCollection rulePointers;
+        rulePointers.pushRulePointer(ruleIt);
+        pair< index_t, const XRulePointersCollection& > newMapping(predIndex,rulePointers);
         pair< XPredicateToXRulesetMap::const_iterator, bool > insResult =
                 predicateToRulesMapping.insert(newMapping);
         return insResult.second;
     }
     else
     {
-        return it->second.pushRuleIndex(ruleIndex);
+        return it->second.pushRulePointer(ruleIt);
     }
 }
 
@@ -317,44 +417,4 @@ XProgram::checkSafety(
             }
         }
     }
-}
-
-const string&
-XProgram::getPredicateName(
-    index_t predIndex ) const
-{
-    return predicates.getName(predIndex);
-}
-
-unsigned
-XProgram::getPredicateArity(
-    index_t predIndex ) const
-{
-    return predicates.getArity(predIndex);
-}
-
-const XRule&
-XProgram::getRule(
-    XRuleIndex ruleIndex ) const
-{
-    assert_msg( ruleIndex < rules.size(), "Index out of range" );
-    return rules[ruleIndex];
-
-}
-
-const XRule&
-XProgram::getFact(
-    index_t factIndex ) const
-{
-    assert_msg( factIndex < facts.size(), "Index out of range" );
-    return facts[factIndex];
-}
-
-const XRuleIndicesCollection&
-XProgram::getPredicateRuleIndices(
-    index_t predIndex ) const
-{
-    XPredicateToXRulesetMap::const_iterator it = predicateToRulesMapping.find(predIndex);
-    assert_msg( it != predicateToRulesMapping.end(), "Predicate index not valid" );
-    return it->second;
 }

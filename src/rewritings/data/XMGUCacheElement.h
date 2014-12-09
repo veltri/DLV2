@@ -15,16 +15,18 @@ namespace DLV2{ namespace REWRITERS{
 
     class XMGUCacheElement {
     public:
-        XMGUCacheElement( const XMapping& unifier ): mgu(new XMapping(unifier)), mayExist(true) { }
-        XMGUCacheElement(): mgu(NULL), mayExist(false) { }
-        ~XMGUCacheElement() { if( mgu != NULL ) delete mgu; }
+        XMGUCacheElement( const XMapping& unifier );
+        XMGUCacheElement(): mayExist(false), mgu(NULL) { }
+        XMGUCacheElement( const XMGUCacheElement& elem );
+        ~XMGUCacheElement();
 
         bool exists() const { return mayExist; }
         const XMapping* getMgu() const { return mgu; }
 
     private:
-        XMapping* mgu;
         bool mayExist;
+        XMapping* mgu;
+
     };
 
 };};

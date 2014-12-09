@@ -208,14 +208,11 @@ DLV2Facade::solve()
         XRewriteInputBuilder* xInputBuilder = static_cast<XRewriteInputBuilder*>(builder);
         XProgram* program = xInputBuilder->getProgram();
         assert_msg( program != NULL, "Null input program" );
-        XAtom* query = xInputBuilder->getQuery();
 
-        DLVXFacade dlvxFacade(*program,query);
+        DLVXFacade dlvxFacade(*program);
 
         dlvxFacade.solve();
 
-        if( query != NULL )
-            delete query;
         delete program;
     }
 

@@ -74,7 +74,7 @@ namespace DLV2{ namespace REWRITERS{
          * @return The index of a TGD \sigma \in expandedRule which is homomorphic to 'rule',
          * and a boolean variable which is true whether such a TGD exists, false if it does not.
          */
-        std::pair< XRuleIndex, bool > findIsomorphicTGD(
+        std::pair< index_t, bool > findIsomorphicTGD(
                 const XRule& rule,
                 std::vector< XStickyExpandedRule >& expandedRules ) const;
         /** The behavior of this function is described in paper 'Query answering under non-guarded

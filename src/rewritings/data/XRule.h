@@ -29,11 +29,15 @@
 
 #include "XHead.h"
 #include "XBody.h"
+#include <list>
 
 namespace DLV2{ namespace REWRITERS{
 
     class XRule {
     public:
+        typedef std::list< XRule >::iterator iterator;
+        typedef std::list< XRule >::const_iterator const_iterator;
+
         XRule( const XRule& rule );
         ~XRule();
 
@@ -135,6 +139,15 @@ namespace std {
         }
     };
 
+    template <>
+    struct hash< DLV2::REWRITERS::XRule::const_iterator >
+    {
+        size_t operator()( const DLV2::REWRITERS::XRule::const_iterator& it ) const
+        {
+            std::hash< DLV2::REWRITERS::XRule > ruleHasher;
+            return ruleHasher(*it);
+        }
+    };
 };
 
 

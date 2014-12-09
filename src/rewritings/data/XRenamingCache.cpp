@@ -28,8 +28,8 @@ XRenamingCache::insert(
 {
     hash< XRule > ruleHasher;
     size_t ruleHash = ruleHasher(key);
-    assert_msg( renamingsMap.find(ruleHash) != renamingsMap.end(), "Renaming already cached" );
-    return renamingsMap.insert(pair< size_t, XRenaming >(ruleHash,XRenaming(renaming,renamedRule)));
+    assert_msg( renamingsMap.find(ruleHash) == renamingsMap.end(), "Renaming already cached" );
+    return renamingsMap.insert(pair< size_t, const XRenaming& >(ruleHash,XRenaming(renaming,renamedRule)));
 }
 
 //pair< const XMapping*, const XRule* >
@@ -82,7 +82,7 @@ XRenamingCache::insert(
 //    renamedRules.push_back(renamedRule);
 //    RuleIndex ruleIdx = renamedRules.size()-1;
 //    pair< RenamingIndex, RuleIndex > element(renamingIdx,ruleIdx);
-//    renamingsMap.insert(pair< RenamingMapKey, RenamingMapValue >(ruleHash,element));
+//    renamingsMap.insert(pair< RenamingMapKey, const RenamingMapValue& >(ruleHash,element));
 //    const XMapping* ptrRenaming = &(renamings[renamingIdx]);
 //    const XRule* ptrRule = &(renamedRules[ruleIdx]);
 //    return pair< const XMapping*, const XRule* >(ptrRenaming,ptrRule);

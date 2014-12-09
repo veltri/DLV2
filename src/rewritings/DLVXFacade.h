@@ -34,15 +34,13 @@ namespace DLV2{ namespace REWRITERS{
 
     class DLVXFacade {
     public:
-        DLVXFacade( XProgram& p, XAtom* q ): program(p), query(q), inputClassChecker(new StickyJoinCheckingStrategy(p)) { }
+        DLVXFacade( XProgram& p ): program(p), inputClassChecker(new StickyJoinCheckingStrategy(p)) { }
         ~DLVXFacade() { assert( inputClassChecker != NULL ); delete inputClassChecker; }
 
         void solve();
 
     private:
         XProgram& program;
-        XAtom* query;
-
         InputClassCheckingStrategy* inputClassChecker;
 
     };
