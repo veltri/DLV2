@@ -26,6 +26,7 @@
 #include "input/Buffer.h"
 #include "input/DepGraphBuilder.h"
 #include "input/EmptyInputBuilder.h"
+#include "input/PrinterInputBuilder.h"
 #include "dlvdb_src/input/DBInputBuilder.h"
 #include "dlvdb_src/DLVDBFacade.h"
 
@@ -86,7 +87,8 @@ DLV2Facade::readInput()
 
         case BUILDER_IN_MEMORY:
             // TODO
-            ErrorMessage::errorGeneric( "--inmemory: Not supported yet! Bye." );
+        	builder =new DLV2::Grounder::PrinterInputBuilder();
+            //ErrorMessage::errorGeneric( "--inmemory: Not supported yet! Bye." );
             break;
             
         case BUILDER_EMPTY:
