@@ -6,6 +6,8 @@
  */
 
 #include "IndexAtom.h"
+#include "../../util/Options.h"
+
 
 namespace DLV2{
 
@@ -177,8 +179,7 @@ pair<bool, index_object> SingleTermIndexAtom::createIndex(vector<unsigned int>& 
 	// Compute the bind variables, determine the indexing term and fill the facts and no facts maps if not yet filled
 	pair<bool, index_object> termBoundIndex( { false, 0 });
 	if(!positionOfIndexingSetByUser){
-		//TODO
-		pair<unsigned int,bool> p = Config::getInstance()->getIndexingTerm(this->predicate->getName());
+		pair<unsigned int,bool> p = Options::globalOptions()->getIndexingTerm(this->predicate->getName());
 		if(p.first>=0 && p.first<this->predicate->getArity()){
 			positionOfIndexing=p.first;
 			positionOfIndexingSetByUser=p.second;
@@ -300,8 +301,7 @@ pair<bool, index_object> SingleTermIndexAtomMultiMap::createIndex(vector<unsigne
 	// Compute the bind variables, determine the indexing term and fill the facts and no facts maps if not yet filled
 	pair<bool, index_object> termBoundIndex( { false, 0 });
 	if(!positionOfIndexingSetByUser){
-		//TODO
-		//pair<unsigned int,bool> p = Config::getInstance()->getIndexingTerm(this->predicate->getName());
+		pair<unsigned int,bool> p = Options::globalOptions()->getIndexingTerm(this->predicate->getName());
 		if(p.first>=0 && p.first<this->predicate->getArity()){
 			positionOfIndexing=p.first;
 			positionOfIndexingSetByUser=p.second;

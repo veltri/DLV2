@@ -77,7 +77,19 @@ namespace DB{
 
 namespace grounder{
 
+	#define STL_HASH 0
+	#define BOOST_HASH 1
+	#define JAVA_HASH 2
+	#define MUR_HASH 3
+	#define PERL_DJ 4
+	#define PERL_B 5
+
+	#define DEFAULT 0
+	#define MULTIMAP 1
+	#define MAP 2
+
 	typedef unsigned index_object;
+
 
 };
 

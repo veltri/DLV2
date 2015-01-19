@@ -9,8 +9,7 @@
 #ifndef ATOM_H_
 #define ATOM_H_
 
-class AggregateElement;
-class ChoiceElement;
+
 
 #include <vector>
 #include <string>
@@ -18,12 +17,18 @@ class ChoiceElement;
 #include "AggregateElement.h"
 #include "ChoiceElement.h"
 #include "../table/TermTable.h"
+#include "Predicate.h"
+
+
 
 using namespace std;
 
 namespace DLV2{
 
 namespace grounder{
+
+class AggregateElement;
+class ChoiceElement;
 
 /// Aggregate Function Types
 enum AggregateFunction {NONE=0,COUNT,MAX,MIN,SUM};

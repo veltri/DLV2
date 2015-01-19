@@ -51,6 +51,13 @@ namespace DLV2
             std::cout << "--stats                                - Print final statistics." << std::endl;
             std::cout << separator << std::endl;
 
+            std::cout << "Grounder options                         " << std::endl << std::endl;
+            std::cout << "--hashtype                               - Set the hash type of objects. Possible value=\n \t STL_HASH=0\n \t BOOST_HASH=1\n \t JAVA_HASH=2\n \t MUR_HASH=3\n \t PERL_DJ=4\n \t PERL_B=5." << std::endl;
+            std::cout << "--indextype                         	   - Set the index table of object. Possible value=\n \t DEFAULT=0\n \t MULTIMAP=1\n \t MAP=2\n." << std::endl;
+            std::cout << "--indexstrategy                          - Set on which term predicates have to be indexed. \n \tExample: -i p=1,a=0." << std::endl;
+            std::cout << separator << std::endl;
+
+
             std::cout << "DB options                             " << std::endl << std::endl;
             std::cout << "--db-source=[db_name]                  - Set the name of the database where input data are stored." << std::endl;
             std::cout << "--db-user=[db_username]                - Set the username to have access to the database." << std::endl;

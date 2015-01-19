@@ -8,16 +8,20 @@
 #ifndef AGGREGATEELEMENT_H_
 #define AGGREGATEELEMENT_H_
 
-class Atom;
 
 #include <vector>
 #include "Atom.h"
+#include "../../util/Constants.h"
+
 
 using namespace std;
 
 namespace DLV2{
 
 namespace grounder{
+
+class Atom;
+
 
 /// This class represents an aggregate element
 class AggregateElement {

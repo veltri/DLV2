@@ -8,7 +8,6 @@
 #ifndef CHOICEELEMENT_H_
 #define CHOICEELEMENT_H_
 
-class Atom;
 
 #include <vector>
 #include "Atom.h"
@@ -17,6 +16,9 @@ using namespace std;
 namespace DLV2{
 
 namespace grounder{
+
+class Atom;
+
 
 /// This class represents a choice element
 

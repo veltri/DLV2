@@ -6,6 +6,7 @@
  */
 
 #include "HashString.h"
+#include "../../util/Options.h"
 
 
 #include <boost/functional/hash.hpp>
@@ -108,8 +109,32 @@ size_t MurMurHashString::computeHash(string s) {
 
 HashString* HashString::getHashStringFromConfig() {
 
-	//TODO add selector for hashString
+	if(hashString==nullptr){
+		switch (Options::globalOptions()->getHashType()) {
+		case STL_HASH:
+			hashString = new STLHashString;
+			break;
+		case BOOST_HASH:
+			hashString = new BOOSTHashString;
+			break;
+		case JAVA_HASH:
+			hashString=new JavaHashString;
+			break;
+		case MUR_HASH:
+			hashString=new MurMurHashString;
+			break;
+		case PERL_DJ:
+			hashString=new PerlJenkinsHashString;
+			break;
+		case PERL_B:
+			hashString=new PerlBernsteinHashString;
+			break;
 
+		default:
+			hashString = new STLHashString;
+			break;
+		}
+	}
 	return hashString;
 }
 

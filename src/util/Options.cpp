@@ -20,9 +20,12 @@
 #include "Options.h"
 #include "ErrorMessage.h"
 #include "Help.h"
+#include "Assert.h"
 
 #include <getopt.h>
 #include <cstdlib>
+#include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 
 namespace DLV2 
 {
@@ -51,6 +54,13 @@ namespace DLV2
 #define OPTIONID_datasource ('z' + 30 )
 #define OPTIONID_username ('z' + 31 )
 #define OPTIONID_password ('z' + 32 )
+
+/* GROUNDER OPTIONS */
+#define OPTIONID_hashType ('z' + 33)
+#define OPTIONID_indexType ('z' + 34)
+#define OPTIONID_indexingPreferences ('z' + 35)
+
+
 };
 
 using namespace std; 
@@ -139,6 +149,10 @@ Options::init(
         { "db-user", required_argument, NULL, OPTIONID_username },
         { "db-pwd", required_argument, NULL, OPTIONID_password },
 
+		{"hashtype",required_argument, NULL, OPTIONID_hashType },
+		{"indextype",required_argument,NULL,OPTIONID_indexType},
+		{"indexstrategy",required_argument,NULL, OPTIONID_indexingPreferences},
+
         // Required at end of array. 
         { NULL, 0, NULL, 0 }
     };
@@ -216,6 +230,21 @@ Options::init(
                 dbPassword.append(optarg);
                 break;
                 
+            case OPTIONID_hashType:
+            	hashType = atoi(optarg);
+                assert_msg((hashType>STL_HASH && hashType<PERL_B),"Hash type not supported");
+            	break;
+
+            case OPTIONID_indexType:
+            	indexType = atoi(optarg);
+                assert_msg((indexType>DEFAULT && indexType<MAP),"Index type not supported");
+                break;
+
+            case OPTIONID_indexingPreferences:
+                indexingPreferences.append(optarg);
+                break;
+
+
             default:
                 ErrorMessage::errorGeneric( "This option is not supported." );
                 break;
@@ -227,4 +256,28 @@ Options::init(
     {
         inputFiles.push_back( argv[ i ] );
     }
+}
+
+void Options::setIndexingStrategies(){
+
+	// Split the string indexingPreferences and
+	// fill in the map with the indexing strategies for the specified
+
+	if(indexingPreferences.compare("")!=0){
+		stringstream stream(indexingPreferences);
+		string segment;
+		while(getline(stream, segment, ','))
+		{
+			vector<string> pair_pred_term;
+			boost::split(pair_pred_term, segment, boost::is_any_of("="));
+			indexingMap.insert({pair_pred_term[0],boost::lexical_cast<unsigned int>(pair_pred_term[1])});
+		}
+	}
+
+}
+
+pair<unsigned int,bool> Options::getIndexingTerm(const string& predicate){
+	if(indexingMap.count(predicate))
+		return {indexingMap[predicate],true};
+	return {0,false};
 }

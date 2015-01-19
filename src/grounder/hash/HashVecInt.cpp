@@ -6,6 +6,7 @@
  */
 
 #include "HashVecInt.h"
+#include "../../util/Options.h"
 
 namespace DLV2{
 
@@ -14,8 +15,13 @@ namespace grounder{
 HashVecInt *HashVecInt::hashInt;
 
 HashVecInt* HashVecInt::getHashVecIntFromConfig() {
-	//TODO add selector
-
+	if (hashInt == nullptr){
+		if(Options::globalOptions()->getHashType()==BOOST_HASH)
+			hashInt = new BoostCombineHashVecInt;
+		else
+			// Default select Java
+			hashInt = new JavaHashVecInt;
+	}
 	return hashInt;
 }
 

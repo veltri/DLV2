@@ -29,10 +29,12 @@
 
 #include <vector>
 #include <string>
+#include <unordered_map>
 #include "Constants.h"
 
 namespace DLV2
 {
+
 
     class Options{
     public:
@@ -65,6 +67,20 @@ namespace DLV2
         
         const std::string& getDBPassword() const { return dbPassword; }
 
+        unsigned getIndexType() const {return this->indexType;}
+
+    	void setIndexType(unsigned indexType) {this->indexType=indexType;}
+
+    	unsigned getHashType() const {return this->hashType;}
+
+    	void setHashType(unsigned hashType) {this->hashType = hashType;}
+
+    	const std::string getIndexingPreferences() const {return indexingPreferences;}
+
+    	void setIndexingPreferences(const std::string indexingPreferences) {this->indexingPreferences = indexingPreferences; this->setIndexingStrategies();}
+
+    	std::pair<unsigned int,bool> getIndexingTerm(const std::string& predicate);
+
         ~Options() { /*if (instance != NULL) delete instance;*/ }
 
     private:
@@ -82,6 +98,8 @@ namespace DLV2
         void setInputFiles(const std::vector<const char*>& inFiles) { inputFiles = inFiles; }
 
         void setAspCore2Strict(bool strict) { aspCore2Strict = strict;	}
+
+    	void setIndexingStrategies();
 
         std::vector< const char* > inputFiles;
 
@@ -104,6 +122,15 @@ namespace DLV2
         std::string dbUsername;
         
         std::string dbPassword;
+
+        unsigned hashType;
+
+        unsigned indexType;
+
+    	std::string indexingPreferences;
+
+    	///The map containing the mapping between a predicate and the position of its indexing term
+    	std::unordered_map<std::string, unsigned int> indexingMap;
     };
     
 };
