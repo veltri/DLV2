@@ -20,12 +20,15 @@ namespace DLV2{
 
 namespace grounder{
 
+
 /**
  * Hash table of predicate
  */
 class PredicateTable {
 public:
-	PredicateTable(){};
+
+	static PredicateTable* getInstance();
+
 	/// Insert predicate in a table and return the index of the predicate
 	void insertPredicate(Predicate *&p){predicate_set.insert(p);};
 	/// Get the predicate
@@ -35,7 +38,11 @@ public:
 	/// Get all the Edb predicate index
 	void getEdbPredicate(unordered_set<index_object>& edb_pred);
 	~PredicateTable(){};
+protected:
+	static PredicateTable* predicateTable;
 private:
+	PredicateTable(){};
+
 	FlyweightIndexFactory<Predicate> predicate_set;
 };
 

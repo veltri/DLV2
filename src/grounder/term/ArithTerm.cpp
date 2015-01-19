@@ -69,6 +69,18 @@ string ArithTerm::getNameOperator(Operator op) {
 	return "";
 }
 
+Operator ArithTerm::getOperatorName(char op) {
+	if (op == '+')
+		return Operator::PLUS;
+	if (op == '-')
+		return Operator::MINUS;
+	if (op == '*')
+		return Operator::TIMES;
+	if (op == '/')
+		return Operator::DIV;
+	return Operator::DIV;
+}
+
  bool ArithTerm::operator==(const Term& term){
 	if(getType()!=term.getType())return false;
 	if(operators.size()!=term.getSizeOperator())return false;

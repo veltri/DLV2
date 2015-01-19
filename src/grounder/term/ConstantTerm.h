@@ -67,7 +67,7 @@ private:
 
 class StringConstantTerm: public ConstantTerm{
 public:
-	StringConstantTerm(bool negative,string n):ConstantTerm(negative),string_constant(n){};
+	StringConstantTerm(bool negative,string& n):ConstantTerm(negative),string_constant(n){};
 	virtual string getName()const{return string_constant;};
 
 private:

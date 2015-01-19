@@ -29,6 +29,8 @@
 #include "input/PrinterInputBuilder.h"
 #include "dlvdb_src/input/DBInputBuilder.h"
 #include "dlvdb_src/DLVDBFacade.h"
+#include "input/InMemoryInputBuilder.h"
+#include "grounder/ground/ProgramGrounder.h"
 
 //extern Buffer theBuffer;
 
@@ -86,9 +88,7 @@ DLV2Facade::readInput()
             break;
 
         case BUILDER_IN_MEMORY:
-            // TODO
-        	builder =new DLV2::grounder::PrinterInputBuilder();
-            //ErrorMessage::errorGeneric( "--inmemory: Not supported yet! Bye." );
+        	builder =new DLV2::grounder::InMemoryInputBuilder();
             break;
             
         case BUILDER_EMPTY:
@@ -195,6 +195,21 @@ DLV2Facade::solve()
             delete program;
     }
     
+    if( getOptions().getInputBuilderPolicy() == BUILDER_IN_MEMORY )
+    {
+
+    	for(int i=0;i<DLV2::grounder::StatementDependency::getInstance()->getRulesSize();i++)
+    		DLV2::grounder::StatementDependency::getInstance()->getRule(i)->print();
+
+
+
+    	DLV2::grounder::ProgramGrounder gr;
+    	gr.ground();
+
+
+
+    }
+
     if( getOptions().getPrintStatistics() )
     {
         cerr << endl << "***FINAL STATISTICS***" << endl;

@@ -89,8 +89,7 @@ private:
 
 class InstanceTable {
 public:
-	///Constructor
-	InstanceTable(){}
+
 
 	///This method adds an Instance for a predicate
 	void addInstance(Predicate* p) {
@@ -122,7 +121,13 @@ public:
 
 	///Destructor
 	~InstanceTable();
+
+	static InstanceTable* getInstance();
 private:
+	///Constructor
+	InstanceTable(){}
+
+	static InstanceTable *instanceTable_;
 
 	///The map that stores all the Instances
 	unordered_map<index_object,Instance*> instanceTable;

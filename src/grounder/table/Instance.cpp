@@ -93,10 +93,20 @@ bool Instance::add(unsigned int table, GenericAtom*& atomUndef, bool& updated) {
 
 /****************************************************** INSTANCES TABLE ***************************************************/
 
+InstanceTable *InstanceTable::instanceTable_;
+
 InstanceTable::~InstanceTable() {
 	for (auto i : instanceTable)
 		delete (i.second);
 }
+
+InstanceTable* InstanceTable::getInstance(){
+	if(instanceTable_== nullptr)
+		instanceTable_= new InstanceTable;
+
+	return instanceTable_;
+}
+
 
 
 };

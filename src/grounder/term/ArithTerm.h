@@ -70,7 +70,7 @@ public:
 	virtual void print();
 	/// Return the string of enum operator
 	static string getNameOperator(Operator op);
-
+	static Operator getOperatorName(char op);
 
 
 private:
