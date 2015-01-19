@@ -87,7 +87,7 @@ DLV2Facade::readInput()
 
         case BUILDER_IN_MEMORY:
             // TODO
-        	builder =new DLV2::Grounder::PrinterInputBuilder();
+        	builder =new DLV2::grounder::PrinterInputBuilder();
             //ErrorMessage::errorGeneric( "--inmemory: Not supported yet! Bye." );
             break;
             

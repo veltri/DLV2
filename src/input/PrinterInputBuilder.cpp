@@ -9,7 +9,7 @@
 #include <iostream>
 
 namespace DLV2 {
-namespace Grounder {
+namespace grounder {
 
 PrinterInputBuilder::PrinterInputBuilder() {
 	// TODO Auto-generated constructor stub
@@ -24,7 +24,7 @@ void PrinterInputBuilder::onDirective(char* directiveName, char* directiveValue)
 }
 
 void PrinterInputBuilder::onRule() {
-	cout<<"FIND RULE"<<endl;
+	cout<<"FIND RULE "<<endl;
 }
 
 void PrinterInputBuilder::onConstraint() {

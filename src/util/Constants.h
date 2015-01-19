@@ -75,6 +75,12 @@ namespace DB{
     typedef int64_t Timestamp;
 };
 
+namespace grounder{
+
+	typedef unsigned index_object;
+
+};
+
 };
 
 #endif	/* CONSTANTS_H */

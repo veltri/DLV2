@@ -11,7 +11,7 @@
 #include "InputBuilder.h"
 
 namespace DLV2 {
-namespace Grounder {
+namespace grounder {
 
 using namespace std;
 
