@@ -17,8 +17,17 @@ namespace grounder{
 
 void Instance::setIndexAtom(){
 	// Properly set the IndexAtom type
-
-	//TODO
+	switch (Options::globalOptions()->getIndexType()) {
+	case (MAP):
+		indexAtom = new SingleTermIndexAtom(&tables[Instance::FACTS],&tables[Instance::NOFACTS],&tables[Instance::DELTA],predicate);
+		break;
+	case (MULTIMAP):
+		indexAtom = new SingleTermIndexAtomMultiMap(&tables[Instance::FACTS],&tables[Instance::NOFACTS],&tables[Instance::DELTA],predicate);
+		break;
+	default:
+		indexAtom = new SimpleIndexAtom(&tables[Instance::FACTS],&tables[Instance::NOFACTS],&tables[Instance::DELTA],predicate);
+		break;
+	}
 }
 
 Instance::~Instance() {

@@ -78,6 +78,8 @@ public:
     virtual void onAggregateElement() ;
     virtual void onAggregate( bool naf = false ) ;
 
+    void newTerm(char*);
+
 
 private:
 

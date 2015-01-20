@@ -11,6 +11,7 @@
 #include <iostream>
 
 #include "IndexAtom.h"
+#include "../../util/Options.h"
 
 using namespace std;
 

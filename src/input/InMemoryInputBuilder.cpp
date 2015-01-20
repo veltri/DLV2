@@ -9,7 +9,7 @@
 #include "../grounder/atom/ClassicalLiteral.h"
 #include "../grounder/atom/BuiltInAtom.h"
 
-
+#include <string>
 #include "algorithm"
 
 namespace DLV2 {
@@ -55,7 +55,6 @@ void InMemoryInputBuilder::onRule() {
 
 void InMemoryInputBuilder::onConstraint() {
 	set_predicate pred_head=currentRule->getPredicateInHead();
-	for(auto p:pred_head)p->setIdb();
 	statementDependency->addRuleMapping(currentRule);
 	currentRule= new Rule;
 }
@@ -130,11 +129,58 @@ void InMemoryInputBuilder::onGreaterOrEqualOperator() {
 	currentBinop = Binop::GREATER_OR_EQ;
 }
 
+bool isNumeric(const char* pszInput, int nNumberBase )
+{
+    istringstream iss( pszInput );
+
+    if ( nNumberBase == 10 )
+    {
+        double dTestSink;
+        iss >> dTestSink;
+    }
+    else if ( nNumberBase == 8 || nNumberBase == 16 )
+    {
+        int nTestSink;
+        iss >> ( ( nNumberBase == 8 ) ? oct : hex ) >> nTestSink;
+    }
+    else
+        return false;
+
+    // Was any input successfully consumed/converted?
+    if ( !iss )
+        return false;
+
+    // Was all the input successfully consumed/converted?
+    return ( iss.rdbuf()->in_avail() == 0 );
+}
+
+void InMemoryInputBuilder::newTerm(char* value)
+{
+
+    if( value[0] >= 'A' && value[0] <='Z' ) // Variable
+    {
+    	string name=value;
+		Term *term=new VariableTerm(false,name);
+		termTable->addTerm(term);
+		terms_parsered.push_back(term);
+    }
+    else if( (value[0] == '\"' && value[strlen(value)-1] == '\"') ||
+            (value[0] >= 'a' && value[0] <='z') )   // String constant
+    {
+    	string name=value;
+    	Term *term=new StringConstantTerm(false,name);
+		termTable->addTerm(term);
+		terms_parsered.push_back(term);
+    }
+    else if( isNumeric( value, 10 ) ) // Numeric constant
+    {
+    	int val = atoi(value);
+    	onTerm(val);
+    }
+}
+
 void InMemoryInputBuilder::onTerm(char* value) {
-	string name=value;
-	Term *term=new StringConstantTerm(false,name);
-	termTable->addTerm(term);
-	terms_parsered.push_back(term);
+	newTerm(value);
 }
 
 void InMemoryInputBuilder::onTerm(int value) {
