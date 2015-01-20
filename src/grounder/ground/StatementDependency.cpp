@@ -362,8 +362,6 @@ void ComponentGraph::createComponent(DependencyGraph &depGraph,
 		}
 		rules.clear();
 	}
-	print();
-
 
 }
 

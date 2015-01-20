@@ -198,15 +198,8 @@ DLV2Facade::solve()
     if( getOptions().getInputBuilderPolicy() == BUILDER_IN_MEMORY )
     {
 
-    	for(int i=0;i<DLV2::grounder::StatementDependency::getInstance()->getRulesSize();i++)
-    		DLV2::grounder::StatementDependency::getInstance()->getRule(i)->print();
-
-
-
     	DLV2::grounder::ProgramGrounder gr;
     	gr.ground();
-
-
 
     }
 

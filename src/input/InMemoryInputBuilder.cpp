@@ -54,7 +54,6 @@ void InMemoryInputBuilder::onRule() {
 }
 
 void InMemoryInputBuilder::onConstraint() {
-	set_predicate pred_head=currentRule->getPredicateInHead();
 	statementDependency->addRuleMapping(currentRule);
 	currentRule= new Rule;
 }

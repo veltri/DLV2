@@ -96,7 +96,9 @@ Options::Options():
         printDepGraph(false),
         printStatistics(false),
         inputPolicy(BUILDER_IN_MEMORY),
-        outputPolicy(OUTPUT_ASPCORE2) 
+        outputPolicy(OUTPUT_ASPCORE2),
+		indexType(DEFAULT),
+		indexingPreferences("")
 {
 
 }
@@ -108,7 +110,9 @@ Options::Options(
         printDepGraph(o.printDepGraph),
         printStatistics(o.printStatistics),
         inputPolicy(o.inputPolicy),
-        outputPolicy(o.outputPolicy) 
+        outputPolicy(o.outputPolicy),
+		indexType(o.indexType),
+		indexingPreferences(o.indexingPreferences)
 {
 
 }
@@ -232,12 +236,12 @@ Options::init(
                 
             case OPTIONID_hashType:
             	hashType = atoi(optarg);
-                assert_msg((hashType>STL_HASH && hashType<PERL_B),"Hash type not supported");
+                assert_msg((hashType>=STL_HASH && hashType<=PERL_B),"Hash type not supported");
             	break;
 
             case OPTIONID_indexType:
             	indexType = atoi(optarg);
-                assert_msg((indexType>DEFAULT && indexType<MAP),"Index type not supported");
+                assert_msg((indexType>=DEFAULT && indexType<=MAP),"Index type not supported");
                 break;
 
             case OPTIONID_indexingPreferences:
