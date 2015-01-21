@@ -27,7 +27,7 @@ InMemoryInputBuilder::InMemoryInputBuilder() {
 }
 
 InMemoryInputBuilder::~InMemoryInputBuilder() {
-	// TODO Auto-generated destructor stub
+	delete currentRule;
 }
 
 void InMemoryInputBuilder::onDirective(char* directiveName,
@@ -93,7 +93,8 @@ void InMemoryInputBuilder::onExistentialAtom() {
 }
 
 void InMemoryInputBuilder::onPredicateName(char* name) {
-	Predicate *predicate=new Predicate(string(name),terms_parsered.size());
+	string name_predicate(name);
+	Predicate *predicate=new Predicate(name_predicate,terms_parsered.size());
 	predicateTable->getInstance()->insertPredicate(predicate);
 	instancesTable->addInstance(predicate);
 

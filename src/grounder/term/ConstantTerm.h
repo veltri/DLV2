@@ -34,7 +34,7 @@ public:
 	virtual TermType getType()const{return TermType::CONSTANT;};
 	virtual bool contain(TermType type){if(TermType::CONSTANT==type)return true;return false;};
 	virtual bool isGround(){return true;}
-	virtual size_t hash(){return HashString::getHashStringFromConfig()->computeHash(getName());};
+	virtual size_t hash(){string hashString(getName());return HashString::getHashStringFromConfig()->computeHash(hashString);};
 
 
 

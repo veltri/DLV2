@@ -18,18 +18,18 @@ namespace grounder{
 
 HashString *HashString::hashString;
 
-size_t STLHashString::computeHash(string s){
+size_t STLHashString::computeHash(string& s){
 	  hash<string> str_hash;
 	  return str_hash(s);
 }
 
-size_t BOOSTHashString::computeHash(string s) {
+size_t BOOSTHashString::computeHash(string& s) {
 	 boost::hash<string> str_hash;
 
 	 return str_hash(s);
 }
 
-size_t JavaHashString::computeHash(string s) {
+size_t JavaHashString::computeHash(string& s) {
 		const char* sx=s.c_str();
 		int length=s.length();
 		size_t hash=0;
@@ -40,7 +40,7 @@ size_t JavaHashString::computeHash(string s) {
 		return hash;
 }
 
-size_t PerlBernsteinHashString::computeHash(string s) {
+size_t PerlBernsteinHashString::computeHash(string& s) {
 		const char* sx=s.c_str();
 		int i_hash=s.length();
 		size_t hash_perl=0;
@@ -49,7 +49,7 @@ size_t PerlBernsteinHashString::computeHash(string s) {
 		return hash_perl + (hash_perl>>5);
 }
 
-size_t PerlJenkinsHashString::computeHash(string s) {
+size_t PerlJenkinsHashString::computeHash(string& s) {
 	const char* sx=s.c_str();
 	size_t hash, i;
     for(hash = i = 0; i < s.length(); ++i)
@@ -64,7 +64,7 @@ size_t PerlJenkinsHashString::computeHash(string s) {
     return hash;
 }
 
-size_t MurMurHashString::computeHash(string s) {
+size_t MurMurHashString::computeHash(string& s) {
 	const uint64_t m = 0xc6a4a7935bd1e995;
 	const int r = 47;
 	const int len=s.size();

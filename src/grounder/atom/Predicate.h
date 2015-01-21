@@ -32,14 +32,14 @@ public:
 	 * @param name set the name of the predicate
 	 * @param arity set the arity of the predicate
 	 */
-	Predicate(string name, unsigned int arity) : Indexable(), arity(arity), name(name), edb(true) {};
+	Predicate(string& name, unsigned int arity) : Indexable(), arity(arity), name(name), edb(true) {};
 
 	/** Constructor
 	 * @param name set the name of the predicate
 	 * @param arity set the arity of the predicate
 	 * @param edbIdb set whether the the predicate is an EDB or not
 	 */
-	Predicate(string name, unsigned int arity, bool edbIdb) : Indexable(), arity(arity), name(name), edb(edbIdb) {};
+	Predicate(string& name, unsigned int arity, bool edbIdb) : Indexable(), arity(arity), name(name), edb(edbIdb) {};
 
 	///Getter method for the arity
 	unsigned int getArity() const {return arity;}

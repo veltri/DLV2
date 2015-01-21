@@ -29,7 +29,7 @@ public:
 	HashString(){};
 	virtual ~HashString(){delete hashString;}
 	///Compute the hash of a string
-	virtual size_t computeHash(string s) = 0;
+	virtual size_t computeHash(string& s) = 0;
 
 	/// Return an hashString according the configuration
 	static HashString* getHashStringFromConfig();
@@ -43,7 +43,7 @@ private:
 class STLHashString: public HashString{
 public:
 	STLHashString(){};
-	virtual size_t computeHash(string s);
+	virtual size_t computeHash(string& s);
 };
 
 /**
@@ -52,7 +52,7 @@ public:
 class BOOSTHashString: public HashString{
 public:
 	BOOSTHashString(){};
-	virtual size_t computeHash(string s);
+	virtual size_t computeHash(string& s);
 
 };
 
@@ -62,7 +62,7 @@ public:
 class JavaHashString: public HashString{
 public:
 	JavaHashString(){};
-	virtual size_t computeHash(string s);
+	virtual size_t computeHash(string& s);
 
 };
 
@@ -72,7 +72,7 @@ public:
 class PerlBernsteinHashString: public HashString{
 public:
 	PerlBernsteinHashString(){};
-	virtual size_t computeHash(string s);
+	virtual size_t computeHash(string& s);
 
 };
 
@@ -82,7 +82,7 @@ public:
 class PerlJenkinsHashString: public HashString{
 public:
 	PerlJenkinsHashString(){};
-	virtual size_t computeHash(string s);
+	virtual size_t computeHash(string& s);
 
 };
 
@@ -92,7 +92,7 @@ public:
 class MurMurHashString: public HashString{
 public:
 	MurMurHashString(){srand (time(NULL));seed=rand();};
-	virtual size_t computeHash(string s);
+	virtual size_t computeHash(string& s);
 private:
 	int seed;
 };

@@ -98,6 +98,7 @@ Options::Options():
         inputPolicy(BUILDER_IN_MEMORY),
         outputPolicy(OUTPUT_ASPCORE2),
 		indexType(DEFAULT),
+		hashType(STL_HASH),
 		indexingPreferences("")
 {
 
