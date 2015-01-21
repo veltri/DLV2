@@ -195,7 +195,7 @@ public:
 	///Virtual method implementation
 	virtual void updateDelta(AtomTable* nextDelta){};
 	///Destructor
-	virtual ~SimpleIndexAtom() {};
+	virtual ~SimpleIndexAtom() {for(auto it:matches_id) delete it.second;};
 protected:
 	///The unordered map used to store the integer identifiers returned by the firstMach method
 	unordered_map<unsigned int, ResultMatch*> matches_id;

@@ -59,7 +59,7 @@ public:
 	NumericConstantTerm(bool negative,int n):ConstantTerm(negative),numeric_constant(n){};
 	virtual string getName()const{return boost::lexical_cast<string>(numeric_constant);};
 	virtual int getConstantValue(){return numeric_constant;};
-
+	virtual size_t hash(){return numeric_constant;};
 
 private:
 	int numeric_constant;

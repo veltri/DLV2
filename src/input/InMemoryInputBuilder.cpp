@@ -172,7 +172,7 @@ void InMemoryInputBuilder::newTerm(char* value)
 		termTable->addTerm(term);
 		terms_parsered.push_back(term);
     }
-    else if( isNumeric( value, 10 ) ) // Numeric constant
+    else //if( isNumeric( value, 10 ) ) // Numeric constant
     {
     	int val = atoi(value);
     	onTerm(val);
