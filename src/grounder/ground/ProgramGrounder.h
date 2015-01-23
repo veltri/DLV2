@@ -12,7 +12,7 @@
 
 #include "ProgramEvaluator.h"
 #include "../table/PredicateTable.h"
-#include "../table/Instance.h"
+#include "../table/PredicateExtension.h"
 #include "../table/TermTable.h"
 #include "StatementDependency.h"
 #include "../statement/GroundRule.h"
@@ -36,7 +36,7 @@ public:
 	 *	Since the term table is a singleton, it is not needed to give it as a parameter.
 	 */
 	ProgramGrounder() :
-			predicateTable(PredicateTable::getInstance()), instancesTable(InstanceTable::getInstance()), statementDependency(StatementDependency::getInstance()), termsMap(TermTable::getInstance()),
+			predicateTable(PredicateTable::getInstance()), instancesTable(PredicateExtTable::getInstance()), statementDependency(StatementDependency::getInstance()), termsMap(TermTable::getInstance()),
 			currentRule(0), current_atom(0),index_current_atom(0){};
 
 	///This method executes the overall grounding process
@@ -61,7 +61,7 @@ public:
 	;
 
 	/// Return the InstanceTable
-	InstanceTable* getInstanceTable() {
+	PredicateExtTable* getInstanceTable() {
 		return instancesTable;
 	}
 	;
@@ -83,7 +83,7 @@ private:
 	///A pointer to the predicate table
 	PredicateTable* predicateTable;
 	///A pointer to the instances table
-	InstanceTable* instancesTable;
+	PredicateExtTable* instancesTable;
 	///A pointer to the statement table
 	StatementDependency* statementDependency;
 	///A pointer to the terms table
@@ -126,10 +126,10 @@ private:
 	void updateDelta(Rule* r);
 
 	// Ground atom like builtIn and negative that have only buond atom
-	bool groundBoundAtom( bool &find, bool negation, bool searchDelta, Instance* instance, Atom*& templateAtom);
+	bool groundBoundAtom( bool &find, bool negation, bool searchDelta, PredicateExtension* instance, Atom*& templateAtom);
 
 	/// Call first match or next match for the current atom
-	void firstNextMatch( bool searchDelta, Instance* instance, bool& firstMatch, Atom*& templateAtom, bool& find);
+	void firstNextMatch( bool searchDelta, PredicateExtension* instance, bool& firstMatch, Atom*& templateAtom, bool& find);
 
 	///Skip the built in and negative atom for the nextMatch
 	///@param firstSkip if true go back

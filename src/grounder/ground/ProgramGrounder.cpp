@@ -95,13 +95,13 @@ void ProgramGrounder::ground() {
 
 void ProgramGrounder::updateDelta(Rule* r) {
 	for (auto it = r->getBeginHead(); it != r->getEndHead(); it++) {
-		Instance* is = instancesTable->getInstance((*it)->getPredicate());
+		PredicateExtension* is = instancesTable->getInstance((*it)->getPredicate());
 		if (is != nullptr)
 			is->moveNextDeltaInDelta();
 	}
 }
 
-bool ProgramGrounder::groundBoundAtom(bool &find, bool negation, bool searchDelta, Instance* instance, Atom*& templateAtom) {
+bool ProgramGrounder::groundBoundAtom(bool &find, bool negation, bool searchDelta, PredicateExtension* instance, Atom*& templateAtom) {
 
 
 	current_id_match.push_back(0);
@@ -133,9 +133,9 @@ bool ProgramGrounder::groundBoundAtom(bool &find, bool negation, bool searchDelt
 	return true;
 }
 
-void ProgramGrounder::firstNextMatch( bool searchDelta, Instance* instance, bool& firstMatch,Atom*& templateAtom, bool& find) {
+void ProgramGrounder::firstNextMatch( bool searchDelta, PredicateExtension* instance, bool& firstMatch,Atom*& templateAtom, bool& find) {
 	// Otherwise a search is made in instance in order to provide bind variables with a value
-	IndexAtom* indexingStrategy = instance->getIndex();
+	AtomSearcher* indexingStrategy = instance->getIndex();
 	// Determine if it is needed to perform a first or next match
 	firstMatch = index_current_atom != current_id_match.size() - 1;
 	if (templateAtom != nullptr)
@@ -192,7 +192,7 @@ bool ProgramGrounder::groundRule(Rule* r, bool firstIteraction, bool isRecursive
 		Predicate* current_predicate = current_atom->getPredicate();
 		negation = current_atom->isNegative();
 		bool firstMatch;
-		Instance * instance=nullptr;
+		PredicateExtension * instance=nullptr;
 		bool searchDelta=false;
 		if(current_predicate!=nullptr){
 			instance = instancesTable->getInstance(current_predicate);

@@ -20,7 +20,7 @@
 #include "../grounder/term/ArithTerm.h"
 #include "../grounder/term/FunctionTerm.h"
 #include "../grounder/ground/StatementDependency.h"
-#include "../grounder/table/Instance.h"
+#include "../grounder/table/PredicateExtension.h"
 
 using namespace std;
 
@@ -89,7 +89,7 @@ private:
 
     StatementDependency* statementDependency;
 
-    InstanceTable* instancesTable;
+    PredicateExtTable* instancesTable;
 
     vector<Term*> terms_parsered;
 

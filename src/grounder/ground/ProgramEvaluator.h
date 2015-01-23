@@ -13,9 +13,9 @@
 #include <unordered_map>
 
 #include "../table/PredicateTable.h"
-#include "../table/Instance.h"
 #include "StatementDependency.h"
 #include "../statement/GroundRule.h"
+#include "../table/PredicateExtension.h"
 
 
 using namespace std;
@@ -45,7 +45,7 @@ struct hashRule {
 
 	/// The hash of a ground atom
 	inline size_t operator()(GroundAtom* atom) const {
-	  return atom->predicate->getIndex()+HashVecInt::getHashVecIntFromConfig()->computeHashTerm(atom->atom->terms);
+	  return atom->predicate->getIndex()+HashVecInt::getHashVecIntFromConfig()->computeHashTerm(atom->atom->getTerms());
 	}
 
 	inline bool operator()( GroundAtom* a1,  GroundAtom* a2)const{
@@ -134,10 +134,10 @@ public:
 	}
 
 	/// Print the rule and simplify if is possible
-	void printAndSimplify(InstanceTable* instancesTable);
+	void printAndSimplify(PredicateExtTable* instancesTable);
 
 	/// Printer method for the grounded rules according to the given assignment
-	bool printGroundRule(InstanceTable* instancesTable,PredicateTable * predicateTable,StatementDependency * statementDep,Rule *r, map_term_term& var_assign, bool isRecursive, bool firstIteration);
+	bool printGroundRule(PredicateExtTable* instancesTable,PredicateTable * predicateTable,StatementDependency * statementDep,Rule *r, map_term_term& var_assign, bool isRecursive, bool firstIteration);
 
 	virtual ~ProgramEvaluator(){};
 private:
@@ -151,12 +151,12 @@ private:
 	/// Ground the body of the rule
 	bool groundBody(bool disjunction, bool isRecursive, bool firstIteration,
 			bool updated, Rule* r, map_term_term& var_assign,
-			InstanceTable* instancesTable, GroundRule* groundRule,
+			PredicateExtTable* instancesTable, GroundRule* groundRule,
 			bool& added);
 
 	/// Ground the head of the rule
 	void groundHead(Rule* r, PredicateTable* predicateTable,
-			map_term_term& var_assign, InstanceTable* instancesTable,
+			map_term_term& var_assign, PredicateExtTable* instancesTable,
 			StatementDependency* statementDep, GroundRule* groundRule);
 
 	///Ground the constraint with no simplification

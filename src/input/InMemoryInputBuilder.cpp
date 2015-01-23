@@ -19,7 +19,7 @@ InMemoryInputBuilder::InMemoryInputBuilder() {
 	termTable=TermTable::getInstance();
 	predicateTable=PredicateTable::getInstance();
 	statementDependency = StatementDependency::getInstance();
-	instancesTable=InstanceTable::getInstance();
+	instancesTable=PredicateExtTable::getInstance();
 
 	currentRule = new Rule;
 	currentAtom = nullptr;
@@ -39,13 +39,11 @@ void InMemoryInputBuilder::onRule() {
 		Atom *fact=*currentRule->getBeginHead();
 		Predicate* predicate=fact->getPredicate();
 		instancesTable->addInstance(predicate);
-		GenericAtom* atomFact=new GenericAtom(fact->getTerms());
+		GenericAtom* atomFact=new GenericAtom(fact,true);
 		bool up=false;
-		instancesTable->getInstance(predicate)->add(Instance::FACTS,atomFact,up);
-		delete fact;
+		instancesTable->getInstance(predicate)->add(PredicateExtension::FACTS,atomFact,up);
 		currentRule->clear();
 	}else{
-
 		set_predicate pred_head=currentRule->getPredicateInHead();
 		for(auto p:pred_head)p->setIdb();
 		statementDependency->addRuleMapping(currentRule);

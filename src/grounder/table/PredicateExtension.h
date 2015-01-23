@@ -10,8 +10,8 @@
 
 #include <iostream>
 
-#include "IndexAtom.h"
 #include "../../util/Options.h"
+#include "AtomSearcher.h"
 
 using namespace std;
 
@@ -28,10 +28,10 @@ typedef unordered_multimap<unsigned int,unsigned int> map_int_int;
  * This class represents the instances (the facts and the no facts) of a predicate
  */
 
-class Instance {
+class PredicateExtension {
 public:
 	///Constructor
-	Instance(Predicate* predicate): predicate(predicate),indexAtom(0) {
+	PredicateExtension(Predicate* predicate): predicate(predicate),indexAtom(0) {
 		for(unsigned int i=0;i<4;i++)
 			tables.push_back(AtomTable());
 		this->setIndexAtom();
@@ -41,7 +41,7 @@ public:
 	Predicate* getPredicate() const {return predicate;}
 
 	///Getter for the IndexAtom
-	IndexAtom* getIndex() {return indexAtom;}
+	AtomSearcher* getIndex() {return indexAtom;}
 
 	GenericAtom* getGenericAtom(unsigned int table, vector<Term*>& terms,bool truth);
 	GenericAtom* getGenericAtom(vector<Term*>& terms,bool truth);
@@ -61,10 +61,10 @@ public:
 	bool findIn(unsigned int table, GenericAtom*& atomUndef, bool& updated);
 
 	///Printer method
-	inline void print(){for(GenericAtom*fact:tables[Instance::FACTS]){ClassicalLiteral::print(predicate,fact->terms,false,false); cout<<"."<<endl;}}
+	inline void print(){for(GenericAtom*fact:tables[PredicateExtension::FACTS]){ClassicalLiteral::print(predicate,fact->getTerms(),false,false); cout<<"."<<endl;}}
 
 	///Destructor
-	~Instance();
+	~PredicateExtension();
 
 	static const unsigned int FACTS=0;
 	static const unsigned int NOFACTS=1;
@@ -75,7 +75,7 @@ private:
 	///The predicate
 	Predicate* predicate;
 	///The IndexAtom to set the indexing strategy
-	IndexAtom* indexAtom;
+	AtomSearcher* indexAtom;
 	///The vector of tables: Facts, No-Facts, Delta, NextDelta
 	vector<AtomTable> tables;
 
@@ -88,50 +88,50 @@ private:
  * This class stores the instances for all the predicate.
  */
 
-class InstanceTable {
+class PredicateExtTable {
 public:
 
 
 	///This method adds an Instance for a predicate
 	void addInstance(Predicate* p) {
-		if(!instanceTable.count(p->getIndex())){
-			Instance* is = new Instance(p);
-			instanceTable.insert({p->getIndex(),is});
+		if(!predicateExtTable.count(p->getIndex())){
+			PredicateExtension* is = new PredicateExtension(p);
+			predicateExtTable.insert({p->getIndex(),is});
 		}
 	};
 
 	///Getter for the instances of a predicate
-	Instance* getInstance(Predicate* p) {
-		auto result= instanceTable.find(p->getIndex());
-		if(result==instanceTable.end()) return nullptr;
+	PredicateExtension* getInstance(Predicate* p) {
+		auto result= predicateExtTable.find(p->getIndex());
+		if(result==predicateExtTable.end()) return nullptr;
 		return result->second;
 	};
 
 	///Getter for the instances of a predicate index
-	Instance* getInstanceIndex(index_object p) {
-		auto result= instanceTable.find(p);
-		if(result==instanceTable.end()) return nullptr;
+	PredicateExtension* getInstanceIndex(index_object p) {
+		auto result= predicateExtTable.find(p);
+		if(result==predicateExtTable.end()) return nullptr;
 		return result->second;
 	};
 
 	///This method return the size of the map of instances
-	unsigned int getSize() {return instanceTable.size();};
+	unsigned int getSize() {return predicateExtTable.size();};
 
 	///Printer method
-	void print() {for (auto i : instanceTable)i.second->print();	};
+	void print() {for (auto i : predicateExtTable)i.second->print();	};
 
 	///Destructor
-	~InstanceTable();
+	~PredicateExtTable();
 
-	static InstanceTable* getInstance();
+	static PredicateExtTable* getInstance();
 private:
 	///Constructor
-	InstanceTable(){}
+	PredicateExtTable(){}
 
-	static InstanceTable *instanceTable_;
+	static PredicateExtTable *predicateExtTable_;
 
 	///The map that stores all the Instances
-	unordered_map<index_object,Instance*> instanceTable;
+	unordered_map<index_object,PredicateExtension*> predicateExtTable;
 };
 
 };

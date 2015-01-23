@@ -40,7 +40,7 @@ void GroundRule::print() {
 	if(head.size()>0){
 		unsigned int i=0;
 		for (auto atom:head) {
-			ClassicalLiteral::print(atom->predicate,atom->atom->terms,false,false);
+			ClassicalLiteral::print(atom->predicate,atom->atom->getTerms(),false,false);
 			if(i!=head.size()-1)
 				cout<<";";
 			i++;
@@ -50,7 +50,7 @@ void GroundRule::print() {
 	cout<<":-";
 	unsigned int i=0;
 	for (auto atom:body) {
-		ClassicalLiteral::print(atom->predicate,atom->atom->terms,atom->negative,false);
+		ClassicalLiteral::print(atom->predicate,atom->atom->getTerms(),atom->negative,false);
 		if(i<body.size()-1)
 			cout<<";";
 		i++;

@@ -5,8 +5,8 @@
  *      Author: jessica
  */
 
-#include "IndexAtom.h"
 #include "../../util/Options.h"
+#include "AtomSearcher.h"
 
 
 namespace DLV2{
@@ -19,8 +19,8 @@ bool ResultMatch::match(GenericAtom *genericAtom,Atom *templateAtom,map_term_ter
 	// Call match for each term and if all term result true put the assignment in the current assignment
 	map_term_term assignInTerm(currentAssignment);
 
-	for(unsigned int i=0;i<genericAtom->terms.size();i++)
-		if(!genericAtom->terms[i]->match(templateAtom->getTerm(i),assignInTerm))
+	for(unsigned int i=0;i<genericAtom->getTermsSize();i++)
+		if(!genericAtom->getTerm(i)->match(templateAtom->getTerm(i),assignInTerm))
 			return false;
 	for(auto assignment:assignInTerm)if(!currentAssignment.count(assignment.first))nextAssignment.insert(assignment);
 	return true;
@@ -28,11 +28,11 @@ bool ResultMatch::match(GenericAtom *genericAtom,Atom *templateAtom,map_term_ter
 
 /****************************************************** SIMPLE INDEX ATOM ***************************************************/
 
-bool SimpleIndexAtom::findIfExists(AtomTable* collection,bool& isUndef) {
+bool SimpleAtomSearcher::findIfExists(AtomTable* collection,bool& isUndef) {
 	if(collection->size()==0)return false;
 
 	//Compute the hash of the atom
-	GenericAtom *genAtom=new GenericAtom(templateAtom->getTerms());
+	GenericAtom *genAtom=new GenericAtom(templateAtom->getTerms(),true);
 
 	//Look for the atom
 	bool find=false;
@@ -47,12 +47,12 @@ bool SimpleIndexAtom::findIfExists(AtomTable* collection,bool& isUndef) {
 	return find;
 }
 
-bool SimpleIndexAtom::findIfExists(AtomTable* collection) {
+bool SimpleAtomSearcher::findIfExists(AtomTable* collection) {
 	bool isUndef;
 	return findIfExists(collection,isUndef);
 }
 
-unsigned int SimpleIndexAtom::firstMatch(bool searchInDelta,Atom *templateAtom,map_term_term& currentAssignment, bool& find) {
+unsigned int SimpleAtomSearcher::firstMatch(bool searchInDelta,Atom *templateAtom,map_term_term& currentAssignment, bool& find) {
 	unsigned int id = counter;counter++;
 
 	this->templateAtom=templateAtom;
@@ -82,7 +82,7 @@ unsigned int SimpleIndexAtom::firstMatch(bool searchInDelta,Atom *templateAtom,m
 
 }
 
-bool SimpleIndexAtom::searchForFirstMatch(AtomTable* table, ResultMatch* rm){
+bool SimpleAtomSearcher::searchForFirstMatch(AtomTable* table, ResultMatch* rm){
 	//Call findIfAFactExist only if all the terms are bound
 	if(templateAtom->isGround()){
 		if(findIfExists(table))
@@ -94,7 +94,7 @@ bool SimpleIndexAtom::searchForFirstMatch(AtomTable* table, ResultMatch* rm){
 	return false;
 }
 
-void SimpleIndexAtom::computeFirstMatch(AtomTable* collection,ResultMatch* rm){
+void SimpleAtomSearcher::computeFirstMatch(AtomTable* collection,ResultMatch* rm){
 	// If not contains variable (then there is anonymous but the other is ground)
 	bool isNotVariable=templateAtom->getVariable().size()==0;
 	for (GenericAtom *genericAtom : *collection) {
@@ -111,7 +111,7 @@ void SimpleIndexAtom::computeFirstMatch(AtomTable* collection,ResultMatch* rm){
 }
 
 
-void SimpleIndexAtom::nextMatch(unsigned int id,map_term_term& currentAssignment,bool& find) {
+void SimpleAtomSearcher::nextMatch(unsigned int id,map_term_term& currentAssignment,bool& find) {
 	ResultMatch *rm=matches_id.find(id)->second;
 
 	///Return the next matching facts or no facts retrieved from the integer identifier assigned by the firstMatch method
@@ -126,7 +126,7 @@ void SimpleIndexAtom::nextMatch(unsigned int id,map_term_term& currentAssignment
 }
 
 
-void SimpleIndexAtom::findIfExist(bool searchInDelta,Atom *templateAtom,bool& find,bool& isUndef) {
+void SimpleAtomSearcher::findIfExist(bool searchInDelta,Atom *templateAtom,bool& find,bool& isUndef) {
 	this->templateAtom=templateAtom;
 
 	if((searchInDelta && findIfExists(delta,isUndef) ) ||
@@ -146,10 +146,10 @@ void SimpleIndexAtom::findIfExist(bool searchInDelta,Atom *templateAtom,bool& fi
 
 /****************************************************** SINGLE TERM INDEX ATOM ***************************************************/
 
-void SingleTermIndexAtom::updateDelta(AtomTable* nextDelta) {
+void SingleTermAtomSearcher::updateDelta(AtomTable* nextDelta) {
 	if(instantiateIndexMaps){
 		for(GenericAtom* atom: *delta){
-			index_object termIndex=atom->terms[positionOfIndexing]->getIndex();
+			index_object termIndex=atom->getTerm(positionOfIndexing)->getIndex();
 			if(nofactsIndexMap.count(termIndex)){
 				nofactsIndexMap[termIndex].insert(atom);
 			}
@@ -161,7 +161,7 @@ void SingleTermIndexAtom::updateDelta(AtomTable* nextDelta) {
 		}
 		deltaIndexMap.clear();
 		for(GenericAtom* atom: *nextDelta){
-			index_object termIndex=atom->terms[positionOfIndexing]->getIndex();
+			index_object termIndex=atom->getTerm(positionOfIndexing)->getIndex();
 			if(deltaIndexMap.count(termIndex)){
 				deltaIndexMap[termIndex].insert(atom);
 			}
@@ -175,7 +175,7 @@ void SingleTermIndexAtom::updateDelta(AtomTable* nextDelta) {
 }
 
 
-pair<bool, index_object> SingleTermIndexAtom::createIndex(vector<unsigned int>& bind) {
+pair<bool, index_object> SingleTermAtomSearcher::createIndex(vector<unsigned int>& bind) {
 	// Compute the bind variables, determine the indexing term and fill the facts and no facts maps if not yet filled
 	pair<bool, index_object> termBoundIndex( { false, 0 });
 	if(!positionOfIndexingSetByUser){
@@ -207,7 +207,7 @@ pair<bool, index_object> SingleTermIndexAtom::createIndex(vector<unsigned int>& 
 	return termBoundIndex;
 }
 
-bool SingleTermIndexAtom::getMatchingTable(AtomTable*& matchingTable,unordered_map<index_object,AtomTable>& index_table,AtomTable*& table,pair<bool, index_object>& termBoundIndex){
+bool SingleTermAtomSearcher::getMatchingTable(AtomTable*& matchingTable,unordered_map<index_object,AtomTable>& index_table,AtomTable*& table,pair<bool, index_object>& termBoundIndex){
 	if(termBoundIndex.first)
 		matchingTable=&index_table[termBoundIndex.second];
 	else
@@ -216,7 +216,7 @@ bool SingleTermIndexAtom::getMatchingTable(AtomTable*& matchingTable,unordered_m
 }
 
 
-unsigned int SingleTermIndexAtom::firstMatch(bool searchInDelta, Atom *templateAtom, map_term_term& currentAssignment, bool& find){
+unsigned int SingleTermAtomSearcher::firstMatch(bool searchInDelta, Atom *templateAtom, map_term_term& currentAssignment, bool& find){
 
 	unsigned int id = counter;counter++;
 
@@ -247,12 +247,12 @@ unsigned int SingleTermIndexAtom::firstMatch(bool searchInDelta, Atom *templateA
 
 }
 
-void SingleTermIndexAtom::initializeIndexMaps(){
+void SingleTermAtomSearcher::initializeIndexMaps(){
 //	Timer::getInstance()->start("Creation Index Structure");
 	unordered_set<index_object> termToBeIndexedIndices;
 
 	for (GenericAtom*a : *facts) {
-		index_object termIndex=a->terms[positionOfIndexing]->getIndex();
+		index_object termIndex=a->getTerm(positionOfIndexing)->getIndex();
 		if(termToBeIndexedIndices.insert(termIndex).second){
 			AtomTable values;
 			values.insert(a);
@@ -265,7 +265,7 @@ void SingleTermIndexAtom::initializeIndexMaps(){
 	if(!predicate->isEdb()){
 		termToBeIndexedIndices.clear();
 		for (GenericAtom*a : *nofacts) {
-			index_object termIndex=a->terms[positionOfIndexing]->getIndex();
+			index_object termIndex=a->getTerm(positionOfIndexing)->getIndex();
 			if(termToBeIndexedIndices.insert(termIndex).second){
 				AtomTable values;
 				values.insert(a);
@@ -283,21 +283,21 @@ void SingleTermIndexAtom::initializeIndexMaps(){
 
 /****************************************************** SINGLE TERM MULTI MAP INDEX ATOM ***************************************************/
 
-void SingleTermIndexAtomMultiMap::updateDelta(AtomTable* nextDelta) {
+void SingleTermAtomSearcherMultiMap::updateDelta(AtomTable* nextDelta) {
 	if(instantiateIndexMaps){
 		for(GenericAtom* atom: *delta){
-			index_object termIndex=atom->terms[positionOfIndexing]->getIndex();
+			index_object termIndex=atom->getTerm(positionOfIndexing)->getIndex();
 			nofactsIndexMap.insert({termIndex,atom});
 		}
 		deltaIndexMap.clear();
 		for(GenericAtom* atom: *nextDelta){
-			index_object termIndex=atom->terms[positionOfIndexing]->getIndex();
+			index_object termIndex=atom->getTerm(positionOfIndexing)->getIndex();
 			deltaIndexMap.insert({termIndex,atom});
 		}
 	}
 }
 
-pair<bool, index_object> SingleTermIndexAtomMultiMap::createIndex(vector<unsigned int>& bind) {
+pair<bool, index_object> SingleTermAtomSearcherMultiMap::createIndex(vector<unsigned int>& bind) {
 	// Compute the bind variables, determine the indexing term and fill the facts and no facts maps if not yet filled
 	pair<bool, index_object> termBoundIndex( { false, 0 });
 	if(!positionOfIndexingSetByUser){
@@ -329,7 +329,7 @@ pair<bool, index_object> SingleTermIndexAtomMultiMap::createIndex(vector<unsigne
 	return termBoundIndex;
 }
 
-bool SingleTermIndexAtomMultiMap::getMatchingTable(AtomTable*& matchingTable,unordered_multimap<index_object,GenericAtom*>& index_table,AtomTable*& table,pair<bool, index_object>& termBoundIndex){
+bool SingleTermAtomSearcherMultiMap::getMatchingTable(AtomTable*& matchingTable,unordered_multimap<index_object,GenericAtom*>& index_table,AtomTable*& table,pair<bool, index_object>& termBoundIndex){
 	if(termBoundIndex.first){
 		matchingTable=new AtomTable;
 		auto pair=index_table.equal_range(termBoundIndex.second);
@@ -341,7 +341,7 @@ bool SingleTermIndexAtomMultiMap::getMatchingTable(AtomTable*& matchingTable,uno
 	return true;
 }
 
-bool SingleTermIndexAtomMultiMap::searchForFirstMatch(AtomTable* table, ResultMatch* rm){
+bool SingleTermAtomSearcherMultiMap::searchForFirstMatch(AtomTable* table, ResultMatch* rm){
 	//Call findIfAFactExist only if all the terms are bound
 	if(templateAtom->isGround()){
 		if(findIfExists(table))
@@ -354,7 +354,7 @@ bool SingleTermIndexAtomMultiMap::searchForFirstMatch(AtomTable* table, ResultMa
 	return false;
 }
 
-unsigned int SingleTermIndexAtomMultiMap::firstMatch(bool searchInDelta, Atom *templateAtom, map_term_term& currentAssignment, bool& find){
+unsigned int SingleTermAtomSearcherMultiMap::firstMatch(bool searchInDelta, Atom *templateAtom, map_term_term& currentAssignment, bool& find){
 	unsigned int id = counter;counter++;
 
 	this->templateAtom=templateAtom;
@@ -381,15 +381,15 @@ unsigned int SingleTermIndexAtomMultiMap::firstMatch(bool searchInDelta, Atom *t
 }
 
 
-void SingleTermIndexAtomMultiMap::initializeIndexMaps(){
+void SingleTermAtomSearcherMultiMap::initializeIndexMaps(){
 //	Timer::getInstance()->start("Creation Index Structure");
 	for (GenericAtom*a : *facts) {
-		index_object termIndex=a->terms[positionOfIndexing]->getIndex();
+		index_object termIndex=a->getTerm(positionOfIndexing)->getIndex();
 		factsIndexMap.insert({termIndex,a});
 	}
 	if(!predicate->isEdb()){
 		for (GenericAtom*a : *nofacts) {
-				index_object termIndex=a->terms[positionOfIndexing]->getIndex();
+				index_object termIndex=a->getTerm(positionOfIndexing)->getIndex();
 				nofactsIndexMap.insert({termIndex,a});
 		}
 	}

@@ -12,6 +12,7 @@
 
 #include "../hash/HashVecInt.h"
 #include "../atom/ClassicalLiteral.h"
+#include "../atom/GenericAtom.h"
 #include "PredicateTable.h"
 
 using namespace std;
@@ -19,43 +20,6 @@ using namespace std;
 namespace DLV2{
 
 namespace grounder{
-
-///This struct implements a generic atom composed by just its terms
-struct GenericAtom : Hashable{
-	vector<Term*> terms;
-
-	GenericAtom(){}
-	GenericAtom(const vector<Term*>& t): terms(move(t)){}
-
-	virtual bool isFact() {return true;}
-	virtual void setFact(bool isFact){};
-
-	virtual size_t hash(){
-		return HashVecInt::getHashVecIntFromConfig()->computeHashTerm(terms);
-	}
-
-	inline bool operator==(const GenericAtom& genericAtom) const{
-		if(terms.size()!=genericAtom.terms.size())
-			return false;
-		for(unsigned i=0;i<terms.size();i++)
-			if(terms[i]->getIndex()!=genericAtom.terms[i]->getIndex())
-				return false;
-		return true;
-	}
-
-	virtual ~GenericAtom(){}
-};
-
-///This struct implements an undefined atom extending GenericAtom (@see GenericAtom) adding a boolean value to determine whether it is true or not.
-///An undefined atoms is an atom derived during the grounding process.
-struct AtomUndef : public GenericAtom{
-	bool fact;
-
-	AtomUndef(vector<Term*>& t,bool f): GenericAtom(t), fact(f) {}
-
-	bool isFact(){return fact;}
-	void setFact(bool fact){this->fact=fact;};
-};
 
 ///An unordered set of generic atoms by hashAtom @see hashAtom
 typedef unordered_set<GenericAtom*, HashForTable<GenericAtom>, HashForTable<GenericAtom>> AtomTable;
@@ -84,13 +48,13 @@ struct hashAtomResult {
 
 	///Equality comparison of two generic atoms over their bind variables
 	bool operator()(GenericAtom* atom1,  GenericAtom* atom2) const {
-		if(atom1->terms.size()!=atom2->terms.size())return false;
+		if(atom1->getTermsSize()!=atom2->getTermsSize())return false;
 		vector<Term*> terms1;
 		getTermsBind(atom1,terms1);
 		vector<Term*> terms2;
 		getTermsBind(atom2,terms2);
-		for(unsigned i=0;i<atom1->terms.size();i++)
-			if(atom1->terms[i]->getIndex()!=atom2->terms[i]->getIndex())
+		for(unsigned i=0;i<atom1->getTermsSize();i++)
+			if(atom1->getTerm(i)->getIndex()!=atom2->getTerm(i)->getIndex())
 				return false;
 		return true;
 	}
@@ -98,7 +62,7 @@ struct hashAtomResult {
 	///This method filters the bind variables of a generic atoms and puts them in the vector given as parameters
 	void getTermsBind( GenericAtom* atom, vector<Term*>& terms) const{
 		for(auto t:bind)
-			terms.push_back(atom->terms[t]);
+			terms.push_back(atom->getTerm(t));
 	}
 };
 
@@ -147,10 +111,10 @@ struct ResultMatch {
  * This class is an abstract base class that models a general indexing strategy of a predicate's instances.
  * It is builded according to the Strategy GOF pattern.
  */
-class IndexAtom {
+class AtomSearcher {
 public:
 	//Constructor for all the fields
-	IndexAtom(AtomTable* facts, AtomTable* nofacts, AtomTable* delta, Predicate *p) : facts(facts), nofacts(nofacts), delta(delta), predicate(p) {};
+	AtomSearcher(AtomTable* facts, AtomTable* nofacts, AtomTable* delta, Predicate *p) : facts(facts), nofacts(nofacts), delta(delta), predicate(p) {};
 	///This method implementation is demanded to sub-classes.
 	///It have to find all the matching atoms and return just the first of those.
 	///The returned integer will be used to get the other ones through nextMatch method @see nextMatch
@@ -165,7 +129,7 @@ public:
 	///It is used to update the delta table for recursive predicates.
 	virtual void updateDelta(AtomTable* nextDelta)=0;
 	///Destructor
-	virtual ~IndexAtom() {};
+	virtual ~AtomSearcher() {};
 protected:
 	//A pointer to the set of facts
 	AtomTable* facts;
@@ -182,10 +146,10 @@ protected:
  * @brief This class is a basic and simple implementation of IndexAtom (@see IndexAtom)
  * @details Searching for match is performed over the whole tables of facts and non facts with a linear scan.
  */
-class SimpleIndexAtom: public IndexAtom {
+class SimpleAtomSearcher: public AtomSearcher {
 public:
 	///Constructor
-	SimpleIndexAtom(AtomTable* facts, AtomTable* nofacts, AtomTable* delta, Predicate *p) : IndexAtom(facts,nofacts,delta,p), counter(0), templateAtom(0), currentAssignment(0){};
+	SimpleAtomSearcher(AtomTable* facts, AtomTable* nofacts, AtomTable* delta, Predicate *p) : AtomSearcher(facts,nofacts,delta,p), counter(0), templateAtom(0), currentAssignment(0){};
 	///Virtual method implementation
 	virtual unsigned int firstMatch(bool searchInDelta, Atom *templateAtom, map_term_term& currentAssignment, bool& find);
 	///Virtual method implementation
@@ -195,7 +159,7 @@ public:
 	///Virtual method implementation
 	virtual void updateDelta(AtomTable* nextDelta){};
 	///Destructor
-	virtual ~SimpleIndexAtom() {for(auto it:matches_id) delete it.second;};
+	virtual ~SimpleAtomSearcher() {for(auto it:matches_id) delete it.second;};
 protected:
 	///The unordered map used to store the integer identifiers returned by the firstMach method
 	unordered_map<unsigned int, ResultMatch*> matches_id;
@@ -226,7 +190,7 @@ protected:
  * since the two are implemented to be independent.
  */
 
-class SingleTermIndexAtom: public SimpleIndexAtom {
+class SingleTermAtomSearcher: public SimpleAtomSearcher {
 public:
 	/**
 	 * Constructor
@@ -235,13 +199,13 @@ public:
 	 * @param delta An AtomTable of no facts containing the result of the previous grounding iteration
 	 * @param predicate The predicate corresponding to the facts and the no facts.
 	 */
-	SingleTermIndexAtom(AtomTable* facts, AtomTable* nofacts,AtomTable* delta,Predicate *p) : SimpleIndexAtom(facts,nofacts,delta,p), instantiateIndexMaps(false), positionOfIndexing(0), positionOfIndexingSetByUser(false){};
+	SingleTermAtomSearcher(AtomTable* facts, AtomTable* nofacts,AtomTable* delta,Predicate *p) : SimpleAtomSearcher(facts,nofacts,delta,p), instantiateIndexMaps(false), positionOfIndexing(0), positionOfIndexingSetByUser(false){};
 	///Overload of firstMatch method
 	virtual unsigned int firstMatch(bool searchInDelta, Atom *templateAtom, map_term_term& currentAssignment, bool& find);
 	///Virtual method implementation
 	virtual void updateDelta(AtomTable* nextDelta);
 	///Destructor
-	~SingleTermIndexAtom(){};
+	~SingleTermAtomSearcher(){};
 
 private:
 	///Data structure for indexed facts
@@ -279,7 +243,7 @@ private:
  * This implementation is sibling to the one with maps @see SingleTermIndexAtom,
  * since the two are implemented to be independent.
  */
-class SingleTermIndexAtomMultiMap: public SimpleIndexAtom {
+class SingleTermAtomSearcherMultiMap: public SimpleAtomSearcher {
 public:
 	/**
 	 * Constructor
@@ -288,13 +252,13 @@ public:
 	 * @param delta An AtomTable of no facts containing the result of the previous grounding iteration
 	 * @param predicate The predicate corresponding to the facts and the no facts.
 	 */
-	SingleTermIndexAtomMultiMap(AtomTable* facts, AtomTable* nofacts,AtomTable* delta,Predicate *p) : SimpleIndexAtom(facts,nofacts,delta,p), instantiateIndexMaps(false), positionOfIndexing(0),positionOfIndexingSetByUser(false){};
+	SingleTermAtomSearcherMultiMap(AtomTable* facts, AtomTable* nofacts,AtomTable* delta,Predicate *p) : SimpleAtomSearcher(facts,nofacts,delta,p), instantiateIndexMaps(false), positionOfIndexing(0),positionOfIndexingSetByUser(false){};
 	///Overload of firstMatch method
 	virtual unsigned int firstMatch(bool searchInDelta, Atom *templateAtom, map_term_term& currentAssignment, bool& find);
 	//Virtual method implementation
 	virtual void updateDelta(AtomTable* nextDelta);
 	///Destructor
-	~SingleTermIndexAtomMultiMap(){};
+	~SingleTermAtomSearcherMultiMap(){};
 
 private:
 	///Data structure for indexed facts

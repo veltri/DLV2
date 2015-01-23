@@ -10,7 +10,7 @@
 
 #include <set>
 
-#include "../table/Instance.h"
+#include "../table/PredicateExtension.h"
 
 
 using namespace std;
@@ -30,13 +30,13 @@ struct GroundAtom{
 	GroundAtom(Predicate* predicate,GenericAtom* atom,bool negative): predicate(predicate), atom(atom),negative(negative){}
 
 	GroundAtom(Predicate* predicate,vector<Term*>& terms): predicate(predicate) {
-		atom=new GenericAtom(terms);
+		atom=new GenericAtom(terms,true);
 		negative=false;
 	}
 
 
 	GroundAtom(Predicate* predicate,vector<Term*>& terms,bool truth): predicate(predicate) {
-		atom=new AtomUndef(terms,truth);
+		atom=new GenericAtom(terms,truth);
 		negative=false;
 	}
 
@@ -53,7 +53,7 @@ struct GroundAtom{
 	/// @brief Hash function for ground atoms
 	/// @details The hash in computed using the terms
 	inline size_t getHash() const{
-		return predicate->getIndex()+negative+HashVecInt::getHashVecIntFromConfig()->computeHashTerm(atom->terms);
+		return predicate->getIndex()+negative+HashVecInt::getHashVecIntFromConfig()->computeHashTerm(atom->getTerms());
 	}
 
 };
