@@ -22,7 +22,7 @@ namespace DLV2{
 namespace grounder{
 
 ///An unordered set of generic atoms by hashAtom @see hashAtom
-typedef vector<GenericAtom*> AtomTable;
+typedef vector<Atom*> AtomTable;
 
 
 /* @brief This struct contains the bind variables of an atom.
@@ -32,6 +32,23 @@ typedef vector<GenericAtom*> AtomTable;
  * This struct is useful in order to compare and hash atoms just by their bind variables.
  */
 
+struct AtomTableComparator{
+
+	inline  bool operator()(Atom* atom){
+		return HashVecInt::getHashVecIntFromConfig()->computeHashTerm(atom->getTerms());
+	}
+
+	inline  bool operator()(Atom* atom1,Atom* atom2){
+		if(atom1->terms.size()!=atom2->getTermsSize())
+			return false;
+		for(unsigned i=0;i<atom1->getTermsSize();i++)
+			if(atom1->terms[i]->getIndex()!=atom2->getTerm(i)->getIndex())
+				return false;
+		return true;
+	}
+
+};
+
 struct hashAtomResult {
 	vector<unsigned int> bind;
 
@@ -40,14 +57,14 @@ struct hashAtomResult {
 	hashAtomResult(vector<unsigned int> &bind){this->bind=bind;}
 
 	///Hash function built over bind variables
-	size_t operator()(GenericAtom* atom) const {
+	size_t operator()(Atom* atom) const {
 		vector<Term*> terms;
 		getTermsBind(atom,terms);
 		return HashVecInt::getHashVecIntFromConfig()->computeHashTerm(terms);
 	}
 
 	///Equality comparison of two generic atoms over their bind variables
-	bool operator()(GenericAtom* atom1,  GenericAtom* atom2) const {
+	bool operator()(Atom* atom1,  Atom* atom2) const {
 		if(atom1->getTermsSize()!=atom2->getTermsSize())return false;
 		vector<Term*> terms1;
 		getTermsBind(atom1,terms1);
@@ -60,7 +77,7 @@ struct hashAtomResult {
 	}
 
 	///This method filters the bind variables of a generic atoms and puts them in the vector given as parameters
-	void getTermsBind( GenericAtom* atom, vector<Term*>& terms) const{
+	void getTermsBind( Atom* atom, vector<Term*>& terms) const{
 		for(auto t:bind)
 			terms.push_back(atom->getTerm(t));
 	}
@@ -70,7 +87,7 @@ struct hashAtomResult {
 
 ///An unordered map of generic atoms defined by hashResultAtom @see hashResultAtom
 /// A map contain the ground atom that match anda vector contains the corrispective variable bind and the value
-typedef unordered_map<GenericAtom*,map_term_term, hashAtomResult, hashAtomResult> AtomResultTable;
+typedef unordered_map<Atom*,map_term_term, hashAtomResult, hashAtomResult> AtomResultTable;
 
 ///This struct implements an AtomResultTable (@see AtomResultTable) that represents a set of possible assignments for bind variables
 struct ResultMatch {
@@ -78,7 +95,7 @@ struct ResultMatch {
 	ResultMatch(vector<unsigned int> &bind): result(AtomResultTable(0,hashAtomResult(bind),hashAtomResult(bind))){};
 	/// Insert the current atom in the table if match with the template
 	/// If insert the atom return true else false
-	bool insert(GenericAtom* atom,Atom* templateAtom,map_term_term& currentAssignment){
+	bool insert(Atom* atom,Atom* templateAtom,map_term_term& currentAssignment){
 		// Check if the match atom with template, if match put in result table
 		map_term_term variableBindFinded;
 		if (match(atom,templateAtom,currentAssignment,variableBindFinded)){
@@ -104,7 +121,7 @@ struct ResultMatch {
 	/// @param varAssignment map of assignment of the variable. If templateAtom have variable term put in
 	/// varAssignment the ID of variable with the relative constant term of the genericAtom
 	/// nextAssignment contains the new value of variable derived
-	bool match(GenericAtom *genericAtom,Atom *templateAtom,map_term_term& currentAssignment,map_term_term& nextAssignment);
+	bool match(Atom *genericAtom,Atom *templateAtom,map_term_term& currentAssignment,map_term_term& nextAssignment);
 };
 
 /**
@@ -126,7 +143,10 @@ public:
 	/// It have to find if exist the templateAtom, that have to be ground
 	virtual void findIfExist(Atom *templateAtom, bool& find, bool& isUndef)=0;
 	///This method implementation is demanded to sub-classes.
-	///It is used to update the delta table for recursive predicates.
+	/// Return the atom if exist in the table, else nullptr
+	virtual Atom* getAtom(Atom *atom)=0;
+	///This method implementation is demanded to sub-classes.
+	///It is used to update the data when swap is called
 	virtual void swap(unsigned tableFrom,unsigned tableTo )=0;
 	///Destructor
 	virtual ~AtomSearcher() {};
@@ -142,15 +162,17 @@ protected:
 class SimpleAtomSearcher: public AtomSearcher {
 public:
 	///Constructor
-	SimpleAtomSearcher(AtomTable* facts, AtomTable* nofacts, AtomTable* delta, Predicate *p) : AtomSearcher(facts,nofacts,delta,p), counter(0), templateAtom(0), currentAssignment(0){};
+	SimpleAtomSearcher(AtomTable* table) : AtomSearcher(table), counter(0), templateAtom(0), currentAssignment(0){};
 	///Virtual method implementation
-	virtual unsigned int firstMatch(bool searchInDelta, Atom *templateAtom, map_term_term& currentAssignment, bool& find);
+	virtual unsigned int firstMatch(Atom *templateAtom, map_term_term& currentAssignment, bool& find);
 	///Virtual method implementation
 	virtual void nextMatch(unsigned int id,map_term_term& currentAssignment, bool& find);
 	///Virtual method implementation
-	virtual void findIfExist(bool searchInDelta,Atom *templateAtom, bool& find,bool& isUndef);
+	virtual void findIfExist(Atom *templateAtom, bool& find,bool& isUndef);
+
+	virtual Atom* getAtom(Atom *atom);
 	///Virtual method implementation
-	virtual void updateDelta(AtomTable* nextDelta){};
+	virtual void swap(unsigned tableFrom,unsigned tableTo )=0;
 	///Destructor
 	virtual ~SimpleAtomSearcher() {for(auto it:matches_id) delete it.second;};
 protected:
@@ -164,12 +186,10 @@ protected:
 	map_term_term* currentAssignment;
 
 	///This method given an AtomTable computes the matching facts and nofacts and returns the first one of those
-	void computeFirstMatch(AtomTable* collection,ResultMatch* rm);
+	void computeFirstMatch(ResultMatch* rm,Atom *templateAtom,map_term_term& currentAssignment);
 	///This method invokes findIfAFactExists method if all the variables are bound, otherwise invokes the computeFirstMatch method
-	bool searchForFirstMatch(AtomTable* table,ResultMatch* rm);
-	///This method builds a ground atom using the bound variables , checks if it is true and return if is undefined or a fact
-	virtual bool findIfExists(AtomTable* collection,bool& isUndef);
-	virtual bool findIfExists(AtomTable* collection);
+	bool searchForFirstMatch(ResultMatch* rm,Atom *templateAtom,map_term_term& currentAssignment);
+
 };
 
 /**

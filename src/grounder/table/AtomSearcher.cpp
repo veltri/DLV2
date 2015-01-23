@@ -15,7 +15,7 @@ namespace grounder{
 
 /******************************************************* RESULT MATCH ***************************************************/
 
-bool ResultMatch::match(GenericAtom *genericAtom,Atom *templateAtom,map_term_term& currentAssignment,map_term_term& nextAssignment){
+bool ResultMatch::match(Atom *genericAtom,Atom *templateAtom,map_term_term& currentAssignment,map_term_term& nextAssignment){
 	// Call match for each term and if all term result true put the assignment in the current assignment
 	map_term_term assignInTerm(currentAssignment);
 
@@ -28,35 +28,11 @@ bool ResultMatch::match(GenericAtom *genericAtom,Atom *templateAtom,map_term_ter
 
 /****************************************************** SIMPLE INDEX ATOM ***************************************************/
 
-bool SimpleAtomSearcher::findIfExists(AtomTable* collection, bool& isUndef) {
-	if(collection->size()==0)return false;
 
-	//Compute the hash of the atom
-	GenericAtom *genAtom=new GenericAtom(templateAtom->getTerms(),true);
 
-	//Look for the atom
-	bool find=false;
-	auto atomIterator = collection->find(genAtom);
+unsigned int SimpleAtomSearcher::firstMatch(Atom *templateAtom,map_term_term& currentAssignment, bool& find) {
+	unsigned int id = ++counter;
 
-	if(atomIterator!=collection->end()){
-		find=true;
-		isUndef=!(*atomIterator)->isFact();
-	}
-
-	delete genAtom;
-	return find;
-}
-
-bool SimpleAtomSearcher::findIfExists(AtomTable* collection) {
-	bool isUndef;
-	return findIfExists(collection,isUndef);
-}
-
-unsigned int SimpleAtomSearcher::firstMatch(bool searchInDelta,Atom *templateAtom,map_term_term& currentAssignment, bool& find) {
-	unsigned int id = counter;counter++;
-
-	this->templateAtom=templateAtom;
-	this->currentAssignment=&currentAssignment;
 
 	// Hash the bind term, the variable term or term that contain variable term
 	vector<unsigned int> bind;
@@ -66,10 +42,7 @@ unsigned int SimpleAtomSearcher::firstMatch(bool searchInDelta,Atom *templateAto
 
 //	    Search only in delta if searchInDelta is true
 //		else search in fact or nofact if predicate is EDB
-	if(( searchInDelta && searchForFirstMatch(delta,rm) ) ||
-	   (!searchInDelta &&
-					   (searchForFirstMatch(facts,rm) ||
-					   (!predicate->isEdb() && searchForFirstMatch(nofacts,rm))))){
+	if(searchForFirstMatch(rm,templateAtom,currentAssignment)){
 		find=true;
 		matches_id.insert({id,rm});
 		return id;
@@ -79,26 +52,27 @@ unsigned int SimpleAtomSearcher::firstMatch(bool searchInDelta,Atom *templateAto
 	nextMatch(id,currentAssignment,find);
 	return id;
 
-
 }
 
-bool SimpleAtomSearcher::searchForFirstMatch(AtomTable* table, ResultMatch* rm){
+bool SimpleAtomSearcher::searchForFirstMatch(ResultMatch* rm,Atom *templateAtom,map_term_term& currentAssignment){
 	//Call findIfAFactExist only if all the terms are bound
 	if(templateAtom->isGround()){
-		if(findIfExists(table))
+		bool isUndef,find;
+		findIfExist(templateAtom,find,isUndef);
+		if(find)
 			return true;
 	}
 	else
 		//Compute the first match
-		computeFirstMatch(table,rm);
+		computeFirstMatch(rm,templateAtom,currentAssignment);
 	return false;
 }
 
-void SimpleAtomSearcher::computeFirstMatch(AtomTable* collection,ResultMatch* rm){
+void SimpleAtomSearcher::computeFirstMatch(ResultMatch* rm,Atom *templateAtom,map_term_term& currentAssignment){
 	// If not contains variable (then there is anonymous but the other is ground)
 	bool isNotVariable=templateAtom->getVariable().size()==0;
-	for (GenericAtom *genericAtom : *collection) {
-		if (rm->insert(genericAtom,templateAtom,*currentAssignment)) {
+	for (auto genericAtom : *table) {
+		if (rm->insert(genericAtom,templateAtom,currentAssignment)) {
 
 			//If there are no more bind variables stop.
 			//Notice that the size of the bind variables vector is not always equal to the arity of the predicate.
@@ -125,22 +99,25 @@ void SimpleAtomSearcher::nextMatch(unsigned int id,map_term_term& currentAssignm
 	find=true;
 }
 
+virtual Atom* SimpleAtomSearcher::getAtom(Atom *atom){
+	AtomTableComparator comparator;
+	for(auto genericAtom:(*table)){
+		if(comparator(genericAtom,atom))
+			return genericAtom;
+	}
+	return nullptr;
 
-void SimpleAtomSearcher::findIfExist(bool searchInDelta,Atom *templateAtom,bool& find, bool& isUndef) {
-	this->templateAtom=templateAtom;
+}
 
-	if((searchInDelta && findIfExists(delta,isUndef) ) ||
-	  (!searchInDelta &&
-			  (findIfExists(facts,isUndef) ||
-			   (!predicate->isEdb() && findIfExists(nofacts,isUndef))))){
+void SimpleAtomSearcher::findIfExist(Atom *templateAtom,bool& find, bool& isUndef) {
+	Atom* genericAtom=getAtom(templateAtom);
+	if(genericAtom!=nullptr){
+		isUndef=!genericAtom->isFact();
 		find=true;
 		return ;
 	}
 
 	find=false;
-
-	return ;
-
 
 }
 

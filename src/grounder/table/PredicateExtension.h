@@ -53,15 +53,15 @@ public:
 		setAtomSearchers();
 	}
 
-	void addGenericAtom(unsigned table, GenericAtom* genericAtom){
+	void addGenericAtom(unsigned table, Atom* genericAtom){
 		assert_msg(i<tables.size(),"The specified table doesn't exist.");
 		//Cerca in atomSearcher[i] prima di inserire
 		atomSearchers[table]->find(genericAtom);
 		tables[table].push_back(genericAtom);
 	}
 
-	 GenericAtom* getGenericAtom(unsigned table, GenericAtom* genericAtom){
-		assert_msg(i<tables.size(),"The specified table doesn't exist.");
+	Atom* getGenericAtom(unsigned table, Atom* genericAtom){
+		assert_msg(table<tables.size(),"The specified table doesn't exist.");
 		//Aggiungi in atomSearcher[i]
 		atomSearchers[table]->find(genericAtom);
 		return nullptr;
@@ -71,7 +71,7 @@ public:
 	 void swapTables(unsigned tableFrom,unsigned tableTo);
 
 	///Printer method for a single table
-	inline void print(unsigned table){for(GenericAtom*fact:tables[table]){ClassicalLiteral::print(predicate,fact->getTerms(),false,false); cout<<"."<<endl;}}
+	inline void print(unsigned table){for(auto fact:tables[table]){ClassicalLiteral::print(predicate,fact->getTerms(),false,false); cout<<"."<<endl;}}
 
 	///Destructor
 	~PredicateExtension();

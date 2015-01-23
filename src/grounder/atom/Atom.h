@@ -146,6 +146,12 @@ public:
 	virtual void setChoiceElements(const vector<vector<index_object> >& choiceElements) {};
 	/*****************************************************/
 
+	/******** Methods useful for Generic Atom ********/
+	bool isFact() const { return false; }
+	void setFact(bool isFact) {  }
+	/*****************************************************/
+
+
 	/// Substitute the terms in the atom with the given terms and return the atom with terms sobstitute
 	/// @param substritutionTerm map of index_object. The first index is the ID of term to substitute and second the value
 	virtual Atom* substitute(map_term_term& substitutionTerm){return nullptr;};
