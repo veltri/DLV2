@@ -11,6 +11,7 @@
 #include <iostream>
 
 #include "../../util/Options.h"
+#include "../../util/Assert.h"
 #include "AtomSearcher.h"
 
 using namespace std;
@@ -30,57 +31,63 @@ typedef unordered_multimap<unsigned int,unsigned int> map_int_int;
 
 class PredicateExtension {
 public:
-	///Constructor
-	PredicateExtension(Predicate* predicate): predicate(predicate),indexAtom(0) {
-		for(unsigned int i=0;i<4;i++)
+	///Constructors
+	PredicateExtension(Predicate* predicate): predicate(predicate){};
+	PredicateExtension(Predicate* predicate, unsigned tableNumber): predicate(predicate){
+		for(unsigned i=0;i<tableNumber;i++)
 			tables.push_back(AtomTable());
-		this->setIndexAtom();
+		setAtomSearchers();
 	}
 
 	///Getter for the predicate
 	Predicate* getPredicate() const {return predicate;}
 
-	///Getter for the IndexAtom
-	AtomSearcher* getIndex() {return indexAtom;}
+	//Returns the i-th AtomSeacher in atomSearchers
+	AtomSearcher* getAtomSearcher(unsigned i){
+		assert_msg(i<atomSearchers.size(),"The specified AtomSearche doesn't exist.");
+		return atomSearchers[i];
+	}
 
-	GenericAtom* getGenericAtom(unsigned int table, vector<Term*>& terms,bool truth);
-	GenericAtom* getGenericAtom(vector<Term*>& terms,bool truth);
+	void addTable(){
+		tables.push_back(AtomTable());
+		setAtomSearchers();
+	}
 
-	///This method updates a no facts truth value
-	void setTruth(vector<Term*>& terms, bool truth);
+	void addGenericAtom(unsigned table, GenericAtom* genericAtom){
+		assert_msg(i<tables.size(),"The specified table doesn't exist.");
+		//Cerca in atomSearcher[i] prima di inserire
+		atomSearchers[table]->find(genericAtom);
+		tables[table].push_back(genericAtom);
+	}
 
-	///This method determines whether a no fact is true
-	bool isTrue(vector<Term*>& terms);
+	 GenericAtom* getGenericAtom(unsigned table, GenericAtom* genericAtom){
+		assert_msg(i<tables.size(),"The specified table doesn't exist.");
+		//Aggiungi in atomSearcher[i]
+		atomSearchers[table]->find(genericAtom);
+		return nullptr;
+	}
 
-	bool add(unsigned int table, GenericAtom*& atomUndef, bool& updated);
+	 //Moves the content of the tableFrom (source) to the tableTo (destination)
+	 void swapTables(unsigned tableFrom,unsigned tableTo);
 
-	///This method moves the content of the delta table in the no facts table,
-	///and then moves the content of the next delta table in the delta table.
-	void moveNextDeltaInDelta();
-
-	bool findIn(unsigned int table, GenericAtom*& atomUndef, bool& updated);
-
-	///Printer method
-	inline void print(){for(GenericAtom*fact:tables[PredicateExtension::FACTS]){ClassicalLiteral::print(predicate,fact->getTerms(),false,false); cout<<"."<<endl;}}
+	///Printer method for a single table
+	inline void print(unsigned table){for(GenericAtom*fact:tables[table]){ClassicalLiteral::print(predicate,fact->getTerms(),false,false); cout<<"."<<endl;}}
 
 	///Destructor
 	~PredicateExtension();
 
-	static const unsigned int FACTS=0;
-	static const unsigned int NOFACTS=1;
-	static const unsigned int DELTA=2;
-	static const unsigned int NEXTDELTA=3;
-
 private:
 	///The predicate
 	Predicate* predicate;
-	///The IndexAtom to set the indexing strategy
-	AtomSearcher* indexAtom;
-	///The vector of tables: Facts, No-Facts, Delta, NextDelta
-	vector<AtomTable> tables;
 
-	///This method configures the indexing strategy
-	void setIndexAtom();
+	///For each AtomTable in tables is present an AtomSeacher in atomSearchers
+	///The vector of tables
+	vector<AtomTable> tables;
+	///The vector of  AtomSeacher
+	vector<AtomSearcher*> atomSearchers;
+
+	///This method configures the searching strategy for each table
+	void setAtomSearchers();
 
 };
 

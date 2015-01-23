@@ -15,18 +15,22 @@ namespace grounder{
 
 /****************************************************** INSTANCES ***************************************************/
 
-void PredicateExtension::setIndexAtom(){
+void PredicateExtension::setAtomSearchers(){
 	// Properly set the IndexAtom type
-	switch (Options::globalOptions()->getIndexType()) {
-	case (MAP):
-		indexAtom = new SingleTermAtomSearcher(&tables[PredicateExtension::FACTS],&tables[PredicateExtension::NOFACTS],&tables[PredicateExtension::DELTA],predicate);
-		break;
-	case (MULTIMAP):
-		indexAtom = new SingleTermAtomSearcherMultiMap(&tables[PredicateExtension::FACTS],&tables[PredicateExtension::NOFACTS],&tables[PredicateExtension::DELTA],predicate);
-		break;
-	default:
-		indexAtom = new SimpleAtomSearcher(&tables[PredicateExtension::FACTS],&tables[PredicateExtension::NOFACTS],&tables[PredicateExtension::DELTA],predicate);
-		break;
+	while(atomSearchers.size()<tables.size()){
+		AtomSearcher* atomSearcher;
+		switch (Options::globalOptions()->getIndexType()) {
+		case (MAP):
+			atomSearcher = new SingleTermAtomSearcher(&tables[PredicateExtension::FACTS],&tables[PredicateExtension::NOFACTS],&tables[PredicateExtension::DELTA],predicate);
+			break;
+		case (MULTIMAP):
+			atomSearcher = new SingleTermAtomSearcherMultiMap(&tables[PredicateExtension::FACTS],&tables[PredicateExtension::NOFACTS],&tables[PredicateExtension::DELTA],predicate);
+			break;
+		default:
+			atomSearcher = new SimpleAtomSearcher(&tables[PredicateExtension::FACTS],&tables[PredicateExtension::NOFACTS],&tables[PredicateExtension::DELTA],predicate);
+			break;
+		}
+		atomSearchers.push_back(atomSearcher);
 	}
 }
 
@@ -37,68 +41,26 @@ PredicateExtension::~PredicateExtension() {
 			delete *it;
 		}
 	}
-	delete (indexAtom);
-}
-
-void PredicateExtension::moveNextDeltaInDelta(){
-	AtomTable* nofacts=&tables[PredicateExtension::NOFACTS];
-	AtomTable* delta=&tables[PredicateExtension::DELTA];
-	AtomTable* nextDelta=&tables[PredicateExtension::NEXTDELTA];
-	if(delta->size()>0){
-		for(GenericAtom* atom: *delta)
-			nofacts->insert(atom);
-		delta->clear();
-	}
-	if(nextDelta->size()>0){
-		indexAtom->updateDelta(nextDelta);
-		for(GenericAtom* atom: *nextDelta)
-			delta->insert(atom);
-		nextDelta->clear();
+	for(unsigned int i=0;i<atomSearchers.size();i++){
+		delete atomSearchers[i];
 	}
 }
 
-bool PredicateExtension::isTrue(vector<Term*>& terms) {
-	GenericAtom* atom=getGenericAtom(PredicateExtension::NEXTDELTA,terms,0);
-	return atom->isFact();
-}
+void PredicateExtension::swapTables(unsigned tableFrom,unsigned tableTo){
+	assert_msg(tableFrom<tables.size(),"The specified table doesn't exist.");
+	assert_msg(tableTo<tables.size(),"The specified table doesn't exist.");
 
-void PredicateExtension::setTruth(vector<Term*>& terms, bool truth) {
-	GenericAtom* atom=getGenericAtom(PredicateExtension::NEXTDELTA,terms,truth);
-	atom->setFact(truth);
-}
+	AtomTable table_from=tables[tableFrom];
+	AtomTable table_to=tables[tableTo];
 
-GenericAtom* PredicateExtension::getGenericAtom(unsigned int table,vector<Term*>& terms,bool truth) {
-	vector<Term*> v(terms); //FIXME
-	GenericAtom* atom=new GenericAtom(v,truth);
-	for(unsigned int i=PredicateExtension::FACTS;i<table;i++){
-		auto it=tables[i].find(atom);
-		if(it!=tables[i].end()){
-			GenericAtom* tmp=atom;
-			atom = (*it);
-			delete tmp;
-			return atom;
-		}
+	unsigned size=table_from.size();
+	table_to.reserve(size+table_to.size());
+	for (unsigned int i = size-1; i >= 0; --i) {
+		table_to.push_back(table_from[i]);
+		table_from.pop_back();
 	}
-	delete atom;
-	return 0;
-}
-
-GenericAtom* PredicateExtension::getGenericAtom(vector<Term*>& terms,bool truth) {
-	return getGenericAtom(PredicateExtension::NEXTDELTA,terms,truth);
-}
-
-bool PredicateExtension::add(unsigned int table, GenericAtom*& atomUndef, bool& updated) {
-	GenericAtom* atom=getGenericAtom(table+1,atomUndef->getTerms(),atomUndef->isFact());
-	if(atom==0){
-		tables[table].insert(atomUndef);
-		return true;
-	}
-	if(atomUndef->isFact() && !atom->isFact()){
-		atom->setFact(true);
-		updated=true;
-		return false;
-	}
-	return false;
+	//TODO fare lo stesso per i searcher
+	swapSeacher(tableFrom,tableTo);
 }
 
 /****************************************************** INSTANCES TABLE ***************************************************/

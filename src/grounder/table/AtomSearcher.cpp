@@ -28,7 +28,7 @@ bool ResultMatch::match(GenericAtom *genericAtom,Atom *templateAtom,map_term_ter
 
 /****************************************************** SIMPLE INDEX ATOM ***************************************************/
 
-bool SimpleAtomSearcher::findIfExists(AtomTable* collection,bool& isUndef) {
+bool SimpleAtomSearcher::findIfExists(AtomTable* collection, bool& isUndef) {
 	if(collection->size()==0)return false;
 
 	//Compute the hash of the atom
@@ -126,7 +126,7 @@ void SimpleAtomSearcher::nextMatch(unsigned int id,map_term_term& currentAssignm
 }
 
 
-void SimpleAtomSearcher::findIfExist(bool searchInDelta,Atom *templateAtom,bool& find,bool& isUndef) {
+void SimpleAtomSearcher::findIfExist(bool searchInDelta,Atom *templateAtom,bool& find, bool& isUndef) {
 	this->templateAtom=templateAtom;
 
 	if((searchInDelta && findIfExists(delta,isUndef) ) ||

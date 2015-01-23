@@ -22,7 +22,7 @@ namespace DLV2{
 namespace grounder{
 
 ///An unordered set of generic atoms by hashAtom @see hashAtom
-typedef unordered_set<GenericAtom*, HashForTable<GenericAtom>, HashForTable<GenericAtom>> AtomTable;
+typedef vector<GenericAtom*> AtomTable;
 
 
 /* @brief This struct contains the bind variables of an atom.
@@ -114,31 +114,24 @@ struct ResultMatch {
 class AtomSearcher {
 public:
 	//Constructor for all the fields
-	AtomSearcher(AtomTable* facts, AtomTable* nofacts, AtomTable* delta, Predicate *p) : facts(facts), nofacts(nofacts), delta(delta), predicate(p) {};
+	AtomSearcher(AtomTable* table) : table(table) {};
 	///This method implementation is demanded to sub-classes.
 	///It have to find all the matching atoms and return just the first of those.
 	///The returned integer will be used to get the other ones through nextMatch method @see nextMatch
-	virtual unsigned int firstMatch(bool searchInDelta, Atom *templateAtom, map_term_term& currentAssignment, bool& find)=0;
+	virtual unsigned int firstMatch(Atom *templateAtom, map_term_term& currentAssignment, bool& find)=0;
 	///This method implementation is demanded to sub-classes.
 	///It is used to get the further matching atoms one by one each time it is invoked.
 	virtual void nextMatch(unsigned int id, map_term_term& currentAssignment, bool& find)=0;
 	///This method implementation is demanded to sub-classes.
 	/// It have to find if exist the templateAtom, that have to be ground
-	virtual void findIfExist(bool searchInDelta,Atom *templateAtom, bool& find,bool& isUndef)=0;
+	virtual void findIfExist(Atom *templateAtom, bool& find, bool& isUndef)=0;
 	///This method implementation is demanded to sub-classes.
 	///It is used to update the delta table for recursive predicates.
-	virtual void updateDelta(AtomTable* nextDelta)=0;
+	virtual void swap(unsigned tableFrom,unsigned tableTo )=0;
 	///Destructor
 	virtual ~AtomSearcher() {};
 protected:
-	//A pointer to the set of facts
-	AtomTable* facts;
-	//A pointer to the set of no facts, that are undefined atoms
-	AtomTable* nofacts;
-	//A pointer to the set of no facts derived in the previous iteration, that are undefined atoms
-	AtomTable* delta;
-	///The predicate
-	Predicate* predicate;
+	AtomTable* table;
 
 };
 
