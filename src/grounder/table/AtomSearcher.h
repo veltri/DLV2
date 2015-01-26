@@ -21,12 +21,11 @@ namespace DLV2{
 
 namespace grounder{
 
-/* @brief This struct contains the bind variables of an atom.
+/**  This struct compare and hash atoms for the AtomTable.
+ *	 The method used is equal to the generic atom, with this struct PredicateExtension and
+ *	 AtomSearcher can use Atom instead of GenericAtom
  *
- * @details During grounding process the variables of an atom are classified as bind or bound.
- * Bind variables are the ones that have no assignment yet, while the bound ones have an assignment.
- * This struct is useful in order to compare and hash atoms just by their bind variables.
- */
+ **/
 struct AtomTableComparator{
 
 	inline size_t operator()(Atom* atom) const{
@@ -44,12 +43,17 @@ struct AtomTableComparator{
 
 };
 
-///An unordered set of generic atoms by hashAtom @see hashAtom
+///Vector of Atom (GenericAtom)
 typedef vector<Atom*> AtomVector;
-///An unordered set of generic atoms by hashAtom @see hashAtom
+///An unordered set of Atom (GenericAtom)
 typedef unordered_set<Atom*,AtomTableComparator,AtomTableComparator> AtomTable;
+///An unordered multimap of Atom (GenericAtom)
 typedef unordered_multimap<index_object, Atom*> Multimap_Atom;
 
+
+/**This class is an generic Iterator for Atom containers.
+ * See pattern Iterator.
+**/
 class GeneralIterator {
 public:
 	virtual void next()=0;
@@ -57,7 +61,8 @@ public:
 	virtual Atom* currentIterm()=0;
 	virtual ~GeneralIterator(){};
 };
-
+/**This class is an iterator for vector of Atom
+**/
 class VectorIterator : public GeneralIterator {
 public:
 	VectorIterator(const AtomVector::iterator& s, const AtomVector::iterator& e): start(s), end(e){};
@@ -68,7 +73,8 @@ private:
 	AtomVector::iterator start;
 	AtomVector::iterator end;
 };
-
+/**This class is an iterator for unordered set of Atom
+**/
 class UnorderedSetIterator : public GeneralIterator {
 public:
 	UnorderedSetIterator(const AtomTable::iterator& s, const AtomTable::iterator& e): start(s), end(e){};
@@ -79,7 +85,8 @@ private:
 	AtomTable::iterator start;
 	AtomTable::iterator end;
 };
-
+/**This class is an iterator for unordered muiltimap of Atom
+**/
 class UnorderedMultiMapIterator : public GeneralIterator {
 public:
 	UnorderedMultiMapIterator(const Multimap_Atom::iterator& s, const Multimap_Atom::iterator& e): start(s), end(e){};
@@ -93,7 +100,7 @@ private:
 
 
 /**
- * This class is an abstract base class that models a general indexing strategy of a predicate's instances.
+ * This class is an abstract base class that models a general searching strategy of a predicate's instances.
  * It is builded according to the Strategy GOF pattern.
  */
 class AtomSearcher {
@@ -117,7 +124,7 @@ public:
 	///It updates the searching data-structure removing the given atom
 	virtual void remove(Atom* atom);
 	///This method implementation is demanded to sub-classes.
-	///It updates the searching data-structure removing the given atom
+	///It clear the data-structure
 	virtual void clear();
 
 	///This method checks if the atom given matches with the templateAtom according to the current assignment
@@ -130,6 +137,10 @@ public:
 
 	virtual ~AtomSearcher() {};
 protected:
+
+	/**
+	 *		The data-structure that the class have to search
+	 **/
 	AtomVector* table;
 
 };
@@ -159,10 +170,12 @@ protected:
 	unsigned int counter;
 
 	///This method given an AtomTable computes the matching facts and nofacts and returns the first one of those
+	/// currentMatch identifiers the starting point of search
 	void computeFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom,map_term_term& currentAssignment);
 	///This method invokes findIfAFactExists method if all the variables are bound, otherwise invokes the computeFirstMatch method
 	bool searchForFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom,map_term_term& currentAssignment);
 
+	///This method calculate the starting point of search
 	GeneralIterator* computeGenericIterator(Atom* templateAtom);
 };
 
@@ -195,8 +208,11 @@ private:
 	///Data structure for indexed facts
 	unordered_map<index_object,AtomTable> tableIndexMap;
 
+	/// The predicate of PredicateExtension associated
 	Predicate* predicate;
+	/// Pair of term position if the index and if the index can be used for the actual searching
 	pair<unsigned int, bool> indexPair;
+	/// Boolean that is false the index table has not been created true otherwise
 	bool createdIndex;
 
 	///This method fills in the indexing data structures
@@ -238,8 +254,11 @@ private:
 	///Data structure for indexed facts
 	unordered_multimap<index_object, Atom*> tableIndexMap;
 
+	/// The predicate of PredicateExtension associated
 	Predicate* predicate;
+	/// Pair of term position if the index and if the index can be used for the actual searching
 	pair<unsigned int, bool> indexPair;
+	/// Boolean that is false the index table has not been created true otherwise
 	bool createdIndex;
 
 	///This method fills in the indexing data structures

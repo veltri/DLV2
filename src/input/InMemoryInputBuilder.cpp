@@ -38,8 +38,8 @@ void InMemoryInputBuilder::onRule() {
 	if(currentRule->isAFact()){
 		Atom *fact=*currentRule->getBeginHead();
 		Predicate* predicate=fact->getPredicate();
-		instancesTable->addInstance(predicate);
-		if(!(instancesTable->getInstance(predicate)->addGenericAtom(0,fact)))
+		instancesTable->addPredicateExt(predicate);
+		if(!(instancesTable->getPredicateExt(predicate)->addGenericAtom(0,fact)))
 			delete fact;
 		currentRule->clear();
 	}else{
@@ -93,7 +93,7 @@ void InMemoryInputBuilder::onPredicateName(char* name) {
 	string name_predicate(name);
 	Predicate *predicate=new Predicate(name_predicate,terms_parsered.size());
 	predicateTable->getInstance()->insertPredicate(predicate);
-	instancesTable->addInstance(predicate);
+	instancesTable->addPredicateExt(predicate);
 
 	currentAtom =new ClassicalLiteral(predicate,terms_parsered,false,false);
 	terms_parsered.clear();

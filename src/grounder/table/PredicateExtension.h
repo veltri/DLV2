@@ -26,7 +26,8 @@ typedef vector<pair<unsigned int,index_object>> vec_pair_index_object;
 typedef unordered_multimap<unsigned int,unsigned int> map_int_int;
 
 /**
- * This class represents the instances (the facts and the no facts) of a predicate
+ * This class represents the extension of each predicate (instances).
+ * The class may have multiple table of atoms and for each table have an AtomSearcher associate
  */
 
 class PredicateExtension {
@@ -42,17 +43,19 @@ public:
 	///Getter for the predicate
 	Predicate* getPredicate() const {return predicate;}
 
-	//Returns the i-th AtomSeacher in atomSearchers
+	///Returns the i-th AtomSeacher in atomSearchers
 	AtomSearcher* getAtomSearcher(unsigned i){
 		assert_msg(i<atomSearchers.size(),"The specified AtomSearche doesn't exist.");
 		return atomSearchers[i];
 	}
 
+	/// Add table and an AtomSearcher
 	void addTable(){
 		tables.push_back(AtomVector());
 		setAtomSearchers();
 	}
 
+	///Add generic atom in specified table
 	bool addGenericAtom(unsigned table, Atom* genericAtom){
 		assert_msg(table<tables.size(),"The specified table doesn't exist.");
 		if((atomSearchers[table]->getAtom(genericAtom))==nullptr){
@@ -62,6 +65,7 @@ public:
 		return false;
 	}
 
+	///Get an generic atom in specified table
 	Atom* getGenericAtom(unsigned table, Atom* genericAtom){
 		assert_msg(table<tables.size(),"The specified table doesn't exist.");
 		Atom* atomFound=atomSearchers[table]->getAtom(genericAtom);
@@ -93,7 +97,8 @@ private:
 };
 
 /**
- * This class stores the instances for all the predicate.
+ * This class stores the Predicate Extensions for all the predicate.
+ * Is a Singleton.
  */
 
 class PredicateExtTable {
@@ -101,7 +106,7 @@ public:
 
 
 	///This method adds an Instance for a predicate
-	void addInstance(Predicate* p) {
+	void addPredicateExt(Predicate* p) {
 		if(!predicateExtTable.count(p->getIndex())){
 			PredicateExtension* is = new PredicateExtension(p);
 			predicateExtTable.insert({p->getIndex(),is});
@@ -109,14 +114,14 @@ public:
 	};
 
 	///Getter for the instances of a predicate
-	PredicateExtension* getInstance(Predicate* p) {
+	PredicateExtension* getPredicateExt(Predicate* p) {
 		auto result= predicateExtTable.find(p->getIndex());
 		if(result==predicateExtTable.end()) return nullptr;
 		return result->second;
 	};
 
 	///Getter for the instances of a predicate index
-	PredicateExtension* getInstanceIndex(index_object p) {
+	PredicateExtension* getPredicateExt(index_object p) {
 		auto result= predicateExtTable.find(p);
 		if(result==predicateExtTable.end()) return nullptr;
 		return result->second;
@@ -125,7 +130,7 @@ public:
 	///This method return the size of the map of instances
 	unsigned int getSize() {return predicateExtTable.size();};
 
-	///Printer method
+	///Printer method for the first table in Predicate Extension
 	void print() {for (auto i : predicateExtTable)i.second->print(0);};
 
 	///Destructor
@@ -138,7 +143,7 @@ private:
 
 	static PredicateExtTable *predicateExtTable_;
 
-	///The map that stores all the Instances
+	///The map that stores all the Predicate Extension
 	unordered_map<index_object,PredicateExtension*> predicateExtTable;
 };
 
