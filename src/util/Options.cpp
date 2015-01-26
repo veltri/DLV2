@@ -97,8 +97,8 @@ Options::Options():
         printStatistics(false),
         inputPolicy(BUILDER_IN_MEMORY),
         outputPolicy(OUTPUT_ASPCORE2),
-		indexType(DEFAULT),
 		hashType(STL_HASH),
+		indexType(DEFAULT),
 		indexingPreferences("")
 {
 
@@ -112,6 +112,7 @@ Options::Options(
         printStatistics(o.printStatistics),
         inputPolicy(o.inputPolicy),
         outputPolicy(o.outputPolicy),
+		hashType(o.hashType),
 		indexType(o.indexType),
 		indexingPreferences(o.indexingPreferences)
 {

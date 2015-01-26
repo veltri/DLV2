@@ -21,108 +21,76 @@ namespace DLV2{
 
 namespace grounder{
 
-///An unordered set of generic atoms by hashAtom @see hashAtom
-typedef vector<Atom*> AtomTable;
-
-
 /* @brief This struct contains the bind variables of an atom.
  *
  * @details During grounding process the variables of an atom are classified as bind or bound.
  * Bind variables are the ones that have no assignment yet, while the bound ones have an assignment.
  * This struct is useful in order to compare and hash atoms just by their bind variables.
  */
-
 struct AtomTableComparator{
 
-	inline  bool operator()(Atom* atom){
+	inline size_t operator()(Atom* atom) const{
 		return HashVecInt::getHashVecIntFromConfig()->computeHashTerm(atom->getTerms());
 	}
 
-	inline  bool operator()(Atom* atom1,Atom* atom2){
-		if(atom1->terms.size()!=atom2->getTermsSize())
+	inline bool operator()(Atom* atom1, Atom* atom2) const{
+		if(atom1->getTerms().size()!=atom2->getTermsSize())
 			return false;
-		for(unsigned i=0;i<atom1->getTermsSize();i++)
-			if(atom1->terms[i]->getIndex()!=atom2->getTerm(i)->getIndex())
-				return false;
-		return true;
-	}
-
-};
-
-struct hashAtomResult {
-	vector<unsigned int> bind;
-
-	hashAtomResult(){}
-
-	hashAtomResult(vector<unsigned int> &bind){this->bind=bind;}
-
-	///Hash function built over bind variables
-	size_t operator()(Atom* atom) const {
-		vector<Term*> terms;
-		getTermsBind(atom,terms);
-		return HashVecInt::getHashVecIntFromConfig()->computeHashTerm(terms);
-	}
-
-	///Equality comparison of two generic atoms over their bind variables
-	bool operator()(Atom* atom1,  Atom* atom2) const {
-		if(atom1->getTermsSize()!=atom2->getTermsSize())return false;
-		vector<Term*> terms1;
-		getTermsBind(atom1,terms1);
-		vector<Term*> terms2;
-		getTermsBind(atom2,terms2);
 		for(unsigned i=0;i<atom1->getTermsSize();i++)
 			if(atom1->getTerm(i)->getIndex()!=atom2->getTerm(i)->getIndex())
 				return false;
 		return true;
 	}
 
-	///This method filters the bind variables of a generic atoms and puts them in the vector given as parameters
-	void getTermsBind( Atom* atom, vector<Term*>& terms) const{
-		for(auto t:bind)
-			terms.push_back(atom->getTerm(t));
-	}
 };
 
+///An unordered set of generic atoms by hashAtom @see hashAtom
+typedef vector<Atom*> AtomVector;
+///An unordered set of generic atoms by hashAtom @see hashAtom
+typedef unordered_set<Atom*,AtomTableComparator,AtomTableComparator> AtomTable;
+typedef unordered_multimap<index_object, Atom*> Multimap_Atom;
 
-
-///An unordered map of generic atoms defined by hashResultAtom @see hashResultAtom
-/// A map contain the ground atom that match anda vector contains the corrispective variable bind and the value
-typedef unordered_map<Atom*,map_term_term, hashAtomResult, hashAtomResult> AtomResultTable;
-
-///This struct implements an AtomResultTable (@see AtomResultTable) that represents a set of possible assignments for bind variables
-struct ResultMatch {
-	AtomResultTable result;
-	ResultMatch(vector<unsigned int> &bind): result(AtomResultTable(0,hashAtomResult(bind),hashAtomResult(bind))){};
-	/// Insert the current atom in the table if match with the template
-	/// If insert the atom return true else false
-	bool insert(Atom* atom,Atom* templateAtom,map_term_term& currentAssignment){
-		// Check if the match atom with template, if match put in result table
-		map_term_term variableBindFinded;
-		if (match(atom,templateAtom,currentAssignment,variableBindFinded)){
-			result.insert({atom,variableBindFinded});
-			return true;
-
-		}
-		return false;
-	}
-
-	/// Pop last atom in the table and put the assignment in the current assignment
-	/// If the table is empty return false, else true
-	bool pop(map_term_term& currentAssignment){
-		if(result.size()==0)return false;
-		auto it_last_atom=result.begin();
-		for(auto resultValue:it_last_atom->second)currentAssignment.insert(resultValue);
-		result.erase(it_last_atom);
-		return true;
-	}
-
-	/// Return true if the genericAtom match with the template atom and insert in assignment the value of variable
-	/// Two atom match if a constant term are equal.
-	/// @param varAssignment map of assignment of the variable. If templateAtom have variable term put in
-	/// varAssignment the ID of variable with the relative constant term of the genericAtom
-	/// nextAssignment contains the new value of variable derived
-	bool match(Atom *genericAtom,Atom *templateAtom,map_term_term& currentAssignment,map_term_term& nextAssignment);
+class GeneralIterator {
+public:
+	virtual void next()=0;
+	virtual bool isDone()=0;
+	virtual Atom* currentIterm()=0;
+	virtual ~GeneralIterator(){};
 };
+
+class VectorIterator : public GeneralIterator {
+public:
+	VectorIterator(const AtomVector::iterator& s, const AtomVector::iterator& e): start(s), end(e){};
+	virtual void next(){ if(start!=end) start++;}
+	virtual bool isDone(){return start==end;}
+	virtual Atom* currentIterm(){return *(start);}
+private:
+	AtomVector::iterator start;
+	AtomVector::iterator end;
+};
+
+class UnorderedSetIterator : public GeneralIterator {
+public:
+	UnorderedSetIterator(const AtomTable::iterator& s, const AtomTable::iterator& e): start(s), end(e){};
+	virtual void next(){ if(start!=end) start++;}
+	virtual bool isDone(){return start==end;}
+	virtual Atom* currentIterm(){return *(start);}
+private:
+	AtomTable::iterator start;
+	AtomTable::iterator end;
+};
+
+class UnorderedMultiMapIterator : public GeneralIterator {
+public:
+	UnorderedMultiMapIterator(const Multimap_Atom::iterator& s, const Multimap_Atom::iterator& e): start(s), end(e){};
+	virtual void next(){ if(start!=end) start++;}
+	virtual bool isDone(){return start==end;}
+	virtual Atom* currentIterm(){return start->second;}
+private:
+	Multimap_Atom::iterator start;
+	Multimap_Atom::iterator end;
+};
+
 
 /**
  * This class is an abstract base class that models a general indexing strategy of a predicate's instances.
@@ -130,28 +98,39 @@ struct ResultMatch {
  */
 class AtomSearcher {
 public:
-	//Constructor for all the fields
-	AtomSearcher(AtomTable* table) : table(table) {};
+	AtomSearcher(AtomVector* table) : table(table) {};
 	///This method implementation is demanded to sub-classes.
 	///It have to find all the matching atoms and return just the first of those.
 	///The returned integer will be used to get the other ones through nextMatch method @see nextMatch
 	virtual unsigned int firstMatch(Atom *templateAtom, map_term_term& currentAssignment, bool& find)=0;
 	///This method implementation is demanded to sub-classes.
 	///It is used to get the further matching atoms one by one each time it is invoked.
-	virtual void nextMatch(unsigned int id, map_term_term& currentAssignment, bool& find)=0;
+	virtual void nextMatch(unsigned int id, Atom* templateAtom, map_term_term& currentAssignment, bool& find)=0;
 	///This method implementation is demanded to sub-classes.
 	/// It have to find if exist the templateAtom, that have to be ground
 	virtual void findIfExist(Atom *templateAtom, bool& find, bool& isUndef)=0;
+
+	///This method implementation is demanded to sub-classes.
+	///It updates the searching data-structure adding the given atom
+	virtual void add(Atom* atom);
+	///This method implementation is demanded to sub-classes.
+	///It updates the searching data-structure removing the given atom
+	virtual void remove(Atom* atom);
+	///This method implementation is demanded to sub-classes.
+	///It updates the searching data-structure removing the given atom
+	virtual void clear();
+
+	///This method checks if the atom given matches with the templateAtom according to the current assignment
+	///If they match the current assignment is update accordingly
+	virtual bool checkMatch(Atom *genericAtom,Atom *templateAtom,map_term_term& currentAssignment);
+
 	///This method implementation is demanded to sub-classes.
 	/// Return the atom if exist in the table, else nullptr
 	virtual Atom* getAtom(Atom *atom)=0;
-	///This method implementation is demanded to sub-classes.
-	///It is used to update the data when swap is called
-	virtual void swap(unsigned tableFrom,unsigned tableTo )=0;
-	///Destructor
+
 	virtual ~AtomSearcher() {};
 protected:
-	AtomTable* table;
+	AtomVector* table;
 
 };
 
@@ -161,35 +140,30 @@ protected:
  */
 class SimpleAtomSearcher: public AtomSearcher {
 public:
-	///Constructor
-	SimpleAtomSearcher(AtomTable* table) : AtomSearcher(table), counter(0), templateAtom(0), currentAssignment(0){};
-	///Virtual method implementation
-	virtual unsigned int firstMatch(Atom *templateAtom, map_term_term& currentAssignment, bool& find);
-	///Virtual method implementation
-	virtual void nextMatch(unsigned int id,map_term_term& currentAssignment, bool& find);
-	///Virtual method implementation
-	virtual void findIfExist(Atom *templateAtom, bool& find,bool& isUndef);
+	SimpleAtomSearcher(AtomVector* table) : AtomSearcher(table), counter(0) {};
+
+	virtual unsigned int firstMatch(Atom* templateAtom, map_term_term& currentAssignment, bool& find);
+	virtual void nextMatch(unsigned int id, Atom* templateAtom, map_term_term& currentAssignment, bool& find);
+	virtual void findIfExist(Atom *templateAtom, bool& find, bool& isUndef);
+
+	virtual void add(Atom* atom){};
+	virtual void remove(Atom* atom){};
+	virtual void clear(){};
 
 	virtual Atom* getAtom(Atom *atom);
-	///Virtual method implementation
-	virtual void swap(unsigned tableFrom,unsigned tableTo )=0;
-	///Destructor
-	virtual ~SimpleAtomSearcher() {for(auto it:matches_id) delete it.second;};
+
 protected:
-	///The unordered map used to store the integer identifiers returned by the firstMach method
-	unordered_map<unsigned int, ResultMatch*> matches_id;
+	///A map in which for each call to first match the current search iterator
+	unordered_map<unsigned int, GeneralIterator*> resultMap;
 	///The counter used to assign the integer identifiers returned by the firstMach method
 	unsigned int counter;
-	///Current templateAtom passed in firstMatch
-	Atom *templateAtom;
-	///Current assignment passed in firstMatch
-	map_term_term* currentAssignment;
 
 	///This method given an AtomTable computes the matching facts and nofacts and returns the first one of those
-	void computeFirstMatch(ResultMatch* rm,Atom *templateAtom,map_term_term& currentAssignment);
+	void computeFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom,map_term_term& currentAssignment);
 	///This method invokes findIfAFactExists method if all the variables are bound, otherwise invokes the computeFirstMatch method
-	bool searchForFirstMatch(ResultMatch* rm,Atom *templateAtom,map_term_term& currentAssignment);
+	bool searchForFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom,map_term_term& currentAssignment);
 
+	GeneralIterator* computeGenericIterator(Atom* templateAtom);
 };
 
 /**
@@ -205,45 +179,35 @@ protected:
 
 class SingleTermAtomSearcher: public SimpleAtomSearcher {
 public:
-	/**
-	 * Constructor
-	 * @param facts An AtomTable of facts
-	 * @param nofacts An AtomTable of no facts
-	 * @param delta An AtomTable of no facts containing the result of the previous grounding iteration
-	 * @param predicate The predicate corresponding to the facts and the no facts.
-	 */
-	SingleTermAtomSearcher(AtomTable* facts, AtomTable* nofacts,AtomTable* delta,Predicate *p) : SimpleAtomSearcher(facts,nofacts,delta,p), instantiateIndexMaps(false), positionOfIndexing(0), positionOfIndexingSetByUser(false){};
-	///Overload of firstMatch method
-	virtual unsigned int firstMatch(bool searchInDelta, Atom *templateAtom, map_term_term& currentAssignment, bool& find);
-	///Virtual method implementation
-	virtual void updateDelta(AtomTable* nextDelta);
-	///Destructor
-	~SingleTermAtomSearcher(){};
+	SingleTermAtomSearcher(AtomVector* table, Predicate* p) : SimpleAtomSearcher(table), predicate(p), createdIndex(false) {};
+
+	virtual unsigned int firstMatch(Atom* templateAtom, map_term_term& currentAssignment, bool& find);
+	virtual void nextMatch(unsigned int id, Atom* templateAtom, map_term_term& currentAssignment, bool& find);
+	virtual void findIfExist(Atom *templateAtom, bool& find,bool& isUndef);
+
+	virtual void add(Atom* atom);
+	virtual void remove(Atom* atom);
+	virtual void clear(){tableIndexMap.clear();};
+
+	virtual Atom* getAtom(Atom *atom);
 
 private:
 	///Data structure for indexed facts
-	unordered_map<index_object,AtomTable> factsIndexMap;
-	///Data structure for indexed no facts
-	unordered_map<index_object,AtomTable> nofactsIndexMap;
-	///Data structure for indexed delta
-	unordered_map<index_object,AtomTable> deltaIndexMap;
-	///Determine whether the indexing has been filled in
-	bool instantiateIndexMaps;
-	///The position of the indexing term
-	unsigned int positionOfIndexing;
-	///Determine whether the indexing term has been established from command line arguments by the user
-	bool positionOfIndexingSetByUser;
+	unordered_map<index_object,AtomTable> tableIndexMap;
+
+	Predicate* predicate;
+	pair<unsigned int, bool> indexPair;
+	bool createdIndex;
 
 	///This method fills in the indexing data structures
 	void initializeIndexMaps();
 
-	// Set the matchingTable with the index_table if there is index else table
-	bool getMatchingTable(AtomTable*& matchingTable,unordered_map<index_object,AtomTable>& index_table,AtomTable*& table, pair<bool, index_object>& termBoundIndex);
-
 	/// This method carry out the indexing strategy, determining the indexing term with which is the actual term
 	/// corresponding to position given by the user or if no position is given it is used the first admissible term as indexing term.
 	/// Then filling the data structures invoking the initializeIndexMaps method.
-	pair<bool, index_object> createIndex(vector<unsigned int>& bind);
+	void createIndex(Atom* templateAtom,pair<bool, index_object>& termBoundIndex);
+
+	GeneralIterator* computeGenericIterator(Atom* templateAtom);
 };
 
 /**
@@ -258,47 +222,34 @@ private:
  */
 class SingleTermAtomSearcherMultiMap: public SimpleAtomSearcher {
 public:
-	/**
-	 * Constructor
-	 * @param facts An AtomTable of facts
-	 * @param no facts An AtomTable of no facts
-	 * @param delta An AtomTable of no facts containing the result of the previous grounding iteration
-	 * @param predicate The predicate corresponding to the facts and the no facts.
-	 */
-	SingleTermAtomSearcherMultiMap(AtomTable* facts, AtomTable* nofacts,AtomTable* delta,Predicate *p) : SimpleAtomSearcher(facts,nofacts,delta,p), instantiateIndexMaps(false), positionOfIndexing(0),positionOfIndexingSetByUser(false){};
-	///Overload of firstMatch method
-	virtual unsigned int firstMatch(bool searchInDelta, Atom *templateAtom, map_term_term& currentAssignment, bool& find);
-	//Virtual method implementation
-	virtual void updateDelta(AtomTable* nextDelta);
-	///Destructor
-	~SingleTermAtomSearcherMultiMap(){};
+	SingleTermAtomSearcherMultiMap(AtomVector* table, Predicate *p) : SimpleAtomSearcher(table), predicate(p), createdIndex(false) {};
+
+	virtual unsigned int firstMatch(Atom* templateAtom, map_term_term& currentAssignment, bool& find);
+	virtual void nextMatch(unsigned int id, Atom* templateAtom, map_term_term& currentAssignment, bool& find);
+	virtual void findIfExist(Atom *templateAtom, bool& find,bool& isUndef);
+
+	virtual void add(Atom* atom);
+	virtual void remove(Atom* atom);
+	virtual void clear(){tableIndexMap.clear();};
+
+	virtual Atom* getAtom(Atom *atom);
 
 private:
 	///Data structure for indexed facts
-	unordered_multimap<index_object,GenericAtom*> factsIndexMap;
-	///Data structure for indexed no facts
-	unordered_multimap<index_object,GenericAtom*> nofactsIndexMap;
-	///Data structure for indexed delta
-	unordered_multimap<index_object,GenericAtom*> deltaIndexMap;
-	///Determine whether the indexing has been filled in
-	bool instantiateIndexMaps;
-	///The position of the indexing term
-	unsigned int positionOfIndexing;
-	///Determine whether the indexing term has been established from command line arguments by the user
-	bool positionOfIndexingSetByUser;
+	unordered_multimap<index_object, Atom*> tableIndexMap;
+
+	Predicate* predicate;
+	pair<unsigned int, bool> indexPair;
+	bool createdIndex;
 
 	///This method fills in the indexing data structures
 	void initializeIndexMaps();
 
-	// Set the matchingTable with the index_table if there is index else table
-	bool getMatchingTable(AtomTable*& matchingTable,unordered_multimap<index_object,GenericAtom*>& index_table,AtomTable*& table, pair<bool, index_object>& termBoundIndex);
-
-	bool searchForFirstMatch(AtomTable* table, ResultMatch* rm);
-
 	/// This method carry out the indexing strategy, determining the indexing term with which is the actual term
 	/// corresponding to position given by the user or if no position is given it is used the first admissible term as indexing term.
 	/// Then filling the data structures invoking the initializeIndexMaps method.
-	pair<bool, index_object> createIndex(vector<unsigned int>& bind);
+	void createIndex(Atom* templateAtom,pair<bool, index_object>& termBoundIndex);
+	GeneralIterator* computeGenericIterator(Atom* templateAtom);
 };
 
 };

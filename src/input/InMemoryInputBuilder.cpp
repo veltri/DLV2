@@ -39,9 +39,8 @@ void InMemoryInputBuilder::onRule() {
 		Atom *fact=*currentRule->getBeginHead();
 		Predicate* predicate=fact->getPredicate();
 		instancesTable->addInstance(predicate);
-		GenericAtom* atomFact=new GenericAtom(fact,true);
-		bool up=false;
-		instancesTable->getInstance(predicate)->add(PredicateExtension::FACTS,atomFact,up);
+		if(!(instancesTable->getInstance(predicate)->addGenericAtom(0,fact)))
+			delete fact;
 		currentRule->clear();
 	}else{
 		set_predicate pred_head=currentRule->getPredicateInHead();

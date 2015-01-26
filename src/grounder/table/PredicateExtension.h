@@ -32,12 +32,12 @@ typedef unordered_multimap<unsigned int,unsigned int> map_int_int;
 class PredicateExtension {
 public:
 	///Constructors
-	PredicateExtension(Predicate* predicate): predicate(predicate){};
 	PredicateExtension(Predicate* predicate, unsigned tableNumber): predicate(predicate){
 		for(unsigned i=0;i<tableNumber;i++)
-			tables.push_back(AtomTable());
+			tables.push_back(AtomVector());
 		setAtomSearchers();
 	}
+	PredicateExtension(Predicate* predicate): PredicateExtension(predicate,2){};
 
 	///Getter for the predicate
 	Predicate* getPredicate() const {return predicate;}
@@ -49,22 +49,23 @@ public:
 	}
 
 	void addTable(){
-		tables.push_back(AtomTable());
+		tables.push_back(AtomVector());
 		setAtomSearchers();
 	}
 
-	void addGenericAtom(unsigned table, Atom* genericAtom){
-		assert_msg(i<tables.size(),"The specified table doesn't exist.");
-		//Cerca in atomSearcher[i] prima di inserire
-		atomSearchers[table]->find(genericAtom);
-		tables[table].push_back(genericAtom);
+	bool addGenericAtom(unsigned table, Atom* genericAtom){
+		assert_msg(table<tables.size(),"The specified table doesn't exist.");
+		if((atomSearchers[table]->getAtom(genericAtom))==nullptr){
+			tables[table].push_back(genericAtom);
+			return true;
+		}
+		return false;
 	}
 
 	Atom* getGenericAtom(unsigned table, Atom* genericAtom){
 		assert_msg(table<tables.size(),"The specified table doesn't exist.");
-		//Aggiungi in atomSearcher[i]
-		atomSearchers[table]->find(genericAtom);
-		return nullptr;
+		Atom* atomFound=atomSearchers[table]->getAtom(genericAtom);
+		return atomFound;
 	}
 
 	 //Moves the content of the tableFrom (source) to the tableTo (destination)
@@ -82,7 +83,7 @@ private:
 
 	///For each AtomTable in tables is present an AtomSeacher in atomSearchers
 	///The vector of tables
-	vector<AtomTable> tables;
+	vector<AtomVector> tables;
 	///The vector of  AtomSeacher
 	vector<AtomSearcher*> atomSearchers;
 
@@ -125,7 +126,7 @@ public:
 	unsigned int getSize() {return predicateExtTable.size();};
 
 	///Printer method
-	void print() {for (auto i : predicateExtTable)i.second->print();	};
+	void print() {for (auto i : predicateExtTable)i.second->print(0);};
 
 	///Destructor
 	~PredicateExtTable();

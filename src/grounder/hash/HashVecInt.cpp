@@ -16,11 +16,11 @@ HashVecInt *HashVecInt::hashInt;
 
 HashVecInt* HashVecInt::getHashVecIntFromConfig() {
 	if (hashInt == nullptr){
-		if(Options::globalOptions()->getHashType()==BOOST_HASH)
-			hashInt = new BoostCombineHashVecInt;
+		if(Options::globalOptions()->getHashType()==JAVA_HASH)
+			hashInt = new JavaHashVecInt;
 		else
 			// Default select Java
-			hashInt = new JavaHashVecInt;
+			hashInt = new BoostCombineHashVecInt;
 	}
 	return hashInt;
 }

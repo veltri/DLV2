@@ -13,7 +13,7 @@ namespace DLV2{
 
 namespace grounder{
 
-/****************************************************** INSTANCES ***************************************************/
+/****************************************************** PREDICATE EXTENSION ***************************************************/
 
 void PredicateExtension::setAtomSearchers(){
 	// Properly set the IndexAtom type
@@ -21,13 +21,13 @@ void PredicateExtension::setAtomSearchers(){
 		AtomSearcher* atomSearcher;
 		switch (Options::globalOptions()->getIndexType()) {
 		case (MAP):
-			atomSearcher = new SingleTermAtomSearcher(&tables[PredicateExtension::FACTS],&tables[PredicateExtension::NOFACTS],&tables[PredicateExtension::DELTA],predicate);
+			atomSearcher = new SingleTermAtomSearcher(&tables[tables.size()-1]);
 			break;
 		case (MULTIMAP):
-			atomSearcher = new SingleTermAtomSearcherMultiMap(&tables[PredicateExtension::FACTS],&tables[PredicateExtension::NOFACTS],&tables[PredicateExtension::DELTA],predicate);
+			atomSearcher = new SingleTermAtomSearcherMultiMap(&tables[tables.size()-1]);
 			break;
 		default:
-			atomSearcher = new SimpleAtomSearcher(&tables[PredicateExtension::FACTS],&tables[PredicateExtension::NOFACTS],&tables[PredicateExtension::DELTA],predicate);
+			atomSearcher = new SimpleAtomSearcher(&tables[tables.size()-1]);
 			break;
 		}
 		atomSearchers.push_back(atomSearcher);
@@ -36,7 +36,7 @@ void PredicateExtension::setAtomSearchers(){
 
 PredicateExtension::~PredicateExtension() {
 	for(unsigned int i=0;i<tables.size();i++){
-		AtomTable* table=&tables[i];
+		AtomVector* table=&tables[i];
 		for (auto it = table->begin(); it != table->end(); it++){
 			delete *it;
 		}
@@ -50,20 +50,27 @@ void PredicateExtension::swapTables(unsigned tableFrom,unsigned tableTo){
 	assert_msg(tableFrom<tables.size(),"The specified table doesn't exist.");
 	assert_msg(tableTo<tables.size(),"The specified table doesn't exist.");
 
-	AtomTable table_from=tables[tableFrom];
-	AtomTable table_to=tables[tableTo];
+	AtomVector table_from=tables[tableFrom];
+	AtomVector table_to=tables[tableTo];
+
+	AtomSearcher* seacher_from=atomSearchers[tableFrom];
+	AtomSearcher* seacher_to=atomSearchers[tableTo];
 
 	unsigned size=table_from.size();
 	table_to.reserve(size+table_to.size());
-	for (unsigned int i = size-1; i >= 0; --i) {
-		table_to.push_back(table_from[i]);
+	for (unsigned int i = size-1; i > 0; --i) {
+		Atom* currentAtom=table_from[i];
+
+		table_to.push_back(currentAtom);
 		table_from.pop_back();
+
+		seacher_to->add(currentAtom);
 	}
-	//TODO fare lo stesso per i searcher
-	swapSeacher(tableFrom,tableTo);
+
+	seacher_from->clear();
 }
 
-/****************************************************** INSTANCES TABLE ***************************************************/
+/****************************************************** PREDICATE EXT TABLE ***************************************************/
 
 PredicateExtTable *PredicateExtTable::predicateExtTable_;
 
