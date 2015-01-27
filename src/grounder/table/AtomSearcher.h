@@ -119,13 +119,13 @@ public:
 
 	///This method implementation is demanded to sub-classes.
 	///It updates the searching data-structure adding the given atom
-	virtual void add(Atom* atom);
+	virtual void add(Atom* atom) = 0;
 	///This method implementation is demanded to sub-classes.
 	///It updates the searching data-structure removing the given atom
-	virtual void remove(Atom* atom);
+	virtual void remove(Atom* atom) = 0;
 	///This method implementation is demanded to sub-classes.
 	///It clear the data-structure
-	virtual void clear();
+	virtual void clear() = 0;
 
 	///This method checks if the atom given matches with the templateAtom according to the current assignment
 	///If they match the current assignment is update accordingly
@@ -163,6 +163,8 @@ public:
 
 	virtual Atom* getAtom(Atom *atom);
 
+	virtual ~SimpleAtomSearcher() {};
+
 protected:
 	///A map in which for each call to first match the current search iterator
 	unordered_map<unsigned int, GeneralIterator*> resultMap;
@@ -176,7 +178,7 @@ protected:
 	bool searchForFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom,map_term_term& currentAssignment);
 
 	///This method calculate the starting point of search
-	GeneralIterator* computeGenericIterator(Atom* templateAtom);
+	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom);
 };
 
 /**
@@ -194,15 +196,14 @@ class SingleTermAtomSearcher: public SimpleAtomSearcher {
 public:
 	SingleTermAtomSearcher(AtomVector* table, Predicate* p) : SimpleAtomSearcher(table), predicate(p), createdIndex(false) {};
 
-	virtual unsigned int firstMatch(Atom* templateAtom, map_term_term& currentAssignment, bool& find);
-	virtual void nextMatch(unsigned int id, Atom* templateAtom, map_term_term& currentAssignment, bool& find);
-	virtual void findIfExist(Atom *templateAtom, bool& find,bool& isUndef);
 
 	virtual void add(Atom* atom);
 	virtual void remove(Atom* atom);
 	virtual void clear(){tableIndexMap.clear();};
 
 	virtual Atom* getAtom(Atom *atom);
+
+	virtual ~SingleTermAtomSearcher() {};
 
 private:
 	///Data structure for indexed facts
@@ -240,15 +241,14 @@ class SingleTermAtomSearcherMultiMap: public SimpleAtomSearcher {
 public:
 	SingleTermAtomSearcherMultiMap(AtomVector* table, Predicate *p) : SimpleAtomSearcher(table), predicate(p), createdIndex(false) {};
 
-	virtual unsigned int firstMatch(Atom* templateAtom, map_term_term& currentAssignment, bool& find);
-	virtual void nextMatch(unsigned int id, Atom* templateAtom, map_term_term& currentAssignment, bool& find);
-	virtual void findIfExist(Atom *templateAtom, bool& find,bool& isUndef);
 
 	virtual void add(Atom* atom);
 	virtual void remove(Atom* atom);
 	virtual void clear(){tableIndexMap.clear();};
 
 	virtual Atom* getAtom(Atom *atom);
+
+	~SingleTermAtomSearcherMultiMap(){};
 
 private:
 	///Data structure for indexed facts

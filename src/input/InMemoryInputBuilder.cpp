@@ -8,6 +8,7 @@
 #include "InMemoryInputBuilder.h"
 #include "../grounder/atom/ClassicalLiteral.h"
 #include "../grounder/atom/BuiltInAtom.h"
+#include "../grounder/ground/ProgramGrounder.h"
 
 #include <string>
 #include "algorithm"
@@ -38,8 +39,7 @@ void InMemoryInputBuilder::onRule() {
 	if(currentRule->isAFact()){
 		Atom *fact=*currentRule->getBeginHead();
 		Predicate* predicate=fact->getPredicate();
-		instancesTable->addPredicateExt(predicate);
-		if(!(instancesTable->getPredicateExt(predicate)->addGenericAtom(0,fact)))
+		if(!(instancesTable->getPredicateExt(predicate)->addGenericAtom(FACT,fact)))
 			delete fact;
 		currentRule->clear();
 	}else{
@@ -94,7 +94,6 @@ void InMemoryInputBuilder::onPredicateName(char* name) {
 	Predicate *predicate=new Predicate(name_predicate,terms_parsered.size());
 	predicateTable->getInstance()->insertPredicate(predicate);
 	instancesTable->addPredicateExt(predicate);
-
 	currentAtom =new ClassicalLiteral(predicate,terms_parsered,false,false);
 	terms_parsered.clear();
 }

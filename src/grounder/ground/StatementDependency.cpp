@@ -15,6 +15,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/graph/topological_sort.hpp>
 
+#include "../table/PredicateExtension.h"
+
 namespace DLV2{
 
 
@@ -607,8 +609,13 @@ void StatementDependency::createComponentGraphAndComputeAnOrdering(vector<vector
 							exitRules[i].push_back(r);
 						else{
 							recursiveRules[i].push_back(r);
-							for(auto p:r->getPredicateInHead())
-								componentPredicateInHead[i].insert(p->getIndex());
+							for(auto p:r->getPredicateInHead()){
+								if(componentPredicateInHead[i].insert(p->getIndex()).second){
+									//If a predicate is recursive add delta and next delta tables
+									PredicateExtTable::getInstance()->getPredicateExt(p->getIndex())->addTable();
+									PredicateExtTable::getInstance()->getPredicateExt(p->getIndex())->addTable();
+								}
+							}
 						}
 					}
 				}

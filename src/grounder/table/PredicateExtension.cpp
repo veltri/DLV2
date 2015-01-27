@@ -21,10 +21,10 @@ void PredicateExtension::setAtomSearchers(){
 		AtomSearcher* atomSearcher;
 		switch (Options::globalOptions()->getIndexType()) {
 		case (MAP):
-			atomSearcher = new SingleTermAtomSearcher(&tables[tables.size()-1]);
+			atomSearcher = new SingleTermAtomSearcher(&tables[tables.size()-1],predicate);
 			break;
 		case (MULTIMAP):
-			atomSearcher = new SingleTermAtomSearcherMultiMap(&tables[tables.size()-1]);
+			atomSearcher = new SingleTermAtomSearcherMultiMap(&tables[tables.size()-1],predicate);
 			break;
 		default:
 			atomSearcher = new SimpleAtomSearcher(&tables[tables.size()-1]);
@@ -41,6 +41,7 @@ PredicateExtension::~PredicateExtension() {
 			delete *it;
 		}
 	}
+
 	for(unsigned int i=0;i<atomSearchers.size();i++){
 		delete atomSearchers[i];
 	}
@@ -74,10 +75,6 @@ void PredicateExtension::swapTables(unsigned tableFrom,unsigned tableTo){
 
 PredicateExtTable *PredicateExtTable::predicateExtTable_;
 
-PredicateExtTable::~PredicateExtTable() {
-	for (auto i : predicateExtTable)
-		delete (i.second);
-}
 
 PredicateExtTable* PredicateExtTable::getInstance(){
 	if(predicateExtTable_== nullptr)

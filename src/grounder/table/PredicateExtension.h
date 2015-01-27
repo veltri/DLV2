@@ -72,6 +72,16 @@ public:
 		return atomFound;
 	}
 
+	///Get an generic atom searching in the range table
+	Atom* getGenericAtom(unsigned start,unsigned end,Atom* genericAtom){
+		for(unsigned i=start;i<=end;i++){
+			Atom* atomFound=atomSearchers[i]->getAtom(genericAtom);
+			if(atomFound!=nullptr)
+				return atomFound;
+		}
+		return nullptr;
+	}
+
 	 //Moves the content of the tableFrom (source) to the tableTo (destination)
 	 void swapTables(unsigned tableFrom,unsigned tableTo);
 
@@ -108,7 +118,7 @@ public:
 	///This method adds an Instance for a predicate
 	void addPredicateExt(Predicate* p) {
 		if(!predicateExtTable.count(p->getIndex())){
-			PredicateExtension* is = new PredicateExtension(p);
+			PredicateExtension *is=new PredicateExtension(p);
 			predicateExtTable.insert({p->getIndex(),is});
 		}
 	};
@@ -117,24 +127,24 @@ public:
 	PredicateExtension* getPredicateExt(Predicate* p) {
 		auto result= predicateExtTable.find(p->getIndex());
 		if(result==predicateExtTable.end()) return nullptr;
-		return result->second;
+		return (result->second);
 	};
 
 	///Getter for the instances of a predicate index
 	PredicateExtension* getPredicateExt(index_object p) {
 		auto result= predicateExtTable.find(p);
 		if(result==predicateExtTable.end()) return nullptr;
-		return result->second;
+		return (result->second);
 	};
 
 	///This method return the size of the map of instances
 	unsigned int getSize() {return predicateExtTable.size();};
 
 	///Printer method for the first table in Predicate Extension
-	void print() {for (auto i : predicateExtTable)i.second->print(0);};
+	void print(unsigned table) {for (auto& i : predicateExtTable)i.second->print(table);};
 
 	///Destructor
-	~PredicateExtTable();
+	~PredicateExtTable(){for(auto pair_predExt:predicateExtTable)delete pair_predExt.second;};
 
 	static PredicateExtTable* getInstance();
 private:

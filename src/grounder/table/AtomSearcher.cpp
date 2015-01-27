@@ -110,7 +110,7 @@ void SimpleAtomSearcher::findIfExist(Atom *templateAtom,bool& find, bool& isUnde
 
 void SingleTermAtomSearcher::add(Atom* atom) {
 	if(createdIndex){
-		index_object termIndex=atom->terms[indexPair.first]->getIndex();
+		index_object termIndex=atom->getTerm(indexPair.first)->getIndex();
 		if(tableIndexMap.count(termIndex)){
 			tableIndexMap[termIndex].insert(atom);
 		}
@@ -124,7 +124,7 @@ void SingleTermAtomSearcher::add(Atom* atom) {
 
 void SingleTermAtomSearcher::remove(Atom* atom) {
 	if(createdIndex){
-		index_object termIndex=atom->terms[indexPair.first]->getIndex();
+		index_object termIndex=atom->getTerm(indexPair.first)->getIndex();
 		if(!tableIndexMap.count(termIndex)){
 			tableIndexMap[termIndex].erase(atom);
 		}
@@ -133,9 +133,9 @@ void SingleTermAtomSearcher::remove(Atom* atom) {
 
 Atom* SingleTermAtomSearcher::getAtom(Atom *atom){
 	if(createdIndex){
-		index_object termIndex=atom->terms[indexPair.first]->getIndex();
+		index_object termIndex=atom->getTerm(indexPair.first)->getIndex();
 		if(!tableIndexMap.count(termIndex)){
-			Atom* atomInsert=tableIndexMap[termIndex].insert(atom).first;
+			Atom* atomInsert=*tableIndexMap[termIndex].insert(atom).first;
 			return atomInsert;
 		}
 	}
@@ -209,7 +209,7 @@ void SingleTermAtomSearcherMultiMap::add(Atom* atom) {
 void SingleTermAtomSearcherMultiMap::remove(Atom* atom) {
 	if(createdIndex){
 		AtomTableComparator comparator;
-		index_object termIndex=atom->terms[indexPair.first]->getIndex();
+		index_object termIndex=atom->getTerm(indexPair.first)->getIndex();
 		auto pair=tableIndexMap.equal_range(termIndex);
 		for(auto it=pair.first;it!=pair.second;it++){
 			if(comparator(it->second,atom))
@@ -221,7 +221,7 @@ void SingleTermAtomSearcherMultiMap::remove(Atom* atom) {
 Atom* SingleTermAtomSearcherMultiMap::getAtom(Atom *atom){
 	if(createdIndex){
 			AtomTableComparator comparator;
-			index_object termIndex=atom->terms[indexPair.first]->getIndex();
+			index_object termIndex=atom->getTerm(indexPair.first)->getIndex();
 			auto pair=tableIndexMap.equal_range(termIndex);
 			for(auto it=pair.first;it!=pair.second;it++){
 				if(comparator(it->second,atom))
@@ -267,7 +267,7 @@ GeneralIterator* SingleTermAtomSearcherMultiMap::computeGenericIterator(Atom* te
 
 void SingleTermAtomSearcherMultiMap::initializeIndexMaps(){
 //	Timer::getInstance()->start("Creation Index Structure");
-	for (GenericAtom* a : *table) {
+	for (Atom* a : *table) {
 		index_object termIndex=a->getTerm(indexPair.first)->getIndex();
 		tableIndexMap.insert({termIndex,a});
 	}

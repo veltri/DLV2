@@ -61,30 +61,30 @@ struct hashRule {
 class GroundedRules{
 public:
 
-	GroundedRules(){}
-
-	///This method adds a ground rule if is not already present in the set, otherwise it is deleted
-	bool addRule(GroundRule* r)
-	{
-		if(!groundedRules.insert(r).second) {delete r;return false;};
-		groundedRulesOrdering.push_back(r);
-		return true;
-	}
-
-	/// Return the first rule grounded
-	vector<GroundRule*>::const_iterator getBeginGroundOrder(){return groundedRulesOrdering.begin();};
-
-	/// Return the last rule grounded
-	vector<GroundRule*>::const_iterator getEndGroundOrder(){return groundedRulesOrdering.end();};
-
-
-	~GroundedRules(){for(auto rule:groundedRules)delete rule;}
-
-private:
-	///An unordered set of ground rule @see hashRule
-	unordered_set<GroundRule*,hashRule,hashRule> groundedRules;
-	///Order of the rule when grounding
-	vector<GroundRule*> groundedRulesOrdering;
+//	GroundedRules(){}
+//
+//	///This method adds a ground rule if is not already present in the set, otherwise it is deleted
+//	bool addRule(GroundRule* r)
+//	{
+//		if(!groundedRules.insert(r).second) {delete r;return false;};
+//		groundedRulesOrdering.push_back(r);
+//		return true;
+//	}
+//
+//	/// Return the first rule grounded
+//	vector<GroundRule*>::const_iterator getBeginGroundOrder(){return groundedRulesOrdering.begin();};
+//
+//	/// Return the last rule grounded
+//	vector<GroundRule*>::const_iterator getEndGroundOrder(){return groundedRulesOrdering.end();};
+//
+//
+//	~GroundedRules(){for(auto rule:groundedRules)delete rule;}
+//
+//private:
+//	///An unordered set of ground rule @see hashRule
+//	unordered_set<GroundRule*,hashRule,hashRule> groundedRules;
+//	///Order of the rule when grounding
+//	vector<GroundRule*> groundedRulesOrdering;
 
 };
 
@@ -93,74 +93,74 @@ private:
  */
 class ProgramEvaluator {
 public:
-	ProgramEvaluator(){/*TODO*/simplification=true;};
-
-	bool addRule(GroundRule *r){
-		if(!rules.addRule(r))return false;
-		incrementSupport(r);
-		return true;
-	}
-
-	///Increment the support of atom
-	void incrementSupport(GroundAtom* atom){
-		if(!supportedAtom.count(atom))
-			supportedAtom.insert({atom,1});
-		else{
-			unsigned int support=supportedAtom.find(atom)->second;
-			supportedAtom.find(atom)->second=support+1;
-		}
-	}
-
-	///Decrement the support of atom
-	void decrementSupport(GroundAtom* atom){
-		if(!supportedAtom.count(atom))
-			supportedAtom.insert({atom,0});
-		else{
-			unsigned int support=supportedAtom.find(atom)->second;
-			if(support>0)
-				supportedAtom.find(atom)->second=support-1;
-		}
-	}
-
-
-	///Decrement the support of all the atom in the head of rule
-	void decrementSupport(GroundRule* rule){
-		for(auto head_it=rule->getBeginHead();head_it!=rule->getEndHead();head_it++)decrementSupport(*head_it);
-	}
-
-	///Increment the support of all the atom in the head of rule
-	void incrementSupport(GroundRule* rule){
-		for(auto head_it=rule->getBeginHead();head_it!=rule->getEndHead();head_it++)incrementSupport(*head_it);
-	}
-
-	/// Print the rule and simplify if is possible
-	void printAndSimplify(PredicateExtTable* instancesTable);
-
-	/// Printer method for the grounded rules according to the given assignment
-	bool printGroundRule(PredicateExtTable* instancesTable,PredicateTable * predicateTable,StatementDependency * statementDep,Rule *r, map_term_term& var_assign, bool isRecursive, bool firstIteration);
-
-	virtual ~ProgramEvaluator(){};
-private:
-	/// Number of supported rule for each atom
-	unordered_map<GroundAtom*,unsigned int,hashRule,hashRule> supportedAtom;
-
-	GroundedRules rules;
-
-	bool simplification;
-
-	/// Ground the body of the rule
-	bool groundBody(bool disjunction, bool isRecursive, bool firstIteration,
-			bool updated, Rule* r, map_term_term& var_assign,
-			PredicateExtTable* instancesTable, GroundRule* groundRule,
-			bool& added);
-
-	/// Ground the head of the rule
-	void groundHead(Rule* r, PredicateTable* predicateTable,
-			map_term_term& var_assign, PredicateExtTable* instancesTable,
-			StatementDependency* statementDep, GroundRule* groundRule);
-
-	///Ground the constraint with no simplification
-	void groundConstraint(Rule* r, PredicateTable* predicateTable, map_term_term& var_assign);
+//	ProgramEvaluator(){/*TODO*/simplification=true;};
+//
+//	bool addRule(GroundRule *r){
+//		if(!rules.addRule(r))return false;
+//		incrementSupport(r);
+//		return true;
+//	}
+//
+//	///Increment the support of atom
+//	void incrementSupport(GroundAtom* atom){
+//		if(!supportedAtom.count(atom))
+//			supportedAtom.insert({atom,1});
+//		else{
+//			unsigned int support=supportedAtom.find(atom)->second;
+//			supportedAtom.find(atom)->second=support+1;
+//		}
+//	}
+//
+//	///Decrement the support of atom
+//	void decrementSupport(GroundAtom* atom){
+//		if(!supportedAtom.count(atom))
+//			supportedAtom.insert({atom,0});
+//		else{
+//			unsigned int support=supportedAtom.find(atom)->second;
+//			if(support>0)
+//				supportedAtom.find(atom)->second=support-1;
+//		}
+//	}
+//
+//
+//	///Decrement the support of all the atom in the head of rule
+//	void decrementSupport(GroundRule* rule){
+//		for(auto head_it=rule->getBeginHead();head_it!=rule->getEndHead();head_it++)decrementSupport(*head_it);
+//	}
+//
+//	///Increment the support of all the atom in the head of rule
+//	void incrementSupport(GroundRule* rule){
+//		for(auto head_it=rule->getBeginHead();head_it!=rule->getEndHead();head_it++)incrementSupport(*head_it);
+//	}
+//
+//	/// Print the rule and simplify if is possible
+//	void printAndSimplify(PredicateExtTable* instancesTable);
+//
+//	/// Printer method for the grounded rules according to the given assignment
+//	bool printGroundRule(PredicateExtTable* instancesTable,PredicateTable * predicateTable,StatementDependency * statementDep,Rule *r, map_term_term& var_assign, bool isRecursive, bool firstIteration);
+//
+//	virtual ~ProgramEvaluator(){};
+//private:
+//	/// Number of supported rule for each atom
+//	unordered_map<GroundAtom*,unsigned int,hashRule,hashRule> supportedAtom;
+//
+//	GroundedRules rules;
+//
+//	bool simplification;
+//
+//	/// Ground the body of the rule
+//	bool groundBody(bool disjunction, bool isRecursive, bool firstIteration,
+//			bool updated, Rule* r, map_term_term& var_assign,
+//			PredicateExtTable* instancesTable, GroundRule* groundRule,
+//			bool& added);
+//
+//	/// Ground the head of the rule
+//	void groundHead(Rule* r, PredicateTable* predicateTable,
+//			map_term_term& var_assign, PredicateExtTable* instancesTable,
+//			StatementDependency* statementDep, GroundRule* groundRule);
+//
+//	///Ground the constraint with no simplification
+//	void groundConstraint(Rule* r, PredicateTable* predicateTable, map_term_term& var_assign);
 };
 
 };
