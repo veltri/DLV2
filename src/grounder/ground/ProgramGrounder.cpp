@@ -5,7 +5,7 @@
  *      Author: Davide
  */
 
-#define DEBUG 1
+#define DEBUG 0
 
 #include <list>
 
@@ -139,7 +139,7 @@ void ProgramGrounder::inizializeSearchInsertPredicate(Rule* rule,unordered_set<i
 
 	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();atom++){
 			vector<unsigned> tableToInsert(2);
-			tableToInsert[0]=FACT;tableToInsert[1]=NOFACT;
+			tableToInsert[0]=NOFACT;tableToInsert[1]=FACT;
 			predicate_searchInsert_table.push_back(tableToInsert);
 	}
 }
@@ -164,13 +164,13 @@ void ProgramGrounder::nextSearchInsertPredicate(Rule* rule,unordered_set<index_o
 				predicate_searchInsert_table.push_back(tableToInsert);
 			}else{
 				vector<unsigned> tableToInsert(2);
-				tableToInsert[0]=FACT;tableToInsert[1]=NOFACT;
+				tableToInsert[0]=NOFACT;tableToInsert[1]=FACT;
 				predicate_searchInsert_table.push_back(tableToInsert);
 			}
 			currentRecursivePredicate++;
 		}else{
 			vector<unsigned> tableToInsert(2);
-			tableToInsert[0]=FACT;tableToInsert[1]=NOFACT;
+			tableToInsert[0]=NOFACT;tableToInsert[1]=FACT;
 			predicate_searchInsert_table.push_back(tableToInsert);
 		}
 	}
@@ -187,17 +187,17 @@ void ProgramGrounder::swapInDelta(Rule *rule){
 	}
 }
 
-bool ProgramGrounder::groundRule(Rule* r) {
+bool ProgramGrounder::groundRule(Rule* rule) {
 
-	cout<<"RULE ";r->print();
-	unsigned i=0;
-	for(auto v1:predicate_searchInsert_table){
-		cout<<"ATOM "<<i<<endl;
-		for(auto v2:v1){
-			cout<<"\t TABLE "<<v2<<endl;
-		}
-		i++;
-	}
+//	cout<<"RULE ";r->print();
+//	unsigned i=0;
+//	for(auto v1:predicate_searchInsert_table){
+//		cout<<"ATOM "<<i<<endl;
+//		for(auto v2:v1){
+//			cout<<"\t TABLE "<<v2<<endl;
+//		}
+//		i++;
+//	}
 
 	inizialize(rule);
 
@@ -213,7 +213,7 @@ bool ProgramGrounder::groundRule(Rule* r) {
 
 		if(match()){
 			if(!next()) {
-				do{foundAssignment();find_assignment=true;}while(match());
+				do{foundAssignment();find_assignment=true;}while(match() && next());
 				if(!back())finish=true;
 			}
 		}else if(!back())

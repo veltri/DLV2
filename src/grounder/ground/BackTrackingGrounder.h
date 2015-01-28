@@ -13,16 +13,25 @@
 namespace DLV2 {
 namespace grounder {
 
-class BackTrackingGrounder : ProgramGrounder {
+class BackTrackingGrounder : public ProgramGrounder {
 public:
-	BackTrackingGrounder():ProgramGrounder(),currentRule(0), current_atom(0),index_current_atom(0){};
+	BackTrackingGrounder():ProgramGrounder(),currentRule(0),index_current_atom(0),templateAtom(nullptr),start(true){};
 	virtual ~BackTrackingGrounder(){};
+
+
+protected:
 
 	virtual bool match();
 	virtual bool next();
-	virtual void foundAssignment();
 	virtual bool back();
 	virtual void inizialize(Rule* rule);
+
+	virtual void foundAssignment();
+	virtual void generateTemplateAtom();
+	virtual void removeBindValueInAssignment(const set_term& bind_variables);
+	virtual bool groundBoundAtom();
+	virtual bool firstMatch();
+	virtual bool nextMatch();
 
 
 
@@ -31,7 +40,8 @@ protected:
 	/// The map of the assignment, map each variables to its assigned value
 	map_term_term current_var_assign;
 	/// Current id of first match for grounding rule
-	unordered_map<unsigned,unsigned> current_id_match;
+	/// map of id of the atom and vector of pair : table to search and id of firstMatch (if is NOMATCH call first else next)
+	unordered_map<unsigned,vector<pair<unsigned,int>>> current_id_match;
 	/// Current variables for each atom for grounding rule
 	vector<set_term> current_variables_atoms;
 	/// Current rule
@@ -39,7 +49,10 @@ protected:
 	/// Current atom iterator for grounding rule
 	vector<Atom*>::iterator current_atom_it;
 	/// Current atom index for grounding rule
-	unsigned int index_current_atom;
+	int index_current_atom;
+
+	Atom * templateAtom;
+	bool start;
 
 	void findBindVariablesRule();
 };

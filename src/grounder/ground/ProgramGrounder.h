@@ -45,7 +45,7 @@ public:
 			predicateTable(PredicateTable::getInstance()), predicateExtTable(PredicateExtTable::getInstance()), statementDependency(StatementDependency::getInstance()), termsMap(TermTable::getInstance()){};
 
 	///This method executes the overall grounding process
-	void ground();
+	virtual void ground();
 
 	/// This method executes the grounding of a rule
 	/// @param r The rule to be grounded

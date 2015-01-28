@@ -98,6 +98,8 @@ public:
 	Term* getTerm(unsigned int i) const {return terms[i];};
 	///Push the term in terms at position i
 	void setTerm(unsigned int i,Term* term) {terms[i]=term;};
+	/// TODO
+	void setTerms(const vector<Term*>& terms) {this->terms=terms;};
 	///Returns true if the atom is negated with true negation
 	virtual bool isHasMinus() const {return 0;};
 	///Set whether the atom is negated with true negation

@@ -66,9 +66,10 @@ bool SimpleAtomSearcher::searchForFirstMatch(GeneralIterator* currentMatch, Atom
 }
 
 void SimpleAtomSearcher::computeFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term_term& currentAssignment){
-	for(;currentMatch->isDone();currentMatch->next())
+	for(;!currentMatch->isDone();currentMatch->next())
 		if (checkMatch(currentMatch->currentIterm(),templateAtom,currentAssignment))
 			break;
+
 }
 
 void SimpleAtomSearcher::nextMatch(unsigned int id, Atom *templateAtom, map_term_term& currentAssignment, bool& find) {

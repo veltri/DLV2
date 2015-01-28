@@ -72,9 +72,9 @@ public:
 		return atomFound;
 	}
 
-	///Get an generic atom searching in the range table
-	Atom* getGenericAtom(unsigned start,unsigned end,Atom* genericAtom){
-		for(unsigned i=start;i<=end;i++){
+	///Get an generic atom searching in all table
+	Atom* getGenericAtom(Atom* genericAtom){
+		for(unsigned i=0;i<atomSearchers.size();i++){
 			Atom* atomFound=atomSearchers[i]->getAtom(genericAtom);
 			if(atomFound!=nullptr)
 				return atomFound;

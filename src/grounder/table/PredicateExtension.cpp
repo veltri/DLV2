@@ -21,13 +21,13 @@ void PredicateExtension::setAtomSearchers(){
 		AtomSearcher* atomSearcher;
 		switch (Options::globalOptions()->getIndexType()) {
 		case (MAP):
-			atomSearcher = new SingleTermAtomSearcher(&tables[tables.size()-1],predicate);
+			atomSearcher = new SingleTermAtomSearcher(&tables[atomSearchers.size()],predicate);
 			break;
 		case (MULTIMAP):
-			atomSearcher = new SingleTermAtomSearcherMultiMap(&tables[tables.size()-1],predicate);
+			atomSearcher = new SingleTermAtomSearcherMultiMap(&tables[atomSearchers.size()],predicate);
 			break;
 		default:
-			atomSearcher = new SimpleAtomSearcher(&tables[tables.size()-1]);
+			atomSearcher = new SimpleAtomSearcher(&tables[atomSearchers.size()]);
 			break;
 		}
 		atomSearchers.push_back(atomSearcher);
