@@ -33,7 +33,7 @@ protected:
 	virtual bool firstMatch();
 	virtual bool nextMatch();
 
-
+	void printAssignment();
 
 protected:
 	/// Current assignment for grounding rule
@@ -49,7 +49,7 @@ protected:
 	/// Current atom iterator for grounding rule
 	vector<Atom*>::iterator current_atom_it;
 	/// Current atom index for grounding rule
-	int index_current_atom;
+	unsigned index_current_atom;
 
 	Atom * templateAtom;
 	bool start;

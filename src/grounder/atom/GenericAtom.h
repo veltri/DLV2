@@ -36,7 +36,18 @@ public:
 	bool isFact() const { return fact; }
 	void setFact(bool isFact) { this->fact = isFact; }
 
-	void print() { };
+	void print() {
+		cout<<"VALUE "<<isFact()<<" ";
+		for (unsigned int i = 0; i < terms.size(); ++i){
+			if(i==0)
+				cout<<"(";
+			terms[i]->print();
+			if(i!=terms.size()-1)
+				cout<<",";
+			else
+				cout<<")";
+		}
+	};
 
 private:
 	bool fact;

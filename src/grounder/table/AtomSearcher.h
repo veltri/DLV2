@@ -173,7 +173,7 @@ protected:
 
 	///This method given an AtomTable computes the matching facts and nofacts and returns the first one of those
 	/// currentMatch identifiers the starting point of search
-	void computeFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom,map_term_term& currentAssignment);
+	bool computeFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom,map_term_term& currentAssignment);
 	///This method invokes findIfAFactExists method if all the variables are bound, otherwise invokes the computeFirstMatch method
 	bool searchForFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom,map_term_term& currentAssignment);
 

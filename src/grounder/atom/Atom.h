@@ -149,8 +149,8 @@ public:
 	/*****************************************************/
 
 	/******** Methods useful for Generic Atom ********/
-	bool isFact() const { return false; }
-	void setFact(bool isFact) {  }
+	virtual bool isFact() const { return false; }
+	virtual void setFact(bool isFact) {  }
 	/*****************************************************/
 
 

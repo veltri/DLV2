@@ -213,7 +213,7 @@ bool ProgramGrounder::groundRule(Rule* rule) {
 
 		if(match()){
 			if(!next()) {
-				do{foundAssignment();find_assignment=true;}while(match() && next());
+				do{foundAssignment();find_assignment=true;}while(match());
 				if(!back())finish=true;
 			}
 		}else if(!back())

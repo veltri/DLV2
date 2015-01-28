@@ -11,10 +11,19 @@ namespace DLV2 {
 namespace grounder {
 
 #define NO_MATCH -1
+#define DEBUG 1
 
 void BackTrackingGrounder::generateTemplateAtom(){
 	if(templateAtom!=nullptr) delete templateAtom;
 	templateAtom = (*current_atom_it)->ground(current_var_assign);
+}
+
+void BackTrackingGrounder::printAssignment(){
+
+	for(auto assignment : current_var_assign){
+		cout<<"VAR ";assignment.first->print();cout<<" = ";assignment.second->print();cout<<endl;
+	}
+
 }
 
 bool BackTrackingGrounder::match() {
@@ -69,9 +78,12 @@ bool BackTrackingGrounder::firstMatch(){
 		unsigned tableToSearch = current_id_match[index_current_atom].back().first;
 		AtomSearcher *searcher=predicateExtTable->getPredicateExt(templateAtom->getPredicate())->getAtomSearcher(tableToSearch);
 		unsigned id = searcher->firstMatch(templateAtom,current_var_assign,find);
-
 		if(find){
 			current_id_match[index_current_atom].back().second = id;
+#if DEBUG == 1
+			cout<<"FIRST MATCH"<<endl;
+			printAssignment();
+#endif
 			return find;
 		}
 
@@ -98,6 +110,10 @@ bool BackTrackingGrounder::nextMatch(){
 
 		if(find){
 			current_id_match[index_current_atom].back().second = current_id;
+#if DEBUG == 1
+			cout<<"FIRST MATCH"<<endl;
+			printAssignment();
+#endif
 			return find;
 		}
 
@@ -108,12 +124,23 @@ bool BackTrackingGrounder::nextMatch(){
 }
 
 bool BackTrackingGrounder::next() {
+
+#if DEBUG == 1
+			cout<<"NEXT - IT = "<<index_current_atom<<endl;
+#endif
+
 	// first next the check have to be jumped, because start with second atom else
 	if(start && currentRule->getSizeBody()>0){start=false;generateTemplateAtom();return true;}
 
 	if( index_current_atom+1>=currentRule->getSizeBody()) return false;
+
+
 	current_atom_it++;
 	index_current_atom++;
+
+#if DEBUG == 1
+			cout<<"NEXT - IT = "<<index_current_atom<<endl;
+#endif
 
 	generateTemplateAtom();
 
@@ -124,6 +151,8 @@ void BackTrackingGrounder::foundAssignment() {
 
 
 	Rule groundRule;
+	bool head_true=currentRule->getSizeHead();
+
 	for(auto atom=currentRule->getBeginBody();atom!=currentRule->getEndBody();atom++){
 
 		Atom *bodyGroundAtom=(*atom)->ground(current_var_assign);
@@ -136,8 +165,11 @@ void BackTrackingGrounder::foundAssignment() {
 
 		}else{
 			delete bodyGroundAtom;
-			if(!bodyGroundAtom->isFact())
-				groundRule.addInBody(searchAtom);
+
+			if(!searchAtom->isFact()){
+				groundRule.addInBody(bodyGroundAtom);
+				head_true=false;
+			}
 
 		}
 
@@ -155,15 +187,16 @@ void BackTrackingGrounder::foundAssignment() {
 
 			GenericAtom *genericGroundAtom=new GenericAtom;
 			genericGroundAtom->setTerms(headGroundAtom->getTerms());
-			genericGroundAtom->setFact(groundRule.getSizeBody()==0 && groundRule.getSizeHead() == 1);
+			genericGroundAtom->setFact(head_true);
 
 			for(unsigned i=0;i<predicate_searchInsert_table[atom_counter].size();i++)
 				predicateExt->addGenericAtom(predicate_searchInsert_table[atom_counter][i],genericGroundAtom);
 		}else{
 			delete headGroundAtom;
 
-			if(groundRule.getSizeBody()==0 && groundRule.getSizeHead() == 1)
+			if(head_true)
 				searchAtom->setFact(true);
+
 
 			groundRule.addInHead(searchAtom);
 
@@ -172,26 +205,43 @@ void BackTrackingGrounder::foundAssignment() {
 	}
 
 	groundRule.print();
+	removeBindValueInAssignment(current_variables_atoms[index_current_atom]);
 }
 
 bool BackTrackingGrounder::back() {
+
+#if DEBUG == 1
+			cout<<"BACK - IT = "<<index_current_atom<<endl;
+#endif
+
 	if (index_current_atom -1 < 0)
 		return false;
 
 	current_atom_it--;
 	index_current_atom--;
 
-	do{
+#if DEBUG == 1
+			cout<<"BACK - IT = "<<index_current_atom<<endl;
+#endif
 
-		if (index_current_atom -1 < 0)
-			return false;
+	if (index_current_atom -1 < 0)
+		return false;
+
+	while ((*current_atom_it)->isBuiltIn() || (*current_atom_it)->isNegative() || current_variables_atoms[index_current_atom].size()==0){
+
 
 		removeBindValueInAssignment(current_variables_atoms[index_current_atom]);
 
 		current_atom_it--;
 		index_current_atom--;
 
-	}while ((*current_atom_it)->isBuiltIn() || (*current_atom_it)->isNegative() || current_variables_atoms[index_current_atom].size()==0);
+#if DEBUG == 1
+			cout<<"BACK - IT = "<<index_current_atom<<endl;
+#endif
+
+		if (index_current_atom -1 < 0)
+			return false;
+	}
 
 	removeBindValueInAssignment(current_variables_atoms[index_current_atom]);
 	generateTemplateAtom();

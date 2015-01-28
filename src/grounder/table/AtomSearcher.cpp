@@ -22,6 +22,7 @@ bool AtomSearcher::checkMatch(Atom *genericAtom, Atom *templateAtom, map_term_te
 	for(unsigned int i=0;i<genericAtom->getTermsSize();i++)
 			if(!genericAtom->getTerm(i)->match(templateAtom->getTerm(i),assignInTerm))
 				return false;
+
 	for(auto assignment:assignInTerm)
 		if(!currentAssignment.count(assignment.first))
 			currentAssignment.insert(assignment);
@@ -47,8 +48,7 @@ unsigned int SimpleAtomSearcher::firstMatch(Atom *templateAtom, map_term_term& c
 		return id;
 	}
 
-	resultMap.insert({id,currentMatch});
-	nextMatch(id,templateAtom,currentAssignment,find);
+	find=false;
 	return id;
 }
 
@@ -59,22 +59,26 @@ bool SimpleAtomSearcher::searchForFirstMatch(GeneralIterator* currentMatch, Atom
 		findIfExist(templateAtom,find,isUndef);
 		return find;
 	}
-	else
-		//Compute the first match
-		computeFirstMatch(currentMatch,templateAtom,currentAssignment);
-	return false;
+
+	//Compute the first match
+	return computeFirstMatch(currentMatch,templateAtom,currentAssignment);
 }
 
-void SimpleAtomSearcher::computeFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term_term& currentAssignment){
-	for(;!currentMatch->isDone();currentMatch->next())
+bool SimpleAtomSearcher::computeFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term_term& currentAssignment){
+	for(;!currentMatch->isDone();currentMatch->next()){
+
 		if (checkMatch(currentMatch->currentIterm(),templateAtom,currentAssignment))
-			break;
+			return true;
+	}
+
+	return false;
 
 }
 
 void SimpleAtomSearcher::nextMatch(unsigned int id, Atom *templateAtom, map_term_term& currentAssignment, bool& find) {
 
 	auto currentMatch=resultMap.find(id)->second;
+	currentMatch->next();
 	computeFirstMatch(currentMatch,templateAtom,currentAssignment);
 
 	///Return the next matching facts or no facts retrieved from the integer identifier assigned by the firstMatch method
