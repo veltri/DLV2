@@ -45,7 +45,7 @@ void ProgramGrounder::ground() {
 
 		// Ground exit rules
 		for (Rule* r : exitRules[component]){
-			inizializeSearchInsertPredicate(r,componentPredicateInHead[component]);
+			inizializeSearchInsertPredicate(r);
 			groundRule(r);
 		}
 
@@ -61,7 +61,6 @@ void ProgramGrounder::ground() {
 				if(groundRule(rule))
 					found_something=true;
 			}
-
 			while (found_something) {
 				found_something = false;
 
