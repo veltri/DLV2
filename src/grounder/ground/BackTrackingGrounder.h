@@ -29,7 +29,6 @@ protected:
 	virtual void foundAssignment();
 	virtual void generateTemplateAtom();
 	virtual void removeBindValueInAssignment(const set_term& bind_variables);
-	virtual bool groundBoundAtom();
 	virtual bool firstMatch();
 	virtual bool nextMatch();
 

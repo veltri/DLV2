@@ -26,38 +26,20 @@ void BackTrackingGrounder::printAssignment(){
 }
 
 bool BackTrackingGrounder::match() {
-	if(templateAtom->isBuiltIn() || templateAtom->isNegative() ||
-				( current_variables_atoms[index_current_atom].size()==0 && !templateAtom->containsAnonymous())){
+	if(templateAtom->isBuiltIn() ){
 
-		return groundBoundAtom();
+		return templateAtom -> evaluate(current_var_assign);
 
 	}else{
 		if(current_id_match[index_current_atom].size()==0)
-			return firstMatch();
+			return (firstMatch() == !templateAtom->isNegative());
 		else
-			return nextMatch();
+			return (nextMatch() == !templateAtom->isNegative());
 
 	}
 
 }
 
-bool BackTrackingGrounder::groundBoundAtom() {
-	//  If it is a built in atom, ground it and evaluate it (Built in have not instance table, since they have not a predicate)
-	if (templateAtom->isBuiltIn()) {
-
-		return templateAtom -> evaluate(current_var_assign);
-		// If there isn't instances the search fails (find equal false) and if isn't negated then the algorithm have to stop
-	}
-		bool find = ( predicateExtTable->getPredicateExt(templateAtom->getPredicate())
-							->getGenericAtom(templateAtom) == nullptr);
-		//If exist and is fact then fail the search(find equal false) else if not exist
-		// or is undefined atom then continue
-		if(templateAtom->isNegative())
-			return !find;
-
-		return find;
-
-}
 
 bool BackTrackingGrounder::firstMatch(){
 	// for each table to search inizialize to no match
@@ -133,7 +115,6 @@ bool BackTrackingGrounder::next() {
 }
 
 void BackTrackingGrounder::foundAssignment() {
-
 
 	Rule groundRule;
 	bool head_true=currentRule->getSizeHead();

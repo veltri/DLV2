@@ -76,8 +76,9 @@ public:
 	Atom* getGenericAtom(Atom* genericAtom){
 		for(unsigned i=0;i<atomSearchers.size();i++){
 			Atom* atomFound=atomSearchers[i]->getAtom(genericAtom);
-			if(atomFound!=nullptr)
+			if(atomFound!=nullptr){
 				return atomFound;
+			}
 		}
 		return nullptr;
 	}
