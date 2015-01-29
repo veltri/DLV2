@@ -11,7 +11,6 @@ namespace DLV2 {
 namespace grounder {
 
 #define NO_MATCH -1
-#define DEBUG 1
 
 void BackTrackingGrounder::generateTemplateAtom(){
 	if(templateAtom!=nullptr) delete templateAtom;
@@ -33,7 +32,6 @@ bool BackTrackingGrounder::match() {
 		return groundBoundAtom();
 
 	}else{
-
 		if(current_id_match[index_current_atom].size()==0)
 			return firstMatch();
 		else
@@ -62,7 +60,6 @@ bool BackTrackingGrounder::groundBoundAtom() {
 }
 
 bool BackTrackingGrounder::firstMatch(){
-
 	// for each table to search inizialize to no match
 	vector<pair<unsigned,int>> vec;
 	for(unsigned i=0;i<predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom].size();i++){
@@ -80,10 +77,7 @@ bool BackTrackingGrounder::firstMatch(){
 		unsigned id = searcher->firstMatch(templateAtom,current_var_assign,find);
 		if(find){
 			current_id_match[index_current_atom].back().second = id;
-#if DEBUG == 1
-			cout<<"FIRST MATCH"<<endl;
-			printAssignment();
-#endif
+
 			return find;
 		}
 
@@ -94,7 +88,6 @@ bool BackTrackingGrounder::firstMatch(){
 }
 
 bool BackTrackingGrounder::nextMatch(){
-
 	bool find=false;
 	while(current_id_match[index_current_atom].size()>0){
 
@@ -110,10 +103,6 @@ bool BackTrackingGrounder::nextMatch(){
 
 		if(find){
 			current_id_match[index_current_atom].back().second = current_id;
-#if DEBUG == 1
-			cout<<"FIRST MATCH"<<endl;
-			printAssignment();
-#endif
 			return find;
 		}
 
@@ -125,9 +114,7 @@ bool BackTrackingGrounder::nextMatch(){
 
 bool BackTrackingGrounder::next() {
 
-#if DEBUG == 1
-			cout<<"NEXT - IT = "<<index_current_atom<<endl;
-#endif
+
 
 	// first next the check have to be jumped, because start with second atom else
 	if(start && currentRule->getSizeBody()>0){start=false;generateTemplateAtom();return true;}
@@ -138,9 +125,7 @@ bool BackTrackingGrounder::next() {
 	current_atom_it++;
 	index_current_atom++;
 
-#if DEBUG == 1
-			cout<<"NEXT - IT = "<<index_current_atom<<endl;
-#endif
+
 
 	generateTemplateAtom();
 
@@ -198,7 +183,7 @@ void BackTrackingGrounder::foundAssignment() {
 				searchAtom->setFact(true);
 
 
-			groundRule.addInHead(searchAtom);
+			groundRule.addInHead(headGroundAtom);
 
 		}
 
@@ -206,41 +191,30 @@ void BackTrackingGrounder::foundAssignment() {
 
 	groundRule.print();
 	removeBindValueInAssignment(current_variables_atoms[index_current_atom]);
+
 }
 
 bool BackTrackingGrounder::back() {
 
-#if DEBUG == 1
-			cout<<"BACK - IT = "<<index_current_atom<<endl;
-#endif
 
-	if (index_current_atom -1 < 0)
+
+	if (index_current_atom <=  0)
 		return false;
 
 	current_atom_it--;
 	index_current_atom--;
 
-#if DEBUG == 1
-			cout<<"BACK - IT = "<<index_current_atom<<endl;
-#endif
-
-	if (index_current_atom -1 < 0)
-		return false;
 
 	while ((*current_atom_it)->isBuiltIn() || (*current_atom_it)->isNegative() || current_variables_atoms[index_current_atom].size()==0){
 
+		if (index_current_atom <= 0)
+			return false;
 
 		removeBindValueInAssignment(current_variables_atoms[index_current_atom]);
 
 		current_atom_it--;
 		index_current_atom--;
 
-#if DEBUG == 1
-			cout<<"BACK - IT = "<<index_current_atom<<endl;
-#endif
-
-		if (index_current_atom -1 < 0)
-			return false;
 	}
 
 	removeBindValueInAssignment(current_variables_atoms[index_current_atom]);
