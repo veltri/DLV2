@@ -16,30 +16,35 @@ namespace grounder{
 /****************************************************** PREDICATE EXTENSION ***************************************************/
 
 void PredicateExtension::setAtomSearchers(){
+
+
 	// Properly set the IndexAtom type
 	while(atomSearchers.size()<tables.size()){
 		AtomSearcher* atomSearcher;
 		switch (Options::globalOptions()->getIndexType()) {
 		case (MAP):
-			atomSearcher = new SingleTermAtomSearcher(&tables[atomSearchers.size()],predicate);
+			atomSearcher = new SingleTermAtomSearcher(tables[atomSearchers.size()],predicate);
 			break;
 		case (MULTIMAP):
-			atomSearcher = new SingleTermAtomSearcherMultiMap(&tables[atomSearchers.size()],predicate);
+			atomSearcher = new SingleTermAtomSearcherMultiMap(tables[atomSearchers.size()],predicate);
 			break;
 		default:
-			atomSearcher = new SimpleAtomSearcher(&tables[atomSearchers.size()]);
+			atomSearcher = new SimpleAtomSearcher(tables[atomSearchers.size()]);
 			break;
 		}
 		atomSearchers.push_back(atomSearcher);
 	}
+
+
 }
 
 PredicateExtension::~PredicateExtension() {
 	for(unsigned int i=0;i<tables.size();i++){
-		AtomVector* table=&tables[i];
+		AtomVector* table=tables[i];
 		for (auto it = table->begin(); it != table->end(); it++){
 			delete *it;
 		}
+		delete table;
 	}
 
 	for(unsigned int i=0;i<atomSearchers.size();i++){
@@ -51,19 +56,18 @@ void PredicateExtension::swapTables(unsigned tableFrom,unsigned tableTo){
 	assert_msg(tableFrom<tables.size(),"The specified table doesn't exist.");
 	assert_msg(tableTo<tables.size(),"The specified table doesn't exist.");
 
-	AtomVector table_from=tables[tableFrom];
-	AtomVector table_to=tables[tableTo];
+	AtomVector *table_from=tables[tableFrom];
+	AtomVector *table_to=tables[tableTo];
 
 	AtomSearcher* seacher_from=atomSearchers[tableFrom];
 	AtomSearcher* seacher_to=atomSearchers[tableTo];
+	unsigned size=table_from->size();
+	table_to->reserve(size+table_to->size());
+	for (int i = size-1; i >= 0; --i) {
+		Atom* currentAtom=(*table_from)[i];
 
-	unsigned size=table_from.size();
-	table_to.reserve(size+table_to.size());
-	for (unsigned int i = size-1; i > 0; --i) {
-		Atom* currentAtom=table_from[i];
-
-		table_to.push_back(currentAtom);
-		table_from.pop_back();
+		table_to->push_back(currentAtom);
+		table_from->pop_back();
 
 		seacher_to->add(currentAtom);
 	}

@@ -35,7 +35,7 @@ public:
 	///Constructors
 	PredicateExtension(Predicate* predicate, unsigned tableNumber): predicate(predicate){
 		for(unsigned i=0;i<tableNumber;i++)
-			tables.push_back(AtomVector());
+			tables.push_back(new AtomVector());
 		setAtomSearchers();
 	}
 	PredicateExtension(Predicate* predicate): PredicateExtension(predicate,2){};
@@ -51,7 +51,9 @@ public:
 
 	/// Add table and an AtomSearcher
 	void addTable(){
-		tables.push_back(AtomVector());
+
+		tables.push_back(new AtomVector());
+
 		setAtomSearchers();
 	}
 
@@ -59,7 +61,7 @@ public:
 	bool addGenericAtom(unsigned table, Atom* genericAtom){
 		assert_msg(table<tables.size(),"The specified table doesn't exist.");
 		if((atomSearchers[table]->getAtom(genericAtom))==nullptr){
-			tables[table].push_back(genericAtom);
+			tables[table]->push_back(genericAtom);
 			return true;
 		}
 		return false;
@@ -87,7 +89,7 @@ public:
 	 void swapTables(unsigned tableFrom,unsigned tableTo);
 
 	///Printer method for a single table
-	inline void print(unsigned table){for(auto fact:tables[table]){ClassicalLiteral::print(predicate,fact->getTerms(),false,false); cout<<"."<<endl;}}
+	inline void print(unsigned table){for(auto fact:*tables[table]){ClassicalLiteral::print(predicate,fact->getTerms(),false,false); cout<<"."<<endl;}}
 
 	///Destructor
 	~PredicateExtension();
@@ -98,7 +100,7 @@ private:
 
 	///For each AtomTable in tables is present an AtomSeacher in atomSearchers
 	///The vector of tables
-	vector<AtomVector> tables;
+	vector<AtomVector*> tables;
 	///The vector of  AtomSeacher
 	vector<AtomSearcher*> atomSearchers;
 

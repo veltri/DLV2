@@ -15,7 +15,7 @@ namespace grounder {
 
 class BackTrackingGrounder : public ProgramGrounder {
 public:
-	BackTrackingGrounder():ProgramGrounder(),currentRule(0),index_current_atom(0),templateAtom(nullptr),start(true){};
+	BackTrackingGrounder():ProgramGrounder(),currentRule(0),index_current_atom(0),templateAtom(nullptr),start(true),lastMatch(false){};
 	virtual ~BackTrackingGrounder(){};
 
 
@@ -25,8 +25,8 @@ protected:
 	virtual bool next();
 	virtual bool back();
 	virtual void inizialize(Rule* rule);
-
 	virtual void foundAssignment();
+
 	virtual void generateTemplateAtom();
 	virtual void removeBindValueInAssignment(const set_term& bind_variables);
 	virtual bool firstMatch();
@@ -49,6 +49,8 @@ protected:
 	vector<Atom*>::iterator current_atom_it;
 	/// Current atom index for grounding rule
 	unsigned index_current_atom;
+
+	bool lastMatch;
 
 	Atom * templateAtom;
 	bool start;

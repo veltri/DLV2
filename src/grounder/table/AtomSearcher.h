@@ -127,6 +127,8 @@ public:
 	///It clear the data-structure
 	virtual void clear() = 0;
 
+	virtual inline void print(){};
+
 	///This method checks if the atom given matches with the templateAtom according to the current assignment
 	///If they match the current assignment is update accordingly
 	virtual bool checkMatch(Atom *genericAtom,Atom *templateAtom,map_term_term& currentAssignment);
@@ -162,6 +164,8 @@ public:
 	virtual void clear(){};
 
 	virtual Atom* getAtom(Atom *atom);
+
+	inline void print(){for(auto fact:*table){fact->print();}}
 
 	virtual ~SimpleAtomSearcher() {};
 

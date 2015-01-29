@@ -30,7 +30,6 @@ void ProgramGrounder::ground() {
 	vector<vector<Rule*>> recursiveRules;
 	vector<unordered_set<index_object>> componentPredicateInHead;
 	statementDependency->createComponentGraphAndComputeAnOrdering(exitRules, recursiveRules, componentPredicateInHead);
-
 	printFact();
 
 	// Ground each module according to the ordering:
@@ -108,7 +107,7 @@ void ProgramGrounder::ground() {
 void ProgramGrounder::inizializeRecursiveCombinationPredicate(Rule* rule,unordered_set<index_object>& componentPredicateInHead){
 	predicate_combination.clear();
 	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();atom++){
-		if(componentPredicateInHead.count((*atom)->getPredicate()->getIndex())){
+		if((*atom)->getPredicate()!=nullptr && componentPredicateInHead.count((*atom)->getPredicate()->getIndex())){
 			predicate_combination.push_back(false);
 		}
 	}
@@ -158,7 +157,7 @@ void ProgramGrounder::nextSearchInsertPredicate(Rule* rule,unordered_set<index_o
 
 	unsigned currentRecursivePredicate=0;
 	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();atom++){
-		if(componentPredicateInHead.count((*atom)->getPredicate()->getIndex())){
+		if((*atom)->getPredicate()!=nullptr && componentPredicateInHead.count((*atom)->getPredicate()->getIndex())){
 			if(predicate_combination[currentRecursivePredicate]){
 				vector<unsigned> tableToInsert(1,DELTA);
 				predicate_searchInsert_table.push_back(tableToInsert);
@@ -185,11 +184,12 @@ void ProgramGrounder::swapInDelta(Rule *rule){
 			predicateExt->swapTables(NEXTDELTA,DELTA);
 		}
 	}
+
 }
 
 bool ProgramGrounder::groundRule(Rule* rule) {
 
-//	cout<<"RULE ";r->print();
+//	cout<<"RULE ";rule->print();
 //	unsigned i=0;
 //	for(auto v1:predicate_searchInsert_table){
 //		cout<<"ATOM "<<i<<endl;

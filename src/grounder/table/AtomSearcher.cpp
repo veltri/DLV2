@@ -39,9 +39,7 @@ GeneralIterator* SimpleAtomSearcher::computeGenericIterator(Atom* templateAtom) 
 
 unsigned int SimpleAtomSearcher::firstMatch(Atom *templateAtom, map_term_term& currentAssignment, bool& find) {
 	unsigned int id = ++counter;
-
 	GeneralIterator* currentMatch=computeGenericIterator(templateAtom);
-
 	if(searchForFirstMatch(currentMatch, templateAtom, currentAssignment)){
 		find=true;
 		resultMap.insert({id,currentMatch});

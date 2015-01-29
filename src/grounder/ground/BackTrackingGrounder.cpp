@@ -26,11 +26,25 @@ void BackTrackingGrounder::printAssignment(){
 }
 
 bool BackTrackingGrounder::match() {
+
+	/// If match is called at the end and there isn't bind variable return false else continue
+	if(index_current_atom + 1 >= currentRule->getSizeBody() && (current_variables_atoms[index_current_atom].size() == 0
+			|| templateAtom->isBuiltIn() )){
+		if(!lastMatch)
+			lastMatch = true;
+		else
+			return false;
+
+	}else
+		lastMatch = false;
+
+
 	if(templateAtom->isBuiltIn() ){
 
 		return templateAtom -> evaluate(current_var_assign);
 
 	}else{
+
 		if(current_id_match[index_current_atom].size()==0)
 			return (firstMatch() == !templateAtom->isNegative());
 		else
@@ -39,6 +53,7 @@ bool BackTrackingGrounder::match() {
 	}
 
 }
+
 
 
 bool BackTrackingGrounder::firstMatch(){
@@ -96,8 +111,6 @@ bool BackTrackingGrounder::nextMatch(){
 
 bool BackTrackingGrounder::next() {
 
-
-
 	// first next the check have to be jumped, because start with second atom else
 	if(start && currentRule->getSizeBody()>0){start=false;generateTemplateAtom();return true;}
 
@@ -122,6 +135,8 @@ void BackTrackingGrounder::foundAssignment() {
 	for(auto atom=currentRule->getBeginBody();atom!=currentRule->getEndBody();atom++){
 
 		Atom *bodyGroundAtom=(*atom)->ground(current_var_assign);
+
+		if(bodyGroundAtom->isBuiltIn())continue;
 
 		PredicateExtension* predicateExt=predicateExtTable->getPredicateExt(bodyGroundAtom->getPredicate());
 		Atom *searchAtom=predicateExt->getGenericAtom(bodyGroundAtom);
@@ -212,6 +227,7 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 	index_current_atom = 0;
 	templateAtom=nullptr;
 	start=true;
+	lastMatch=false;
 	findBindVariablesRule();
 
 
