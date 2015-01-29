@@ -31,6 +31,7 @@ protected:
 	virtual void removeBindValueInAssignment(const set_term& bind_variables);
 	virtual bool firstMatch();
 	virtual bool nextMatch();
+	virtual bool isGroundCurrentAtom();
 
 	void printAssignment();
 

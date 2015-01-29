@@ -25,11 +25,15 @@ void BackTrackingGrounder::printAssignment(){
 
 }
 
+bool BackTrackingGrounder::isGroundCurrentAtom(){
+
+	return ((*current_atom_it)->isBuiltIn() || (*current_atom_it)->isNegative() || current_variables_atoms[index_current_atom].size()==0);
+
+}
 bool BackTrackingGrounder::match() {
 
 	/// If match is called at the end and there isn't bind variable return false else continue
-	if(index_current_atom + 1 >= currentRule->getSizeBody() && (current_variables_atoms[index_current_atom].size() == 0
-			|| templateAtom->isBuiltIn() )){
+	if(index_current_atom + 1 >= currentRule->getSizeBody() && isGroundCurrentAtom()){
 		if(!lastMatch)
 			lastMatch = true;
 		else
@@ -71,20 +75,26 @@ bool BackTrackingGrounder::firstMatch(){
 
 		unsigned tableToSearch = current_id_match[index_current_atom].back().first;
 		AtomSearcher *searcher=predicateExtTable->getPredicateExt(templateAtom->getPredicate())->getAtomSearcher(tableToSearch);
+
 		unsigned id = searcher->firstMatch(templateAtom,current_var_assign,find);
+
 		if(find){
-			current_id_match[index_current_atom].back().second = id;
+
+			if(!isGroundCurrentAtom())
+				current_id_match[index_current_atom].back().second = id;
+			else
+				current_id_match[index_current_atom].clear();
 
 			return find;
 		}
 
 		current_id_match[index_current_atom].pop_back();
 	}
-
 	return false;
 }
 
 bool BackTrackingGrounder::nextMatch(){
+
 	bool find=false;
 	while(current_id_match[index_current_atom].size()>0){
 
@@ -110,7 +120,6 @@ bool BackTrackingGrounder::nextMatch(){
 }
 
 bool BackTrackingGrounder::next() {
-
 	// first next the check have to be jumped, because start with second atom else
 	if(start && currentRule->getSizeBody()>0){start=false;generateTemplateAtom();return true;}
 
@@ -121,16 +130,14 @@ bool BackTrackingGrounder::next() {
 	index_current_atom++;
 
 
-
 	generateTemplateAtom();
 
 	return true;
 }
 
 void BackTrackingGrounder::foundAssignment() {
-
 	Rule groundRule;
-	bool head_true=currentRule->getSizeHead();
+	bool head_true= (currentRule->getSizeHead() <= 1 );
 
 	for(auto atom=currentRule->getBeginBody();atom!=currentRule->getEndBody();atom++){
 
@@ -145,7 +152,6 @@ void BackTrackingGrounder::foundAssignment() {
 			//FATAL ERRRO ANONIMUS
 
 		}else{
-			delete bodyGroundAtom;
 
 			if(!searchAtom->isFact()){
 				groundRule.addInBody(bodyGroundAtom);
@@ -173,11 +179,9 @@ void BackTrackingGrounder::foundAssignment() {
 			for(unsigned i=0;i<predicate_searchInsert_table[atom_counter].size();i++)
 				predicateExt->addGenericAtom(predicate_searchInsert_table[atom_counter][i],genericGroundAtom);
 		}else{
-			delete headGroundAtom;
 
 			if(head_true)
 				searchAtom->setFact(true);
-
 
 			groundRule.addInHead(headGroundAtom);
 
@@ -201,7 +205,7 @@ bool BackTrackingGrounder::back() {
 	index_current_atom--;
 
 
-	while ((*current_atom_it)->isBuiltIn() || (*current_atom_it)->isNegative() || current_variables_atoms[index_current_atom].size()==0){
+	while (isGroundCurrentAtom()){
 
 		if (index_current_atom <= 0)
 			return false;

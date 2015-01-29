@@ -62,6 +62,7 @@ public:
 		assert_msg(table<tables.size(),"The specified table doesn't exist.");
 		if((atomSearchers[table]->getAtom(genericAtom))==nullptr){
 			tables[table]->push_back(genericAtom);
+			atomSearchers[table]->add(genericAtom);
 			return true;
 		}
 		return false;

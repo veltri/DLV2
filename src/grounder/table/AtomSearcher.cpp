@@ -47,6 +47,7 @@ unsigned int SimpleAtomSearcher::firstMatch(Atom *templateAtom, map_term_term& c
 	}
 
 	find=false;
+
 	return id;
 }
 
@@ -64,11 +65,10 @@ bool SimpleAtomSearcher::searchForFirstMatch(GeneralIterator* currentMatch, Atom
 
 bool SimpleAtomSearcher::computeFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term_term& currentAssignment){
 	for(;!currentMatch->isDone();currentMatch->next()){
-
 		if (checkMatch(currentMatch->currentIterm(),templateAtom,currentAssignment))
 			return true;
-	}
 
+	}
 	return false;
 
 }

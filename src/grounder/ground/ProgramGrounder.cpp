@@ -95,8 +95,11 @@ void ProgramGrounder::ground() {
 
 	// Constraints are grounded at the end
 	for (unsigned int i = 0; i < statementDependency->getConstraintSize(); i++)
-		if (statementDependency->getConstraint(i)->getSizeBody() > 0)
-			groundRule(statementDependency->getConstraint(i));
+		if (statementDependency->getConstraint(i)->getSizeBody() > 0){
+			Rule *rule=statementDependency->getConstraint(i);
+			inizializeSearchInsertPredicate(rule);
+			groundRule(rule);
+		}
 
 	//Print and simplify the rule
 //	evaluator.printAndSimplify(predicateExtTable);
@@ -140,6 +143,21 @@ void ProgramGrounder::inizializeSearchInsertPredicate(Rule* rule,unordered_set<i
 			vector<unsigned> tableToInsert(2);
 			tableToInsert[0]=NOFACT;tableToInsert[1]=FACT;
 			predicate_searchInsert_table.push_back(tableToInsert);
+	}
+}
+
+void ProgramGrounder::inizializeSearchInsertPredicate(Rule* rule) {
+	predicate_searchInsert_table.clear();
+	for(auto atom=rule->getBeginHead();atom!=rule->getEndHead();atom++){
+		vector<unsigned> tableToInsert(1,NOFACT);
+		predicate_searchInsert_table.push_back(tableToInsert);
+
+	}
+
+	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();atom++){
+		vector<unsigned> tableToInsert(2);
+		tableToInsert[0]=NOFACT;tableToInsert[1]=FACT;
+		predicate_searchInsert_table.push_back(tableToInsert);
 	}
 }
 

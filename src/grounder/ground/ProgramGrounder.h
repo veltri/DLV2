@@ -99,6 +99,7 @@ protected:
 	 * 		Atom in body: FACT and NOFACT table
 	*/
 	void inizializeSearchInsertPredicate(Rule* rule,unordered_set<index_object>& componentPredicateInHead);
+	void inizializeSearchInsertPredicate(Rule* rule);
 	void nextSearchInsertPredicate(Rule* rule,unordered_set<index_object>& componentPredicateInHead);
 	void inizializeRecursiveCombinationPredicate(Rule* rule,unordered_set<index_object>& componentPredicateInHead);
 	void computeRecursiveCombinationPredicate();
