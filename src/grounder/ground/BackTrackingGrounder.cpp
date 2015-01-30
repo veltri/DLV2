@@ -75,7 +75,8 @@ bool BackTrackingGrounder::firstMatch(){
 
 		unsigned tableToSearch = current_id_match[index_current_atom].back().first;
 		AtomSearcher *searcher=predicateExtTable->getPredicateExt(templateAtom->getPredicate())->getAtomSearcher(tableToSearch);
-		bool undef;
+		//inizialize false for negative atom
+		bool undef=false;
 
 		unsigned id = searcher->firstMatch(templateAtom,current_var_assign,find,undef);
 		atom_undef_inbody[index_current_atom]=undef;
@@ -145,34 +146,20 @@ void BackTrackingGrounder::foundAssignment() {
 	bool head_true= (currentRule->getSizeHead() <= 1 );
 	unsigned index_body_atom=0;
 	for(auto atom=currentRule->getBeginBody();atom!=currentRule->getEndBody();atom++,index_body_atom++){
-		if(!atom_undef_inbody[index_body_atom]) continue;
 
+		if(!atom_undef_inbody[index_body_atom])
+			if(!((*atom)->isNegative() && StatementDependency::getInstance()->isPredicateNegativeStratified((*atom)->getPredicate()->getIndex())))
+				continue;
 		Atom *bodyGroundAtom=(*atom)->ground(current_var_assign);
 
 		if(bodyGroundAtom->isBuiltIn())continue;
 
-		PredicateExtension* predicateExt=predicateExtTable->getPredicateExt(bodyGroundAtom->getPredicate());
-		Atom *searchAtom=predicateExt->getGenericAtom(bodyGroundAtom);
 
-		if(searchAtom==nullptr){
+		groundRule.addInBody(bodyGroundAtom);
 
-			//Negated atom
-			if(StatementDependency::getInstance()->isPredicateNegativeStratified(bodyGroundAtom->getPredicate()->getIndex()))
-				groundRule.addInBody(bodyGroundAtom);
-
-
-			//FATAL ERRROr ANONIMUS undefined
-
-
-		}else{
-
-			if(!searchAtom->isFact()){
-				groundRule.addInBody(bodyGroundAtom);
-			}
-
-		}
 
 	}
+
 	head_true=head_true && groundRule.getSizeBody() <=0;
 
 	unsigned atom_counter=0;
