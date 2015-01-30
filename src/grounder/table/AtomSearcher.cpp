@@ -37,10 +37,10 @@ GeneralIterator* SimpleAtomSearcher::computeGenericIterator(Atom* templateAtom) 
 	return currentMatch;
 }
 
-unsigned int SimpleAtomSearcher::firstMatch(Atom *templateAtom, map_term_term& currentAssignment, bool& find) {
+unsigned int SimpleAtomSearcher::firstMatch(Atom *templateAtom, map_term_term& currentAssignment, bool& find,bool &undef) {
 	unsigned int id = ++counter;
 	GeneralIterator* currentMatch=computeGenericIterator(templateAtom);
-	if(searchForFirstMatch(currentMatch, templateAtom, currentAssignment)){
+	if(searchForFirstMatch(currentMatch, templateAtom, currentAssignment,undef)){
 		find=true;
 		resultMap.insert({id,currentMatch});
 		return id;
@@ -51,16 +51,18 @@ unsigned int SimpleAtomSearcher::firstMatch(Atom *templateAtom, map_term_term& c
 	return id;
 }
 
-bool SimpleAtomSearcher::searchForFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term_term& currentAssignment){
+bool SimpleAtomSearcher::searchForFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term_term& currentAssignment,bool &undef){
 	//Call findIfAFactExist only if all the terms are bound
 	if(templateAtom->isGround()){
-		bool isUndef=0,find=0;
-		findIfExist(templateAtom,find,isUndef);
+		bool find=0;
+		findIfExist(templateAtom,find,undef);
 		return find;
 	}
 
 	//Compute the first match
-	return computeFirstMatch(currentMatch,templateAtom,currentAssignment);
+	bool find=computeFirstMatch(currentMatch,templateAtom,currentAssignment);
+	if(find)undef=!currentMatch->currentIterm()->isFact();
+	return find;
 }
 
 bool SimpleAtomSearcher::computeFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term_term& currentAssignment){
@@ -73,7 +75,7 @@ bool SimpleAtomSearcher::computeFirstMatch(GeneralIterator* currentMatch, Atom *
 
 }
 
-void SimpleAtomSearcher::nextMatch(unsigned int id, Atom *templateAtom, map_term_term& currentAssignment, bool& find) {
+void SimpleAtomSearcher::nextMatch(unsigned int id, Atom *templateAtom, map_term_term& currentAssignment, bool& find,bool &undef) {
 
 	auto currentMatch=resultMap.find(id)->second;
 	currentMatch->next();
@@ -85,7 +87,7 @@ void SimpleAtomSearcher::nextMatch(unsigned int id, Atom *templateAtom, map_term
 		find=false;
 		return;
 	}
-
+	undef=!currentMatch->currentIterm()->isFact();
 	find=true;
 }
 

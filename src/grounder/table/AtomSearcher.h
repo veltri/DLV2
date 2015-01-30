@@ -109,10 +109,10 @@ public:
 	///This method implementation is demanded to sub-classes.
 	///It have to find all the matching atoms and return just the first of those.
 	///The returned integer will be used to get the other ones through nextMatch method @see nextMatch
-	virtual unsigned int firstMatch(Atom *templateAtom, map_term_term& currentAssignment, bool& find)=0;
+	virtual unsigned int firstMatch(Atom *templateAtom, map_term_term& currentAssignment, bool& find,bool& undef)=0;
 	///This method implementation is demanded to sub-classes.
 	///It is used to get the further matching atoms one by one each time it is invoked.
-	virtual void nextMatch(unsigned int id, Atom* templateAtom, map_term_term& currentAssignment, bool& find)=0;
+	virtual void nextMatch(unsigned int id, Atom* templateAtom, map_term_term& currentAssignment, bool& find,bool &undef)=0;
 	///This method implementation is demanded to sub-classes.
 	/// It have to find if exist the templateAtom, that have to be ground
 	virtual void findIfExist(Atom *templateAtom, bool& find, bool& isUndef)=0;
@@ -155,8 +155,8 @@ class SimpleAtomSearcher: public AtomSearcher {
 public:
 	SimpleAtomSearcher(AtomVector* table) : AtomSearcher(table), counter(0) {};
 
-	virtual unsigned int firstMatch(Atom* templateAtom, map_term_term& currentAssignment, bool& find);
-	virtual void nextMatch(unsigned int id, Atom* templateAtom, map_term_term& currentAssignment, bool& find);
+	virtual unsigned int firstMatch(Atom* templateAtom, map_term_term& currentAssignment, bool& find,bool &undef);
+	virtual void nextMatch(unsigned int id, Atom* templateAtom, map_term_term& currentAssignment, bool& find,bool &undef);
 	virtual void findIfExist(Atom *templateAtom, bool& find, bool& isUndef);
 
 	virtual void add(Atom* atom){};
@@ -179,7 +179,7 @@ protected:
 	/// currentMatch identifiers the starting point of search
 	bool computeFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom,map_term_term& currentAssignment);
 	///This method invokes findIfAFactExists method if all the variables are bound, otherwise invokes the computeFirstMatch method
-	bool searchForFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom,map_term_term& currentAssignment);
+	bool searchForFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom,map_term_term& currentAssignment, bool& isUndef);
 
 	///This method calculate the starting point of search
 	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom);

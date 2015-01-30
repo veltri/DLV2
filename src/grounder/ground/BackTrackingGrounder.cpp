@@ -75,15 +75,20 @@ bool BackTrackingGrounder::firstMatch(){
 
 		unsigned tableToSearch = current_id_match[index_current_atom].back().first;
 		AtomSearcher *searcher=predicateExtTable->getPredicateExt(templateAtom->getPredicate())->getAtomSearcher(tableToSearch);
+		bool undef;
 
-		if(isGroundCurrentAtom()){
-			bool undef;
-			searcher->findIfExist(templateAtom,find,undef);
-			if(templateAtom->isNegative() && find) find=!undef;
-			if(find){ current_id_match[index_current_atom].clear();return find;}
-		}else{
-			unsigned id = searcher->firstMatch(templateAtom,current_var_assign,find);
-			if(find){ current_id_match[index_current_atom].back().second = id;return find;}
+		unsigned id = searcher->firstMatch(templateAtom,current_var_assign,find,undef);
+		atom_undef_inbody[index_current_atom]=undef;
+		if(templateAtom->isNegative() && find) find=!undef;
+
+		if(find){
+
+			if(!isGroundCurrentAtom())
+				current_id_match[index_current_atom].back().second = id;
+			else
+				current_id_match[index_current_atom].clear();
+
+			return find;
 		}
 
 		current_id_match[index_current_atom].pop_back();
@@ -99,12 +104,14 @@ bool BackTrackingGrounder::nextMatch(){
 		unsigned tableToSearch = current_id_match[index_current_atom].back().first;
 		int current_id = current_id_match[index_current_atom].back().second;
 		AtomSearcher *searcher=predicateExtTable->getPredicateExt(templateAtom->getPredicate())->getAtomSearcher(tableToSearch);
+		bool undef;
 
 		if(current_id != NO_MATCH)
-			searcher->nextMatch(current_id,templateAtom,current_var_assign,find);
+			searcher->nextMatch(current_id,templateAtom,current_var_assign,find,undef);
 		else
-			current_id = searcher->firstMatch(templateAtom,current_var_assign,find);
+			current_id = searcher->firstMatch(templateAtom,current_var_assign,find,undef);
 
+		atom_undef_inbody[index_current_atom]=undef;
 
 		if(find){
 			current_id_match[index_current_atom].back().second = current_id;
@@ -136,8 +143,9 @@ bool BackTrackingGrounder::next() {
 void BackTrackingGrounder::foundAssignment() {
 	Rule groundRule;
 	bool head_true= (currentRule->getSizeHead() <= 1 );
-
-	for(auto atom=currentRule->getBeginBody();atom!=currentRule->getEndBody();atom++){
+	unsigned index_body_atom=0;
+	for(auto atom=currentRule->getBeginBody();atom!=currentRule->getEndBody();atom++,index_body_atom++){
+		if(!atom_undef_inbody[index_body_atom]) continue;
 
 		Atom *bodyGroundAtom=(*atom)->ground(current_var_assign);
 
@@ -148,6 +156,7 @@ void BackTrackingGrounder::foundAssignment() {
 
 		if(searchAtom==nullptr){
 
+			//Negated atom
 			if(StatementDependency::getInstance()->isPredicateNegativeStratified(bodyGroundAtom->getPredicate()->getIndex()))
 				groundRule.addInBody(bodyGroundAtom);
 
@@ -236,6 +245,7 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 	templateAtom=nullptr;
 	start=true;
 	lastMatch=false;
+	atom_undef_inbody.reserve(rule->getSizeBody());
 	findBindVariablesRule();
 
 

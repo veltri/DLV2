@@ -50,6 +50,8 @@ protected:
 	vector<Atom*>::iterator current_atom_it;
 	/// Current atom index for grounding rule
 	unsigned index_current_atom;
+	//vector index atom and if is undefined
+	vector<bool> atom_undef_inbody;
 
 
 	Atom * templateAtom;
