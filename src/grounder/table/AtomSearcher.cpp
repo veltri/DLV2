@@ -113,7 +113,7 @@ void SimpleAtomSearcher::findIfExist(Atom *templateAtom,bool& find, bool& isUnde
 
 void SingleTermAtomSearcher::add(Atom* atom) {
 	if(createdIndex){
-		index_object termIndex=atom->getTerm(indexPair.first)->getIndex();
+		index_object termIndex=atom->getTerm(indexPair.second)->getIndex();
 		if(tableIndexMap.count(termIndex)){
 			tableIndexMap[termIndex].insert(atom);
 		}
@@ -127,38 +127,45 @@ void SingleTermAtomSearcher::add(Atom* atom) {
 
 void SingleTermAtomSearcher::remove(Atom* atom) {
 	if(createdIndex){
-		index_object termIndex=atom->getTerm(indexPair.first)->getIndex();
+		index_object termIndex=atom->getTerm(indexPair.second)->getIndex();
 		if(tableIndexMap.count(termIndex)){
 			tableIndexMap[termIndex].erase(atom);
 		}
 	}
 }
 
+void SingleTermAtomSearcher::resetIndex(){
+	indexPair={false,0};
+	createdIndex=false;
+	tableIndexMap.clear();
+}
+
 Atom* SingleTermAtomSearcher::getAtom(Atom *atom){
-	if(createdIndex){
-		index_object index=atom->getTerm(indexPair.first)->getIndex();
-		auto atomFound_it=tableIndexMap[index].find(atom);
-		if(atomFound_it!=tableIndexMap[index].end())
-			return *atomFound_it;
+	pair<bool, index_object> termBoundIndex({false,0});
+	Term* term=atom->getTerm(indexPair.second);
+	if(createdIndex && term->isGround()){
+		termBoundIndex.first=true;
+		termBoundIndex.second=term->getIndex();
 	}
-	else{
-		AtomTableComparator comparator;
-		for(auto genericAtom:(*table)){
-			if(comparator(genericAtom,atom))
-				return genericAtom;
-		}
+	if(!createdIndex || !termBoundIndex.first){
+		resetIndex();
+		createIndex(atom,termBoundIndex);
 	}
+	AtomTable* matchingTable=&tableIndexMap[termBoundIndex.second];
+	auto atomFound_it=matchingTable->find(atom);
+	if(atomFound_it!=matchingTable->end())
+		return *atomFound_it;
 	return nullptr;
 }
 
 void SingleTermAtomSearcher::createIndex(Atom* templateAtom, pair<bool, index_object>& termBoundIndex) {
 	for(unsigned int i=0;i<templateAtom->getTermsSize();i++){
 		Term* t=templateAtom->getTerm(i);
-		if(!indexPair.second && t->isGround()){
-			indexPair.first=i;
-			indexPair.second = true;
+		if(!indexPair.first && t->isGround()){
+			indexPair.first = true;
+			indexPair.second = i;
 		}
-		if(indexPair.second && i == indexPair.first && t->isGround()) {
+		if(indexPair.first && i == indexPair.second && t->isGround()) {
 			termBoundIndex.first = true;
 			termBoundIndex.second = t->getIndex();
 			break;
@@ -190,7 +197,7 @@ void SingleTermAtomSearcher::initializeIndexMaps(){
 	unordered_set<index_object> termToBeIndexedIndices;
 
 	for (Atom* a : *table) {
-		index_object termIndex=a->getTerm(indexPair.first)->getIndex();
+		index_object termIndex=a->getTerm(indexPair.second)->getIndex();
 		if(termToBeIndexedIndices.insert(termIndex).second){
 			AtomTable values;
 			values.insert(a);
@@ -207,7 +214,7 @@ void SingleTermAtomSearcher::initializeIndexMaps(){
 
 void SingleTermAtomSearcherMultiMap::add(Atom* atom) {
 	if(createdIndex){
-		index_object termIndex=atom->getTerm(indexPair.first)->getIndex();
+		index_object termIndex=atom->getTerm(indexPair.second)->getIndex();
 		tableIndexMap.insert({termIndex,atom});
 	}
 }
@@ -215,7 +222,7 @@ void SingleTermAtomSearcherMultiMap::add(Atom* atom) {
 void SingleTermAtomSearcherMultiMap::remove(Atom* atom) {
 	if(createdIndex){
 		AtomTableComparator comparator;
-		index_object termIndex=atom->getTerm(indexPair.first)->getIndex();
+		index_object termIndex=atom->getTerm(indexPair.second)->getIndex();
 		auto pair=tableIndexMap.equal_range(termIndex);
 		for(auto it=pair.first;it!=pair.second;it++){
 			if(comparator(it->second,atom))
@@ -224,22 +231,28 @@ void SingleTermAtomSearcherMultiMap::remove(Atom* atom) {
 	}
 }
 
+void SingleTermAtomSearcherMultiMap::resetIndex(){
+	indexPair={false,0};
+	createdIndex=false;
+	tableIndexMap.clear();
+}
+
 Atom* SingleTermAtomSearcherMultiMap::getAtom(Atom *atom){
-	if(createdIndex){
-		AtomTableComparator comparator;
-		index_object termIndex=atom->getTerm(indexPair.first)->getIndex();
-		auto pair=tableIndexMap.equal_range(termIndex);
-		for(auto it=pair.first;it!=pair.second;it++){
-			if(comparator(it->second,atom))
-				return it->second;
-		}
+	pair<bool, index_object> termBoundIndex({false,0});
+	Term* term=atom->getTerm(indexPair.second);
+	if(createdIndex && term->isGround()){
+		termBoundIndex.first=true;
+		termBoundIndex.second=term->getIndex();
 	}
-	else{
-		AtomTableComparator comparator;
-		for(auto genericAtom:(*table)){
-			if(comparator(genericAtom,atom))
-				return genericAtom;
-		}
+	if(!createdIndex || !termBoundIndex.first){
+		resetIndex();
+		createIndex(atom,termBoundIndex);
+	}
+	AtomTableComparator comparator;
+	auto pair=tableIndexMap.equal_range(termBoundIndex.second);
+	for(auto it=pair.first;it!=pair.second;it++){
+		if(comparator(it->second,atom))
+			return it->second;
 	}
 	return nullptr;
 }
@@ -247,11 +260,11 @@ Atom* SingleTermAtomSearcherMultiMap::getAtom(Atom *atom){
 void SingleTermAtomSearcherMultiMap::createIndex(Atom* templateAtom, pair<bool, index_object>& termBoundIndex) {
 	for(unsigned int i=0;i<templateAtom->getTermsSize();i++){
 		Term* t=templateAtom->getTerm(i);
-		if(!indexPair.second && t->isGround()){
-			indexPair.first=i;
-			indexPair.second = true;
+		if(!indexPair.first && t->isGround()){
+			indexPair.first= true;
+			indexPair.second=i;
 		}
-		if(indexPair.second && i == indexPair.first && t->isGround()) {
+		if(indexPair.first && i == indexPair.second && t->isGround()) {
 			termBoundIndex.first = true;
 			termBoundIndex.second = t->getIndex();
 			break;
@@ -279,7 +292,7 @@ GeneralIterator* SingleTermAtomSearcherMultiMap::computeGenericIterator(Atom* te
 void SingleTermAtomSearcherMultiMap::initializeIndexMaps(){
 //	Timer::getInstance()->start("Creation Index Structure");
 	for (Atom* a : *table) {
-		index_object termIndex=a->getTerm(indexPair.first)->getIndex();
+		index_object termIndex=a->getTerm(indexPair.second)->getIndex();
 		tableIndexMap.insert({termIndex,a});
 	}
 //	Timer::getInstance()->end();
