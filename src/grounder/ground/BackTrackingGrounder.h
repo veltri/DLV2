@@ -51,10 +51,10 @@ protected:
 	/// Current atom index for grounding rule
 	unsigned index_current_atom;
 
-	bool lastMatch;
 
 	Atom * templateAtom;
 	bool start;
+	bool lastMatch;
 
 	void findBindVariablesRule();
 };

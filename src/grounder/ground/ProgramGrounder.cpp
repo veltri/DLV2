@@ -30,7 +30,7 @@ void ProgramGrounder::ground() {
 	vector<vector<Rule*>> recursiveRules;
 	vector<unordered_set<index_object>> componentPredicateInHead;
 	statementDependency->createComponentGraphAndComputeAnOrdering(exitRules, recursiveRules, componentPredicateInHead);
-	printFact();
+//	printFact();
 
 	// Ground each module according to the ordering:
 	// For each component, each rule is either recursive or exit,
