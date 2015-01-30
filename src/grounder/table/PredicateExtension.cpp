@@ -17,7 +17,6 @@ namespace grounder{
 
 void PredicateExtension::setAtomSearchers(){
 
-
 	// Properly set the IndexAtom type
 	while(atomSearchers.size()<tables.size()){
 		AtomSearcher* atomSearcher;

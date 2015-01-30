@@ -198,7 +198,10 @@ protected:
 
 class SingleTermAtomSearcher: public SimpleAtomSearcher {
 public:
-	SingleTermAtomSearcher(AtomVector* table, Predicate* p) : SimpleAtomSearcher(table), predicate(p), createdIndex(false) {};
+	SingleTermAtomSearcher(AtomVector* table, Predicate* p) : SimpleAtomSearcher(table), predicate(p), createdIndex(false) {
+		indexPair = Options::globalOptions()->getIndexingTerm(this->predicate->getName());
+		assert_msg((indexPair.first>=0 && indexPair.first<this->predicate->getArity()), "The specified index is not valid.");
+	};
 
 	virtual void add(Atom* atom);
 	virtual void remove(Atom* atom);
@@ -215,13 +218,14 @@ private:
 	/// The predicate of PredicateExtension associated
 	Predicate* predicate;
 	/// Pair of term position if the index and if the index can be used for the actual searching
-	pair<unsigned int, bool> indexPair;
+	pair<bool, unsigned int> indexPair;
 	/// Boolean that is false the index table has not been created true otherwise
 	bool createdIndex;
 
 	///This method fills in the indexing data structures
 	void initializeIndexMaps();
 
+	void resetIndex();
 	/// This method carry out the indexing strategy, determining the indexing term with which is the actual term
 	/// corresponding to position given by the user or if no position is given it is used the first admissible term as indexing term.
 	/// Then filling the data structures invoking the initializeIndexMaps method.
@@ -242,7 +246,10 @@ private:
  */
 class SingleTermAtomSearcherMultiMap: public SimpleAtomSearcher {
 public:
-	SingleTermAtomSearcherMultiMap(AtomVector* table, Predicate *p) : SimpleAtomSearcher(table), predicate(p), createdIndex(false) {};
+	SingleTermAtomSearcherMultiMap(AtomVector* table, Predicate *p) : SimpleAtomSearcher(table), predicate(p), createdIndex(false) {
+		indexPair = Options::globalOptions()->getIndexingTerm(this->predicate->getName());
+		assert_msg((indexPair.first>=0 && indexPair.first<this->predicate->getArity()), "The specified index is not valid.");
+	};
 
 	virtual void add(Atom* atom);
 	virtual void remove(Atom* atom);
@@ -259,13 +266,14 @@ private:
 	/// The predicate of PredicateExtension associated
 	Predicate* predicate;
 	/// Pair of term position if the index and if the index can be used for the actual searching
-	pair<unsigned int, bool> indexPair;
+	pair<bool, unsigned int> indexPair;
 	/// Boolean that is false the index table has not been created true otherwise
 	bool createdIndex;
 
 	///This method fills in the indexing data structures
 	void initializeIndexMaps();
 
+	void resetIndex();
 	/// This method carry out the indexing strategy, determining the indexing term with which is the actual term
 	/// corresponding to position given by the user or if no position is given it is used the first admissible term as indexing term.
 	/// Then filling the data structures invoking the initializeIndexMaps method.

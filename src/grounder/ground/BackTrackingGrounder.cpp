@@ -177,7 +177,7 @@ void BackTrackingGrounder::foundAssignment() {
 			genericGroundAtom->setFact(head_true);
 
 			for(unsigned i=0;i<predicate_searchInsert_table[atom_counter].size();i++)
-				predicateExt->addGenericAtom(predicate_searchInsert_table[atom_counter][i],genericGroundAtom);
+				predicateExt->addGenericAtom(predicate_searchInsert_table[atom_counter][i],genericGroundAtom,true);
 		}else{
 
 			if(head_true)
