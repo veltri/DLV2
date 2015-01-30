@@ -43,8 +43,7 @@ void InMemoryInputBuilder::onRule() {
 		if(!(instancesTable->getPredicateExt(predicate)->addGenericAtom(FACT,genericAtom,false)))
 			delete genericAtom;
 		else{
-			ClassicalLiteral::print(predicate,genericAtom->getTerms(),false,false);
-			cout<<endl;
+			ClassicalLiteral::print(predicate,genericAtom->getTerms(),false,false);cout<<"."<<endl;
 		}
 
 		currentRule->clear();
