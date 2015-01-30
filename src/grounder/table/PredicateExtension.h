@@ -51,21 +51,18 @@ public:
 
 	/// Add table and an AtomSearcher
 	void addTable(){
-
 		tables.push_back(new AtomVector());
-
 		setAtomSearchers();
 	}
 
 	///Add generic atom in specified table
-	bool addGenericAtom(unsigned table, Atom* genericAtom){
+	bool addGenericAtom(unsigned table, Atom* genericAtom, bool search){
 		assert_msg(table<tables.size(),"The specified table doesn't exist.");
-		if((atomSearchers[table]->getAtom(genericAtom))==nullptr){
-			tables[table]->push_back(genericAtom);
-			atomSearchers[table]->add(genericAtom);
-			return true;
-		}
-		return false;
+		if(search && (atomSearchers[table]->getAtom(genericAtom))!=nullptr)
+			return false;
+		tables[table]->push_back(genericAtom);
+		atomSearchers[table]->add(genericAtom);
+		return true;
 	}
 
 	///Get an generic atom in specified table

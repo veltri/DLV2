@@ -198,7 +198,10 @@ protected:
 
 class SingleTermAtomSearcher: public SimpleAtomSearcher {
 public:
-	SingleTermAtomSearcher(AtomVector* table, Predicate* p) : SimpleAtomSearcher(table), predicate(p), createdIndex(false) {};
+	SingleTermAtomSearcher(AtomVector* table, Predicate* p) : SimpleAtomSearcher(table), predicate(p), createdIndex(false) {
+		indexPair = Options::globalOptions()->getIndexingTerm(this->predicate->getName());
+		assert_msg((indexPair.first>=0 && indexPair.first<this->predicate->getArity()), "The specified index is not valid.");
+	};
 
 	virtual void add(Atom* atom);
 	virtual void remove(Atom* atom);
@@ -242,7 +245,10 @@ private:
  */
 class SingleTermAtomSearcherMultiMap: public SimpleAtomSearcher {
 public:
-	SingleTermAtomSearcherMultiMap(AtomVector* table, Predicate *p) : SimpleAtomSearcher(table), predicate(p), createdIndex(false) {};
+	SingleTermAtomSearcherMultiMap(AtomVector* table, Predicate *p) : SimpleAtomSearcher(table), predicate(p), createdIndex(false) {
+		indexPair = Options::globalOptions()->getIndexingTerm(this->predicate->getName());
+		assert_msg((indexPair.first>=0 && indexPair.first<this->predicate->getArity()), "The specified index is not valid.");
+	};
 
 	virtual void add(Atom* atom);
 	virtual void remove(Atom* atom);
