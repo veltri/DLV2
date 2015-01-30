@@ -136,10 +136,16 @@ void SingleTermAtomSearcher::remove(Atom* atom) {
 
 Atom* SingleTermAtomSearcher::getAtom(Atom *atom){
 	if(createdIndex){
-		index_object termIndex=atom->getTerm(indexPair.first)->getIndex();
-		if(!tableIndexMap.count(termIndex)){
-			Atom* atomInsert=*tableIndexMap[termIndex].insert(atom).first;
-			return atomInsert;
+		index_object index=atom->getTerm(indexPair.first)->getIndex();
+		auto atomFound_it=tableIndexMap[index].find(atom);
+		if(atomFound_it!=tableIndexMap[index].end())
+			return *atomFound_it;
+	}
+	else{
+		AtomTableComparator comparator;
+		for(auto genericAtom:(*table)){
+			if(comparator(genericAtom,atom))
+				return genericAtom;
 		}
 	}
 	return nullptr;
@@ -223,14 +229,21 @@ void SingleTermAtomSearcherMultiMap::remove(Atom* atom) {
 
 Atom* SingleTermAtomSearcherMultiMap::getAtom(Atom *atom){
 	if(createdIndex){
-			AtomTableComparator comparator;
-			index_object termIndex=atom->getTerm(indexPair.first)->getIndex();
-			auto pair=tableIndexMap.equal_range(termIndex);
-			for(auto it=pair.first;it!=pair.second;it++){
-				if(comparator(it->second,atom))
-					return it->second;
-			}
+		AtomTableComparator comparator;
+		index_object termIndex=atom->getTerm(indexPair.first)->getIndex();
+		auto pair=tableIndexMap.equal_range(termIndex);
+		for(auto it=pair.first;it!=pair.second;it++){
+			if(comparator(it->second,atom))
+				return it->second;
 		}
+	}
+	else{
+		AtomTableComparator comparator;
+		for(auto genericAtom:(*table)){
+			if(comparator(genericAtom,atom))
+				return genericAtom;
+		}
+	}
 	return nullptr;
 }
 
@@ -251,6 +264,7 @@ void SingleTermAtomSearcherMultiMap::createIndex(Atom* templateAtom, pair<bool, 
 			break;
 		}
 	}
+	if(!createdIndex) initializeIndexMaps();
 }
 
 GeneralIterator* SingleTermAtomSearcherMultiMap::computeGenericIterator(Atom* templateAtom) {

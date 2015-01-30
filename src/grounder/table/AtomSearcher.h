@@ -127,7 +127,7 @@ public:
 	///It clear the data-structure
 	virtual void clear() = 0;
 
-	virtual inline void print(){};
+	virtual void print(){};
 
 	///This method checks if the atom given matches with the templateAtom according to the current assignment
 	///If they match the current assignment is update accordingly
@@ -138,8 +138,8 @@ public:
 	virtual Atom* getAtom(Atom *atom)=0;
 
 	virtual ~AtomSearcher() {};
-protected:
 
+protected:
 	/**
 	 *		The data-structure that the class have to search
 	 **/
@@ -165,9 +165,9 @@ public:
 
 	virtual Atom* getAtom(Atom *atom);
 
-	inline void print(){for(auto fact:*table){fact->print();}}
+	virtual void print(){for(auto atom:*table){atom->print();}}
 
-	virtual ~SimpleAtomSearcher() {};
+	virtual ~SimpleAtomSearcher() {for(auto pair:resultMap) delete pair.second;};
 
 protected:
 	///A map in which for each call to first match the current search iterator
@@ -200,7 +200,6 @@ class SingleTermAtomSearcher: public SimpleAtomSearcher {
 public:
 	SingleTermAtomSearcher(AtomVector* table, Predicate* p) : SimpleAtomSearcher(table), predicate(p), createdIndex(false) {};
 
-
 	virtual void add(Atom* atom);
 	virtual void remove(Atom* atom);
 	virtual void clear(){tableIndexMap.clear();};
@@ -228,7 +227,7 @@ private:
 	/// Then filling the data structures invoking the initializeIndexMaps method.
 	void createIndex(Atom* templateAtom,pair<bool, index_object>& termBoundIndex);
 
-	GeneralIterator* computeGenericIterator(Atom* templateAtom);
+	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom);
 };
 
 /**
@@ -244,7 +243,6 @@ private:
 class SingleTermAtomSearcherMultiMap: public SimpleAtomSearcher {
 public:
 	SingleTermAtomSearcherMultiMap(AtomVector* table, Predicate *p) : SimpleAtomSearcher(table), predicate(p), createdIndex(false) {};
-
 
 	virtual void add(Atom* atom);
 	virtual void remove(Atom* atom);
@@ -272,7 +270,8 @@ private:
 	/// corresponding to position given by the user or if no position is given it is used the first admissible term as indexing term.
 	/// Then filling the data structures invoking the initializeIndexMaps method.
 	void createIndex(Atom* templateAtom,pair<bool, index_object>& termBoundIndex);
-	GeneralIterator* computeGenericIterator(Atom* templateAtom);
+
+	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom);
 };
 
 };

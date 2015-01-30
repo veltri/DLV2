@@ -85,8 +85,8 @@ namespace grounder{
 	#define PERL_B 5
 
 	#define DEFAULT 0
-	#define MULTIMAP 1
-	#define MAP 2
+	#define MAP 1
+	#define MULTIMAP 2
 
 	typedef unsigned index_object;
 

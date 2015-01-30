@@ -243,7 +243,7 @@ Options::init(
 
             case OPTIONID_indexType:
             	indexType = atoi(optarg);
-                assert_msg((indexType>=DEFAULT && indexType<=MAP),"Index type not supported");
+                assert_msg((indexType>=DEFAULT && indexType<=MULTIMAP),"Index type not supported");
                 break;
 
             case OPTIONID_indexingPreferences:
