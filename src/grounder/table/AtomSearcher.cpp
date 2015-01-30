@@ -128,7 +128,7 @@ void SingleTermAtomSearcher::add(Atom* atom) {
 void SingleTermAtomSearcher::remove(Atom* atom) {
 	if(createdIndex){
 		index_object termIndex=atom->getTerm(indexPair.first)->getIndex();
-		if(!tableIndexMap.count(termIndex)){
+		if(tableIndexMap.count(termIndex)){
 			tableIndexMap[termIndex].erase(atom);
 		}
 	}
@@ -151,16 +151,16 @@ Atom* SingleTermAtomSearcher::getAtom(Atom *atom){
 	return nullptr;
 }
 
-void SingleTermAtomSearcher::createIndex(Atom* templateAtom,pair<bool, index_object>& termBoundIndex) {
-	indexPair = Options::globalOptions()->getIndexingTerm(this->predicate->getName());
-	if(indexPair.second){
+void SingleTermAtomSearcher::createIndex(Atom* templateAtom, pair<bool, index_object>& termBoundIndex) {
+	if(!createdIndex){
+		indexPair = Options::globalOptions()->getIndexingTerm(this->predicate->getName());
 		assert_msg((indexPair.first>=0 && indexPair.first<this->predicate->getArity()), "The specified index is not valid.");
 	}
 	for(unsigned int i=0;i<templateAtom->getTermsSize();i++){
 		Term* t=templateAtom->getTerm(i);
-		if(!indexPair.second && t->isGround()){
-				indexPair.first=i;
-				indexPair.second = true;
+		if(!createdIndex && t->isGround()){
+			indexPair.first=i;
+			indexPair.second = true;
 		}
 		if(indexPair.second && i == indexPair.first && t->isGround()) {
 			termBoundIndex.first = true;
@@ -168,7 +168,7 @@ void SingleTermAtomSearcher::createIndex(Atom* templateAtom,pair<bool, index_obj
 			break;
 		}
 	}
-	if(!createdIndex) initializeIndexMaps();
+	if(!createdIndex && indexPair.first) initializeIndexMaps();
 }
 
 GeneralIterator* SingleTermAtomSearcher::computeGenericIterator(Atom* templateAtom) {
@@ -189,6 +189,8 @@ GeneralIterator* SingleTermAtomSearcher::computeGenericIterator(Atom* templateAt
 
 void SingleTermAtomSearcher::initializeIndexMaps(){
 //	Timer::getInstance()->start("Creation Index Structure");
+	createdIndex=true;
+
 	unordered_set<index_object> termToBeIndexedIndices;
 
 	for (Atom* a : *table) {
@@ -203,7 +205,6 @@ void SingleTermAtomSearcher::initializeIndexMaps(){
 		}
 	}
 //	Timer::getInstance()->end();
-	createdIndex=true;
 }
 
 /****************************************************** SINGLE TERM MULTI MAP ATOM SEARCH ***************************************************/
@@ -248,15 +249,15 @@ Atom* SingleTermAtomSearcherMultiMap::getAtom(Atom *atom){
 }
 
 void SingleTermAtomSearcherMultiMap::createIndex(Atom* templateAtom, pair<bool, index_object>& termBoundIndex) {
-	indexPair = Options::globalOptions()->getIndexingTerm(this->predicate->getName());
-	if(indexPair.second){
+	if(!createdIndex){
+		indexPair = Options::globalOptions()->getIndexingTerm(this->predicate->getName());
 		assert_msg((indexPair.first>=0 && indexPair.first<this->predicate->getArity()), "The specified index is not valid.");
 	}
 	for(unsigned int i=0;i<templateAtom->getTermsSize();i++){
 		Term* t=templateAtom->getTerm(i);
-		if(!indexPair.second && t->isGround()){
-				indexPair.first=i;
-				indexPair.second = true;
+		if(!createdIndex && t->isGround()){
+			indexPair.first=i;
+			indexPair.second = true;
 		}
 		if(indexPair.second && i == indexPair.first && t->isGround()) {
 			termBoundIndex.first = true;
@@ -264,7 +265,7 @@ void SingleTermAtomSearcherMultiMap::createIndex(Atom* templateAtom, pair<bool, 
 			break;
 		}
 	}
-	if(!createdIndex) initializeIndexMaps();
+	if(!createdIndex && indexPair.first) initializeIndexMaps();
 }
 
 GeneralIterator* SingleTermAtomSearcherMultiMap::computeGenericIterator(Atom* templateAtom) {
