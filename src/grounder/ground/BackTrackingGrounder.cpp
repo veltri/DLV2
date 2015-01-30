@@ -76,14 +76,16 @@ bool BackTrackingGrounder::firstMatch(){
 		unsigned tableToSearch = current_id_match[index_current_atom].back().first;
 		AtomSearcher *searcher=predicateExtTable->getPredicateExt(templateAtom->getPredicate())->getAtomSearcher(tableToSearch);
 
-		if(isGroundCurrentAtom()){
-			bool undef;
-			searcher->findIfExist(templateAtom,find,undef);
-			if(templateAtom->isNegative() && find) find=!undef;
-			if(find){ current_id_match[index_current_atom].clear();return find;}
-		}else{
-			unsigned id = searcher->firstMatch(templateAtom,current_var_assign,find);
-			if(find){ current_id_match[index_current_atom].back().second = id;return find;}
+		unsigned id = searcher->firstMatch(templateAtom,current_var_assign,find);
+
+		if(find){
+
+			if(!isGroundCurrentAtom())
+				current_id_match[index_current_atom].back().second = id;
+			else
+				current_id_match[index_current_atom].clear();
+
+			return find;
 		}
 
 		current_id_match[index_current_atom].pop_back();
@@ -147,24 +149,18 @@ void BackTrackingGrounder::foundAssignment() {
 		Atom *searchAtom=predicateExt->getGenericAtom(bodyGroundAtom);
 
 		if(searchAtom==nullptr){
-
-			if(StatementDependency::getInstance()->isPredicateNegativeStratified(bodyGroundAtom->getPredicate()->getIndex()))
-				groundRule.addInBody(bodyGroundAtom);
-
-
-			//FATAL ERRROr ANONIMUS undefined
-
+			//FATAL ERRRO ANONIMUS
 
 		}else{
 
 			if(!searchAtom->isFact()){
 				groundRule.addInBody(bodyGroundAtom);
+				head_true=false;
 			}
 
 		}
 
 	}
-	head_true=head_true && groundRule.getSizeBody() <=0;
 
 	unsigned atom_counter=0;
 	for(auto atom=currentRule->getBeginHead();atom!=currentRule->getEndHead();atom++,atom_counter++){
