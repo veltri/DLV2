@@ -203,7 +203,9 @@ void BackTrackingGrounder::foundAssignment() {
 	}
 
 	groundRule.print();
-	removeBindValueInAssignment(current_variables_atoms[index_current_atom]);
+
+	if(currentRule->getSizeBody() > 0)
+		removeBindValueInAssignment(current_variables_atoms[index_current_atom]);
 
 }
 
