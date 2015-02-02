@@ -22,7 +22,7 @@ bool BuiltInAtom::evaluate(map_term_term& substitutionTerm){
 	Term* secondTerm=terms[1];
 
 	// If there is equal and variable assign that value
-	if(binop==Binop::EQUAL){
+	if(binop==Binop::EQUAL &&( firstTerm->getType()==TermType::VARIABLE || secondTerm->getType()==TermType::VARIABLE )){
 		if(firstTerm->getType()==TermType::VARIABLE || secondTerm->getType()!=TermType::VARIABLE ){
 			substitutionTerm.insert({firstTerm,secondTerm->calculate()});
 			return true;
