@@ -23,7 +23,11 @@ namespace DLV2{
 
 namespace grounder{
 
-
+/* Table of Predicate Extensione:
+ * 		FACT: Table of fact
+ * 		NOFACT: Table of atom derived
+ * 		DELTA, NEXTDELTA: Ausiliary table for grounding recursive rule
+*/
 #define FACT 0
 #define NOFACT 1
 #define DELTA 2
@@ -31,6 +35,8 @@ namespace grounder{
 
 /**
  * @brief This class manages and executes the grounding process.
+ *
+ * The grounding of rule process is a template method.
  */
 class ProgramGrounder {
 
@@ -100,14 +106,23 @@ protected:
 	*/
 	void inizializeSearchInsertPredicate(Rule* rule,unordered_set<index_object>& componentPredicateInHead);
 	void inizializeSearchInsertPredicate(Rule* rule);
+	/// Based on the sequence of searching table set the table to search and insert for grounding process
 	void nextSearchInsertPredicate(Rule* rule,unordered_set<index_object>& componentPredicateInHead);
+	/// Inizialize the combination of searching table, FACT and NOFACT
 	void inizializeRecursiveCombinationPredicate(Rule* rule,unordered_set<index_object>& componentPredicateInHead);
+	/// Calculate the next sequence of searching table during the grounding of recursive rule
 	void computeRecursiveCombinationPredicate();
 
+
+	/// Inizialization of grounding rule r
 	virtual void inizialize(Rule* rule){};
+	/// Return true if exist a match with the current atom and current assignment
 	virtual bool match(){};
+	/// Next atom in the rule, if is last return false else true
 	virtual bool next(){};
+	/// Found an assignment for the rule, return true if is grounded new knowledge
 	virtual bool foundAssignment(){};
+	/// Previous atom in the rule, if not exist return false
 	virtual bool back(){};
 
 

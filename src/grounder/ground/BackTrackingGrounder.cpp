@@ -10,6 +10,7 @@
 namespace DLV2 {
 namespace grounder {
 
+/// If the firstMatch on table has not been called
 #define NO_MATCH -1
 
 void BackTrackingGrounder::generateTemplateAtom(){
@@ -69,6 +70,8 @@ bool BackTrackingGrounder::firstMatch(){
 
 	current_id_match.erase(index_current_atom);
 	current_id_match.insert({index_current_atom,vec}).second;
+
+	// For each table to search call the first match until one table return find
 
 	bool find=false;
 	while(current_id_match[index_current_atom].size()>0){

@@ -13,6 +13,9 @@
 namespace DLV2 {
 namespace grounder {
 
+/*
+ *  Simple backtrack algorithm to ground a rule
+ */
 class BackTrackingGrounder : public ProgramGrounder {
 public:
 	BackTrackingGrounder():ProgramGrounder(),currentRule(0),index_current_atom(0),templateAtom(nullptr),start(true),lastMatch(false){};
@@ -27,12 +30,18 @@ protected:
 	virtual void inizialize(Rule* rule);
 	virtual bool foundAssignment();
 
+	/// Generate the template atom of current atom (substitute at the current atom the current assignment)
 	virtual void generateTemplateAtom();
+	/// Remove the variable in the current assignment wich are in bind_variables
 	virtual void removeBindValueInAssignment(const set_term& bind_variables);
+	/// Call the first match with the current atom
 	virtual bool firstMatch();
+	/// Call the next match with the current atom
 	virtual bool nextMatch();
+	/// Return true if is ground the current atom
 	virtual bool isGroundCurrentAtom();
 
+	/// Print the current assignment
 	void printAssignment();
 
 protected:
@@ -53,11 +62,14 @@ protected:
 	//vector index atom and if is undefined
 	vector<bool> atom_undef_inbody;
 
-
+	/// Current templateAtom
 	Atom * templateAtom;
+	/// start is false if the grounding process not start, otherwise true
 	bool start;
+	/// Is true if is calling nextMatch on ground atom at the end of rule
 	bool lastMatch;
 
+	///Find the bind variable on rule
 	void findBindVariablesRule();
 };
 
