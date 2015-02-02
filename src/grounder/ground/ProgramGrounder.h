@@ -107,7 +107,7 @@ protected:
 	virtual void inizialize(Rule* rule){};
 	virtual bool match(){};
 	virtual bool next(){};
-	virtual void foundAssignment(){};
+	virtual bool foundAssignment(){};
 	virtual bool back(){};
 
 

@@ -78,8 +78,9 @@ void ProgramGrounder::ground() {
 					for(unsigned i=0;i<pow(2,predicate_combination.size())-1;i++){
 						computeRecursiveCombinationPredicate();
 						nextSearchInsertPredicate(r,componentPredicateInHead[component]);
-						if (groundRule(r))
+						if (groundRule(r)){
 							found_something = true;
+						}
 					}
 				}
 
@@ -230,7 +231,7 @@ bool ProgramGrounder::groundRule(Rule* rule) {
 
 		if(match()){
 			if(!next()) {
-				do{foundAssignment();find_assignment=true;}while(match());
+				do{if(foundAssignment())find_assignment=true;}while(match());
 				if(!back())finish=true;
 			}
 		}else if(!back())

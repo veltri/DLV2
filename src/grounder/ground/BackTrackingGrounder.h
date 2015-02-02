@@ -25,7 +25,7 @@ protected:
 	virtual bool next();
 	virtual bool back();
 	virtual void inizialize(Rule* rule);
-	virtual void foundAssignment();
+	virtual bool foundAssignment();
 
 	virtual void generateTemplateAtom();
 	virtual void removeBindValueInAssignment(const set_term& bind_variables);

@@ -141,7 +141,7 @@ bool BackTrackingGrounder::next() {
 	return true;
 }
 
-void BackTrackingGrounder::foundAssignment() {
+bool BackTrackingGrounder::foundAssignment() {
 	Rule groundRule;
 	bool head_true= (currentRule->getSizeHead() <= 1 );
 	unsigned index_body_atom=0;
@@ -161,7 +161,7 @@ void BackTrackingGrounder::foundAssignment() {
 	}
 
 	head_true=head_true && groundRule.getSizeBody() <=0;
-
+	bool ground_new_atom=false;
 	unsigned atom_counter=0;
 	for(auto atom=currentRule->getBeginHead();atom!=currentRule->getEndHead();atom++,atom_counter++){
 		Atom *headGroundAtom=(*atom)->ground(current_var_assign);
@@ -170,12 +170,12 @@ void BackTrackingGrounder::foundAssignment() {
 		Atom *searchAtom=predicateExt->getGenericAtom(headGroundAtom);
 
 		if(searchAtom==nullptr){
+			ground_new_atom = true;
 			groundRule.addInHead(headGroundAtom);
 
 			GenericAtom *genericGroundAtom=new GenericAtom;
 			genericGroundAtom->setTerms(headGroundAtom->getTerms());
 			genericGroundAtom->setFact(head_true);
-
 			for(unsigned i=0;i<predicate_searchInsert_table[atom_counter].size();i++)
 				predicateExt->addGenericAtom(predicate_searchInsert_table[atom_counter][i],genericGroundAtom,true);
 		}else{
@@ -193,7 +193,7 @@ void BackTrackingGrounder::foundAssignment() {
 
 	if(currentRule->getSizeBody() > 0)
 		removeBindValueInAssignment(current_variables_atoms[index_current_atom]);
-
+	return ground_new_atom;
 }
 
 bool BackTrackingGrounder::back() {
