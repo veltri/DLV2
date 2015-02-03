@@ -8,7 +8,6 @@
 #include "PredicateExtension.h"
 //#include "../utility/Timer.h"
 
-
 namespace DLV2{
 
 namespace grounder{
@@ -16,11 +15,12 @@ namespace grounder{
 /****************************************************** PREDICATE EXTENSION ***************************************************/
 
 void PredicateExtension::setAtomSearchers(){
-
 	// Properly set the IndexAtom type
 	while(atomSearchers.size()<tables.size()){
 		AtomSearcher* atomSearcher;
-		switch (Options::globalOptions()->getIndexType()) {
+		unsigned int indexType=Options::globalOptions()->getIndexType();
+		if(predicate->getArity()==0) indexType=DEFAULT;
+		switch (indexType) {
 		case (MAP):
 			atomSearcher = new SingleTermAtomSearcher(tables[atomSearchers.size()],predicate);
 			break;
@@ -33,8 +33,6 @@ void PredicateExtension::setAtomSearchers(){
 		}
 		atomSearchers.push_back(atomSearcher);
 	}
-
-
 }
 
 PredicateExtension::~PredicateExtension() {
@@ -77,16 +75,6 @@ void PredicateExtension::swapTables(unsigned tableFrom,unsigned tableTo){
 /****************************************************** PREDICATE EXT TABLE ***************************************************/
 
 PredicateExtTable *PredicateExtTable::predicateExtTable_;
-
-
-PredicateExtTable* PredicateExtTable::getInstance(){
-	if(predicateExtTable_== nullptr)
-		predicateExtTable_= new PredicateExtTable;
-
-	return predicateExtTable_;
-}
-
-
 
 };
 

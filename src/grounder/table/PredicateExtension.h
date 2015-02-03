@@ -20,11 +20,6 @@ namespace DLV2{
 
 namespace grounder{
 
-///A vector of pair of unsigned integer values and index_object values @see IndexDefinition
-typedef vector<pair<unsigned int,index_object>> vec_pair_index_object;
-///An unordered map with unsigned integers as keys and values
-typedef unordered_multimap<unsigned int,unsigned int> map_int_int;
-
 /**
  * This class represents the extension of each predicate (instances).
  * The class may have multiple table of atoms and for each table have an AtomSearcher associate
@@ -115,7 +110,6 @@ private:
 class PredicateExtTable {
 public:
 
-
 	///This method adds an Instance for a predicate
 	void addPredicateExt(Predicate* p) {
 		if(!predicateExtTable.count(p->getIndex())){
@@ -147,7 +141,12 @@ public:
 	///Destructor
 	~PredicateExtTable(){for(auto pair_predExt:predicateExtTable)delete pair_predExt.second;};
 
-	static PredicateExtTable* getInstance();
+	static PredicateExtTable* getInstance(){
+		if(predicateExtTable_== nullptr)
+			predicateExtTable_= new PredicateExtTable;
+		return predicateExtTable_;
+	}
+
 private:
 	///Constructor
 	PredicateExtTable(){}

@@ -186,7 +186,7 @@ protected:
 };
 
 /**
- * @brief This class is a more advanced implementation of IndexAtom (@see IndexAtom)
+ * @brief This class is a more advanced implementation of SimpleAtomSearcher (@see SimpleAtomSearcher )
  * @details Searching for match is performed over a tables of facts and no facts indexed by a single term, namely the indexing term.
  * Instead of performing the search among the whole tables it is performed among the facts and the no facts, collectively the instances,
  * that match for that term.
@@ -198,14 +198,22 @@ protected:
 
 class SingleTermAtomSearcher: public SimpleAtomSearcher {
 public:
-	SingleTermAtomSearcher(AtomVector* table, Predicate* p) : SimpleAtomSearcher(table), predicate(p), createdIndex(false) {
-		indexPair = Options::globalOptions()->getIndexingTerm(this->predicate->getName());
-		assert_msg((indexPair.first>=0 && indexPair.first<this->predicate->getArity()), "The specified index is not valid.");
+	SingleTermAtomSearcher(AtomVector* table, Predicate* p) : SimpleAtomSearcher(table), predicate(p) {
+		for(unsigned int i=0;i<predicate->getArity();i++){
+			indexingTable.push_back(unordered_map<index_object,AtomTable>());
+			createdIndex.push_back(false);
+		}
+		indexSetByUser = Options::globalOptions()->getIndexingTerm(this->predicate->getName());
+		if(indexSetByUser>-1)
+			assert_msg((indexSetByUser>=0 && indexSetByUser<this->predicate->getArity()), "The specified index is not valid.");
+
 	};
 
 	virtual void add(Atom* atom);
 	virtual void remove(Atom* atom);
-	virtual void clear(){tableIndexMap.clear();};
+	virtual void clear(){for(auto table:indexingTable) table.clear();};
+
+	unsigned int selectBestIndex(const unordered_set<int>& possibleTableToSearch);
 
 	virtual Atom* getAtom(Atom *atom);
 
@@ -213,23 +221,21 @@ public:
 
 private:
 	///Data structure for indexed facts
-	unordered_map<index_object,AtomTable> tableIndexMap;
+	vector<unordered_map<index_object,AtomTable>> indexingTable;
+	int indexSetByUser;
+	/// Boolean that is false the index table has not been created true otherwise
+	vector<bool> createdIndex;
 
 	/// The predicate of PredicateExtension associated
 	Predicate* predicate;
-	/// Pair of term position if the index and if the index can be used for the actual searching
-	pair<bool, unsigned int> indexPair;
-	/// Boolean that is false the index table has not been created true otherwise
-	bool createdIndex;
 
 	///This method fills in the indexing data structures
-	void initializeIndexMaps();
+	void initializeIndexMaps(unsigned int tableIndex);
 
-	void resetIndex();
 	/// This method carry out the indexing strategy, determining the indexing term with which is the actual term
 	/// corresponding to position given by the user or if no position is given it is used the first admissible term as indexing term.
 	/// Then filling the data structures invoking the initializeIndexMaps method.
-	void createIndex(Atom* templateAtom,pair<bool, index_object>& termBoundIndex);
+	int manageIndex(Atom* templateAtom);
 
 	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom);
 };
@@ -247,7 +253,7 @@ private:
 class SingleTermAtomSearcherMultiMap: public SimpleAtomSearcher {
 public:
 	SingleTermAtomSearcherMultiMap(AtomVector* table, Predicate *p) : SimpleAtomSearcher(table), predicate(p), createdIndex(false) {
-		indexPair = Options::globalOptions()->getIndexingTerm(this->predicate->getName());
+		indexPair = {Options::globalOptions()->getIndexingTerm(this->predicate->getName()),true};
 		assert_msg((indexPair.first>=0 && indexPair.first<this->predicate->getArity()), "The specified index is not valid.");
 	};
 
@@ -261,7 +267,7 @@ public:
 
 private:
 	///Data structure for indexed facts
-	unordered_multimap<index_object, Atom*> tableIndexMap;
+	Multimap_Atom tableIndexMap;
 
 	/// The predicate of PredicateExtension associated
 	Predicate* predicate;

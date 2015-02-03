@@ -114,99 +114,100 @@ void SimpleAtomSearcher::findIfExist(Atom *templateAtom,bool& find, bool& isUnde
 /****************************************************** SINGLE TERM ATOM SEARCH ***************************************************/
 
 void SingleTermAtomSearcher::add(Atom* atom) {
-	if(createdIndex){
-		index_object termIndex=atom->getTerm(indexPair.second)->getIndex();
-		if(tableIndexMap.count(termIndex)){
-			tableIndexMap[termIndex].insert(atom);
-		}
-		else{
-			AtomTable values;
-			values.insert(atom);
-			tableIndexMap.insert({termIndex,values});
+	for (unsigned int i = 0; i < predicate->getArity(); ++i) {
+		if(createdIndex[i]){
+			index_object termIndex=atom->getTerm(i)->getIndex();
+			if(indexingTable[i].count(termIndex))
+				indexingTable[i][termIndex].insert(atom);
+			else{
+				AtomTable values;
+				values.insert(atom);
+				indexingTable[i].insert({termIndex,values});
+			}
 		}
 	}
 }
 
 void SingleTermAtomSearcher::remove(Atom* atom) {
-	if(createdIndex){
-		index_object termIndex=atom->getTerm(indexPair.second)->getIndex();
-		if(tableIndexMap.count(termIndex)){
-			tableIndexMap[termIndex].erase(atom);
+	for (unsigned int i = 0; i < predicate->getArity(); ++i) {
+		if(createdIndex[i]){
+			index_object termIndex=atom->getTerm(i)->getIndex();
+			if(indexingTable[i].count(termIndex))
+				indexingTable[termIndex][i].erase(atom);
 		}
 	}
 }
 
-void SingleTermAtomSearcher::resetIndex(){
-	indexPair={false,0};
-	createdIndex=false;
-	tableIndexMap.clear();
-}
-
 Atom* SingleTermAtomSearcher::getAtom(Atom *atom){
-	pair<bool, index_object> termBoundIndex({false,0});
-	Term* term=atom->getTerm(indexPair.second);
-	if(createdIndex && term->isGround()){
-		termBoundIndex.first=true;
-		termBoundIndex.second=term->getIndex();
-	}
-	if(!createdIndex || !termBoundIndex.first){
-		resetIndex();
-		createIndex(atom,termBoundIndex);
-	}
-	AtomTable* matchingTable=&tableIndexMap[termBoundIndex.second];
+	int tableToSearch=manageIndex(atom);
+	assert_msg(tableToSearch>-1, "Invalid index");
+
+	index_object term = atom->getTerm(tableToSearch)->getIndex();
+	AtomTable* matchingTable=&indexingTable[tableToSearch][term];
+
 	auto atomFound_it=matchingTable->find(atom);
 	if(atomFound_it!=matchingTable->end())
 		return *atomFound_it;
 	return nullptr;
 }
 
-void SingleTermAtomSearcher::createIndex(Atom* templateAtom, pair<bool, index_object>& termBoundIndex) {
-	for(unsigned int i=0;i<templateAtom->getTermsSize();i++){
-		Term* t=templateAtom->getTerm(i);
-		if(!indexPair.first && t->isGround()){
-			indexPair.first = true;
-			indexPair.second = i;
+unsigned int SingleTermAtomSearcher::selectBestIndex(const unordered_set<int>& possibleTableToSearch){
+	if(indexSetByUser>-1 && createdIndex[indexSetByUser] && possibleTableToSearch.count(indexSetByUser))
+		return indexSetByUser;
+
+	for(unsigned int i=0;i<createdIndex.size();i++)
+		if(possibleTableToSearch.count(i))
+			return i;
+	return *possibleTableToSearch.begin();
+}
+
+int SingleTermAtomSearcher::manageIndex(Atom* templateAtom) {
+
+	unordered_set<int> possibleTableToSearch;
+	for(unsigned int i=0;i<templateAtom->getTermsSize();i++)
+		if(templateAtom->getTerm(i)->isGround()){
+			possibleTableToSearch.insert(i);
 		}
-		if(indexPair.first && i == indexPair.second && t->isGround()) {
-			termBoundIndex.first = true;
-			termBoundIndex.second = t->getIndex();
-			break;
-		}
+
+	int indexSelected=-1;
+	if(!possibleTableToSearch.empty()){
+		indexSelected=selectBestIndex(possibleTableToSearch);
+		if(!createdIndex[indexSelected])
+			initializeIndexMaps(indexSelected);
 	}
-	if(!createdIndex && indexPair.first && table->size()>0)
-		initializeIndexMaps();
+	return indexSelected;
 }
 
 GeneralIterator* SingleTermAtomSearcher::computeGenericIterator(Atom* templateAtom) {
 
-	pair<bool, index_object> termBoundIndex( { false, 0 });
-	createIndex(templateAtom,termBoundIndex);
+	int tableIndex=manageIndex(templateAtom);
 
 	GeneralIterator* currentMatch;
-	if(createdIndex && termBoundIndex.first){
-		AtomTable* matchingTable=&tableIndexMap[termBoundIndex.second];
+	//If no index table is available (no bound term contained) the search is performed in the original vector
+	if(tableIndex!=-1){
+		index_object term = templateAtom->getTerm(tableIndex)->getIndex();
+		AtomTable* matchingTable=&indexingTable[tableIndex][term];
 		currentMatch=new UnorderedSetIterator(matchingTable->begin(),matchingTable->end());
 	}
-	else{
+	else
 		currentMatch=new VectorIterator(table->begin(), table->end());
-	}
 	return currentMatch;
 }
 
-void SingleTermAtomSearcher::initializeIndexMaps(){
+void SingleTermAtomSearcher::initializeIndexMaps(unsigned int tableIndex){
 //	Timer::getInstance()->start("Creation Index Structure");
-	createdIndex=true;
+	createdIndex[tableIndex]=true;
 	unordered_set<index_object> termToBeIndexedIndices;
 
 	for (Atom* a : *table) {
-		index_object termIndex=a->getTerm(indexPair.second)->getIndex();
+		index_object termIndex=a->getTerm(tableIndex)->getIndex();
 		if(termToBeIndexedIndices.insert(termIndex).second){
 			AtomTable values;
 			values.insert(a);
-			tableIndexMap.insert({termIndex,values});
+			indexingTable[tableIndex].insert({termIndex,values});
 		}
 		else{
-			tableIndexMap[termIndex].insert(a);
+			indexingTable[tableIndex][termIndex].insert(a);
 		}
 	}
 //	Timer::getInstance()->end();

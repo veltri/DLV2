@@ -79,7 +79,7 @@ namespace DLV2
 
     	void setIndexingPreferences(const std::string indexingPreferences) {this->indexingPreferences = indexingPreferences; this->setIndexingStrategies();}
 
-    	std::pair<unsigned int,bool> getIndexingTerm(const std::string& predicate);
+    	int getIndexingTerm(const std::string& predicate);
 
         ~Options() { /*if (instance != NULL) delete instance;*/ }
 

@@ -282,8 +282,8 @@ void Options::setIndexingStrategies(){
 
 }
 
-pair<unsigned int,bool> Options::getIndexingTerm(const string& predicate){
+int Options::getIndexingTerm(const string& predicate){
 	if(indexingMap.count(predicate))
-		return {indexingMap[predicate],true};
-	return {0,false};
+		return indexingMap[predicate];
+	return -1;
 }
