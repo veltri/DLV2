@@ -252,14 +252,21 @@ private:
  */
 class SingleTermAtomSearcherMultiMap: public SimpleAtomSearcher {
 public:
-	SingleTermAtomSearcherMultiMap(AtomVector* table, Predicate *p) : SimpleAtomSearcher(table), predicate(p), createdIndex(false) {
-		indexPair = {Options::globalOptions()->getIndexingTerm(this->predicate->getName()),true};
-		assert_msg((indexPair.first>=0 && indexPair.first<this->predicate->getArity()), "The specified index is not valid.");
+	SingleTermAtomSearcherMultiMap(AtomVector* table, Predicate *p) : SimpleAtomSearcher(table), predicate(p) {
+		for(unsigned int i=0;i<predicate->getArity();i++){
+			tableIndexMap.push_back(Multimap_Atom());
+			createdIndex.push_back(false);
+		}
+		indexSetByUser = Options::globalOptions()->getIndexingTerm(this->predicate->getName());
+		if(indexSetByUser>-1)
+			assert_msg((indexSetByUser>=0 && indexSetByUser<this->predicate->getArity()), "The specified index is not valid.");
 	};
 
 	virtual void add(Atom* atom);
 	virtual void remove(Atom* atom);
-	virtual void clear(){tableIndexMap.clear();};
+	virtual void clear(){for(auto table:tableIndexMap) tableIndexMap.clear();};
+
+	unsigned int selectBestIndex(const unordered_set<int>& possibleTableToSearch);
 
 	virtual Atom* getAtom(Atom *atom);
 
@@ -267,19 +274,21 @@ public:
 
 private:
 	///Data structure for indexed facts
-	Multimap_Atom tableIndexMap;
+	vector<Multimap_Atom> tableIndexMap;
 
 	/// The predicate of PredicateExtension associated
 	Predicate* predicate;
 	/// Pair of term position if the index and if the index can be used for the actual searching
-	pair<bool, unsigned int> indexPair;
+	int indexSetByUser;
 	/// Boolean that is false the index table has not been created true otherwise
-	bool createdIndex;
+	vector<bool> createdIndex;
 
 	///This method fills in the indexing data structures
-	void initializeIndexMaps();
+	void initializeIndexMaps(unsigned int indexTable);
 
-	void resetIndex();
+
+	int manageIndex(Atom* templateAtom);
+
 	/// This method carry out the indexing strategy, determining the indexing term with which is the actual term
 	/// corresponding to position given by the user or if no position is given it is used the first admissible term as indexing term.
 	/// Then filling the data structures invoking the initializeIndexMaps method.
