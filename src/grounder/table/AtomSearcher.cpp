@@ -41,6 +41,7 @@ unsigned int BaseAtomSearcher::firstMatch(Atom *templateAtom, map_term_term& cur
 		return id;
 	}
 
+	delete currentMatch;
 	find=false;
 	return id;
 }
@@ -67,7 +68,7 @@ bool BaseAtomSearcher::computeFirstMatch(GeneralIterator* currentMatch, Atom *te
 	return false;
 }
 
-void BaseAtomSearcher::nextMatch(unsigned int id, Atom *templateAtom, map_term_term& currentAssignment, bool& find,bool &undef) {
+void BaseAtomSearcher::nextMatch(unsigned int id, Atom *templateAtom, map_term_term& currentAssignment, bool& find, bool &undef) {
 	GeneralIterator* currentMatch=resultMap.find(id)->second;
 	currentMatch->next();
 	computeFirstMatch(currentMatch,templateAtom,currentAssignment);
@@ -168,14 +169,14 @@ int SingleTermMultipleStrategiesAtomSearcher::manageIndex(Atom* templateAtom) {
 }
 
 GeneralIterator* SingleTermMultipleStrategiesAtomSearcher::computeGenericIterator(Atom* templateAtom) {
-	int tableIndex=manageIndex(templateAtom);
+	int indexingTerm=manageIndex(templateAtom);
 	GeneralIterator* currentMatch;
 
 	//If no searching table is available (the atom is completely unbound)
 	//the search is performed in the base vector
-	if(tableIndex!=-1){
-		index_object term = templateAtom->getTerm(tableIndex)->getIndex();
-		AtomTable* matchingTable=&searchingTables[tableIndex][term];
+	if(indexingTerm!=-1){
+		index_object term = templateAtom->getTerm(indexingTerm)->getIndex();
+		AtomTable* matchingTable=&searchingTables[indexingTerm][term];
 		currentMatch=new UnorderedSetIterator(matchingTable->begin(),matchingTable->end());
 	}
 	else
@@ -183,22 +184,20 @@ GeneralIterator* SingleTermMultipleStrategiesAtomSearcher::computeGenericIterato
 	return currentMatch;
 }
 
-void SingleTermMultipleStrategiesAtomSearcher::initializeIndexMaps(unsigned int tableIndex){
-	createdSearchingTables[tableIndex]=true;
-//	Timer::getInstance()->start("Creation Index Structure");
+void SingleTermMultipleStrategiesAtomSearcher::initializeIndexMaps(unsigned int indexingTerm){
+	createdSearchingTables[indexingTerm]=true;
 	unordered_set<index_object> termToBeIndexedIndices;
 	for (Atom* a : *table) {
-		index_object termIndex=a->getTerm(tableIndex)->getIndex();
+		index_object termIndex=a->getTerm(indexingTerm)->getIndex();
 		if(termToBeIndexedIndices.insert(termIndex).second){
 			AtomTable values;
 			values.insert(a);
-			searchingTables[tableIndex].insert({termIndex,values});
+			searchingTables[indexingTerm].insert({termIndex,values});
 		}
 		else{
-			searchingTables[tableIndex][termIndex].insert(a);
+			searchingTables[indexingTerm][termIndex].insert(a);
 		}
 	}
-//	Timer::getInstance()->end();
 }
 
 /****************************************************** SINGLE TERM MULTI MAP ATOM SEARCH ***************************************************/
@@ -242,12 +241,12 @@ int SingleTermMultipleStrategiesAtomSearcherMultiMap::manageIndex(Atom* template
 }
 
 Atom* SingleTermMultipleStrategiesAtomSearcherMultiMap::findAtom(Atom *atom){
-	int tableToSearch=manageIndex(atom);
-	assert_msg(tableToSearch>-1, "Invalid index");
+	int indexingTerm=manageIndex(atom);
+	assert_msg(indexingTerm>-1, "Invalid index");
 
-	index_object term = atom->getTerm(tableToSearch)->getIndex();
+	index_object term = atom->getTerm(indexingTerm)->getIndex();
 	AtomTableComparator comparator;
-	auto pair=searchingTables[tableToSearch].equal_range(term);
+	auto pair=searchingTables[indexingTerm].equal_range(term);
 	for(auto it=pair.first;it!=pair.second;it++){
 		if(comparator(it->second,atom))
 			return it->second;
@@ -267,14 +266,14 @@ unsigned int SingleTermMultipleStrategiesAtomSearcherMultiMap::selectBestIndex(c
 
 
 GeneralIterator* SingleTermMultipleStrategiesAtomSearcherMultiMap::computeGenericIterator(Atom* templateAtom) {
-	int tableIndex=manageIndex(templateAtom);
+	int indexingTerm=manageIndex(templateAtom);
 	GeneralIterator* currentMatch;
 
 	//If no searching table is available (the atom is completely unbound)
 	//the search is performed in the base vector
-	if(tableIndex!=-1){
-		index_object term = templateAtom->getTerm(tableIndex)->getIndex();
-		auto pair=searchingTables[indexSetByUser].equal_range(term);
+	if(indexingTerm!=-1){
+		index_object term = templateAtom->getTerm(indexingTerm)->getIndex();
+		auto pair=searchingTables[indexingTerm].equal_range(term);
 		currentMatch=new UnorderedMultiMapIterator(pair.first,pair.second);
 	}
 	else
@@ -282,14 +281,12 @@ GeneralIterator* SingleTermMultipleStrategiesAtomSearcherMultiMap::computeGeneri
 	return currentMatch;
 }
 
-void SingleTermMultipleStrategiesAtomSearcherMultiMap::initializeIndexMaps(unsigned int index){
-	createdSearchingTables[index]=true;
-//	Timer::getInstance()->start("Creation Index Structure");
+void SingleTermMultipleStrategiesAtomSearcherMultiMap::initializeIndexMaps(unsigned int indexingTerm){
+	createdSearchingTables[indexingTerm]=true;
 	for (Atom* a : *table) {
-		index_object termIndex=a->getTerm(index)->getIndex();
-		searchingTables[index].insert({termIndex,a});
+		index_object termIndex=a->getTerm(indexingTerm)->getIndex();
+		searchingTables[indexingTerm].insert({termIndex,a});
 	}
-//	Timer::getInstance()->end();
 }
 
 };

@@ -29,6 +29,7 @@ InMemoryInputBuilder::InMemoryInputBuilder() {
 
 InMemoryInputBuilder::~InMemoryInputBuilder() {
 	delete currentRule;
+	delete currentAtom;
 }
 
 void InMemoryInputBuilder::onDirective(char* directiveName,
@@ -160,7 +161,7 @@ void InMemoryInputBuilder::newTerm(char* value)
 
     if( value[0] >= 'A' && value[0] <='Z' ) // Variable
     {
-    	string name=value;
+    	string name(value);
 		Term *term=new VariableTerm(false,name);
 		termTable->addTerm(term);
 		terms_parsered.push_back(term);
@@ -168,7 +169,7 @@ void InMemoryInputBuilder::newTerm(char* value)
     else if( (value[0] == '\"' && value[strlen(value)-1] == '\"') ||
             (value[0] >= 'a' && value[0] <='z') )   // String constant
     {
-    	string name=value;
+    	string name(value);
     	Term *term=new StringConstantTerm(false,name);
 		termTable->addTerm(term);
 		terms_parsered.push_back(term);
@@ -191,14 +192,14 @@ void InMemoryInputBuilder::onTerm(int value) {
 }
 
 void InMemoryInputBuilder::onUnknownVariable() {
-	string name="_";
+	string name("_");
 	Term *term=new VariableTerm(false,name);
 	termTable->addTerm(term);
 	terms_parsered.push_back(term);
 }
 
 void InMemoryInputBuilder::onFunction(char* functionSymbol, int nTerms) {
-	string name=functionSymbol;
+	string name(functionSymbol);
 	vector<Term*> termsInFunction(nTerms);
 
 	for(int i=0;i<nTerms;i++){

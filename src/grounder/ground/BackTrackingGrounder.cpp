@@ -145,7 +145,8 @@ bool BackTrackingGrounder::next() {
 }
 
 bool BackTrackingGrounder::foundAssignment() {
-	Rule groundRule;
+
+	Rule* groundRule=new Rule;
 	bool head_true= (currentRule->getSizeHead() <= 1 );
 	unsigned index_body_atom=0;
 	for(auto atom=currentRule->getBeginBody();atom!=currentRule->getEndBody();atom++,index_body_atom++){
@@ -153,17 +154,15 @@ bool BackTrackingGrounder::foundAssignment() {
 		if(!atom_undef_inbody[index_body_atom])
 			if(!((*atom)->isNegative() && StatementDependency::getInstance()->isPredicateNegativeStratified((*atom)->getPredicate()->getIndex())))
 				continue;
+
+		if((*atom)->isBuiltIn())continue;
+
 		Atom *bodyGroundAtom=(*atom)->ground(current_var_assign);
-
-		if(bodyGroundAtom->isBuiltIn())continue;
-
-
-		groundRule.addInBody(bodyGroundAtom);
-
+		groundRule->addInBody(bodyGroundAtom);
 
 	}
 
-	head_true=head_true && groundRule.getSizeBody() <=0;
+	head_true=head_true && groundRule->getSizeBody() <=0;
 	bool ground_new_atom=false;
 	unsigned atom_counter=0;
 	for(auto atom=currentRule->getBeginHead();atom!=currentRule->getEndHead();atom++,atom_counter++){
@@ -174,7 +173,7 @@ bool BackTrackingGrounder::foundAssignment() {
 
 		if(searchAtom==nullptr){
 			ground_new_atom = true;
-			groundRule.addInHead(headGroundAtom);
+			groundRule->addInHead(headGroundAtom);
 
 			GenericAtom *genericGroundAtom=new GenericAtom;
 			genericGroundAtom->setTerms(headGroundAtom->getTerms());
@@ -186,13 +185,15 @@ bool BackTrackingGrounder::foundAssignment() {
 			if(head_true)
 				searchAtom->setFact(true);
 
-			groundRule.addInHead(headGroundAtom);
+			groundRule->addInHead(headGroundAtom);
 
 		}
 
 	}
 
-	groundRule.print();
+	if(!(groundRule->getSizeBody()==0 && groundRule->getSizeHead()==0))
+		groundRule->print();
+	delete groundRule;
 
 	if(currentRule->getSizeBody() > 0)
 		removeBindValueInAssignment(current_variables_atoms[index_current_atom]);
@@ -234,6 +235,7 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 	current_id_match.clear();
 	current_atom_it = currentRule->getBeginBody();
 	index_current_atom = 0;
+	if(templateAtom!=nullptr) delete templateAtom;
 	templateAtom=nullptr;
 	start=true;
 	lastMatch=false;

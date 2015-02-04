@@ -19,7 +19,7 @@ namespace grounder {
 class BackTrackingGrounder : public ProgramGrounder {
 public:
 	BackTrackingGrounder():ProgramGrounder(),currentRule(0),index_current_atom(0),templateAtom(nullptr),start(true),lastMatch(false){};
-	virtual ~BackTrackingGrounder(){};
+	virtual ~BackTrackingGrounder(){delete currentRule; delete templateAtom; };
 
 
 protected:
