@@ -157,7 +157,7 @@ void DependencyGraph::printFile(string fileGraph) {
 	//Print labels  (the name of the predicate)
 	for (unsigned int i = 0; i < num_vertices(depGraph); i++) {
 		graphDOT += lexical_cast<string>(i) + " [label= \"";
-		string predicate = boost::lexical_cast<string>( depGraph[i].pred_id);
+		string predicate =  PredicateExtTable::getInstance()->getPredicateExt(depGraph[i].pred_id)->getPredicate()->getName();
 		graphDOT += predicate + "  " + "\"];\n";
 	}
 	graphDOT += "}\n";
@@ -293,8 +293,9 @@ void DependencyGraph::calculateUnstritifiedPredicate(unordered_set<index_object>
 					}
 		}
 	}
-//		for(auto stratPred:predicateUnstratified)
-//			cout<<"UNDEF "<<IdsManager::getStringStrip(IdsManager::PREDICATE_ID_MANAGER,stratPred)<<endl;
+//		for(auto stratPred:predicateUnstratified){
+//			cout<<"UNDEF "<<stratPred<<endl;
+//		}
 }
 
 /*
@@ -401,7 +402,7 @@ void ComponentGraph::printFile(string fileGraph) {
 		graphDOT += " [label= \"";
 		for (auto it : componentDependency)
 			if (it.second == i) {
-				string predicate = boost::lexical_cast<string>( it.first);
+				string predicate =PredicateExtTable::getInstance()->getPredicateExt(it.first)->getPredicate()->getName();
 				graphDOT += predicate + "  ";
 			}
 		graphDOT += "\"];\n";
@@ -436,7 +437,6 @@ void ComponentGraph::print() {
 		cout << "} ";
 	}
 }
-
 void ComponentGraph::computeAnOrdering(list<unsigned int>& componentsOrdering) {
 
 	// If the component graph is not connected, then if there are some components any ordering is valid
@@ -471,8 +471,8 @@ void ComponentGraph::printTheOrderingOfComponent(list<unsigned int>& componentsO
 	}
 }
 
-
 void ComponentGraph::recursive_sort(list<unsigned int>& componentsOrdering) {
+
 	// Recursive method:
 	// If exist a cycle detect the component of each cycle and for each cycle delete one
 	// negative edge that connect two vertices of the same cycle, if topological sort don't report
@@ -506,7 +506,9 @@ void ComponentGraph::recursive_sort(list<unsigned int>& componentsOrdering) {
 	for(unsigned int i=0;i<component_indices_weight.size();i++){
 		if(componentProcessed.count(component_indices_weight[i]))continue;
 		for (tie(ei, ei_end) = edges(compGraph); ei != ei_end; ++ei) {
-			if (weightmap[*ei] < 0 && index[source(*ei, compGraph)]==i && component_indices_weight[index[source(*ei, compGraph)]]==component_indices_weight[i]){
+			if (weightmap[*ei] < 0 && index[source(*ei, compGraph)]==i
+					&& component_indices_weight[index[source(*ei, compGraph)]]==component_indices_weight[i] && component_indices_weight[index[target(*ei, compGraph)]]==component_indices_weight[i]){
+
 				edgeToRemove.push_back(ei);
 				componentProcessed.insert(component_indices_weight[i]);
 				break;
@@ -516,6 +518,7 @@ void ComponentGraph::recursive_sort(list<unsigned int>& componentsOrdering) {
 
 	for(auto edge:edgeToRemove)
 		remove_edge(*edge,compGraph);
+
 	try{
 		topological_sort(compGraph, front_inserter(componentsOrdering));
 	} catch (boost::not_a_dag const& e) {
