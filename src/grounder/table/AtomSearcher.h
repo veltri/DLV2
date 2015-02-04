@@ -21,13 +21,11 @@ namespace DLV2{
 
 namespace grounder{
 
-/**  This struct compare and hash atoms for the AtomTable.
- *	 The method used is equal to the generic atom, with this struct PredicateExtension and
- *	 AtomSearcher can use Atom instead of GenericAtom
- *
+/** This struct compares and hashes atoms just by their terms.
+ *	It is used for the AtomTable definition (@See AtomTable)
+ *	In this way, given two atom (every kind of atom) they can be compared in the same way.
  **/
 struct AtomTableComparator{
-
 	inline size_t operator()(Atom* atom) const{
 		return HashVecInt::getHashVecIntFromConfig()->computeHashTerm(atom->getTerms());
 	}
@@ -40,7 +38,6 @@ struct AtomTableComparator{
 				return false;
 		return true;
 	}
-
 };
 
 ///Vector of Atom (GenericAtom)
@@ -51,8 +48,8 @@ typedef unordered_set<Atom*,AtomTableComparator,AtomTableComparator> AtomTable;
 typedef unordered_multimap<index_object, Atom*> Multimap_Atom;
 
 
-/**This class is an generic Iterator for Atom containers.
- * See pattern Iterator.
+/** This class implements a general way to access to different atom containers.
+ * 	It is implemented according to the GOF pattern Iterator.
 **/
 class GeneralIterator {
 public:
@@ -61,8 +58,7 @@ public:
 	virtual Atom* currentIterm()=0;
 	virtual ~GeneralIterator(){};
 };
-/**This class is an iterator for vector of Atom
-**/
+///This class implements and hides an iterator for atom vector
 class VectorIterator : public GeneralIterator {
 public:
 	VectorIterator(const AtomVector::iterator& s, const AtomVector::iterator& e): start(s), end(e){};
@@ -73,8 +69,7 @@ private:
 	AtomVector::iterator start;
 	AtomVector::iterator end;
 };
-/**This class is an iterator for unordered set of Atom
-**/
+///This class implements and hides an iterator for atom unordered set
 class UnorderedSetIterator : public GeneralIterator {
 public:
 	UnorderedSetIterator(const AtomTable::iterator& s, const AtomTable::iterator& e): start(s), end(e){};
@@ -85,8 +80,7 @@ private:
 	AtomTable::iterator start;
 	AtomTable::iterator end;
 };
-/**This class is an iterator for unordered muiltimap of Atom
-**/
+///This class implements and hides an iterator for atom unordered multimap
 class UnorderedMultiMapIterator : public GeneralIterator {
 public:
 	UnorderedMultiMapIterator(const Multimap_Atom::iterator& s, const Multimap_Atom::iterator& e): start(s), end(e){};
@@ -100,201 +94,195 @@ private:
 
 
 /**
- * This class is an abstract base class that models a general searching strategy of a predicate's instances.
+ * This class is an abstract base class that models a general searching strategy for a predicate's extension.
  * It is builded according to the Strategy GOF pattern.
  */
 class AtomSearcher {
 public:
 	AtomSearcher(AtomVector* table) : table(table) {};
-	///This method implementation is demanded to sub-classes.
-	///It have to find all the matching atoms and return just the first of those.
-	///The returned integer will be used to get the other ones through nextMatch method @see nextMatch
+	/// This method implementation is demanded to sub-classes.
+	/// It have to find all the matching atoms and return just the first of those.
+	/// The returned integer will be used to get the other ones through nextMatch method (@See nextMatch)
 	virtual unsigned int firstMatch(Atom *templateAtom, map_term_term& currentAssignment, bool& find,bool& undef)=0;
-	///This method implementation is demanded to sub-classes.
-	///It is used to get the further matching atoms one by one each time it is invoked.
-	virtual void nextMatch(unsigned int id, Atom* templateAtom, map_term_term& currentAssignment, bool& find,bool &undef)=0;
-	///This method implementation is demanded to sub-classes.
-	/// It have to find if exist the templateAtom, that have to be ground
+	/// This method implementation is demanded to sub-classes.
+	/// It is used to get the further matching atoms one by one each time it is invoked.
+	virtual void nextMatch(unsigned int id, Atom* templateAtom, map_term_term& currentAssignment, bool& find, bool &undef)=0;
+	/// This method implementation is demanded to sub-classes.
+	/// It have to find if the given atom exist. This atom must be ground.
 	virtual void findIfExist(Atom *templateAtom, bool& find, bool& isUndef)=0;
 
-	///This method implementation is demanded to sub-classes.
-	///It updates the searching data-structure adding the given atom
+	/// This method implementation is demanded to sub-classes.
+	/// It have to find if the given atom exist and returns it, else returns nullptr.
+	virtual Atom* findAtom(Atom *atom)=0;
+	/// This method implementation is demanded to sub-classes.
+	/// It updates the searching data-structure(s) by adding the given atom
 	virtual void add(Atom* atom) = 0;
 	///This method implementation is demanded to sub-classes.
-	///It updates the searching data-structure removing the given atom
+	///It updates the searching data-structure(s) by removing the given atom
 	virtual void remove(Atom* atom) = 0;
 	///This method implementation is demanded to sub-classes.
-	///It clear the data-structure
+	///It clears the searching data-structure(s).
 	virtual void clear() = 0;
 
+	///Printer method. Useful mainly for debug purpose.
 	virtual void print(){};
 
-	///This method checks if the atom given matches with the templateAtom according to the current assignment
-	///If they match the current assignment is update accordingly
-	virtual bool checkMatch(Atom *genericAtom,Atom *templateAtom,map_term_term& currentAssignment);
-
-	///This method implementation is demanded to sub-classes.
-	/// Return the atom if exist in the table, else nullptr
-	virtual Atom* getAtom(Atom *atom)=0;
+	/// This method checks if the two given atoms match according to the current assignment.
+	/// If they match the current assignment is update accordingly.
+	bool checkMatch(Atom *genericAtom, Atom *templateAtom, map_term_term& currentAssignment);
 
 	virtual ~AtomSearcher() {};
 
 protected:
-	/**
-	 *		The data-structure that the class have to search
-	 **/
+	///The basic data-structure that collects the atoms
 	AtomVector* table;
-
 };
 
 /**
- * @brief This class is a basic and simple implementation of IndexAtom (@see IndexAtom)
- * @details Searching for match is performed over the whole tables of facts and non facts with a linear scan.
+ * @brief This class is a basic implementation of AtomSearcher (@see AtomSearcher)
+ * @details Searching for match is performed over the base data-structure with a linear scan, since it is a vector.
  */
-class SimpleAtomSearcher: public AtomSearcher {
+class BaseAtomSearcher: public AtomSearcher {
 public:
-	SimpleAtomSearcher(AtomVector* table) : AtomSearcher(table), counter(0) {};
+	BaseAtomSearcher(AtomVector* table) : AtomSearcher(table), counter(0) {};
 
 	virtual unsigned int firstMatch(Atom* templateAtom, map_term_term& currentAssignment, bool& find,bool &undef);
 	virtual void nextMatch(unsigned int id, Atom* templateAtom, map_term_term& currentAssignment, bool& find,bool &undef);
 	virtual void findIfExist(Atom *templateAtom, bool& find, bool& isUndef);
 
+	virtual Atom* findAtom(Atom *atom);
 	virtual void add(Atom* atom){};
 	virtual void remove(Atom* atom){};
 	virtual void clear(){};
 
-	virtual Atom* getAtom(Atom *atom);
-
 	virtual void print(){for(auto atom:*table){atom->print();}}
 
-	virtual ~SimpleAtomSearcher() {for(auto pair:resultMap) delete pair.second;};
+	virtual ~BaseAtomSearcher() {for(auto pair:resultMap) delete pair.second;};
 
 protected:
-	///A map in which for each call to first match the current search iterator
+	/// This maps stores the calls to the firstMatch method.
+	/// Indeed, for each call it stores a pair with the counter and the iterator to the next matching atoms.
 	unordered_map<unsigned int, GeneralIterator*> resultMap;
-	///The counter used to assign the integer identifiers returned by the firstMach method
+	/// This is a counter used to identify the different calls to the firstMatch method.
 	unsigned int counter;
 
-	///This method given an AtomTable computes the matching facts and nofacts and returns the first one of those
-	/// currentMatch identifiers the starting point of search
-	bool computeFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom,map_term_term& currentAssignment);
-	///This method invokes findIfAFactExists method if all the variables are bound, otherwise invokes the computeFirstMatch method
-	bool searchForFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom,map_term_term& currentAssignment, bool& isUndef);
-
-	///This method calculate the starting point of search
-	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom);
+	/// This method invokes findIfAFactExists method if all the variables are bound,
+	/// otherwise invokes the computeFirstMatch method.
+	bool searchForFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term_term& currentAssignment, bool& isUndef);
+	/// This method given an iterator increases it in order to find matching atoms with the given atom
+	/// according to the current assignment.
+	bool computeFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term_term& currentAssignment);
+	/// This method computes an iterator pointing to the starting point of the search
+	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom){return new VectorIterator(table->begin(),table->end());}
 };
 
 /**
- * @brief This class is a more advanced implementation of SimpleAtomSearcher (@see SimpleAtomSearcher )
- * @details Searching for match is performed over a tables of facts and no facts indexed by a single term, namely the indexing term.
- * Instead of performing the search among the whole tables it is performed among the facts and the no facts, collectively the instances,
+ * @brief This class is a more advanced implementation of BaseAtomSearcher (@see BaseAtomSearcher )
+ * @details Searching for match is performed over unordered maps indexed by a single term, namely an indexing term.
+ * Instead of performing the search among the whole base vector, it is performed among the atoms,
  * that match for that term.
- * Here is used as data structure an unordered map whose keys represent the possible values of the indexing term,
- * that are mapped to unordered sets of instances in which that term appears with that value.
- * This implementation is sibling to the one with multimaps @see SingleTermIndexMultiMap,
+ * Here is used as searching data structure an unordered map whose keys represent the possible values of the indexing term,
+ * that are mapped to unordered sets of atoms in which that term appears with that value.
+ * Moreover is it possibly created one of this data-structure for each possible indexing term, so up the predicate arity,
+ * accordingly to the searching needs during grounding.
+ * This implementation is sibling to the one with multimaps @see SingleTermMultipleStrategiesAtomSearcherMultiMap,
  * since the two are implemented to be independent.
  */
-
-class SingleTermAtomSearcher: public SimpleAtomSearcher {
+class SingleTermMultipleStrategiesAtomSearcher: public BaseAtomSearcher {
 public:
-	SingleTermAtomSearcher(AtomVector* table, Predicate* p) : SimpleAtomSearcher(table), predicate(p) {
+	SingleTermMultipleStrategiesAtomSearcher(AtomVector* table, Predicate* p) : BaseAtomSearcher(table), predicate(p) {
 		for(unsigned int i=0;i<predicate->getArity();i++){
-			indexingTable.push_back(unordered_map<index_object,AtomTable>());
-			createdIndex.push_back(false);
+			searchingTables.push_back(unordered_map<index_object,AtomTable>());
+			createdSearchingTables.push_back(false);
 		}
-		indexSetByUser = Options::globalOptions()->getIndexingTerm(this->predicate->getName());
-		if(indexSetByUser>-1)
-			assert_msg((indexSetByUser>=0 && indexSetByUser<this->predicate->getArity()), "The specified index is not valid.");
-
+		indexingTermSetByUser = Options::globalOptions()->getIndexingTerm(this->predicate->getName());
+		if(indexingTermSetByUser>-1)
+			assert_msg((indexingTermSetByUser>=0 && indexingTermSetByUser<this->predicate->getArity()), "The specified index is not valid.");
 	};
 
+	virtual Atom* findAtom(Atom *atom);
 	virtual void add(Atom* atom);
 	virtual void remove(Atom* atom);
-	virtual void clear(){for(auto table:indexingTable) table.clear();};
+	virtual void clear(){for(auto table:searchingTables) table.clear();};
 
+	///This method chooses the best indexing term among the one allowed.
 	unsigned int selectBestIndex(const unordered_set<int>& possibleTableToSearch);
 
-	virtual Atom* getAtom(Atom *atom);
-
-	virtual ~SingleTermAtomSearcher() {};
-
 private:
-	///Data structure for indexed facts
-	vector<unordered_map<index_object,AtomTable>> indexingTable;
-	int indexSetByUser;
-	/// Boolean that is false the index table has not been created true otherwise
-	vector<bool> createdIndex;
-
-	/// The predicate of PredicateExtension associated
+	/// The predicate
 	Predicate* predicate;
+	///The indexing term set by user. It is -1 if not set.
+	int indexingTermSetByUser;
+	///A vector of chosen searching data structure for this kind of indexing strategies, one for each possible indexing term.
+	vector<unordered_map<index_object,AtomTable>> searchingTables;
+	/// A vector of boolean used in order to determine if the data-structure for a particular indexing terms has been created.
+	vector<bool> createdSearchingTables;
 
-	///This method fills in the indexing data structures
-	void initializeIndexMaps(unsigned int tableIndex);
+	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom);
 
-	/// This method carry out the indexing strategy, determining the indexing term with which is the actual term
-	/// corresponding to position given by the user or if no position is given it is used the first admissible term as indexing term.
-	/// Then filling the data structures invoking the initializeIndexMaps method.
+	///This method fills in the searching data structure for the given indexing term
+	void initializeIndexMaps(unsigned int indexingTerm);
+
+	/// This method determines the possible indexing terms for the given atoms.
+	/// Then invokes the selectBestIndex method to determine the best one among them.
+	/// If the data-structure for the best indexing term is not created, then it fills in
+	/// the data structures by means of initializeIndexMaps method.
 	int manageIndex(Atom* templateAtom);
-
-	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom);
 };
 
 /**
- * @brief This class is a more advanced implementation of IndexAtom (@see IndexAtom)
- * @details Searching for match is performed over a tables of facts and no facts indexed by a single term, namely the indexing term.
- * Instead of performing the search among the whole tables it is performed among the facts and the no facts, collectively the instances,
+ * @brief This class is a more advanced implementation of BaseAtomSearcher (@see BaseAtomSearcher )
+ * @details Searching for match is performed over unordered maps indexed by a single term, namely an indexing term.
+ * Instead of performing the search among the whole base vector, it is performed among the atoms,
  * that match for that term.
- * Here is used as data structure an unordered multimap of pairs composed by a possible value of the indexing term
- * and an instance in which that term appears with that value.
- * This implementation is sibling to the one with maps @see SingleTermIndexAtom,
+ * Here is used as searching data structure an unordered multimap whose keys represent the possible values of the indexing term,
+ * that are mapped to atoms in which that term appears with that value.
+ * Moreover is it possibly created one of this data-structure for each possible indexing term, so up the predicate arity,
+ * accordingly to the searching needs during grounding.
+ * This implementation is sibling to the one with maps @see SingleTermMultipleStrategiesAtomSearcher,
  * since the two are implemented to be independent.
  */
-class SingleTermAtomSearcherMultiMap: public SimpleAtomSearcher {
+class SingleTermMultipleStrategiesAtomSearcherMultiMap: public BaseAtomSearcher {
 public:
-	SingleTermAtomSearcherMultiMap(AtomVector* table, Predicate *p) : SimpleAtomSearcher(table), predicate(p) {
+	SingleTermMultipleStrategiesAtomSearcherMultiMap(AtomVector* table, Predicate *p) : BaseAtomSearcher(table), predicate(p) {
 		for(unsigned int i=0;i<predicate->getArity();i++){
-			tableIndexMap.push_back(Multimap_Atom());
-			createdIndex.push_back(false);
+			searchingTables.push_back(Multimap_Atom());
+			createdSearchingTables.push_back(false);
 		}
 		indexSetByUser = Options::globalOptions()->getIndexingTerm(this->predicate->getName());
 		if(indexSetByUser>-1)
 			assert_msg((indexSetByUser>=0 && indexSetByUser<this->predicate->getArity()), "The specified index is not valid.");
 	};
 
+	virtual Atom* findAtom(Atom *atom);
 	virtual void add(Atom* atom);
 	virtual void remove(Atom* atom);
-	virtual void clear(){for(auto table:tableIndexMap) tableIndexMap.clear();};
+	virtual void clear(){for(auto table:searchingTables) searchingTables.clear();};
 
+	///This method chooses the best indexing term among the one allowed.
 	unsigned int selectBestIndex(const unordered_set<int>& possibleTableToSearch);
 
-	virtual Atom* getAtom(Atom *atom);
-
-	~SingleTermAtomSearcherMultiMap(){};
-
 private:
-	///Data structure for indexed facts
-	vector<Multimap_Atom> tableIndexMap;
-
-	/// The predicate of PredicateExtension associated
+	/// The predicate
 	Predicate* predicate;
-	/// Pair of term position if the index and if the index can be used for the actual searching
+	/// The indexing term set by user. It is -1 if not set.
 	int indexSetByUser;
-	/// Boolean that is false the index table has not been created true otherwise
-	vector<bool> createdIndex;
+	/// A vector of chosen searching data structure for this kind of indexing strategies, one for each possible indexing term.
+	vector<Multimap_Atom> searchingTables;
+	/// A vector of boolean used in order to determine if the data-structure for a particular indexing terms has been created.
+	vector<bool> createdSearchingTables;
 
-	///This method fills in the indexing data structures
+ 	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom);
+
+ 	///This method fills in the indexing data structures
 	void initializeIndexMaps(unsigned int indexTable);
 
-
+	/// This method determines the possible indexing terms for the given atoms.
+	/// Then invokes the selectBestIndex method to determine the best one among them.
+	/// If the data-structure for the best indexing term is not created, then it fills in
+	/// the data structures by means of initializeIndexMaps method.
 	int manageIndex(Atom* templateAtom);
 
-	/// This method carry out the indexing strategy, determining the indexing term with which is the actual term
-	/// corresponding to position given by the user or if no position is given it is used the first admissible term as indexing term.
-	/// Then filling the data structures invoking the initializeIndexMaps method.
-	void createIndex(Atom* templateAtom,pair<bool, index_object>& termBoundIndex);
-
-	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom);
 };
 
 };
