@@ -63,13 +63,12 @@ bool BackTrackingGrounder::match() {
 
 bool BackTrackingGrounder::firstMatch(){
 	// for each table to search inizialize to no match
-	vector<pair<unsigned,int>> vec;
+	current_id_match.erase(index_current_atom);
+	current_id_match.insert({index_current_atom,vector<pair<unsigned,int>>()}).second;
 	for(unsigned i=0;i<predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom].size();i++){
-		vec.push_back({predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom][i],NO_MATCH});
+		current_id_match[index_current_atom].push_back({predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom][i],NO_MATCH});
 	}
 
-	current_id_match.erase(index_current_atom);
-	current_id_match.insert({index_current_atom,vec}).second;
 
 	// For each table to search call the first match until one table return find
 
