@@ -102,6 +102,35 @@ public:
 
 };
 
+/**
+ *  Calculate the hash with boost combine method
+ */
+class GringoHashVecInt : public HashVecInt{
+public:
+	inline size_t computeHash(const vector<index_object> & values){
+	    std::hash<index_object> hasher;
+	    size_t seed=31;
+		for(unsigned i=0;i<values.size();i++)
+			seed ^= hasher(values[i]) + 0x9e3779b9 + (seed<<6) + (seed>>2);
+		return seed;
+	}
+	inline size_t computeHashSize_T(const vector<size_t> & values){
+	    std::hash<index_object> hasher;
+	    size_t seed=31;
+		for(unsigned i=0;i<values.size();i++)
+			seed ^= hasher(values[i]) + 0x9e3779b9 + (seed<<6) + (seed>>2);
+		return seed;
+	}
+
+	inline size_t computeHashTerm(const vector<Term*> & values){
+	    std::hash<index_object> hasher;
+	    size_t seed=31;
+		for(unsigned i=0;i<values.size();i++)
+			seed ^= hasher(values[i]->getIndex()) + 0x9e3779b9 + (seed<<6) + (seed>>2);
+		return seed;
+	}
+
+};
 
 };
 

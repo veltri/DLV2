@@ -41,6 +41,7 @@ void InMemoryInputBuilder::onRule() {
 		Atom *fact=*currentRule->getBeginHead();
 		Predicate* predicate=fact->getPredicate();
 		Atom* genericAtom=new GenericAtom(fact->getTerms(),true);
+		delete fact;
 		if(!(instancesTable->getPredicateExt(predicate)->addGenericAtom(FACT,genericAtom,false)))
 			delete genericAtom;
 		else{
