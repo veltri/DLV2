@@ -228,11 +228,11 @@ bool BackTrackingGrounder::foundAssignment() {
 			ground_new_atom = true;
 			groundRule->addInHead(headGroundAtom);
 
-//			GenericAtom *genericGroundAtom=new GenericAtom;
-//			genericGroundAtom->setTerms(headGroundAtom->getTerms());
-//			genericGroundAtom->setFact(head_true);
-//			for(unsigned i=0;i<predicate_searchInsert_table[atom_counter].size();i++)
-//				predicateExt->addGenericAtom(predicate_searchInsert_table[atom_counter][i],genericGroundAtom,true);
+			GenericAtom *genericGroundAtom=new GenericAtom;
+			genericGroundAtom->setTerms(headGroundAtom->getTerms());
+			genericGroundAtom->setFact(head_true);
+			for(unsigned i=0;i<predicate_searchInsert_table[atom_counter].size();i++)
+				predicateExt->addGenericAtom(predicate_searchInsert_table[atom_counter][i],genericGroundAtom,true);
 		}else{
 
 			if(head_true)
