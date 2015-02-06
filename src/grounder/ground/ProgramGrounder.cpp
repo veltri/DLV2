@@ -18,7 +18,6 @@ namespace DLV2{
 namespace grounder{
 
 #define DEBUG 0
-#define DEBUG_TIME_RULE 0
 
 void ProgramGrounder::ground() {
 
@@ -50,7 +49,7 @@ void ProgramGrounder::ground() {
 		for (Rule* r : exitRules[component]){
 			inizializeSearchInsertPredicate(r);
 			groundRule(r);
-#if DEBUG_TIME_RULE == 1
+#ifdef DEBUG_RULE_TIME
 			Timer::getInstance()->print();
 #endif
 		}
@@ -222,7 +221,7 @@ bool ProgramGrounder::groundRule(Rule* rule) {
 //		}
 //		i++;
 //	}
-#if DEBUG_TIME_RULE == 1
+#ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("RULE");
 #endif
 
@@ -247,7 +246,7 @@ bool ProgramGrounder::groundRule(Rule* rule) {
 			finish=true;
 
 	}
-#if DEBUG_TIME_RULE == 1
+#ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->stop("RULE");
 #endif
 	return find_assignment;

@@ -8,7 +8,6 @@
 #include "BackTrackingGrounder.h"
 #include "../../util/Timer.h"
 
-#define DEBUG_TIME_RULE 0
 
 namespace DLV2 {
 namespace grounder {
@@ -18,14 +17,14 @@ namespace grounder {
 #define NO_MATCH -1
 
 void BackTrackingGrounder::generateTemplateAtom(){
-#if DEBUG_TIME_RULE == 1
+#ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("Generate Template");
 #endif
 
 	if(templateAtom!=nullptr) delete templateAtom;
 	templateAtom = (*current_atom_it)->ground(current_var_assign);
 
-#if DEBUG_TIME_RULE == 1
+#ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->stop("Generate Template");
 #endif
 }
@@ -39,9 +38,9 @@ void BackTrackingGrounder::printAssignment(){
 }
 
 bool BackTrackingGrounder::isGroundCurrentAtom(){
-#if DEBUG_TIME_RULE == 1
+#ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("Is Ground");
-	bool isGround = ((*current_atom_it)->isBuiltIn() || (*current_atom_it)->isNegative() || current_variables_atoms[index_current_atom].size()==0);;
+	bool isGround = ((*current_atom_it)->isBuiltIn() || (*current_atom_it)->isNegative() || current_variables_atoms[index_current_atom].size()==0);
 	Timer::getInstance()->stop("Is Ground");
 	return isGround;
 #endif
@@ -50,7 +49,7 @@ bool BackTrackingGrounder::isGroundCurrentAtom(){
 
 }
 bool BackTrackingGrounder::match() {
-#if DEBUG_TIME_RULE == 1
+#ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("Match");
 #endif
 
@@ -58,19 +57,19 @@ bool BackTrackingGrounder::match() {
 	if(index_current_atom + 1 >= currentRule->getSizeBody() && isGroundCurrentAtom()){
 		if(!lastMatch)
 			lastMatch = true;
-		else
-#if DEBUG_TIME_RULE == 1
-		{Timer::getInstance()->stop("Match");
-		 return false;}
+		else{
+#ifdef DEBUG_RULE_TIME
+		Timer::getInstance()->stop("Match");
 #endif
 			return false;
+		}
 
 	}else
 		lastMatch = false;
 
 
 	if(templateAtom->isBuiltIn() ){
-#if DEBUG_TIME_RULE == 1
+#ifdef DEBUG_RULE_TIME
 		bool evaluate=templateAtom -> evaluate(current_var_assign);
 		Timer::getInstance()->stop("Match");
 		return evaluate;
@@ -85,7 +84,7 @@ bool BackTrackingGrounder::match() {
 		}else{
 			match = nextMatch() == !templateAtom->isNegative();
 		}
-#if DEBUG_TIME_RULE == 1
+#ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("Match");
 #endif
 		return match;
@@ -162,23 +161,24 @@ bool BackTrackingGrounder::nextMatch(){
 }
 
 bool BackTrackingGrounder::next() {
-#if DEBUG_TIME_RULE == 1
+#ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->start("Next");
 #endif
 	// first next the check have to be jumped, because start with second atom else
 	if(start && currentRule->getSizeBody()>0){
 		start=false;generateTemplateAtom();
-#if DEBUG_TIME_RULE == 1
+#ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("Next");
 #endif
 		return true;
 	}
 
-	if( index_current_atom+1>=currentRule->getSizeBody())
-#if DEBUG_TIME_RULE == 1
-		{Timer::getInstance()->stop("Next");return false;}
+	if( index_current_atom+1>=currentRule->getSizeBody()){
+#ifdef DEBUG_RULE_TIME
+		Timer::getInstance()->stop("Next");return false;
 #endif
 		return false;
+	}
 
 
 	current_atom_it++;
@@ -186,14 +186,14 @@ bool BackTrackingGrounder::next() {
 
 
 	generateTemplateAtom();
-#if DEBUG_TIME_RULE == 1
+#ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("Next");
 #endif
 	return true;
 }
 
 bool BackTrackingGrounder::foundAssignment() {
-#if DEBUG_TIME_RULE == 1
+#ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->start("Body");
 #endif
 	Rule* groundRule=new Rule;
@@ -211,7 +211,7 @@ bool BackTrackingGrounder::foundAssignment() {
 		groundRule->addInBody(bodyGroundAtom);
 
 	}
-#if DEBUG_TIME_RULE == 1
+#ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("Body");
 		Timer::getInstance()->start("Head");
 #endif
@@ -222,7 +222,7 @@ bool BackTrackingGrounder::foundAssignment() {
 		Atom *headGroundAtom=(*atom)->ground(current_var_assign);
 
 		PredicateExtension* predicateExt=predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
-		Atom *searchAtom=nullptr;//predicateExt->getGenericAtom(headGroundAtom);
+		Atom *searchAtom=predicateExt->getGenericAtom(headGroundAtom);
 
 		if(searchAtom==nullptr){
 			ground_new_atom = true;
@@ -250,7 +250,7 @@ bool BackTrackingGrounder::foundAssignment() {
 
 	if(currentRule->getSizeBody() > 0)
 		removeBindValueInAssignment(current_variables_atoms[index_current_atom]);
-#if DEBUG_TIME_RULE == 1
+#ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("Head");
 #endif
 	return ground_new_atom;
@@ -263,7 +263,7 @@ bool BackTrackingGrounder::back() {
 	if (index_current_atom <=  0)
 		return false;
 
-#if DEBUG_TIME_RULE == 1
+#ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->start("Back");
 #endif
 
@@ -273,11 +273,12 @@ bool BackTrackingGrounder::back() {
 
 	while (isGroundCurrentAtom()){
 
-		if (index_current_atom <= 0)
-#if DEBUG_TIME_RULE == 1
-		{Timer::getInstance()->stop("Back");return false;}
+		if (index_current_atom <= 0){
+#ifdef DEBUG_RULE_TIME
+		Timer::getInstance()->stop("Back");return false;
 #endif
 			return false;
+		}
 
 		removeBindValueInAssignment(current_variables_atoms[index_current_atom]);
 
@@ -289,7 +290,7 @@ bool BackTrackingGrounder::back() {
 	removeBindValueInAssignment(current_variables_atoms[index_current_atom]);
 	generateTemplateAtom();
 
-#if DEBUG_TIME_RULE == 1
+#ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("Back");
 #endif
 
@@ -297,7 +298,7 @@ bool BackTrackingGrounder::back() {
 }
 
 void BackTrackingGrounder::inizialize(Rule* rule) {
-#if DEBUG_TIME_RULE == 1
+#ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->start("Init");
 #endif
 	currentRule=rule;
@@ -311,14 +312,14 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 	lastMatch=false;
 	atom_undef_inbody.reserve(rule->getSizeBody());
 	findBindVariablesRule();
-#if DEBUG_TIME_RULE == 1
+#ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("Init");
 #endif
 
 }
 
 void BackTrackingGrounder::findBindVariablesRule() {
-#if DEBUG_TIME_RULE == 1
+#ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->start("Find Bind");
 #endif
 
@@ -343,20 +344,20 @@ void BackTrackingGrounder::findBindVariablesRule() {
 
 	}
 
-#if DEBUG_TIME_RULE == 1
+#ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("Find Bind");
 #endif
 }
 
 void BackTrackingGrounder::removeBindValueInAssignment(const set_term& bind_variables) {
-#if DEBUG_TIME_RULE == 1
+#ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->start("Remove Assignment");
 #endif
 
 	for (auto variable : bind_variables)
 		current_var_assign.erase(variable);
 
-#if DEBUG_TIME_RULE == 1
+#ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("Remove Assignment");
 #endif
 
