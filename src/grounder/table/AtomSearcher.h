@@ -155,7 +155,7 @@ public:
 	virtual void remove(Atom* atom){};
 	virtual void clear(){};
 
-	virtual void print(){for(auto atom:*table){atom->print();}}
+	virtual void print(){for(auto atom:*table)atom->print();}
 
 	virtual ~BaseAtomSearcher() {for(auto pair:resultMap) delete pair.second;};
 
@@ -195,9 +195,12 @@ public:
 			searchingTables.push_back(unordered_map<index_object,AtomTable>());
 			createdSearchingTables.push_back(false);
 		}
-		indexingTermSetByUser = Options::globalOptions()->getIndexingTerm(this->predicate->getName());
+		indexingTermSetByUser = Options::globalOptions()->getPredicateIndexTerm(this->predicate->getName());
 		if(indexingTermSetByUser>-1)
-			assert_msg((indexingTermSetByUser>=0 && indexingTermSetByUser<this->predicate->getArity()), "The specified index is not valid.");
+			assert_msg((indexingTermSetByUser>=0 && unsigned(indexingTermSetByUser)<this->predicate->getArity()), "The specified index is not valid.");
+#ifdef NDEBUG
+		cout<<"Predicate: "<<predicate->getName()<<"  Index Term Set By User: "<<indexingTermSetByUser<<endl;
+#endif
 	};
 
 	virtual Atom* findAtom(Atom *atom);
@@ -249,9 +252,12 @@ public:
 			searchingTables.push_back(Multimap_Atom());
 			createdSearchingTables.push_back(false);
 		}
-		indexSetByUser = Options::globalOptions()->getIndexingTerm(this->predicate->getName());
-		if(indexSetByUser>-1)
-			assert_msg((indexSetByUser>=0 && indexSetByUser<this->predicate->getArity()), "The specified index is not valid.");
+		indexingTermSetByUser = Options::globalOptions()->getPredicateIndexTerm(this->predicate->getName());
+		if(indexingTermSetByUser>-1)
+			assert_msg((indexingTermSetByUser>=0 && unsigned(indexingTermSetByUser)<this->predicate->getArity()), "The specified index is not valid.");
+#ifdef NDEBUG
+		cout<<"Predicate: "<<predicate->getName()<<"  Index Term Set By User: "<<indexingTermSetByUser<<endl;
+#endif
 	};
 
 	virtual Atom* findAtom(Atom *atom);
@@ -266,7 +272,7 @@ private:
 	/// The predicate
 	Predicate* predicate;
 	/// The indexing term set by user. It is -1 if not set.
-	int indexSetByUser;
+	int indexingTermSetByUser;
 	/// A vector of chosen searching data structure for this kind of indexing strategies, one for each possible indexing term.
 	vector<Multimap_Atom> searchingTables;
 	/// A vector of boolean used in order to determine if the data-structure for a particular indexing terms has been created.

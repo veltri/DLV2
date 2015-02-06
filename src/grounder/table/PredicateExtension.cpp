@@ -18,8 +18,15 @@ void PredicateExtension::setAtomSearchers(){
 	// Properly set the IndexAtom type
 	while(atomSearchers.size()<tables.size()){
 		AtomSearcher* atomSearcher;
-		unsigned int indexType=Options::globalOptions()->getIndexType();
+		int indexType=Options::globalOptions()->getPredicateIndexType(predicate->getName());
+		if(indexType==-1)
+			indexType=Options::globalOptions()->getIndexType();
 		if(predicate->getArity()==0) indexType=DEFAULT;
+
+#ifdef NDEBUG
+		cout<<"Predicate: "<<predicate->getName()<<"  Index type: "<<indexType<<endl;
+#endif
+
 		switch (indexType) {
 		case (MAP):
 			atomSearcher = new SingleTermMultipleStrategiesAtomSearcher(tables[atomSearchers.size()],predicate);

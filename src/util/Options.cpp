@@ -58,7 +58,8 @@ namespace DLV2
 /* GROUNDER OPTIONS */
 #define OPTIONID_hashType ('z' + 33)
 #define OPTIONID_indexType ('z' + 34)
-#define OPTIONID_indexingPreferences ('z' + 35)
+#define OPTIONID_predIndexTerm ('z' + 35)
+#define OPTIONID_predIndexType ('z' + 36)
 
 
 };
@@ -99,7 +100,8 @@ Options::Options():
         outputPolicy(OUTPUT_ASPCORE2),
 		hashType(STL_HASH),
 		indexType(DEFAULT),
-		indexingPreferences("")
+		predicatesIndexTerm(""),
+		predicatesIndexType("")
 {
 
 }
@@ -114,7 +116,8 @@ Options::Options(
         outputPolicy(o.outputPolicy),
 		hashType(o.hashType),
 		indexType(o.indexType),
-		indexingPreferences(o.indexingPreferences)
+		predicatesIndexTerm(o.predicatesIndexTerm),
+		predicatesIndexType(o.predicatesIndexTerm)
 {
 
 }
@@ -157,7 +160,8 @@ Options::init(
 
 		{"hashtype",required_argument, NULL, OPTIONID_hashType },
 		{"indextype",required_argument,NULL,OPTIONID_indexType},
-		{"indexstrategy",required_argument,NULL, OPTIONID_indexingPreferences},
+		{"predindexterm",required_argument, NULL, OPTIONID_predIndexTerm},
+		{"predindextype",required_argument, NULL, OPTIONID_predIndexType},
 
         // Required at end of array. 
         { NULL, 0, NULL, 0 }
@@ -246,10 +250,15 @@ Options::init(
                 assert_msg((indexType>=DEFAULT && indexType<=MULTIMAP),"Index type not supported");
                 break;
 
-            case OPTIONID_indexingPreferences:
-                indexingPreferences.append(optarg);
+            case OPTIONID_predIndexTerm:
+                predicatesIndexTerm.append(optarg);
+                this->splitOption(predicatesIndexTerm, predicatesIndexTermMap);
                 break;
 
+            case OPTIONID_predIndexType:
+				predicatesIndexType.append(optarg);
+				this->splitOption(predicatesIndexType, predicatesIndexTypeMap);
+				break;
 
             default:
                 ErrorMessage::errorGeneric( "This option is not supported." );
@@ -264,26 +273,33 @@ Options::init(
     }
 }
 
-void Options::setIndexingStrategies(){
-
+void Options::splitOption(const std::string& string, std::unordered_map<std::string, unsigned int>& map){
 	// Split the string indexingPreferences and
 	// fill in the map with the indexing strategies for the specified
-
-	if(indexingPreferences.compare("")!=0){
-		stringstream stream(indexingPreferences);
-		string segment;
+	if(string.compare("")!=0){
+		std::stringstream stream(string);
+		std::string segment="";
 		while(getline(stream, segment, ','))
 		{
-			vector<string> pair_pred_term;
+			std::vector<std::string> pair_pred_term;
 			boost::split(pair_pred_term, segment, boost::is_any_of("="));
-			indexingMap.insert({pair_pred_term[0],boost::lexical_cast<unsigned int>(pair_pred_term[1])});
+			map.insert({pair_pred_term[0],boost::lexical_cast<unsigned int>(pair_pred_term[1])});
 		}
 	}
-
 }
 
-int Options::getIndexingTerm(const string& predicate){
-	if(indexingMap.count(predicate))
-		return indexingMap[predicate];
+int Options::getPredicateIndexTerm(const string& predicate){
+	if(predicatesIndexTermMap.count(predicate))
+		return predicatesIndexTermMap[predicate];
 	return -1;
 }
+
+int Options::getPredicateIndexType(const string& predicate){
+	if(predicatesIndexTypeMap.count(predicate)){
+		unsigned type=predicatesIndexTypeMap[predicate];
+		assert_msg((type>=DEFAULT && type<=MULTIMAP),"Index type not supported");
+		return type;
+	}
+	return -1;
+}
+
