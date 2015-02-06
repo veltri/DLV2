@@ -166,28 +166,27 @@ bool BackTrackingGrounder::foundAssignment() {
 	unsigned atom_counter=0;
 	for(auto atom=currentRule->getBeginHead();atom!=currentRule->getEndHead();atom++,atom_counter++){
 		Atom *headGroundAtom=(*atom)->ground(current_var_assign);
-		groundRule->addInHead(headGroundAtom);
 
-//		PredicateExtension* predicateExt=predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
-//		Atom *searchAtom=predicateExt->getGenericAtom(headGroundAtom);
-//
-//		if(searchAtom==nullptr){
-//			ground_new_atom = true;
-//			groundRule->addInHead(headGroundAtom);
-//
-//			GenericAtom *genericGroundAtom=new GenericAtom;
-//			genericGroundAtom->setTerms(headGroundAtom->getTerms());
-//			genericGroundAtom->setFact(head_true);
-//			for(unsigned i=0;i<predicate_searchInsert_table[atom_counter].size();i++)
-//				predicateExt->addGenericAtom(predicate_searchInsert_table[atom_counter][i],genericGroundAtom,true);
-//		}else{
-//
-//			if(head_true)
-//				searchAtom->setFact(true);
-//
-//			groundRule->addInHead(headGroundAtom);
-//
-//		}
+		PredicateExtension* predicateExt=predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
+		Atom *searchAtom=predicateExt->getGenericAtom(headGroundAtom);
+
+		if(searchAtom==nullptr){
+			ground_new_atom = true;
+			groundRule->addInHead(headGroundAtom);
+
+			GenericAtom *genericGroundAtom=new GenericAtom;
+			genericGroundAtom->setTerms(headGroundAtom->getTerms());
+			genericGroundAtom->setFact(head_true);
+			for(unsigned i=0;i<predicate_searchInsert_table[atom_counter].size();i++)
+				predicateExt->addGenericAtom(predicate_searchInsert_table[atom_counter][i],genericGroundAtom,true);
+		}else{
+
+			if(head_true)
+				searchAtom->setFact(true);
+
+			groundRule->addInHead(headGroundAtom);
+
+		}
 
 	}
 

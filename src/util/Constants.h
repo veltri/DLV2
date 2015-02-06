@@ -90,7 +90,6 @@ namespace grounder{
 
 	typedef unsigned index_object;
 
-
 };
 
 };

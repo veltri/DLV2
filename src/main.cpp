@@ -4,8 +4,10 @@
 
 #include "depgraph/LabeledDependencyGraph.h"
 #include "depgraph/DepGraphOnlyPositiveEdgesStrategy.h"
+#include "grounder/hash/Hashable.h"
 
 using namespace std;
+
 
 int main(int argc, char** argv)
 {  

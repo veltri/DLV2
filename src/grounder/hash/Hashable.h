@@ -30,6 +30,8 @@ public:
 	virtual size_t hash()=0;
 };
 
+
+
 class Indexable{
 public:
 	Indexable():index(0){};
@@ -42,6 +44,7 @@ public:
 protected:
 	index_object index;
 };
+
 
 template<typename T>
 struct IndexForTable{

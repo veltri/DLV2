@@ -58,10 +58,10 @@ bool ClassicalLiteral::operator==(const Atom& a) {
 	return true;
 }
 
-Atom* ClassicalLiteral::substitute(map_term_term& substritutionTerm){
+Atom* ClassicalLiteral::substitute(map_term_term& substitutionTerm){
 	vector<Term*> terms_substitute(terms.size());
 	for(unsigned int i=0;i<terms.size();i++){
-		terms_substitute[i]=terms[i]->substitute(substritutionTerm) ;
+		terms_substitute[i]=terms[i]->substitute(substitutionTerm) ;
 	}
 	return new ClassicalLiteral(predicate,terms_substitute,hasMinus,negative);
 };

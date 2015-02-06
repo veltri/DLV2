@@ -45,9 +45,9 @@ public:
 
 	virtual void getVariable(set_term& variables){if(!isAnonymous)variables.insert(this);};
 	virtual size_t hash(){	return HashString::getHashStringFromConfig()->computeHash(name);};
-	virtual Term* substitute(map_term_term& substritutionTerm){
-		auto find_it=substritutionTerm.find(this);
-		if(find_it!=substritutionTerm.end())
+	virtual Term* substitute(map_term_term& substitutionTerm){
+		auto find_it=substitutionTerm.find(this);
+		if(find_it!=substitutionTerm.end())
 			return (*find_it).second;
 		return this;
 	};
