@@ -37,7 +37,7 @@ public:
 	void stop(string label){
 		clock_t clock_end=clock();
 		clock_t clock_start=map_clock[label];
-		double time_elapsed=( clock_end - clock_start ) / (double) CLOCKS_PER_SEC;
+		clock_t time_elapsed= clock_end - clock_start ;
 
 		auto it=map_elapse_time.find(label);
 		if(it==map_elapse_time.end())
@@ -52,7 +52,12 @@ public:
 	void print(){
 		cout<<"TIME:"<<endl;
 		for(auto& time_pair:map_elapse_time)
-			cout<<time_pair.first<<" "<<time_pair.second<<endl;
+			cout<<time_pair.first<<" "<<(time_pair.second/ (double) CLOCKS_PER_SEC)<<endl;
+	}
+
+	void clear(){
+		map_clock.clear();
+		map_elapse_time.clear();
 	}
 
 	static Timer* getInstance(){
@@ -69,7 +74,7 @@ private:
 
 
 	unordered_map<string,clock_t> map_clock;
-	unordered_map<string,double> map_elapse_time;
+	unordered_map<string,clock_t> map_elapse_time;
 
 };
 
