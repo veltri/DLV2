@@ -44,10 +44,11 @@ void InMemoryInputBuilder::onRule() {
 		delete fact;
 		if(!(instancesTable->getPredicateExt(predicate)->addGenericAtom(FACT,genericAtom,false)))
 			delete genericAtom;
-		else{
-			ClassicalLiteral::print(predicate,genericAtom->getTerms(),false,false);cout<<"."<<endl;
-		}
-
+		else
+			if(!Options::globalOptions()->isNofacts()){
+				ClassicalLiteral::print(predicate,genericAtom->getTerms(),false,false);
+				cout<<"."<<endl;
+			}
 		currentRule->clear();
 	}else{
 		set_predicate pred_head=currentRule->getPredicateInHead();

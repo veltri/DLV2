@@ -87,6 +87,10 @@ namespace DLV2
 
     	int getPredicateIndexType(const std::string& predicate);
 
+        bool isNofacts() const {return nofacts;}
+
+        void setNofacts(bool nofacts) {this->nofacts = nofacts;}
+
         ~Options() { /*if (instance != NULL) delete instance;*/ }
 
     private:
@@ -142,6 +146,8 @@ namespace DLV2
 
     	///The map containing the mapping between a predicate and the kind of index to be used
     	std::unordered_map<std::string, unsigned int> predicatesIndexTypeMap;
+
+    	bool nofacts;
     };
     
 };

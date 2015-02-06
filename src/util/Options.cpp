@@ -60,6 +60,7 @@ namespace DLV2
 #define OPTIONID_indexType ('z' + 34)
 #define OPTIONID_predIndexTerm ('z' + 35)
 #define OPTIONID_predIndexType ('z' + 36)
+#define OPTIONID_nofacts ('z' + 37)
 
 
 };
@@ -101,7 +102,8 @@ Options::Options():
 		hashType(STL_HASH),
 		indexType(DEFAULT),
 		predicatesIndexTerm(""),
-		predicatesIndexType("")
+		predicatesIndexType(""),
+		nofacts(false)
 {
 
 }
@@ -117,7 +119,8 @@ Options::Options(
 		hashType(o.hashType),
 		indexType(o.indexType),
 		predicatesIndexTerm(o.predicatesIndexTerm),
-		predicatesIndexType(o.predicatesIndexTerm)
+		predicatesIndexType(o.predicatesIndexTerm),
+		nofacts(o.nofacts)
 {
 
 }
@@ -162,6 +165,7 @@ Options::init(
 		{"indextype",required_argument,NULL,OPTIONID_indexType},
 		{"predindexterm",required_argument, NULL, OPTIONID_predIndexTerm},
 		{"predindextype",required_argument, NULL, OPTIONID_predIndexType},
+		{"nofacts",no_argument, NULL, OPTIONID_nofacts},
 
         // Required at end of array. 
         { NULL, 0, NULL, 0 }
@@ -258,6 +262,10 @@ Options::init(
             case OPTIONID_predIndexType:
 				predicatesIndexType.append(optarg);
 				this->splitOption(predicatesIndexType, predicatesIndexTypeMap);
+				break;
+
+            case OPTIONID_nofacts:
+            	nofacts=true;
 				break;
 
             default:
