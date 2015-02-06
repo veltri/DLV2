@@ -75,11 +75,17 @@ namespace DLV2
 
     	void setHashType(unsigned hashType) {this->hashType = hashType;}
 
-    	const std::string getIndexingPreferences() const {return indexingPreferences;}
+    	const std::string& getPredicatesIndexTerm() const {return predicatesIndexTerm;}
 
-    	void setIndexingPreferences(const std::string indexingPreferences) {this->indexingPreferences = indexingPreferences; this->setIndexingStrategies();}
+		void setPredicateIndexTerm(const std::string& predIndexTerm) {this->predicatesIndexTerm = predIndexTerm; this->splitOption(predicatesIndexTerm, predicatesIndexTermMap);}
 
-    	int getIndexingTerm(const std::string& predicate);
+    	const std::string& getPredicatesIndexType() const {return predicatesIndexType;}
+
+		void setPredicateIndexType(const std::string& predIndexType) {this->predicatesIndexType = predIndexType; this->splitOption(predicatesIndexType, predicatesIndexTypeMap);}
+
+    	int getPredicateIndexTerm(const std::string& predicate);
+
+    	int getPredicateIndexType(const std::string& predicate);
 
         ~Options() { /*if (instance != NULL) delete instance;*/ }
 
@@ -99,7 +105,7 @@ namespace DLV2
 
         void setAspCore2Strict(bool strict) { aspCore2Strict = strict;	}
 
-    	void setIndexingStrategies();
+    	void splitOption(const std::string& string, std::unordered_map<std::string, unsigned int>& map);
 
         std::vector< const char* > inputFiles;
 
@@ -127,10 +133,15 @@ namespace DLV2
 
         unsigned indexType;
 
-    	std::string indexingPreferences;
+    	std::string predicatesIndexTerm;
+
+    	std::string predicatesIndexType;
 
     	///The map containing the mapping between a predicate and the position of its indexing term
-    	std::unordered_map<std::string, unsigned int> indexingMap;
+    	std::unordered_map<std::string, unsigned int> predicatesIndexTermMap;
+
+    	///The map containing the mapping between a predicate and the kind of index to be used
+    	std::unordered_map<std::string, unsigned int> predicatesIndexTypeMap;
     };
     
 };

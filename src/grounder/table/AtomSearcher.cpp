@@ -93,7 +93,7 @@ Atom* BaseAtomSearcher::findAtom(Atom *atom){
 	return nullptr;
 }
 
-void BaseAtomSearcher::findIfExist(Atom *templateAtom,bool& find, bool& isUndef) {
+void BaseAtomSearcher::findIfExist(Atom *templateAtom, bool& find, bool& isUndef) {
 	Atom* genericAtom=findAtom(templateAtom);
 	if(genericAtom!=nullptr){
 		isUndef=!genericAtom->isFact();
@@ -185,6 +185,9 @@ GeneralIterator* SingleTermMultipleStrategiesAtomSearcher::computeGenericIterato
 }
 
 void SingleTermMultipleStrategiesAtomSearcher::initializeIndexMaps(unsigned int indexingTerm){
+#ifdef NDEBUG
+	cout<<"Predicate: "<<predicate->getName()<<" Created Index on term: "<<indexingTerm<<endl;
+#endif
 	createdSearchingTables[indexingTerm]=true;
 	unordered_set<index_object> termToBeIndexedIndices;
 	for (Atom* a : *table) {
@@ -255,8 +258,8 @@ Atom* SingleTermMultipleStrategiesAtomSearcherMultiMap::findAtom(Atom *atom){
 }
 
 unsigned int SingleTermMultipleStrategiesAtomSearcherMultiMap::selectBestIndex(const unordered_set<int>& possibleTableToSearch){
-	if(indexSetByUser>-1 && createdSearchingTables[indexSetByUser] && possibleTableToSearch.count(indexSetByUser))
-		return indexSetByUser;
+	if(indexingTermSetByUser>-1 && createdSearchingTables[indexingTermSetByUser] && possibleTableToSearch.count(indexingTermSetByUser))
+		return indexingTermSetByUser;
 
 	for(unsigned int i=0;i<createdSearchingTables.size();i++)
 		if(possibleTableToSearch.count(i))
@@ -282,6 +285,9 @@ GeneralIterator* SingleTermMultipleStrategiesAtomSearcherMultiMap::computeGeneri
 }
 
 void SingleTermMultipleStrategiesAtomSearcherMultiMap::initializeIndexMaps(unsigned int indexingTerm){
+#ifdef NDEBUG
+	cout<<"Predicate: "<<predicate->getName()<<" Created Index on term: "<<indexingTerm<<endl;
+#endif
 	createdSearchingTables[indexingTerm]=true;
 	for (Atom* a : *table) {
 		index_object termIndex=a->getTerm(indexingTerm)->getIndex();
