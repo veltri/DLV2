@@ -62,9 +62,9 @@ public:
 
 	size_t hash(){
 		vector<size_t> hash_vec(2);
-		hash_vec[0]=HashString::getHashStringFromConfig()->computeHash(name);
+		hash_vec[0]=HashString::getHashString()->computeHash(name);
 		hash_vec[1]=arity;
-		return HashVecInt::getHashVecIntFromConfig()->computeHashSize_T(hash_vec);
+		return HashVecInt::getHashVecInt()->computeHashSize_T(hash_vec);
 	}
 
 

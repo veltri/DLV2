@@ -19,7 +19,7 @@ namespace grounder{
 
 
 size_t ClassicalLiteral::hash(){
-	return HashVecInt::getHashVecIntFromConfig()->computeHashTerm(terms);
+	return HashVecInt::getHashVecInt()->computeHashTerm(terms);
 }
 
 

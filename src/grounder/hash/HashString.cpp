@@ -107,7 +107,7 @@ size_t MurMurHashString::computeHash(string& s) {
 	return h;
 }
 
-HashString* HashString::getHashStringFromConfig() {
+HashString* HashString::getHashString() {
 
 	if(hashString==nullptr){
 		switch (Options::globalOptions()->getHashType()) {

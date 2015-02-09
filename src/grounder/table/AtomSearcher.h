@@ -27,7 +27,7 @@ namespace grounder{
  **/
 struct AtomTableComparator{
 	inline size_t operator()(Atom* atom) const{
-		return HashVecInt::getHashVecIntFromConfig()->computeHashTerm(atom->getTerms());
+		return HashVecInt::getHashVecInt()->computeHashTerm(atom->getTerms());
 	}
 
 	inline bool operator()(Atom* atom1, Atom* atom2) const{

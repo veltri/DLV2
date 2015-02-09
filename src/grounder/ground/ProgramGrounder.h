@@ -86,6 +86,7 @@ protected:
 	StatementDependency* statementDependency;
 	///A pointer to the terms table
 	TermTable* termsMap;
+
 //	///The set of grounder rules
 //	GroundedRules groundedRule;
 //	/// Manage the output and simplification

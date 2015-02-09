@@ -53,7 +53,7 @@ struct GroundAtom{
 	/// @brief Hash function for ground atoms
 	/// @details The hash in computed using the terms
 	inline size_t getHash() const{
-		return predicate->getIndex()+negative+HashVecInt::getHashVecIntFromConfig()->computeHashTerm(atom->getTerms());
+		return predicate->getIndex()+negative+HashVecInt::getHashVecInt()->computeHashTerm(atom->getTerms());
 	}
 
 };

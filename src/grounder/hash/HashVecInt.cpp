@@ -14,7 +14,7 @@ namespace grounder{
 
 HashVecInt *HashVecInt::hashInt;
 
-HashVecInt* HashVecInt::getHashVecIntFromConfig() {
+HashVecInt* HashVecInt::getHashVecInt() {
 	if (hashInt == nullptr){
 		if(Options::globalOptions()->getHashType()==JAVA_HASH)
 			hashInt = new JavaHashVecInt;

@@ -29,7 +29,7 @@ struct hashRule {
 
 	/// The hash of a ground rule is made combining the hash of the ground atoms in the rule
 	size_t operator()(GroundRule* rule) const {
-	  HashVecInt *hash=HashVecInt::getHashVecIntFromConfig();
+	  HashVecInt *hash=HashVecInt::getHashVecInt();
 	  vector<size_t> atomHash;
 	  for(auto it=rule->getBeginHead();it!=rule->getEndHead();it++){
 		  atomHash.push_back((*it)->getHash());
@@ -45,7 +45,7 @@ struct hashRule {
 
 	/// The hash of a ground atom
 	inline size_t operator()(GroundAtom* atom) const {
-	  return atom->predicate->getIndex()+HashVecInt::getHashVecIntFromConfig()->computeHashTerm(atom->atom->getTerms());
+	  return atom->predicate->getIndex()+HashVecInt::getHashVecInt()->computeHashTerm(atom->atom->getTerms());
 	}
 
 	inline bool operator()( GroundAtom* a1,  GroundAtom* a2)const{

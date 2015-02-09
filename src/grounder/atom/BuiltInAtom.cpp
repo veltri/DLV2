@@ -53,7 +53,7 @@ bool BuiltInAtom::evaluate(map_term_term& substitutionTerm){
 }
 
 size_t BuiltInAtom::hash(){
-	return HashVecInt::getHashVecIntFromConfig()->computeHashTerm(terms);
+	return HashVecInt::getHashVecInt()->computeHashTerm(terms);
 }
 
 bool BuiltInAtom::operator==(const Atom& a) {

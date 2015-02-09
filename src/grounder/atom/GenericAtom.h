@@ -30,7 +30,7 @@ public:
 	}
 
 	size_t hash(){
-		return HashVecInt::getHashVecIntFromConfig()->computeHashTerm(terms);
+		return HashVecInt::getHashVecInt()->computeHashTerm(terms);
 	}
 
 	bool isFact() const { return fact; }

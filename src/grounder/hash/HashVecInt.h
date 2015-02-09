@@ -9,7 +9,7 @@
 #define HASHVECINT_H_
 
 #include <vector>
-
+#include <iostream>
 #include <boost/functional/hash.hpp>
 
 #include "../../util/Constants.h"
@@ -29,6 +29,7 @@ namespace grounder{
 class HashVecInt {
 public:
 	HashVecInt(){};
+
 	/// Calculate the hash of a vector of index_object
 	virtual size_t computeHash(const vector<index_object>& values)=0;
 	/// Calculate the hash of a vector of size_t
@@ -36,10 +37,10 @@ public:
 	/// Calculate the hash of a vector of size_t
 	virtual size_t computeHashTerm(const vector<Term*>& values)=0 ;
 
-
-	virtual ~HashVecInt(){delete hashInt;};
+	static void freeInstance(){ if(hashInt!=0) delete hashInt;}
+	virtual ~HashVecInt(){}
 	/// Return an HashVecInt according the configuration
-	static HashVecInt* getHashVecIntFromConfig();
+	static HashVecInt* getHashVecInt();
 private:
 	static HashVecInt *hashInt;
 };

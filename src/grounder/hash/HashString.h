@@ -9,6 +9,7 @@
 #define HASHSTRING_H_
 
 #include <string>
+#include <iostream>
 #include <functional>
 #include <stdlib.h>
 #include <ctime>
@@ -27,12 +28,13 @@ namespace grounder{
 class HashString {
 public:
 	HashString(){};
-	virtual ~HashString(){delete hashString;}
+	virtual ~HashString(){}
 	///Compute the hash of a string
 	virtual size_t computeHash(string& s) = 0;
 
+	static void freeInstance(){ if(hashString!=0) delete hashString;}
 	/// Return an hashString according the configuration
-	static HashString* getHashStringFromConfig();
+	static HashString* getHashString();
 private:
 	static HashString *hashString;
 };

@@ -17,11 +17,11 @@ namespace grounder{
 
 size_t FunctionTerm::hash() {
 	vector<size_t> hashVec(terms.size()+1);
-	hashVec[0]=HashString::getHashStringFromConfig()->computeHash(name);
+	hashVec[0]=HashString::getHashString()->computeHash(name);
 	for(unsigned int i=0;i<terms.size();i++)
 		hashVec[i+1]=terms[i]->getIndex();
 
-	return HashVecInt::getHashVecIntFromConfig()->computeHashSize_T(hashVec);
+	return HashVecInt::getHashVecInt()->computeHashSize_T(hashVec);
 
 }
 

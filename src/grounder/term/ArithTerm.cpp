@@ -46,7 +46,7 @@ size_t ArithTerm::hash() {
 		hashVec[i*2+1]=operators[i];
 		hashVec[i*2+2]=terms[i+1]->getIndex();
 	}
-	return HashVecInt::getHashVecIntFromConfig()->computeHashSize_T(hashVec);
+	return HashVecInt::getHashVecInt()->computeHashSize_T(hashVec);
 }
 
 void ArithTerm::print() {

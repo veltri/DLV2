@@ -218,11 +218,12 @@ bool BackTrackingGrounder::foundAssignment() {
 	head_true=head_true && groundRule->getSizeBody() <=0;
 	bool ground_new_atom=false;
 	unsigned atom_counter=0;
+	Atom *searchAtom=0;
 	for(auto atom=currentRule->getBeginHead();atom!=currentRule->getEndHead();atom++,atom_counter++){
 		Atom *headGroundAtom=(*atom)->ground(current_var_assign);
 
 		PredicateExtension* predicateExt=predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
-		Atom *searchAtom=predicateExt->getGenericAtom(headGroundAtom);
+		searchAtom=predicateExt->getGenericAtom(headGroundAtom);
 
 		if(searchAtom==nullptr){
 			ground_new_atom = true;
@@ -244,7 +245,7 @@ bool BackTrackingGrounder::foundAssignment() {
 
 	}
 
-	if(!(groundRule->getSizeBody()==0 && groundRule->getSizeHead()==0))
+	if(!(groundRule->getSizeBody()==0 && groundRule->getSizeHead()==0) && !(groundRule->getSizeHead()==1 && searchAtom!=nullptr))
 		groundRule->print();
 	delete groundRule;
 
