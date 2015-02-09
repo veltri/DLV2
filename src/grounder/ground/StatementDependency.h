@@ -190,7 +190,7 @@ public:
 	///Printer method
 	void print();
 
-	virtual ~StatementDependency(){for(Rule* r:rules)delete r;for(Rule* r:constraints)delete r;};
+	virtual ~StatementDependency() { for(Rule* r:rules) delete r; for(Rule* r:constraints) delete r; }
 
 	static StatementDependency* getInstance();
 

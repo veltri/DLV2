@@ -25,7 +25,7 @@ namespace grounder{
 
 
 
-class Rule : public Indexable{
+class Rule : public Indexable {
 public:
 	///Default constructor
 	Rule():Indexable(){};
@@ -86,7 +86,7 @@ public:
 	bool operator==(const Rule & r);
 
 	///Destructor
-	~Rule();
+	~Rule(){for(auto atom:head) delete atom; for(auto atom:body) delete atom;}
 
 private:
 

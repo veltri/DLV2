@@ -322,7 +322,6 @@ void InMemoryInputBuilder::createRule(vector<Atom*>* head, vector<Atom*>* body) 
 	Rule* rule=new Rule;
 	if(head!=0) rule->setHead(*head);
 	if(body!=0)rule->setBody(*body);
-	rule->print();
 	statementDependency->addRuleMapping(rule);
 }
 

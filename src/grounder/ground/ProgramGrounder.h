@@ -23,10 +23,10 @@ namespace DLV2{
 
 namespace grounder{
 
-/* Table of Predicate Extensione:
+/* Table of Predicate Extension:
  * 		FACT: Table of fact
  * 		NOFACT: Table of atom derived
- * 		DELTA, NEXTDELTA: Ausiliary table for grounding recursive rule
+ * 		DELTA, NEXTDELTA: Auxiliary table for grounding recursive rule
 */
 #define FACT 0
 #define NOFACT 1

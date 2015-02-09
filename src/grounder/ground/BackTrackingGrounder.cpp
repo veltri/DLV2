@@ -140,7 +140,7 @@ bool BackTrackingGrounder::nextMatch(){
 		unsigned tableToSearch = current_id_match[index_current_atom].back().first;
 		int current_id = current_id_match[index_current_atom].back().second;
 		AtomSearcher *searcher=predicateExtTable->getPredicateExt(templateAtom->getPredicate())->getAtomSearcher(tableToSearch);
-		bool undef;
+		bool undef = false;
 
 		if(current_id != NO_MATCH)
 			searcher->nextMatch(current_id,templateAtom,current_var_assign,find,undef);
@@ -232,7 +232,7 @@ bool BackTrackingGrounder::foundAssignment() {
 			genericGroundAtom->setTerms(headGroundAtom->getTerms());
 			genericGroundAtom->setFact(head_true);
 			for(unsigned i=0;i<predicate_searchInsert_table[atom_counter].size();i++)
-				predicateExt->addGenericAtom(predicate_searchInsert_table[atom_counter][i],genericGroundAtom,true);
+				predicateExt->addGenericAtom(predicate_searchInsert_table[atom_counter][i],genericGroundAtom,false);
 		}else{
 
 			if(head_true)

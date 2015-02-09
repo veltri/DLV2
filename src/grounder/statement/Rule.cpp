@@ -85,11 +85,6 @@ bool Rule::operator ==(const Rule& r) {
 
 }
 
-Rule::~Rule() {
-	for(auto atom:head)delete atom;
-	for(auto atom:body)delete atom;
-}
-
 };
 
 };

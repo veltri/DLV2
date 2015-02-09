@@ -28,12 +28,11 @@ namespace grounder{
 class PredicateExtension {
 public:
 	///Constructors
-	PredicateExtension(Predicate* predicate, unsigned tableNumber): predicate(predicate){
+	PredicateExtension(Predicate* predicate, unsigned tableNumber = 2): predicate(predicate){
 		for(unsigned i=0;i<tableNumber;i++)
 			tables.push_back(new AtomVector());
 		setAtomSearchers();
 	}
-	PredicateExtension(Predicate* predicate): PredicateExtension(predicate,2){};
 
 	///Getter for the predicate
 	Predicate* getPredicate() const {return predicate;}
@@ -139,7 +138,7 @@ public:
 	void print(unsigned table) {for (auto& i : predicateExtTable)i.second->print(table);};
 
 	///Destructor
-	~PredicateExtTable(){for(auto pair_predExt:predicateExtTable)delete pair_predExt.second;};
+	~PredicateExtTable(){for(auto pair_predExt:predicateExtTable) delete pair_predExt.second;};
 
 	static PredicateExtTable* getInstance(){
 		if(predicateExtTable_== nullptr)

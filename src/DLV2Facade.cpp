@@ -200,6 +200,7 @@ DLV2Facade::solve()
 
     	DLV2::grounder::ProgramGrounder *grounder= new DLV2::grounder::BackTrackingGrounder();
     	grounder->ground();
+    	delete grounder;
 
     }
 
