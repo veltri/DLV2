@@ -245,7 +245,7 @@ bool BackTrackingGrounder::foundAssignment() {
 
 	}
 
-	if(!(groundRule->getSizeBody()==0 && groundRule->getSizeHead()==0) && !(groundRule->getSizeHead()==1 && searchAtom!=nullptr))
+	if(!(groundRule->getSizeBody()==0 && groundRule->getSizeHead()==0) && !(head_true && searchAtom!=nullptr))
 		groundRule->print();
 	delete groundRule;
 
