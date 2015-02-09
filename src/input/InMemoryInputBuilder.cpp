@@ -39,28 +39,36 @@ void InMemoryInputBuilder::onDirective(char* directiveName,
 void InMemoryInputBuilder::onRule() {
 	if(currentRule->isAFact()){
 		Atom *fact=*currentRule->getBeginHead();
-		Predicate* predicate=fact->getPredicate();
-		Atom* genericAtom=new GenericAtom(fact->getTerms(),true);
-		delete fact;
-		if(!(instancesTable->getPredicateExt(predicate)->addGenericAtom(FACT,genericAtom,false)))
-			delete genericAtom;
+		if(fact->containsRangeTerms()){
+			vector<Atom*> atomExpanded;
+			expandRangeAtom(fact,atomExpanded);
+			for (auto atom : atomExpanded)
+				createFact(atom);
+		}
 		else
-			if(!Options::globalOptions()->isNofacts()){
-				ClassicalLiteral::print(predicate,genericAtom->getTerms(),false,false);
-				cout<<"."<<endl;
-			}
-		currentRule->clear();
+			createFact(fact);
 	}else{
 		set_predicate pred_head=currentRule->getPredicateInHead();
 		for(auto p:pred_head)p->setIdb();
-		statementDependency->addRuleMapping(currentRule);
-		currentRule= new Rule;
+		vector<vector<Atom*>> headExpanded; expandRulePart(currentRule->getBeginHead(),currentRule->getEndHead(), headExpanded);
+		vector<vector<Atom*>> bodyExpanded;
+		if(currentRule->getSizeBody()>0) expandRulePart(currentRule->getBeginBody(),currentRule->getEndBody(), bodyExpanded);
+		for(auto head: headExpanded){
+			if(bodyExpanded.size()>0)
+				for(auto body: bodyExpanded) createRule(&head,&body);
+			else
+				createRule(&head);
+		}
 	}
+	currentRule->clear();
 }
 
 void InMemoryInputBuilder::onConstraint() {
-	statementDependency->addRuleMapping(currentRule);
-	currentRule= new Rule;
+	vector<vector<Atom*>> bodyExpanded;
+	expandRulePart(currentRule->getBeginBody(),currentRule->getEndBody(), bodyExpanded);
+	for(auto body: bodyExpanded)
+		createRule(0,&body);
+	currentRule->clear();
 }
 
 void InMemoryInputBuilder::onWeakConstraint() {
@@ -99,10 +107,10 @@ void InMemoryInputBuilder::onExistentialAtom() {
 
 void InMemoryInputBuilder::onPredicateName(char* name) {
 	string name_predicate(name);
-	Predicate *predicate=new Predicate(name_predicate,terms_parsered.size());
+	Predicate *predicate = new Predicate(name_predicate,terms_parsered.size());
 	predicateTable->getInstance()->insertPredicate(predicate);
 	instancesTable->addPredicateExt(predicate);
-	currentAtom =new ClassicalLiteral(predicate,terms_parsered,false,false);
+	currentAtom = new ClassicalLiteral(predicate,terms_parsered,false,false);
 	terms_parsered.clear();
 }
 
@@ -218,9 +226,15 @@ void InMemoryInputBuilder::onTermDash() {
 }
 
 void InMemoryInputBuilder::onTermParams() {
+
 }
 
 void InMemoryInputBuilder::onTermRange(char* lowerBound, char* upperBound) {
+	if(isNumeric(lowerBound,10) && isNumeric(upperBound,10)){
+		Term* rangeTerm=new RangeTerm(atoi(lowerBound),atoi(upperBound));
+		terms_parsered.push_back(rangeTerm);
+	}
+//	else Error
 }
 
 void InMemoryInputBuilder::onArithmeticOperation(char arithOperator) {
@@ -302,6 +316,94 @@ void InMemoryInputBuilder::onAggregateElement() {
 }
 
 void InMemoryInputBuilder::onAggregate(bool naf) {
+}
+
+void InMemoryInputBuilder::createRule(vector<Atom*>* head, vector<Atom*>* body) {
+	Rule* rule=new Rule;
+	if(head!=0) rule->setHead(*head);
+	if(body!=0)rule->setBody(*body);
+	rule->print();
+	statementDependency->addRuleMapping(rule);
+}
+
+void InMemoryInputBuilder::createFact(Atom* fact) {
+	Predicate* predicate = fact->getPredicate();
+	Atom* genericAtom = new GenericAtom(fact->getTerms(), true);
+	delete fact;
+	if (!(instancesTable->getPredicateExt(predicate)->addGenericAtom(FACT, genericAtom)))
+		delete genericAtom;
+	else
+		if (!Options::globalOptions()->isNofacts()) {
+			ClassicalLiteral::print(predicate, genericAtom->getTerms(), false, false);
+			cout << "." << endl;
+		}
+}
+
+void InMemoryInputBuilder::expandTermsRecursive(Atom* atom, vector<Term*>& currentTerms, vector<Atom*>& atomExpanded,unsigned currentPosition){
+	if(currentPosition<atom->getTermsSize()-1){
+		currentPosition++;
+		expandTerms(atom,currentTerms,atomExpanded,currentPosition);
+		currentTerms.pop_back();
+	}
+	else{
+		ClassicalLiteral* newAtom = new ClassicalLiteral(atom->getPredicate(),atom->isHasMinus(),atom->isNegative());
+		newAtom->setTerms(currentTerms);
+		atomExpanded.push_back(newAtom);
+		currentTerms.pop_back();
+	}
+}
+
+void InMemoryInputBuilder::expandTerms(Atom* atom, vector<Term*>& currentTerms, vector<Atom*>& atomExpanded, unsigned currentPosition){
+	Term* t=atom->getTerm(currentPosition);
+	if(!t->isRange()){
+		currentTerms.push_back(t);
+		expandTermsRecursive(atom,currentTerms,atomExpanded,currentPosition);
+		return;
+	}
+	RangeTerm* rt=dynamic_cast<RangeTerm*>(t);
+	for(int i=rt->getLowerBound();i<=rt->getUpperBound();i++){
+		Term* t = new NumericConstantTerm(rt->isNegative(),i);
+		termTable->addTerm(t);
+		currentTerms.push_back(t);
+		expandTermsRecursive(atom,currentTerms,atomExpanded,currentPosition);
+	}
+}
+
+void InMemoryInputBuilder::expandRangeAtom(Atom* atom, vector<Atom*>& atomExpanded) {
+	vector<Term*> currentTerms;
+	expandTerms(atom, currentTerms, atomExpanded, 0);
+	for (auto t : atom->getTerms())
+		if(t->isRange())
+			delete t;
+	delete atom;
+}
+
+void InMemoryInputBuilder::expandAtoms(const vector<vector<Atom*>>& atoms, vector<Atom*>& currentAtoms, vector<vector<Atom*>>& atomsExpanded, unsigned currentPosition){
+	for(auto it=atoms[currentPosition].begin();it!=atoms[currentPosition].end();it++){
+		currentAtoms.push_back(*it);
+		if(currentPosition<atoms.size()-1){
+			currentPosition++;
+			expandAtoms(atoms,currentAtoms,atomsExpanded,currentPosition);
+			currentPosition--;
+		}
+		else
+			atomsExpanded.push_back(currentAtoms);
+		currentAtoms.pop_back();
+	}
+}
+
+void InMemoryInputBuilder::expandRulePart(vector<Atom*>::const_iterator start, vector<Atom*>::const_iterator end, vector<vector<Atom*> >& atomsExpanded) {
+	vector<vector<Atom*>> atoms;
+	for (auto it = start; it != end; it++) {
+		vector<Atom*> atomExpanded;
+		if((*it)->containsRangeTerms())
+			expandRangeAtom(*it,atomExpanded);
+		else
+			atomExpanded.push_back(*it);
+		atoms.push_back(atomExpanded);
+	}
+	vector<Atom*> currentAtoms;
+	expandAtoms(atoms,currentAtoms,atomsExpanded,0);
 }
 
 } /* namespace grounder */

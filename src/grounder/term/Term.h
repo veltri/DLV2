@@ -58,6 +58,7 @@ public:
 	/// Return the string used to hash the term
 	virtual size_t hash(){return 0;};
 
+	virtual bool isRange() const {return false;}
 
 	///Return the negation of the term
 	bool isNegative(){return negative;};

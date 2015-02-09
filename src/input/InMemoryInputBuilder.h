@@ -21,6 +21,7 @@
 #include "../grounder/term/FunctionTerm.h"
 #include "../grounder/ground/StatementDependency.h"
 #include "../grounder/table/PredicateExtension.h"
+#include "../grounder/term/RangeTerm.h"
 
 using namespace std;
 
@@ -99,7 +100,15 @@ private:
 
 	Binop currentBinop;
 
+ 	void createRule(vector<Atom*>* head, vector<Atom*>* body=0);
+	void createFact(Atom* fact);
 
+	void expandTermsRecursive(Atom* atom, vector<Term*>& currentTerms, vector<Atom*>& atomExpanded, unsigned currentPosition);
+	void expandTerms(Atom* atom, vector<Term*>& currentTerms, vector<Atom*>& atomExpanded, unsigned currentPosition);
+
+	void expandAtoms(const vector<vector<Atom*>>& atoms, vector<Atom*>& currentAtoms, vector<vector<Atom*>>& atomsExpanded, unsigned currentPosition);
+	void expandRulePart(vector<Atom*>::const_iterator start, vector<Atom*>::const_iterator end, vector<vector<Atom*> >& atomsExpanded);
+	void expandRangeAtom(Atom* fact, vector<Atom*>& atomExpanded);
 };
 
 } /* namespace grounder */

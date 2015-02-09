@@ -74,6 +74,12 @@ public:
 		return true;
 	}
 
+	/// Return true if contains a range term
+	virtual bool containsRangeTerms(){
+		for(auto term:terms)
+			if(term->isRange())return true;
+		return false;
+	};
 
 	/// Return true if contains an anonymus term
 	virtual bool containsAnonymous(){

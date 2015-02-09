@@ -51,7 +51,7 @@ public:
 	}
 
 	///Add generic atom in specified table
-	bool addGenericAtom(unsigned table, Atom* genericAtom, bool search){
+	bool addGenericAtom(unsigned table, Atom* genericAtom, bool search = false){
 		assert_msg(table<tables.size(),"The specified table doesn't exist.");
 		if(search && (atomSearchers[table]->findAtom(genericAtom))!=nullptr)
 			return false;

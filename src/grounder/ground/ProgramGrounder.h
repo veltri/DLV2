@@ -115,15 +115,15 @@ protected:
 
 
 	/// Inizialization of grounding rule r
-	virtual void inizialize(Rule* rule){};
+	virtual void inizialize(Rule* rule) = 0;
 	/// Return true if exist a match with the current atom and current assignment
-	virtual bool match(){};
+	virtual bool match() = 0;
 	/// Next atom in the rule, if is last return false else true
-	virtual bool next(){};
+	virtual bool next() = 0;
 	/// Found an assignment for the rule, return true if is grounded new knowledge
-	virtual bool foundAssignment(){};
+	virtual bool foundAssignment() = 0;
 	/// Previous atom in the rule, if not exist return false
-	virtual bool back(){};
+	virtual bool back() = 0;
 
 
 

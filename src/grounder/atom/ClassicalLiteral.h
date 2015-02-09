@@ -32,6 +32,8 @@ public:
 	 */
 	ClassicalLiteral(Predicate* predicate, vector<Term*> &terms, bool hasMinus, bool negative): Atom(terms), predicate(predicate), hasMinus(hasMinus), negative(negative) {};
 
+	ClassicalLiteral(Predicate* predicate, bool hasMinus, bool negative): Atom(), predicate(predicate), hasMinus(hasMinus), negative(negative) {};
+
 	/** Getter method for the predicate
 	 */
 	Predicate* getPredicate() const {return predicate;};
