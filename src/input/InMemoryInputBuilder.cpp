@@ -47,28 +47,41 @@ void InMemoryInputBuilder::onRule() {
 		}
 		else
 			createFact(fact);
+		currentRule->clear();
 	}else{
 		set_predicate pred_head=currentRule->getPredicateInHead();
 		for(auto p:pred_head)p->setIdb();
-		vector<vector<Atom*>> headExpanded; expandRulePart(currentRule->getBeginHead(),currentRule->getEndHead(), headExpanded);
-		vector<vector<Atom*>> bodyExpanded;
-		if(currentRule->getSizeBody()>0) expandRulePart(currentRule->getBeginBody(),currentRule->getEndBody(), bodyExpanded);
-		for(auto head: headExpanded){
-			if(bodyExpanded.size()>0)
-				for(auto body: bodyExpanded) createRule(&head,&body);
-			else
-				createRule(&head);
+		if(currentRule->containsRangeAtoms()){
+			vector<vector<Atom*>> headExpanded; expandRulePart(currentRule->getBeginHead(),currentRule->getEndHead(), headExpanded);
+			vector<vector<Atom*>> bodyExpanded;
+			if(currentRule->getSizeBody()>0) expandRulePart(currentRule->getBeginBody(),currentRule->getEndBody(), bodyExpanded);
+			for(auto head: headExpanded){
+				if(bodyExpanded.size()>0)
+					for(auto body: bodyExpanded) createRule(&head,&body);
+				else
+					createRule(&head);
+			}
+			currentRule->clear();
+		}
+		else{
+			statementDependency->addRuleMapping(currentRule);
+			currentRule = new Rule;
 		}
 	}
-	currentRule->clear();
 }
 
 void InMemoryInputBuilder::onConstraint() {
-	vector<vector<Atom*>> bodyExpanded;
-	expandRulePart(currentRule->getBeginBody(),currentRule->getEndBody(), bodyExpanded);
-	for(auto body: bodyExpanded)
-		createRule(0,&body);
-	currentRule->clear();
+	if(currentRule->containsRangeAtoms()){
+		vector<vector<Atom*>> bodyExpanded;
+		expandRulePart(currentRule->getBeginBody(),currentRule->getEndBody(), bodyExpanded);
+		for(auto body: bodyExpanded)
+			createRule(0,&body);
+		currentRule->clear();
+	}
+	else{
+		statementDependency->addRuleMapping(currentRule);
+		currentRule = new Rule;
+	}
 }
 
 void InMemoryInputBuilder::onWeakConstraint() {
@@ -379,7 +392,8 @@ void InMemoryInputBuilder::expandRangeAtom(Atom* atom, vector<Atom*>& atomExpand
 
 void InMemoryInputBuilder::expandAtoms(const vector<vector<Atom*>>& atoms, vector<Atom*>& currentAtoms, vector<vector<Atom*>>& atomsExpanded, unsigned currentPosition){
 	for(auto it=atoms[currentPosition].begin();it!=atoms[currentPosition].end();it++){
-		currentAtoms.push_back(*it);
+		Atom* atom = (*it)->clone();
+		currentAtoms.push_back(atom);
 		if(currentPosition<atoms.size()-1){
 			currentPosition++;
 			expandAtoms(atoms,currentAtoms,atomsExpanded,currentPosition);
@@ -403,6 +417,9 @@ void InMemoryInputBuilder::expandRulePart(vector<Atom*>::const_iterator start, v
 	}
 	vector<Atom*> currentAtoms;
 	expandAtoms(atoms,currentAtoms,atomsExpanded,0);
+	for(auto vectorAtom:atoms)
+		for(auto atom: vectorAtom)
+			delete atom;
 }
 
 } /* namespace grounder */

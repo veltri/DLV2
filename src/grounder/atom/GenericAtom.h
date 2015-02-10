@@ -20,6 +20,8 @@ public:
 	GenericAtom(vector<Term*>& terms, bool isFact): Atom(terms), fact(isFact){};
 	GenericAtom(Atom* atom, bool fact): Atom(atom->getTerms()), fact(fact) { };
 
+	Atom* clone() {Atom* atom=new GenericAtom(this,this->fact); return atom;}
+
 	bool operator==(const Atom& genericAtom) {
 		if(terms.size()!=genericAtom.getTermsSize())
 			return false;

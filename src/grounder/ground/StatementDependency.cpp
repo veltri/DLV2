@@ -553,7 +553,6 @@ void StatementDependency::addRuleMapping(Rule* r) {
 		rules.push_back(r);
 		r->setIndex(rules.size()-1);
 		depGraph.addInDependency(r);
-
 	}
 }
 

@@ -44,6 +44,12 @@ public:
 	///This method returns true if it is a fact
 	bool isAFact(){return body.empty() && head.size()==1;}
 
+	bool containsRangeAtoms(){
+		for(auto atom:head) if(atom->containsRangeTerms()) return true;
+		for(auto atom:body) if(atom->containsRangeTerms()) return true;
+		return false;
+	}
+
 	///This method adds an atom in the head
 	void addInHead(Atom* a){head.push_back(a);};
 	///This method adds an atom in the body
@@ -86,7 +92,12 @@ public:
 	bool operator==(const Rule & r);
 
 	///Destructor
-	~Rule(){for(auto atom:head) delete atom; for(auto atom:body) delete atom;}
+	~Rule(){
+		for(auto atom:head)
+			delete atom;
+		for(auto atom:body)
+			delete atom;
+	}
 
 private:
 

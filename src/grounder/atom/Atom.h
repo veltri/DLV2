@@ -60,9 +60,10 @@ public:
 	 */
 	Atom(bool negative) {this->setNegative(negative);};
 
+	virtual Atom* clone() = 0;
+
 	///Equal-to operator for atoms
 	virtual bool operator==(const Atom& a)=0;
-
 
 	///Return the term of variable present in the Atom
 	virtual set_term getVariable();

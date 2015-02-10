@@ -81,7 +81,6 @@ public:
 
     void newTerm(char*);
 
-
 private:
 
     TermTable *termTable;

@@ -34,7 +34,13 @@ public:
 
 	ClassicalLiteral(Predicate* predicate, bool hasMinus, bool negative): Atom(), predicate(predicate), hasMinus(hasMinus), negative(negative) {};
 
-	/** Getter method for the predicate
+	Atom* clone() {
+		Atom* atom = new ClassicalLiteral(this->predicate,this->hasMinus,this->negative);
+		atom->setTerms(this->terms);
+		return atom;
+	};
+
+	/** Getter method for the predicat
 	 */
 	Predicate* getPredicate() const {return predicate;};
 	///Setter method for the predicate
