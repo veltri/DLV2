@@ -35,9 +35,9 @@ protected:
 	/// Remove the variable in the current assignment wich are in bind_variables
 	virtual void removeBindValueInAssignment(const set_term& bind_variables);
 	/// Call the first match with the current atom
-	virtual bool firstMatch();
+	inline virtual bool firstMatch();
 	/// Call the next match with the current atom
-	virtual bool nextMatch();
+	inline virtual bool nextMatch();
 	/// Return true if is ground the current atom
 	virtual bool isGroundCurrentAtom();
 
@@ -51,6 +51,9 @@ protected:
 	/// Current id of first match for grounding rule
 	/// map of id of the atom and vector of pair : table to search and id of firstMatch (if is NOMATCH call first else next)
 	unordered_map<unsigned,vector<pair<unsigned,int>>> current_id_match;
+	/// Map of id of the atom and table of current searching (iterator of vector in current_id_match)
+	unordered_map<unsigned,unsigned> current_id_match_iterator;
+
 	/// Current variables for each atom for grounding rule
 	vector<set_term> current_variables_atoms;
 	/// Current rule
@@ -61,6 +64,10 @@ protected:
 	unsigned index_current_atom;
 	//vector index atom and if is undefined
 	vector<bool> atom_undef_inbody;
+	//vector of bool if the atom is ground
+	vector<bool> is_ground_atom;
+
+
 
 	/// Current templateAtom
 	Atom * templateAtom;
@@ -71,6 +78,9 @@ protected:
 
 	///Find the bind variable on rule
 	void findBindVariablesRule();
+
+	//find the table to search for each atom in the body
+	void findSearchTable();
 };
 
 } /* namespace grounder */

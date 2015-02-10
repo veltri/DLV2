@@ -8,10 +8,13 @@
 #include "../../util/Options.h"
 #include "../../util/Assert.h"
 #include "AtomSearcher.h"
+#include "../../util/Timer.h"
+#include <boost/lexical_cast.hpp>
 
 namespace DLV2{
 
 namespace grounder{
+
 
 /******************************************************* ATOM SEARCHER ***************************************************/
 
@@ -106,6 +109,9 @@ void BaseAtomSearcher::findIfExist(Atom *templateAtom, bool& find, bool& isUndef
 /****************************************************** SINGLE TERM ATOM SEARCH ***************************************************/
 
 void SingleTermMultipleStrategiesAtomSearcher::add(Atom* atom) {
+#ifdef DEBUG_RULE_TIME
+	Timer::getInstance()->start("Add index "+predicate->getName());
+#endif
 	for (unsigned int i = 0; i < predicate->getArity(); ++i) {
 		if(createdSearchingTables[i]){
 			index_object termIndex=atom->getTerm(i)->getIndex();
@@ -118,6 +124,9 @@ void SingleTermMultipleStrategiesAtomSearcher::add(Atom* atom) {
 			}
 		}
 	}
+#ifdef DEBUG_RULE_TIME
+	Timer::getInstance()->stop("Add index "+predicate->getName());
+#endif
 }
 
 void SingleTermMultipleStrategiesAtomSearcher::remove(Atom* atom) {
@@ -131,6 +140,9 @@ void SingleTermMultipleStrategiesAtomSearcher::remove(Atom* atom) {
 }
 
 Atom* SingleTermMultipleStrategiesAtomSearcher::findAtom(Atom *atom){
+#ifdef DEBUG_RULE_TIME
+	Timer::getInstance()->start("Find "+predicate->getName());
+#endif
 	int tableToSearch=manageIndex(atom);
 	assert_msg(tableToSearch>-1, "Invalid index");
 
@@ -138,6 +150,9 @@ Atom* SingleTermMultipleStrategiesAtomSearcher::findAtom(Atom *atom){
 	AtomTable* matchingTable=&searchingTables[tableToSearch][term];
 
 	auto atomFound_it=matchingTable->find(atom);
+#ifdef DEBUG_RULE_TIME
+	Timer::getInstance()->stop("Find "+predicate->getName());
+#endif
 	if(atomFound_it!=matchingTable->end())
 		return *atomFound_it;
 	return nullptr;
@@ -169,6 +184,9 @@ int SingleTermMultipleStrategiesAtomSearcher::manageIndex(Atom* templateAtom) {
 }
 
 GeneralIterator* SingleTermMultipleStrategiesAtomSearcher::computeGenericIterator(Atom* templateAtom) {
+#ifdef DEBUG_RULE_TIME
+	Timer::getInstance()->start("Compute iterator "+predicate->getName());
+#endif
 	int indexingTerm=manageIndex(templateAtom);
 	GeneralIterator* currentMatch;
 
@@ -181,12 +199,18 @@ GeneralIterator* SingleTermMultipleStrategiesAtomSearcher::computeGenericIterato
 	}
 	else
 		currentMatch=new VectorIterator(table->begin(), table->end());
+#ifdef DEBUG_RULE_TIME
+	Timer::getInstance()->stop("Compute iterator "+predicate->getName());
+#endif
 	return currentMatch;
 }
 
 void SingleTermMultipleStrategiesAtomSearcher::initializeIndexMaps(unsigned int indexingTerm){
 #ifdef NDEBUG
 	cout<<"Predicate: "<<predicate->getName()<<" Created Index on term: "<<indexingTerm<<endl;
+#endif
+#ifdef DEBUG_RULE_TIME
+	Timer::getInstance()->start("Create index "+predicate->getName()+" index "+boost::lexical_cast<string>(indexingTerm));
 #endif
 	createdSearchingTables[indexingTerm]=true;
 	unordered_set<index_object> termToBeIndexedIndices;
@@ -201,17 +225,26 @@ void SingleTermMultipleStrategiesAtomSearcher::initializeIndexMaps(unsigned int 
 			searchingTables[indexingTerm][termIndex].insert(a);
 		}
 	}
+#ifdef DEBUG_RULE_TIME
+	Timer::getInstance()->stop("Create index "+predicate->getName()+" index "+boost::lexical_cast<string>(indexingTerm));
+#endif
 }
 
 /****************************************************** SINGLE TERM MULTI MAP ATOM SEARCH ***************************************************/
 
 void SingleTermMultipleStrategiesAtomSearcherMultiMap::add(Atom* atom) {
+#ifdef DEBUG_RULE_TIME
+	Timer::getInstance()->start("Add index "+predicate->getName());
+#endif
 	for (unsigned int i = 0; i < predicate->getArity(); ++i) {
 		if(createdSearchingTables[i]){
 			index_object termIndex=atom->getTerm(i)->getIndex();
 			searchingTables[i].insert({termIndex,atom});
 		}
 	}
+#ifdef DEBUG_RULE_TIME
+	Timer::getInstance()->stop("Add index "+predicate->getName());
+#endif
 }
 
 void SingleTermMultipleStrategiesAtomSearcherMultiMap::remove(Atom* atom) {
@@ -244,6 +277,9 @@ int SingleTermMultipleStrategiesAtomSearcherMultiMap::manageIndex(Atom* template
 }
 
 Atom* SingleTermMultipleStrategiesAtomSearcherMultiMap::findAtom(Atom *atom){
+#ifdef DEBUG_RULE_TIME
+	Timer::getInstance()->start("Find "+predicate->getName());
+#endif
 	int indexingTerm=manageIndex(atom);
 	assert_msg(indexingTerm>-1, "Invalid index");
 
@@ -254,6 +290,9 @@ Atom* SingleTermMultipleStrategiesAtomSearcherMultiMap::findAtom(Atom *atom){
 		if(comparator(it->second,atom))
 			return it->second;
 	}
+#ifdef DEBUG_RULE_TIME
+	Timer::getInstance()->stop("Find "+predicate->getName());
+#endif
 	return nullptr;
 }
 
@@ -269,6 +308,9 @@ unsigned int SingleTermMultipleStrategiesAtomSearcherMultiMap::selectBestIndex(c
 
 
 GeneralIterator* SingleTermMultipleStrategiesAtomSearcherMultiMap::computeGenericIterator(Atom* templateAtom) {
+#ifdef DEBUG_RULE_TIME
+	Timer::getInstance()->start("Compute iterator "+predicate->getName());
+#endif
 	int indexingTerm=manageIndex(templateAtom);
 	GeneralIterator* currentMatch;
 
@@ -288,11 +330,17 @@ void SingleTermMultipleStrategiesAtomSearcherMultiMap::initializeIndexMaps(unsig
 #ifdef NDEBUG
 	cout<<"Predicate: "<<predicate->getName()<<" Created Index on term: "<<indexingTerm<<endl;
 #endif
+#ifdef DEBUG_RULE_TIME
+	Timer::getInstance()->start("Compute iterator "+predicate->getName());
+#endif
 	createdSearchingTables[indexingTerm]=true;
 	for (Atom* a : *table) {
 		index_object termIndex=a->getTerm(indexingTerm)->getIndex();
 		searchingTables[indexingTerm].insert({termIndex,a});
 	}
+#ifdef DEBUG_RULE_TIME
+	Timer::getInstance()->stop("Compute iterator "+predicate->getName());
+#endif
 }
 
 };
