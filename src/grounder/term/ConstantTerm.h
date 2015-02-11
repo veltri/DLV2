@@ -41,7 +41,6 @@ public:
 		return this;
 	};
 
-	virtual bool match(Term* termToMatch,map_term_term& varAssignment);
 
 };
 

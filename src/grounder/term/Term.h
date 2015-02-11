@@ -106,10 +106,7 @@ public:
 	virtual Term* substitute(map_term_term& substritutionTerm){return nullptr;};
 	/// Print with the cout the term
 	virtual void print(){};
-	/// Match a function with given id of term, compare the constant term and put in binds
-	/// a value of the variable term present in termToMatch
-	/// Return true if constant term are equal, else false
-	virtual bool match(Term* termToMatch,map_term_term& varAssignment){return false;};
+
 	virtual ~Term(){};
 protected:
 	/*

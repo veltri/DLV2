@@ -69,10 +69,7 @@ public:
 	virtual Term* substitute(map_term_term& substritutionTerm);
 	/// Return the name of the function concatenated with '*' and the id of the composites term
 	virtual size_t hash();
-	/// Match a function with given id of term, compare the constant term and put in binds
-	/// a value of the variable term present in termToMatch
-	/// Return true if constant term are equal, else false
-	virtual bool match(Term* termToMatch,map_term_term& varAssignment);
+
 	virtual void print();
 private:
 	/**

@@ -253,7 +253,7 @@ bool BackTrackingGrounder::foundAssignment() {
 			genericGroundAtom->setTerms(headGroundAtom->getTerms());
 			genericGroundAtom->setFact(head_true);
 			for(unsigned i=0;i<predicate_searchInsert_table[atom_counter].size();i++)
-				predicateExt->addGenericAtom(predicate_searchInsert_table[atom_counter][i],genericGroundAtom,false);
+				predicateExt->addGenericAtom(predicate_searchInsert_table[atom_counter][i],genericGroundAtom);
 		}else{
 
 			if(head_true)

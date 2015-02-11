@@ -130,6 +130,11 @@ public:
 	/// This method checks if the two given atoms match according to the current assignment.
 	/// If they match the current assignment is update accordingly.
 	bool checkMatch(Atom *genericAtom, Atom *templateAtom, map_term_term& currentAssignment);
+	/// Match a function with given id of term, compare the constant term and put in binds
+	/// a value of the variable term present in termToMatch
+	/// Return true if constant term are equal, else false
+	bool matchTerm(Term *genericTerm, Term *termToMatch, map_term_term& varAssignment);
+
 
 	virtual ~AtomSearcher() {};
 

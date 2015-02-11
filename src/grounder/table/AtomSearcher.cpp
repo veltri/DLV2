@@ -23,15 +23,53 @@ bool AtomSearcher::checkMatch(Atom *genericAtom, Atom *templateAtom, map_term_te
 	map_term_term assignInTerm(currentAssignment);
 
 	for(unsigned int i=0;i<genericAtom->getTermsSize();i++)
-			if(!genericAtom->getTerm(i)->match(templateAtom->getTerm(i),assignInTerm))
+			if(!matchTerm(genericAtom->getTerm(i),templateAtom->getTerm(i),currentAssignment))
 				return false;
 
-	for(auto assignment:assignInTerm)
-		if(!currentAssignment.count(assignment.first))
-			currentAssignment.insert(assignment);
+	currentAssignment.insert(assignInTerm.begin(),assignInTerm.end());
+
 	return true;
 
 }
+
+bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, map_term_term& varAssignment){
+
+	if (termToMatch->getType()==TermType::VARIABLE) {
+		auto find_it=varAssignment.find(termToMatch);
+		if(find_it!=varAssignment.end()){
+		if( (*find_it).second->getIndex() == genericTerm->getIndex())
+			return true;
+		else
+			return false;
+		}
+		varAssignment.insert( { termToMatch, genericTerm });
+		return true;
+	}
+
+
+	if((genericTerm->getType()==TermType::NUMERIC_CONSTANT || genericTerm->getType()==TermType::STRING_CONSTANT )){
+
+		if (termToMatch->getType()==TermType::ANONYMOUS) return true;
+		if ((termToMatch->getType()==TermType::NUMERIC_CONSTANT || termToMatch->getType()==TermType::STRING_CONSTANT ) && termToMatch->getIndex() == genericTerm->getIndex()) return true;
+
+	}else if(genericTerm->getType()==TermType::FUNCTION){
+		if(termToMatch->getType()==TermType::ANONYMOUS) return true;
+		if(termToMatch->getType()!=TermType::FUNCTION) return false;
+		if(termToMatch->getName().compare(genericTerm->getName()) != 0)return false;
+		if(termToMatch->getTermsSize() != genericTerm->getTermsSize())return false;
+		map_term_term assignInTerm(varAssignment);
+		for(unsigned int i=0;i<genericTerm->getTermsSize();i++)
+			if(!matchTerm(genericTerm->getTerm(i),termToMatch->getTerm(i),assignInTerm))
+				return false;
+
+		varAssignment.insert(assignInTerm.begin(),assignInTerm.end());
+		return true;
+	}
+	return false;
+
+}
+
+
 
 /****************************************************** BASE ATOM SEARCHER ***************************************************/
 

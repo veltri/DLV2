@@ -69,6 +69,7 @@ public:
 	///Get an generic atom searching in all table
 	Atom* getGenericAtom(Atom* genericAtom){
 		for(unsigned i=0;i<atomSearchers.size();i++){
+			if(tables[i]->size()==0)continue;
 			Atom* atomFound=atomSearchers[i]->findAtom(genericAtom);
 			if(atomFound!=nullptr){
 				return atomFound;
