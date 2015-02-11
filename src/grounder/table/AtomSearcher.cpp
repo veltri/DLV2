@@ -23,7 +23,7 @@ bool AtomSearcher::checkMatch(Atom *genericAtom, Atom *templateAtom, map_term_te
 	map_term_term assignInTerm(currentAssignment);
 
 	for(unsigned int i=0;i<genericAtom->getTermsSize();i++)
-			if(!matchTerm(genericAtom->getTerm(i),templateAtom->getTerm(i),currentAssignment))
+			if(!matchTerm(genericAtom->getTerm(i),templateAtom->getTerm(i),assignInTerm))
 				return false;
 
 	currentAssignment.insert(assignInTerm.begin(),assignInTerm.end());
@@ -39,8 +39,9 @@ bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, map_term_term
 		if(find_it!=varAssignment.end()){
 		if( (*find_it).second->getIndex() == genericTerm->getIndex())
 			return true;
-		else
+		else{
 			return false;
+		}
 		}
 		varAssignment.insert( { termToMatch, genericTerm });
 		return true;
@@ -65,6 +66,7 @@ bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, map_term_term
 		varAssignment.insert(assignInTerm.begin(),assignInTerm.end());
 		return true;
 	}
+
 	return false;
 
 }
