@@ -114,13 +114,12 @@ void SingleTermMultipleStrategiesAtomSearcher::add(Atom* atom) {
 #endif
 	for (unsigned int i = 0; i < predicate->getArity(); ++i) {
 		if(createdSearchingTables[i]){
+			cout<<"ADD "<<i<<endl;
 			index_object termIndex=atom->getTerm(i)->getIndex();
 			if(searchingTables[i].count(termIndex))
 				searchingTables[i][termIndex].insert(atom);
 			else{
-				AtomTable values;
-				values.insert(atom);
-				searchingTables[i].insert({termIndex,values});
+				searchingTables[i].emplace(termIndex,AtomTable({atom}));
 			}
 		}
 	}
