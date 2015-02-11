@@ -18,8 +18,8 @@ namespace grounder {
  */
 class BackTrackingGrounder : public ProgramGrounder {
 public:
-	BackTrackingGrounder():ProgramGrounder(),currentRule(0),index_current_atom(0),templateAtom(nullptr),start(true),lastMatch(false){};
-	virtual ~BackTrackingGrounder() { delete templateAtom; };
+	BackTrackingGrounder():ProgramGrounder(),currentRule(0),index_current_atom(0),start(true),lastMatch(false){};
+	virtual ~BackTrackingGrounder() { for(auto atom:templateSetAtom) delete atom; };
 
 
 protected:
@@ -67,10 +67,11 @@ protected:
 	//vector of bool if the atom is ground
 	vector<bool> is_ground_atom;
 
+	/// Set of current templateAtom
+	vector<Atom*> templateSetAtom;
 
 
-	/// Current templateAtom
-	Atom * templateAtom;
+
 	/// start is false if the grounding process not start, otherwise true
 	bool start;
 	/// Is true if is calling nextMatch on ground atom at the end of rule

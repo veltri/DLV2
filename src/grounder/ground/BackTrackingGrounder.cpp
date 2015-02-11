@@ -21,8 +21,10 @@ void BackTrackingGrounder::generateTemplateAtom(){
 	Timer::getInstance()->start("Generate Template");
 #endif
 
-	if(templateAtom!=nullptr) delete templateAtom;
-	templateAtom = (*current_atom_it)->ground(current_var_assign);
+	if(templateSetAtom[index_current_atom]==nullptr)
+		templateSetAtom[index_current_atom]=(*current_atom_it)->ground(current_var_assign);
+	else
+		(*current_atom_it)->ground(current_var_assign,templateSetAtom[index_current_atom]);
 
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->stop("Generate Template");
@@ -69,23 +71,23 @@ bool BackTrackingGrounder::match() {
 		lastMatch = false;
 
 
-	if(templateAtom->isBuiltIn() ){
+	if(templateSetAtom[index_current_atom]->isBuiltIn() ){
 #ifdef DEBUG_RULE_TIME
 		bool evaluate=templateAtom -> evaluate(current_var_assign);
 		Timer::getInstance()->stop("Match");
 		return evaluate;
 #endif
 
-		return templateAtom -> evaluate(current_var_assign);
+		return templateSetAtom[index_current_atom] -> evaluate(current_var_assign);
 
 	}else{
 		bool match;
 		unsigned current_table=current_id_match_iterator[index_current_atom];
 		//if is the first table to visit and the id of first match is NO_MATCH
 		if(current_table==0 && current_id_match[index_current_atom][current_table].second==NO_MATCH){
-			match=firstMatch() == !templateAtom->isNegative();
+			match=firstMatch() == !templateSetAtom[index_current_atom]->isNegative();
 		}else{
-			match = nextMatch() == !templateAtom->isNegative();
+			match = nextMatch() == !templateSetAtom[index_current_atom]->isNegative();
 		}
 #ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("Match");
@@ -107,6 +109,7 @@ bool BackTrackingGrounder::firstMatch(){
 	bool find=false;
 	unsigned current_table=current_id_match_iterator[index_current_atom];
 	unsigned n_table=current_id_match[index_current_atom].size();
+	Atom* templateAtom=templateSetAtom[index_current_atom];
 	while(current_table<n_table){
 		unsigned tableToSearch = current_id_match[index_current_atom][current_table].first;
 		AtomSearcher *searcher=predicateExtTable->getPredicateExt(templateAtom->getPredicate())->getAtomSearcher(tableToSearch);
@@ -145,6 +148,7 @@ bool BackTrackingGrounder::nextMatch(){
 	bool find=false;
 	unsigned current_table=current_id_match_iterator[index_current_atom];
 	unsigned n_table=current_id_match[index_current_atom].size();
+	Atom* templateAtom=templateSetAtom[index_current_atom];
 	while(current_table<n_table){
 
 		unsigned tableToSearch = current_id_match[index_current_atom][current_table].first;
@@ -322,8 +326,9 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 	current_id_match.clear();
 	current_atom_it = currentRule->getBeginBody();
 	index_current_atom = 0;
-	if(templateAtom!=nullptr) delete templateAtom;
-	templateAtom=nullptr;
+	for(auto atom:templateSetAtom) delete atom;
+	templateSetAtom.resize(rule->getSizeBody());
+	for(auto& atom:templateSetAtom) atom=nullptr;
 	start=true;
 	lastMatch=false;
 	atom_undef_inbody.reserve(rule->getSizeBody());

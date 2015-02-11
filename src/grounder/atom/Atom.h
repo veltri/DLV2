@@ -164,9 +164,14 @@ public:
 	/// Substitute the terms in the atom with the given terms and return the atom with terms sobstitute
 	/// @param substritutionTerm map of index_object. The first index is the ID of term to substitute and second the value
 	virtual Atom* substitute(map_term_term& substitutionTerm){return nullptr;};
+	/// Similiar to substitute(map_term_term& substitutionTerm) but not create new atom
+	virtual void substitute(map_term_term& substitutionTerm,Atom* templateAtom){};
+
 	/// Substitute the term with constant term and calculate the arithmetic terms
 	/// The subclasses have to implement the substitute method for create correct type class of Atom
 	virtual Atom* ground(map_term_term& substritutionTerm);
+	/// Similiar to ground(map_term_term& substritutionTerm) but not create new atom
+	virtual void ground(map_term_term& substritutionTerm,Atom* templateAtom);
 	///Printer method
 	virtual void print() = 0;
 	///Destructor

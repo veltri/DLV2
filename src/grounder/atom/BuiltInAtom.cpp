@@ -93,6 +93,11 @@ Atom* BuiltInAtom::substitute(map_term_term& substritutionTerm) {
 	return new BuiltInAtom(binop,negative,terms_substitute);
 }
 
+void BuiltInAtom::substitute(map_term_term& substitutionTerm,Atom* templateAtom){
+	for(unsigned int i=0;i<terms.size();i++)
+		templateAtom->setTerm(i,terms[i]->substitute(substitutionTerm));
+};
+
 };
 
 };
