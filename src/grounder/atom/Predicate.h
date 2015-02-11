@@ -11,7 +11,6 @@
 #include <string>
 #include <cstring>
 #include "../hash/Hashable.h"
-#include <boost/lexical_cast.hpp>
 #include "../hash/HashVecInt.h"
 #include "../hash/HashString.h"
 

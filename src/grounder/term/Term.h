@@ -32,7 +32,7 @@ enum Operator {
 };
 
 enum TermType{
-	CONSTANT=0,VARIABLE,ARITH,FUNCTION,ANONYMOUS
+	NUMERIC_CONSTANT=0,STRING_CONSTANT,VARIABLE,ARITH,FUNCTION,ANONYMOUS
 };
 
 class Term;
@@ -65,7 +65,7 @@ public:
 	///Set the negation of the term
 	void setNegative(bool n){negative=n;};
 	///Return the numeric term constant
-	virtual int getConstantValue(){return 0;};
+	virtual int getConstantValue() const {return 0;};
 	///Return the name of the term
 	virtual string getName()const{return "";};
 	///Set the name of the term
@@ -80,7 +80,7 @@ public:
 	virtual Operator getOperator(int i)const{return Operator::PLUS;}
 
 	///Return the type of term
-	virtual TermType getType()const{return TermType::CONSTANT;};
+	virtual TermType getType() const {return TermType::NUMERIC_CONSTANT;};
 	///Return true if contain a term of the given type
 	virtual bool contain(TermType type){return false;};
 	///Return true if is ground

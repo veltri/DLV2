@@ -8,7 +8,6 @@
 #include "ArithTerm.h"
 #include "../term/ConstantTerm.h"
 
-#include<boost/lexical_cast.hpp>
 #include "../hash/HashString.h"
 #include "../hash/HashVecInt.h"
 

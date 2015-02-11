@@ -32,7 +32,8 @@ bool ConstantTerm::match(Term* termToMatch,map_term_term& varAssignment) {
 		varAssignment.insert( { termToMatch, this });
 		return true;
 	}
-	if (termToMatch->getType()==TermType::CONSTANT && termToMatch->getIndex() == index) return true;
+	if (termToMatch->getType()==TermType::NUMERIC_CONSTANT && termToMatch->getIndex() == index) return true;
+	if (termToMatch->getType()==TermType::STRING_CONSTANT && termToMatch->getIndex() == index) return true;
 
 	return false;
 }
