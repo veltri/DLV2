@@ -20,8 +20,7 @@ namespace grounder{
 
 bool AtomSearcher::checkMatch(Atom *genericAtom, Atom *templateAtom, map_term_term& currentAssignment){
 	// Checks the match for each term and, if all the terms match, updates the current assignment accordingly
-	map_term_term assignInTerm(currentAssignment);
-
+	map_term_term assignInTerm;
 
 	for(unsigned int i=0;i<genericAtom->getTermsSize();i++)
 			if(!matchTerm(genericAtom->getTerm(i),templateAtom->getTerm(i),assignInTerm))
@@ -99,12 +98,12 @@ bool BaseAtomSearcher::searchForFirstMatch(GeneralIterator* currentMatch, Atom *
 	}
 
 	//Compute the first match
-	bool find=computeFirstMatch(currentMatch,templateAtom,currentAssignment);
+	bool find=computeMatch(currentMatch,templateAtom,currentAssignment);
 	if(find) undef=!currentMatch->currentIterm()->isFact();
 	return find;
 }
 
-bool BaseAtomSearcher::computeFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term_term& currentAssignment){
+bool BaseAtomSearcher::computeMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term_term& currentAssignment){
 	for(;!currentMatch->isDone();currentMatch->next()){
 		if (checkMatch(currentMatch->currentIterm(),templateAtom,currentAssignment))
 			return true;
@@ -115,7 +114,7 @@ bool BaseAtomSearcher::computeFirstMatch(GeneralIterator* currentMatch, Atom *te
 void BaseAtomSearcher::nextMatch(unsigned int id, Atom *templateAtom, map_term_term& currentAssignment, bool& find, bool &undef) {
 	GeneralIterator* currentMatch=resultMap.find(id)->second;
 	currentMatch->next();
-	computeFirstMatch(currentMatch,templateAtom,currentAssignment);
+	computeMatch(currentMatch,templateAtom,currentAssignment);
 
 	///Return the next matching atom retrieved from the integer identifier assigned by the firstMatch method
 	if(currentMatch->isDone()){
