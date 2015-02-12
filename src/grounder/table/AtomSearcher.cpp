@@ -20,7 +20,7 @@ namespace grounder{
 
 bool AtomSearcher::checkMatch(Atom *genericAtom, Atom *templateAtom, map_term_term& currentAssignment){
 	// Checks the match for each term and, if all the terms match, updates the current assignment accordingly
-	map_term_term assignInTerm;
+	map_term_term assignInTerm(currentAssignment);
 
 
 	for(unsigned int i=0;i<genericAtom->getTermsSize();i++)
