@@ -251,26 +251,18 @@ void InMemoryInputBuilder::onTermRange(char* lowerBound, char* upperBound) {
 }
 
 void InMemoryInputBuilder::onArithmeticOperation(char arithOperator) {
-	cout<<"CALL "<<endl;
-	for(auto t:terms_parsered)
-		{t->print();cout<<endl;}
 	auto second_last=--(--terms_parsered.end());
 	Term *arithTerm=nullptr;
+
 	if((*second_last)->getType()!=TermType::ARITH){
 		//First occurrence of arithmetic
 		arithTerm=new ArithTerm;
-
 		arithTerm->addTerm(*second_last);
 		arithTerm->addTerm(*(++second_last));
 
-
-
 	}else{
-
 		arithTerm = *second_last;
-
 		arithTerm->addTerm(terms_parsered.back());
-
 	}
 
 	arithTerm->setOperator(ArithTerm::getOperatorName(arithOperator));
@@ -278,9 +270,6 @@ void InMemoryInputBuilder::onArithmeticOperation(char arithOperator) {
 	terms_parsered.pop_back();
 	termTable->addTerm(arithTerm);
 	terms_parsered.push_back(arithTerm);
-	cout<<"FINISH "<<endl;
-	for(auto t:terms_parsered)
-		{t->print();cout<<endl;}
 }
 
 void InMemoryInputBuilder::onWeightAtLevels(int nWeight, int nLevel,

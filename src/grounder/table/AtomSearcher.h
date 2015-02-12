@@ -135,7 +135,6 @@ public:
 	/// Return true if constant term are equal, else false
 	bool matchTerm(Term *genericTerm, Term *termToMatch, map_term_term& varAssignment);
 
-
 	virtual ~AtomSearcher() {};
 
 protected:
@@ -196,6 +195,8 @@ protected:
 class SingleTermMultipleStrategiesAtomSearcher: public BaseAtomSearcher {
 public:
 	SingleTermMultipleStrategiesAtomSearcher(AtomVector* table, Predicate* p) : BaseAtomSearcher(table), predicate(p) {
+		searchingTables.reserve(predicate->getArity());
+		createdSearchingTables.reserve(predicate->getArity());
 		for(unsigned int i=0;i<predicate->getArity();i++){
 			searchingTables.push_back(unordered_map<index_object,AtomTable>());
 			createdSearchingTables.push_back(false);
@@ -253,6 +254,8 @@ private:
 class SingleTermMultipleStrategiesAtomSearcherMultiMap: public BaseAtomSearcher {
 public:
 	SingleTermMultipleStrategiesAtomSearcherMultiMap(AtomVector* table, Predicate *p) : BaseAtomSearcher(table), predicate(p) {
+		searchingTables.reserve(predicate->getArity());
+		createdSearchingTables.reserve(predicate->getArity());
 		for(unsigned int i=0;i<predicate->getArity();i++){
 			searchingTables.push_back(Multimap_Atom());
 			createdSearchingTables.push_back(false);

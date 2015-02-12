@@ -20,6 +20,7 @@ namespace DLV2{
 
 namespace grounder{
 
+
 /**
  * This class represents the extension of each predicate (instances).
  * The class may have multiple table of atoms and for each table have an AtomSearcher associate
@@ -29,6 +30,10 @@ class PredicateExtension {
 public:
 	///Constructors
 	PredicateExtension(Predicate* predicate, unsigned tableNumber = 2): predicate(predicate){
+		if(MAX_TABLE_NUMBER){
+			tables.reserve(MAX_TABLE_NUMBER);
+			atomSearchers.reserve(MAX_TABLE_NUMBER);
+		}
 		for(unsigned i=0;i<tableNumber;i++)
 			tables.push_back(new AtomVector());
 		setAtomSearchers();
@@ -87,6 +92,8 @@ public:
 	///Destructor
 	~PredicateExtension();
 
+	static void setMaxTableNumber(unsigned int maxTableNumber) {MAX_TABLE_NUMBER = maxTableNumber;}
+
 private:
 	///The predicate
 	Predicate* predicate;
@@ -96,6 +103,8 @@ private:
 	vector<AtomVector*> tables;
 	///The vector of  AtomSeacher
 	vector<AtomSearcher*> atomSearchers;
+
+	static unsigned int MAX_TABLE_NUMBER;
 
 	///This method configures the searching strategy for each table
 	void setAtomSearchers();

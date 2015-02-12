@@ -14,6 +14,8 @@ namespace grounder{
 
 /****************************************************** PREDICATE EXTENSION ***************************************************/
 
+unsigned int PredicateExtension::MAX_TABLE_NUMBER = 4;
+
 void PredicateExtension::setAtomSearchers(){
 	// Properly set the IndexAtom type
 	while(atomSearchers.size()<tables.size()){
