@@ -146,7 +146,7 @@ void ProgramGrounder::inizializeSearchInsertPredicate(Rule* rule,unordered_set<i
 
 	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();atom++){
 			vector<unsigned> tableToInsert;
-			if((*atom)->getPredicate()->isEdb())
+			if((*atom)->getPredicate()!=nullptr && (*atom)->getPredicate()->isEdb())
 				{tableToInsert.push_back(FACT);}
 			else
 				{tableToInsert.push_back(FACT);tableToInsert.push_back(NOFACT);}
@@ -164,7 +164,7 @@ void ProgramGrounder::inizializeSearchInsertPredicate(Rule* rule) {
 
 	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();atom++){
 		vector<unsigned> tableToInsert;
-		if((*atom)->getPredicate()->isEdb())
+		if((*atom)->getPredicate()!=nullptr && (*atom)->getPredicate()->isEdb())
 			{tableToInsert.push_back(FACT);}
 		else
 			{tableToInsert.push_back(FACT);tableToInsert.push_back(NOFACT);}
