@@ -200,10 +200,17 @@ unsigned int SingleTermMultipleStrategiesAtomSearcher::selectBestIndex(const uno
 	if(indexingTermSetByUser>-1 && createdSearchingTables[indexingTermSetByUser] && possibleTableToSearch.count(indexingTermSetByUser))
 		return indexingTermSetByUser;
 
-	for(unsigned int i=0;i<createdSearchingTables.size();i++)
-		if(possibleTableToSearch.count(i))
-			return i;
-	return *possibleTableToSearch.begin();
+	auto it=possibleTableToSearch.begin();
+	unsigned tableMinSize=(*it);
+	unsigned minSize=(searchingTables[(*it)]).size();
+	for(it++;it!=possibleTableToSearch.end();it++){
+		unsigned currentSize=(searchingTables[(*it)]).size();
+		if(createdSearchingTables[*it] && minSize>currentSize){
+			minSize=currentSize;
+			tableMinSize=*it;
+		}
+	}
+	return tableMinSize;
 }
 
 int SingleTermMultipleStrategiesAtomSearcher::manageIndex(Atom* templateAtom) {
@@ -338,10 +345,17 @@ unsigned int SingleTermMultipleStrategiesAtomSearcherMultiMap::selectBestIndex(c
 	if(indexingTermSetByUser>-1 && createdSearchingTables[indexingTermSetByUser] && possibleTableToSearch.count(indexingTermSetByUser))
 		return indexingTermSetByUser;
 
-	for(unsigned int i=0;i<createdSearchingTables.size();i++)
-		if(possibleTableToSearch.count(i))
-			return i;
-	return *possibleTableToSearch.begin();
+	auto it=possibleTableToSearch.begin();
+	unsigned tableMinSize=(*it);
+	unsigned minSize=(searchingTables[(*it)]).size();
+	for(;it!=possibleTableToSearch.end();it++){
+		unsigned currentSize=(searchingTables[(*it)]).size();
+		if(createdSearchingTables[*it] && currentSize<minSize){
+			minSize=currentSize;
+			tableMinSize=*it;
+		}
+	}
+	return tableMinSize;
 }
 
 
