@@ -55,7 +55,7 @@ class GeneralIterator {
 public:
 	virtual void next()=0;
 	virtual bool isDone()=0;
-	virtual Atom* currentIterm()=0;
+	virtual Atom* currentItem()=0;
 	virtual ~GeneralIterator(){};
 };
 ///This class implements and hides an iterator for atom vector
@@ -64,7 +64,7 @@ public:
 	VectorIterator(const AtomVector::iterator& s, const AtomVector::iterator& e): start(s), end(e){};
 	virtual void next(){ if(start!=end) start++;}
 	virtual bool isDone(){return start==end;}
-	virtual Atom* currentIterm(){return *(start);}
+	virtual Atom* currentItem(){return *(start);}
 private:
 	AtomVector::iterator start;
 	AtomVector::iterator end;
@@ -75,7 +75,7 @@ public:
 	UnorderedSetIterator(const AtomTable::iterator& s, const AtomTable::iterator& e): start(s), end(e){};
 	virtual void next(){ if(start!=end) start++;}
 	virtual bool isDone(){return start==end;}
-	virtual Atom* currentIterm(){return *(start);}
+	virtual Atom* currentItem(){return *(start);}
 private:
 	AtomTable::iterator start;
 	AtomTable::iterator end;
@@ -86,7 +86,7 @@ public:
 	UnorderedMultiMapIterator(const Multimap_Atom::iterator& s, const Multimap_Atom::iterator& e): start(s), end(e){};
 	virtual void next(){ if(start!=end) start++;}
 	virtual bool isDone(){return start==end;}
-	virtual Atom* currentIterm(){return start->second;}
+	virtual Atom* currentItem(){return start->second;}
 private:
 	Multimap_Atom::iterator start;
 	Multimap_Atom::iterator end;
@@ -192,9 +192,9 @@ protected:
  * This implementation is sibling to the one with multimaps @see SingleTermMultipleStrategiesAtomSearcherMultiMap,
  * since the two are implemented to be independent.
  */
-class SingleTermMultipleStrategiesAtomSearcher: public BaseAtomSearcher {
+class SingleTermMapAtomSearcher: public BaseAtomSearcher {
 public:
-	SingleTermMultipleStrategiesAtomSearcher(AtomVector* table, Predicate* p) : BaseAtomSearcher(table), predicate(p) {
+	SingleTermMapAtomSearcher(AtomVector* table, Predicate* p) : BaseAtomSearcher(table), predicate(p) {
 		searchingTables.reserve(predicate->getArity());
 		createdSearchingTables.reserve(predicate->getArity());
 		for(unsigned int i=0;i<predicate->getArity();i++){
@@ -202,8 +202,10 @@ public:
 			createdSearchingTables.push_back(false);
 		}
 		indexingTermSetByUser = Options::globalOptions()->getPredicateIndexTerm(this->predicate->getName());
-		if(indexingTermSetByUser>-1)
+		if(indexingTermSetByUser>-1){
 			assert_msg((indexingTermSetByUser>=0 && unsigned(indexingTermSetByUser)<this->predicate->getArity()), "The specified index is not valid.");
+			initializeIndexMaps(indexingTermSetByUser);
+		}
 #ifdef NDEBUG
 		cout<<"Predicate: "<<predicate->getName()<<"  Index Term Set By User: "<<indexingTermSetByUser<<endl;
 #endif
@@ -215,7 +217,7 @@ public:
 	virtual void clear(){for(auto table:searchingTables) table.clear();};
 
 	///This method chooses the best indexing term among the one allowed.
-	unsigned int selectBestIndex(const unordered_set<int>& possibleTableToSearch);
+	unsigned int selectBestIndex(const unordered_map<int,index_object>& possibleTableToSearch);
 
 private:
 	/// The predicate
@@ -251,9 +253,9 @@ private:
  * This implementation is sibling to the one with maps @see SingleTermMultipleStrategiesAtomSearcher,
  * since the two are implemented to be independent.
  */
-class SingleTermMultipleStrategiesAtomSearcherMultiMap: public BaseAtomSearcher {
+class SingleTermMultiMapAtomSearcher: public BaseAtomSearcher {
 public:
-	SingleTermMultipleStrategiesAtomSearcherMultiMap(AtomVector* table, Predicate *p) : BaseAtomSearcher(table), predicate(p) {
+	SingleTermMultiMapAtomSearcher(AtomVector* table, Predicate *p) : BaseAtomSearcher(table), predicate(p) {
 		searchingTables.reserve(predicate->getArity());
 		createdSearchingTables.reserve(predicate->getArity());
 		for(unsigned int i=0;i<predicate->getArity();i++){
@@ -261,11 +263,13 @@ public:
 			createdSearchingTables.push_back(false);
 		}
 		indexingTermSetByUser = Options::globalOptions()->getPredicateIndexTerm(this->predicate->getName());
-		if(indexingTermSetByUser>-1)
+		if(indexingTermSetByUser>-1){
 			assert_msg((indexingTermSetByUser>=0 && unsigned(indexingTermSetByUser)<this->predicate->getArity()), "The specified index is not valid.");
-#ifdef NDEBUG
-		cout<<"Predicate: "<<predicate->getName()<<"  Index Term Set By User: "<<indexingTermSetByUser<<endl;
-#endif
+			initializeIndexMaps(indexingTermSetByUser);
+		}
+		#ifdef NDEBUG
+				cout<<"Predicate: "<<predicate->getName()<<"  Index Term Set By User: "<<indexingTermSetByUser<<endl;
+		#endif
 	};
 
 	virtual Atom* findAtom(Atom *atom);
@@ -274,7 +278,7 @@ public:
 	virtual void clear(){for(auto table:searchingTables) searchingTables.clear();};
 
 	///This method chooses the best indexing term among the one allowed.
-	unsigned int selectBestIndex(const unordered_set<int>& possibleTableToSearch);
+	unsigned int selectBestIndex(const unordered_map<int,index_object>& possibleTableToSearch);
 
 private:
 	/// The predicate

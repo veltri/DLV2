@@ -31,10 +31,10 @@ void PredicateExtension::setAtomSearchers(){
 
 		switch (indexType) {
 		case (MAP):
-			atomSearcher = new SingleTermMultipleStrategiesAtomSearcher(tables[atomSearchers.size()],predicate);
+			atomSearcher = new SingleTermMapAtomSearcher(tables[atomSearchers.size()],predicate);
 			break;
 		case (MULTIMAP):
-			atomSearcher = new SingleTermMultipleStrategiesAtomSearcherMultiMap(tables[atomSearchers.size()],predicate);
+			atomSearcher = new SingleTermMultiMapAtomSearcher(tables[atomSearchers.size()],predicate);
 			break;
 		default:
 			atomSearcher = new BaseAtomSearcher(tables[atomSearchers.size()]);

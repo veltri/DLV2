@@ -99,13 +99,13 @@ bool BaseAtomSearcher::searchForFirstMatch(GeneralIterator* currentMatch, Atom *
 
 	//Compute the first match
 	bool find=computeMatch(currentMatch,templateAtom,currentAssignment);
-	if(find) undef=!currentMatch->currentIterm()->isFact();
+	if(find) undef=!currentMatch->currentItem()->isFact();
 	return find;
 }
 
 bool BaseAtomSearcher::computeMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term_term& currentAssignment){
 	for(;!currentMatch->isDone();currentMatch->next()){
-		if (checkMatch(currentMatch->currentIterm(),templateAtom,currentAssignment))
+		if (checkMatch(currentMatch->currentItem(),templateAtom,currentAssignment))
 			return true;
 	}
 	return false;
@@ -123,7 +123,7 @@ void BaseAtomSearcher::nextMatch(unsigned int id, Atom *templateAtom, map_term_t
 		find=false;
 		return;
 	}
-	undef=!currentMatch->currentIterm()->isFact();
+	undef=!currentMatch->currentItem()->isFact();
 	find=true;
 }
 
@@ -148,7 +148,7 @@ void BaseAtomSearcher::findIfExist(Atom *templateAtom, bool& find, bool& isUndef
 
 /****************************************************** SINGLE TERM ATOM SEARCH ***************************************************/
 
-void SingleTermMultipleStrategiesAtomSearcher::add(Atom* atom) {
+void SingleTermMapAtomSearcher::add(Atom* atom) {
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("Add index "+predicate->getName());
 #endif
@@ -167,7 +167,7 @@ void SingleTermMultipleStrategiesAtomSearcher::add(Atom* atom) {
 #endif
 }
 
-void SingleTermMultipleStrategiesAtomSearcher::remove(Atom* atom) {
+void SingleTermMapAtomSearcher::remove(Atom* atom) {
 	for (unsigned int i = 0; i < predicate->getArity(); ++i) {
 		if(createdSearchingTables[i]){
 			index_object termIndex=atom->getTerm(i)->getIndex();
@@ -177,7 +177,7 @@ void SingleTermMultipleStrategiesAtomSearcher::remove(Atom* atom) {
 	}
 }
 
-Atom* SingleTermMultipleStrategiesAtomSearcher::findAtom(Atom *atom){
+Atom* SingleTermMapAtomSearcher::findAtom(Atom *atom){
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("Find "+predicate->getName());
 #endif
@@ -196,28 +196,32 @@ Atom* SingleTermMultipleStrategiesAtomSearcher::findAtom(Atom *atom){
 	return nullptr;
 }
 
-unsigned int SingleTermMultipleStrategiesAtomSearcher::selectBestIndex(const unordered_set<int>& possibleTableToSearch){
+unsigned int SingleTermMapAtomSearcher::selectBestIndex(const unordered_map<int,index_object>& possibleTableToSearch){
 	if(indexingTermSetByUser>-1 && createdSearchingTables[indexingTermSetByUser] && possibleTableToSearch.count(indexingTermSetByUser))
 		return indexingTermSetByUser;
 
 	auto it=possibleTableToSearch.begin();
-	unsigned tableMinSize=(*it);
-	unsigned minSize=(searchingTables[(*it)]).size();
+	unsigned tableMinSize=(*it).first;
+	unsigned minSize=(searchingTables[(*it).first][(*it).second]).size();
 	for(it++;it!=possibleTableToSearch.end();it++){
-		unsigned currentSize=(searchingTables[(*it)]).size();
-		if(createdSearchingTables[*it] && minSize>currentSize){
-			minSize=currentSize;
-			tableMinSize=*it;
+		if(createdSearchingTables[(*it).first]){
+			unsigned currentSize=(searchingTables[(*it).first][(*it).second]).size();
+			if(minSize>currentSize){
+				minSize=currentSize;
+				tableMinSize=(*it).first;
+			}
 		}
 	}
 	return tableMinSize;
 }
 
-int SingleTermMultipleStrategiesAtomSearcher::manageIndex(Atom* templateAtom) {
-	unordered_set<int> possibleTableToSearch;
-	for(unsigned int i=0;i<templateAtom->getTermsSize();i++)
-		if(templateAtom->getTerm(i)->isGround())
-			possibleTableToSearch.insert(i);
+int SingleTermMapAtomSearcher::manageIndex(Atom* templateAtom) {
+	unordered_map<int,index_object> possibleTableToSearch;
+	for(unsigned int i=0;i<templateAtom->getTermsSize();i++){
+		Term* t=templateAtom->getTerm(i);
+		if(t->isGround())
+			possibleTableToSearch.insert({i,t->getIndex()});
+	}
 
 	int indexSelected=-1;
 	if(!possibleTableToSearch.empty()){
@@ -228,7 +232,7 @@ int SingleTermMultipleStrategiesAtomSearcher::manageIndex(Atom* templateAtom) {
 	return indexSelected;
 }
 
-GeneralIterator* SingleTermMultipleStrategiesAtomSearcher::computeGenericIterator(Atom* templateAtom) {
+GeneralIterator* SingleTermMapAtomSearcher::computeGenericIterator(Atom* templateAtom) {
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("Compute iterator "+predicate->getName());
 #endif
@@ -250,12 +254,27 @@ GeneralIterator* SingleTermMultipleStrategiesAtomSearcher::computeGenericIterato
 	return currentMatch;
 }
 
-void SingleTermMultipleStrategiesAtomSearcher::initializeIndexMaps(unsigned int indexingTerm){
+void SingleTermMapAtomSearcher::initializeIndexMaps(unsigned int indexingTerm){
 #ifdef NDEBUG
 	cout<<"Predicate: "<<predicate->getName()<<" Created Index on term: "<<indexingTerm<<endl;
 #endif
 #ifdef DEBUG_RULE_TIME
-	Timer::getInstance()->start("Create index "+predicate->getName()+" index "+boost::lexical_cast<string>(indexingTerm));
+	Timer::getInstanif(indexingTermSetByUser>-1 && createdSearchingTables[indexingTermSetByUser] && possibleTableToSearch.count(indexingTermSetByUser))
+	return indexingTermSetByUser;
+
+auto it=possibleTableToSearch.begin();
+unsigned tableMinSize=(*it).first;
+unsigned minSize=(searchingTables[(*it).first][(*it).second]).size();
+for(it++;it!=possibleTableToSearch.end();it++){
+	if(createdSearchingTables[(*it).first]){
+		unsigned currentSize=(searchingTables[(*it).first][(*it).second]).size();
+		if(minSize>currentSize){
+			minSize=currentSize;
+			tableMinSize=(*it).first;
+		}
+	}
+}
+return tableMinSize;ce()->start("Create index "+predicate->getName()+" index "+boost::lexical_cast<string>(indexingTerm));
 #endif
 	createdSearchingTables[indexingTerm]=true;
 	unordered_set<index_object> termToBeIndexedIndices;
@@ -277,7 +296,7 @@ void SingleTermMultipleStrategiesAtomSearcher::initializeIndexMaps(unsigned int 
 
 /****************************************************** SINGLE TERM MULTI MAP ATOM SEARCH ***************************************************/
 
-void SingleTermMultipleStrategiesAtomSearcherMultiMap::add(Atom* atom) {
+void SingleTermMultiMapAtomSearcher::add(Atom* atom) {
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("Add index "+predicate->getName());
 #endif
@@ -292,7 +311,7 @@ void SingleTermMultipleStrategiesAtomSearcherMultiMap::add(Atom* atom) {
 #endif
 }
 
-void SingleTermMultipleStrategiesAtomSearcherMultiMap::remove(Atom* atom) {
+void SingleTermMultiMapAtomSearcher::remove(Atom* atom) {
 	for (unsigned int i = 0; i < predicate->getArity(); ++i) {
 		if(createdSearchingTables[i]){
 			AtomTableComparator comparator;
@@ -306,11 +325,14 @@ void SingleTermMultipleStrategiesAtomSearcherMultiMap::remove(Atom* atom) {
 	}
 }
 
-int SingleTermMultipleStrategiesAtomSearcherMultiMap::manageIndex(Atom* templateAtom) {
-	unordered_set<int> possibleTableToSearch;
-	for(unsigned int i=0;i<templateAtom->getTermsSize();i++)
-		if(templateAtom->getTerm(i)->isGround())
-			possibleTableToSearch.insert(i);
+int SingleTermMultiMapAtomSearcher::manageIndex(Atom* templateAtom) {
+	unordered_map<int,index_object> possibleTableToSearch;
+	for(unsigned int i=0;i<templateAtom->getTermsSize();i++){
+		Term* t=templateAtom->getTerm(i);
+		if(t->isGround()){
+			possibleTableToSearch.insert({i,t->getIndex()});
+		}
+	}
 
 	int indexSelected=-1;
 	if(!possibleTableToSearch.empty()){
@@ -321,7 +343,7 @@ int SingleTermMultipleStrategiesAtomSearcherMultiMap::manageIndex(Atom* template
 	return indexSelected;
 }
 
-Atom* SingleTermMultipleStrategiesAtomSearcherMultiMap::findAtom(Atom *atom){
+Atom* SingleTermMultiMapAtomSearcher::findAtom(Atom *atom){
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("Find "+predicate->getName());
 #endif
@@ -341,25 +363,27 @@ Atom* SingleTermMultipleStrategiesAtomSearcherMultiMap::findAtom(Atom *atom){
 	return nullptr;
 }
 
-unsigned int SingleTermMultipleStrategiesAtomSearcherMultiMap::selectBestIndex(const unordered_set<int>& possibleTableToSearch){
+unsigned int SingleTermMultiMapAtomSearcher::selectBestIndex(const unordered_map<int,index_object>& possibleTableToSearch){
 	if(indexingTermSetByUser>-1 && createdSearchingTables[indexingTermSetByUser] && possibleTableToSearch.count(indexingTermSetByUser))
 		return indexingTermSetByUser;
 
 	auto it=possibleTableToSearch.begin();
-	unsigned tableMinSize=(*it);
-	unsigned minSize=(searchingTables[(*it)]).size();
-	for(;it!=possibleTableToSearch.end();it++){
-		unsigned currentSize=(searchingTables[(*it)]).size();
-		if(createdSearchingTables[*it] && currentSize<minSize){
-			minSize=currentSize;
-			tableMinSize=*it;
+	unsigned tableMinSize=(*it).first;
+	unsigned minSize=searchingTables[(*it).first].count((*it).second);
+	for(it++;it!=possibleTableToSearch.end();it++){
+		if(createdSearchingTables[(*it).first]){
+			unsigned currentSize=searchingTables[(*it).first].count((*it).second);
+			if(minSize>currentSize){
+				minSize=currentSize;
+				tableMinSize=(*it).first;
+			}
 		}
 	}
 	return tableMinSize;
 }
 
 
-GeneralIterator* SingleTermMultipleStrategiesAtomSearcherMultiMap::computeGenericIterator(Atom* templateAtom) {
+GeneralIterator* SingleTermMultiMapAtomSearcher::computeGenericIterator(Atom* templateAtom) {
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("Compute iterator "+predicate->getName());
 #endif
@@ -378,7 +402,7 @@ GeneralIterator* SingleTermMultipleStrategiesAtomSearcherMultiMap::computeGeneri
 	return currentMatch;
 }
 
-void SingleTermMultipleStrategiesAtomSearcherMultiMap::initializeIndexMaps(unsigned int indexingTerm){
+void SingleTermMultiMapAtomSearcher::initializeIndexMaps(unsigned int indexingTerm){
 #ifdef NDEBUG
 	cout<<"Predicate: "<<predicate->getName()<<" Created Index on term: "<<indexingTerm<<endl;
 #endif
