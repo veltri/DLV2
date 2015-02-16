@@ -7,6 +7,7 @@
 
 #include "BackTrackingGrounder.h"
 #include "../../util/Timer.h"
+#include <boost/lexical_cast.hpp>
 
 
 namespace DLV2 {
@@ -73,7 +74,7 @@ bool BackTrackingGrounder::match() {
 
 	if(templateSetAtom[index_current_atom]->isBuiltIn() ){
 #ifdef DEBUG_RULE_TIME
-		bool evaluate=templateAtom -> evaluate(current_var_assign);
+		bool evaluate=templateSetAtom[index_current_atom] -> evaluate(current_var_assign);
 		Timer::getInstance()->stop("Match");
 		return evaluate;
 #endif
