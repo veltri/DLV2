@@ -9,6 +9,7 @@
 #include "../grounder/atom/ClassicalLiteral.h"
 #include "../grounder/atom/BuiltInAtom.h"
 #include "../grounder/ground/ProgramGrounder.h"
+#include "../grounder/atom/AggregateAtom.h"
 
 #include <string>
 #include "algorithm"
@@ -25,6 +26,8 @@ InMemoryInputBuilder::InMemoryInputBuilder() {
 	currentRule = new Rule;
 	currentAtom = nullptr;
 	currentBinop = Binop::NONE_OP;
+	currentAggregateElement= nullptr;
+	currentAggregate = nullptr;
 }
 
 InMemoryInputBuilder::~InMemoryInputBuilder() {
@@ -299,30 +302,61 @@ void InMemoryInputBuilder::onBuiltinAtom() {
 }
 
 void InMemoryInputBuilder::onAggregateLowerGuard() {
+	if(currentAggregate==nullptr)
+		currentAggregate = new AggregateAtom;
+	currentAggregate->setLowerGueard(terms_parsered.back());
+	terms_parsered.pop_back();
 }
 
 void InMemoryInputBuilder::onAggregateUpperGuard() {
+	currentAggregate->setUpperGueard(terms_parsered.back());
+	terms_parsered.pop_back();
 }
 
 void InMemoryInputBuilder::onAggregateFunction(char* functionSymbol) {
+	if(currentAggregate==nullptr)
+		currentAggregate = new AggregateAtom;
+	if(strcmp(functionSymbol,"#count")==0){
+		currentAggregate->setAggregateFunction(AggregateFunction::COUNT);
+	}else if(strcmp(functionSymbol,"#sum")==0){
+		currentAggregate->setAggregateFunction(AggregateFunction::SUM);
+	}else if(strcmp(functionSymbol,"#min")==0){
+		currentAggregate->setAggregateFunction(AggregateFunction::MIN);
+	}else if(strcmp(functionSymbol,"#max")==0){
+		currentAggregate->setAggregateFunction(AggregateFunction::MAX);
+	}
 }
 
 void InMemoryInputBuilder::onAggregateGroundTerm(char* value, bool dash) {
 }
 
 void InMemoryInputBuilder::onAggregateVariableTerm(char* value) {
+	string value_string(value);
+	Term *term=new VariableTerm(false,value_string);
+	termTable->addTerm(term);
+	if(currentAggregateElement==nullptr)
+		currentAggregateElement=new AggregateElement;
+	currentAggregateElement->addTerm(term);
 }
 
 void InMemoryInputBuilder::onAggregateUnknownVariable() {
 }
 
 void InMemoryInputBuilder::onAggregateNafLiteral() {
+	if(currentAggregateElement==nullptr)
+		currentAggregateElement=new AggregateElement;
+	currentAggregateElement->addNafLiterals(currentAtom);
+	currentAtom=nullptr;
 }
 
 void InMemoryInputBuilder::onAggregateElement() {
+	currentAggregate->addAggregateElement(*currentAggregateElement);
+	currentAggregateElement=nullptr;
 }
 
 void InMemoryInputBuilder::onAggregate(bool naf) {
+	currentAtom = currentAggregate;
+	currentAggregate = nullptr;
 }
 
 void InMemoryInputBuilder::createRule(vector<Atom*>* head, vector<Atom*>* body) {

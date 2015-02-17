@@ -99,6 +99,10 @@ private:
 
 	Binop currentBinop;
 
+	AggregateElement *currentAggregateElement;
+
+	Atom *currentAggregate;
+
  	void createRule(vector<Atom*>* head, vector<Atom*>* body=0);
 	void createFact(Atom* fact);
 

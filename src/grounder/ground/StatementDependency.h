@@ -42,6 +42,8 @@ public:
 	/// Return true if the predicate p appear in the head of at least one rule
 	/// @param p The index of predicate
 	bool isInHead(index_object p);
+	bool isInBody(index_object p);
+
 	virtual ~StatementAtomMapping();
 private:
 	//The unordered multimap containing the maps between predicates and rules in which they appear in the head
@@ -186,6 +188,10 @@ public:
 	unsigned int getConstraintSize(){return constraints.size();}
 	/// Getter for the ith constraint
 	Rule* getConstraint(int i) {return constraints[i];};
+
+	bool compareOnlyInHead(index_object predicate){
+		return statementAtomMapping.isInBody(predicate);
+	}
 
 	///Printer method
 	void print();

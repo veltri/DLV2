@@ -136,6 +136,10 @@ public:
 	virtual void setAggregateElements(const vector<AggregateElement>& aggregateElements) {};
 	///Getter method for the aggregate function
 	virtual AggregateFunction getAggregateFunction() const {return AggregateFunction::NONE;};
+	///Set lower guard of aggregate
+	virtual void setLowerGueard(Term* lower){};
+	///Set upper guard of aggregate
+	virtual void setUpperGueard(Term* upper){};
 	///Setter method for the aggregate function
 	virtual void setAggregateFunction(AggregateFunction aggregateFunction) {};
 	///Getter method for the first binary operation
@@ -146,6 +150,8 @@ public:
 	virtual Binop getSecondBinop() const {return Binop::NONE_OP;};
 	///Setter method for the second binary operation
 	virtual void setSecondBinop(Binop secondBinop) {};
+	/// Add aggregate Element
+	virtual void addAggregateElement(AggregateElement& element){};
 	/*****************************************************/
 
 	/******** Methods useful for Choice ********/

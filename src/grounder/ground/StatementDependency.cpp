@@ -49,6 +49,12 @@ bool StatementAtomMapping::isInHead(index_object p) {
 	return false;
 }
 
+bool StatementAtomMapping::isInBody(index_object p) {
+	if (bodyMap.find(p) != bodyMap.end())
+		return true;
+	return false;
+}
+
 StatementAtomMapping::~StatementAtomMapping() {}
 
 /*

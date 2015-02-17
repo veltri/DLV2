@@ -25,7 +25,7 @@ class AggregateAtom: public Atom {
 public:
 
 	///Default constructor
-	AggregateAtom(): firstBinop(Binop::NONE_OP), secondBinop(Binop::NONE_OP), aggregateFunction(AggregateFunction::NONE), negative(false) {};
+	AggregateAtom(): firstBinop(Binop::NONE_OP), secondBinop(Binop::NONE_OP), aggregateFunction(AggregateFunction::NONE), negative(false) {lowerGueard=nullptr;upperGuard=nullptr;};
 
 	/** Constructor
 		 * @param f set the first term of comparison
@@ -37,13 +37,32 @@ public:
 		 * @param negative set whether the atom is negated with negation as failure
 		 */
 	AggregateAtom(Term* f, Binop fB,Term* s, Binop sB, AggregateFunction aF, vector<AggregateElement> aE, bool n):
-		firstBinop(fB), secondBinop(sB), aggregateFunction(aF), aggregateElements(move(aE)), negative(n) {terms.push_back(f);terms.push_back(s);};
+		firstBinop(fB), secondBinop(sB), aggregateFunction(aF), aggregateElements(move(aE)), negative(n) {lowerGueard=f;upperGuard=s;};
+
+	Atom* clone() {
+		Atom* atom = new AggregateAtom(lowerGueard,firstBinop,upperGuard,secondBinop,aggregateFunction,aggregateElements,negative);
+		atom->setTerms(this->terms);
+		return atom;
+	};
+
+	///This method compute the resulting hash a classical atom using its terms
+	size_t hash() ;
+
+	bool operator==(const Atom& a);
+
 
 	///Getter method for the aggregate elements
 	vector<AggregateElement> getAggregateElements() {return aggregateElements;};
 	///Setter method for the aggregate elements
 	void setAggregateElements(const vector<AggregateElement>& aggregateElements) {this->aggregateElements = aggregateElements;};
 	///Getter method for the aggregate function
+
+	/// Add aggregate element
+	void addAggregateElement(AggregateElement& element){aggregateElements.push_back(element);};
+
+	void setLowerGueard(Term* lower){lowerGueard=lower;};
+	void setUpperGueard(Term* upper){upperGuard=upper;};
+
 	AggregateFunction getAggregateFunction() const {return aggregateFunction;};
 	///Setter method for the aggregate function
 	void setAggregateFunction(AggregateFunction aggregateFunction) {this->aggregateFunction = aggregateFunction;};
@@ -79,6 +98,9 @@ private:
 	vector<AggregateElement> aggregateElements;
 	///Negated with naf
 	bool negative;
+
+	Term* lowerGueard;
+	Term* upperGuard;
 
 	/* For the vector of terms, it contains the first and the second term of comparison.
 	 * Notice that the vector contains the terms in the same order as they appear: the first term in position 0, the second in position 1.

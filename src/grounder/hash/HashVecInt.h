@@ -95,10 +95,10 @@ public:
 	}
 
 	inline size_t computeHashTerm(const vector<Term*> & values){
-		vector<size_t> size_t_values(values.size());
-		for(unsigned i=0;i<values.size();i++)
-			size_t_values[i]=values[i]->getIndex();
-		return computeHashSize_T(size_t_values);
+		size_t seed=values[0]->getIndex();
+		for(unsigned i=1;i<values.size();i++)
+			boost::hash_combine(seed,values[i]->getIndex());
+		return seed;
 	}
 
 };
