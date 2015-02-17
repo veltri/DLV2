@@ -187,10 +187,10 @@ public:
 	/// This method returns the number of constraints in the program
 	unsigned int getConstraintSize(){return constraints.size();}
 	/// Getter for the ith constraint
-	Rule* getConstraint(int i) {return constraints[i];};
+	Rule* getConstraint(int i) {return constraints[i];}
 
-	bool compareOnlyInHead(index_object predicate){
-		return statementAtomMapping.isInBody(predicate);
+	bool isOnlyInHead(index_object predicate){
+		return (!statementAtomMapping.isInBody(predicate));
 	}
 
 	///Printer method

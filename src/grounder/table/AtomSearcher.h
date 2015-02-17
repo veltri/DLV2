@@ -202,10 +202,8 @@ public:
 			createdSearchingTables.push_back(false);
 		}
 		indexingTermSetByUser = Options::globalOptions()->getPredicateIndexTerm(this->predicate->getName());
-		if(indexingTermSetByUser>-1){
+		if(indexingTermSetByUser>-1)
 			assert_msg((indexingTermSetByUser>=0 && unsigned(indexingTermSetByUser)<this->predicate->getArity()), "The specified index is not valid.");
-			initializeIndexMaps(indexingTermSetByUser);
-		}
 #ifdef NDEBUG
 		cout<<"Predicate: "<<predicate->getName()<<"  Index Term Set By User: "<<indexingTermSetByUser<<endl;
 #endif
@@ -217,7 +215,7 @@ public:
 	virtual void clear(){for(auto table:searchingTables) table.clear();};
 
 	///This method chooses the best indexing term among the one allowed.
-	unsigned int selectBestIndex(const unordered_map<int,index_object>& possibleTableToSearch);
+	unsigned int selectBestIndex(const vector<pair<int,index_object>>& possibleTableToSearch);
 
 private:
 	/// The predicate
@@ -263,10 +261,8 @@ public:
 			createdSearchingTables.push_back(false);
 		}
 		indexingTermSetByUser = Options::globalOptions()->getPredicateIndexTerm(this->predicate->getName());
-		if(indexingTermSetByUser>-1){
+		if(indexingTermSetByUser>-1)
 			assert_msg((indexingTermSetByUser>=0 && unsigned(indexingTermSetByUser)<this->predicate->getArity()), "The specified index is not valid.");
-			initializeIndexMaps(indexingTermSetByUser);
-		}
 		#ifdef NDEBUG
 				cout<<"Predicate: "<<predicate->getName()<<"  Index Term Set By User: "<<indexingTermSetByUser<<endl;
 		#endif
@@ -278,7 +274,7 @@ public:
 	virtual void clear(){for(auto table:searchingTables) searchingTables.clear();};
 
 	///This method chooses the best indexing term among the one allowed.
-	unsigned int selectBestIndex(const unordered_map<int,index_object>& possibleTableToSearch);
+	unsigned int selectBestIndex(const vector<pair<int,index_object>>& possibleTableToSearch);
 
 private:
 	/// The predicate
@@ -300,6 +296,40 @@ private:
 	/// If the data-structure for the best indexing term is not created, then it fills in
 	/// the data structures by means of initializeIndexMaps method.
 	int manageIndex(Atom* templateAtom);
+
+};
+
+class HashSetAtomSearcher: public BaseAtomSearcher {
+public:
+	HashSetAtomSearcher(AtomVector* table, Predicate *p) : BaseAtomSearcher(table), createdSearchingTable(false) {}
+
+	virtual Atom* findAtom(Atom *atom);
+	virtual void add(Atom* atom) { searchingTable.insert(atom);}
+	virtual void remove(Atom* atom) { searchingTable.erase(atom);}
+	virtual void clear() { searchingTable.clear();}
+
+private:
+	/// An unordered set of Atoms, the chosen searching data structure for this kind of indexing strategies.
+	AtomTable searchingTable;
+	/// A boolean used in order to determine if the data-structure for a particular indexing terms has been created.
+	bool createdSearchingTable;
+
+ 	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom){
+ 		manageIndex();
+ 		return new UnorderedSetIterator(searchingTable.begin(), searchingTable.end());
+ 	}
+
+ 	///This method fills in the indexing data structures
+	void initializeIndexMaps(){
+		createdSearchingTable=true;
+		for (Atom* a : *table)
+			searchingTable.insert(a);
+	}
+
+	void manageIndex(){
+		if(!createdSearchingTable)
+			initializeIndexMaps();
+	}
 
 };
 

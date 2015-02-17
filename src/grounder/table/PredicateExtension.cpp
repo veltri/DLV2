@@ -6,6 +6,7 @@
  */
 
 #include "PredicateExtension.h"
+#include "../ground/StatementDependency.h"
 //#include "../utility/Timer.h"
 
 namespace DLV2{
@@ -23,7 +24,11 @@ void PredicateExtension::setAtomSearchers(){
 		int indexType=Options::globalOptions()->getPredicateIndexType(predicate->getName());
 		if(indexType==-1)
 			indexType=Options::globalOptions()->getIndexType();
-		if(predicate->getArity()==0) indexType=DEFAULT;
+
+		if(predicate->getArity()==0)
+			indexType=DEFAULT;
+		if(StatementDependency::getInstance()->isOnlyInHead(predicate->getIndex()))
+			indexType=HASHSET;
 
 #ifdef NDEBUG
 		cout<<"Predicate: "<<predicate->getName()<<"  Index type: "<<indexType<<endl;
@@ -35,6 +40,9 @@ void PredicateExtension::setAtomSearchers(){
 			break;
 		case (MULTIMAP):
 			atomSearcher = new SingleTermMultiMapAtomSearcher(tables[atomSearchers.size()],predicate);
+			break;
+		case (HASHSET):
+			atomSearcher = new HashSetAtomSearcher(tables[atomSearchers.size()],predicate);
 			break;
 		default:
 			atomSearcher = new BaseAtomSearcher(tables[atomSearchers.size()]);
@@ -65,8 +73,8 @@ void PredicateExtension::swapTables(unsigned tableFrom,unsigned tableTo){
 	AtomVector *table_from=tables[tableFrom];
 	AtomVector *table_to=tables[tableTo];
 
-	AtomSearcher* seacher_from=atomSearchers[tableFrom];
-	AtomSearcher* seacher_to=atomSearchers[tableTo];
+	AtomSearcher* seacher_from=getAtomSearcher(tableFrom);
+	AtomSearcher* seacher_to=getAtomSearcher(tableTo);
 	unsigned size=table_from->size();
 	table_to->reserve(size+table_to->size());
 	for (int i = size-1; i >= 0; --i) {

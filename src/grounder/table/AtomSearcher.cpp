@@ -196,9 +196,14 @@ Atom* SingleTermMapAtomSearcher::findAtom(Atom *atom){
 	return nullptr;
 }
 
-unsigned int SingleTermMapAtomSearcher::selectBestIndex(const unordered_map<int,index_object>& possibleTableToSearch){
-	if(indexingTermSetByUser>-1 && createdSearchingTables[indexingTermSetByUser] && possibleTableToSearch.count(indexingTermSetByUser))
-		return indexingTermSetByUser;
+unsigned int SingleTermMapAtomSearcher::selectBestIndex(const vector<pair<int,index_object>>& possibleTableToSearch){
+	if(indexingTermSetByUser>-1 && createdSearchingTables[indexingTermSetByUser])
+		for(unsigned int i=0;i<possibleTableToSearch.size();i++){
+			if(possibleTableToSearch[i].first==indexingTermSetByUser)
+				return indexingTermSetByUser;
+			if(possibleTableToSearch[i].first>indexingTermSetByUser)
+				break;
+		}
 
 	auto it=possibleTableToSearch.begin();
 	unsigned tableMinSize=(*it).first;
@@ -216,11 +221,11 @@ unsigned int SingleTermMapAtomSearcher::selectBestIndex(const unordered_map<int,
 }
 
 int SingleTermMapAtomSearcher::manageIndex(Atom* templateAtom) {
-	unordered_map<int,index_object> possibleTableToSearch;
+	vector<pair<int,index_object>> possibleTableToSearch;
 	for(unsigned int i=0;i<templateAtom->getTermsSize();i++){
 		Term* t=templateAtom->getTerm(i);
 		if(t->isGround())
-			possibleTableToSearch.insert({i,t->getIndex()});
+			possibleTableToSearch.push_back({i,t->getIndex()});
 	}
 
 	int indexSelected=-1;
@@ -326,11 +331,11 @@ void SingleTermMultiMapAtomSearcher::remove(Atom* atom) {
 }
 
 int SingleTermMultiMapAtomSearcher::manageIndex(Atom* templateAtom) {
-	unordered_map<int,index_object> possibleTableToSearch;
+	vector<pair<int,index_object>> possibleTableToSearch;
 	for(unsigned int i=0;i<templateAtom->getTermsSize();i++){
 		Term* t=templateAtom->getTerm(i);
 		if(t->isGround()){
-			possibleTableToSearch.insert({i,t->getIndex()});
+			possibleTableToSearch.push_back({i,t->getIndex()});
 		}
 	}
 
@@ -363,9 +368,14 @@ Atom* SingleTermMultiMapAtomSearcher::findAtom(Atom *atom){
 	return nullptr;
 }
 
-unsigned int SingleTermMultiMapAtomSearcher::selectBestIndex(const unordered_map<int,index_object>& possibleTableToSearch){
-	if(indexingTermSetByUser>-1 && createdSearchingTables[indexingTermSetByUser] && possibleTableToSearch.count(indexingTermSetByUser))
-		return indexingTermSetByUser;
+unsigned int SingleTermMultiMapAtomSearcher::selectBestIndex(const vector<pair<int,index_object>>& possibleTableToSearch){
+	if(indexingTermSetByUser>-1 && createdSearchingTables[indexingTermSetByUser])
+		for(unsigned int i=0;i<possibleTableToSearch.size();i++){
+			if(possibleTableToSearch[i].first==indexingTermSetByUser)
+				return indexingTermSetByUser;
+			if(possibleTableToSearch[i].first>indexingTermSetByUser)
+				break;
+		}
 
 	auto it=possibleTableToSearch.begin();
 	unsigned tableMinSize=(*it).first;
@@ -419,10 +429,15 @@ void SingleTermMultiMapAtomSearcher::initializeIndexMaps(unsigned int indexingTe
 #endif
 }
 
-};
+/****************************************************** HASH SET ATOM SEARCH ***************************************************/
+
+Atom* HashSetAtomSearcher::findAtom(Atom* atom) {
+	manageIndex();
+	auto atomFound_it=searchingTable.find(atom);
+	if(atomFound_it!=searchingTable.end())
+		return *atomFound_it;
+	return nullptr;
+}
 
 };
-
-
-
-
+};

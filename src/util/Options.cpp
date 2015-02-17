@@ -251,7 +251,7 @@ Options::init(
 
             case OPTIONID_indexType:
             	indexType = atoi(optarg);
-                assert_msg((indexType>=DEFAULT && indexType<=MULTIMAP),"Index type not supported");
+                assert_msg((indexType>=DEFAULT && indexType<=HASHSET),"Index type not supported");
                 break;
 
             case OPTIONID_predIndexTerm:
@@ -305,7 +305,7 @@ int Options::getPredicateIndexTerm(const string& predicate){
 int Options::getPredicateIndexType(const string& predicate){
 	if(predicatesIndexTypeMap.count(predicate)){
 		unsigned type=predicatesIndexTypeMap[predicate];
-		assert_msg((type>=DEFAULT && type<=MULTIMAP),"Index type not supported");
+		assert_msg((type>=DEFAULT && type<=HASHSET),"Index type not supported");
 		return type;
 	}
 	return -1;
