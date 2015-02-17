@@ -68,6 +68,7 @@ public:
 	///Get an generic atom in specified table
 	Atom* getGenericAtom(unsigned table, Atom* genericAtom){
 		assert_msg(table<tables.size(),"The specified table doesn't exist.");
+		if(tables[table]->size()==0)return nullptr;
 		AtomSearcher* atomSearcher=getAtomSearcher(table);
 		Atom* atomFound=atomSearcher->findAtom(genericAtom);
 		return atomFound;

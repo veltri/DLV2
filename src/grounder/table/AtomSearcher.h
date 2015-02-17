@@ -31,8 +31,8 @@ struct AtomTableComparator{
 	}
 
 	inline bool operator()(Atom* atom1, Atom* atom2) const{
-		if(atom1->getTerms().size()!=atom2->getTermsSize())
-			return false;
+//		if(atom1->getTerms().size()!=atom2->getTermsSize())
+//			return false;
 		for(unsigned i=0;i<atom1->getTermsSize();i++)
 			if(atom1->getTerm(i)->getIndex()!=atom2->getTerm(i)->getIndex())
 				return false;
