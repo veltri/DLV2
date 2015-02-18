@@ -22,17 +22,20 @@ InMemoryInputBuilder::InMemoryInputBuilder() {
 	predicateTable=PredicateTable::getInstance();
 	statementDependency = StatementDependency::getInstance();
 	instancesTable=PredicateExtTable::getInstance();
+	inputRewriter=new BaseInputRewriter;
 
 	currentRule = new Rule;
 	currentAtom = nullptr;
 	currentBinop = Binop::NONE_OP;
 	currentAggregateElement= nullptr;
 	currentAggregate = nullptr;
+	foundAnAggregateAtom=false;
 }
 
 InMemoryInputBuilder::~InMemoryInputBuilder() {
 	delete currentRule;
 	delete currentAtom;
+	delete inputRewriter;
 }
 
 void InMemoryInputBuilder::onDirective(char* directiveName,
@@ -67,10 +70,11 @@ void InMemoryInputBuilder::onRule() {
 			currentRule->clear();
 		}
 		else{
-			statementDependency->addRuleMapping(currentRule);
+			addRuleMapping(currentRule);
 			currentRule = new Rule;
 		}
 	}
+	foundAnAggregateAtom=false;
 }
 
 void InMemoryInputBuilder::onConstraint() {
@@ -250,7 +254,6 @@ void InMemoryInputBuilder::onTermRange(char* lowerBound, char* upperBound) {
 		Term* rangeTerm=new RangeTerm(atoi(lowerBound),atoi(upperBound));
 		terms_parsered.push_back(rangeTerm);
 	}
-//	else Error
 }
 
 void InMemoryInputBuilder::onArithmeticOperation(char arithOperator) {
@@ -304,16 +307,17 @@ void InMemoryInputBuilder::onBuiltinAtom() {
 void InMemoryInputBuilder::onAggregateLowerGuard() {
 	if(currentAggregate==nullptr)
 		currentAggregate = new AggregateAtom;
-	currentAggregate->setLowerGueard(terms_parsered.back());
+	currentAggregate->setLowerGuard(terms_parsered.back());
 	terms_parsered.pop_back();
 }
 
 void InMemoryInputBuilder::onAggregateUpperGuard() {
-	currentAggregate->setUpperGueard(terms_parsered.back());
+	currentAggregate->setUpperGuard(terms_parsered.back());
 	terms_parsered.pop_back();
 }
 
 void InMemoryInputBuilder::onAggregateFunction(char* functionSymbol) {
+	foundAnAggregateAtom=true;
 	if(currentAggregate==nullptr)
 		currentAggregate = new AggregateAtom;
 	if(strcmp(functionSymbol,"#count")==0){
@@ -359,11 +363,22 @@ void InMemoryInputBuilder::onAggregate(bool naf) {
 	currentAggregate = nullptr;
 }
 
+void InMemoryInputBuilder::addRuleMapping(Rule* rule) {
+	if (foundAnAggregateAtom) {
+		vector<Rule*> rules;
+		inputRewriter->translateAggregate(rule, rules);
+		delete rule;
+		for (auto r : rules)
+			statementDependency->addRuleMapping(r);
+	} else
+		statementDependency->addRuleMapping(rule);
+}
+
 void InMemoryInputBuilder::createRule(vector<Atom*>* head, vector<Atom*>* body) {
 	Rule* rule=new Rule;
 	if(head!=0) rule->setHead(*head);
-	if(body!=0)rule->setBody(*body);
-	statementDependency->addRuleMapping(rule);
+	if(body!=0) rule->setBody(*body);
+	addRuleMapping(rule);
 }
 
 void InMemoryInputBuilder::createFact(Atom* fact) {

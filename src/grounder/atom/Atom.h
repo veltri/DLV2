@@ -105,7 +105,6 @@ public:
 	Term* getTerm(unsigned int i) const {return terms[i];};
 	///Push the term in terms at position i
 	void setTerm(unsigned int i,Term* term) {terms[i]=term;};
-	/// TODO
 	void setTerms(const vector<Term*>& terms) {this->terms=terms;};
 	///Returns true if the atom is negated with true negation
 	virtual bool isHasMinus() const {return 0;};
@@ -136,10 +135,14 @@ public:
 	virtual void setAggregateElements(const vector<AggregateElement>& aggregateElements) {};
 	///Getter method for the aggregate function
 	virtual AggregateFunction getAggregateFunction() const {return AggregateFunction::NONE;};
-	///Set lower guard of aggregate
-	virtual void setLowerGueard(Term* lower){};
-	///Set upper guard of aggregate
-	virtual void setUpperGueard(Term* upper){};
+	///Set the lower guard of aggregate
+	virtual void setLowerGuard(Term* lower){};
+	///Set the upper guard of aggregate
+	virtual void setUpperGuard(Term* upper){};
+	///Get the lower guard of aggregate
+	virtual Term* getLowerGuard() const {return nullptr;};
+	///Get the  upper guard of aggregate
+	virtual Term* getUpperGuard() const {return nullptr;};
 	///Setter method for the aggregate function
 	virtual void setAggregateFunction(AggregateFunction aggregateFunction) {};
 	///Getter method for the first binary operation
@@ -168,7 +171,11 @@ public:
 
 	/******* Weight Constraint Atom *****************/
 	virtual void expand(){};
+	virtual unsigned getWeightAtomsSize() const {return 0;};
+	virtual pair<Atom*,Term*> getWeightAtom(unsigned i) const {return {0,0};};
+	virtual void setWeightAtom(unsigned i, const pair<Atom*,Term*>& pair) {};
 	/***********************************************/
+
 
 
 	/// Substitute the terms in the atom with the given terms and return the atom with terms sobstitute
@@ -176,12 +183,11 @@ public:
 	virtual Atom* substitute(map_term_term& substitutionTerm){return nullptr;};
 	/// Similiar to substitute(map_term_term& substitutionTerm) but not create new atom
 	virtual void substitute(map_term_term& substitutionTerm,Atom* templateAtom){};
-
 	/// Substitute the term with constant term and calculate the arithmetic terms
 	/// The subclasses have to implement the substitute method for create correct type class of Atom
-	virtual Atom* ground(map_term_term& substritutionTerm);
+	virtual Atom* ground(map_term_term& substitutionTerm);
 	/// Similiar to ground(map_term_term& substritutionTerm) but not create new atom
-	virtual void ground(map_term_term& substritutionTerm,Atom* templateAtom);
+	virtual void ground(map_term_term& substitutionTerm,Atom* templateAtom);
 	///Printer method
 	virtual void print() = 0;
 	///Destructor

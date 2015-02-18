@@ -17,7 +17,7 @@ public:
 
 	unsigned getId(){return current_id++;};
 
-	IdGenerator* getInstance(){
+	static IdGenerator* getInstance(){
 		if(idGenerator==nullptr)
 			idGenerator=new IdGenerator;
 

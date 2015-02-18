@@ -54,6 +54,7 @@ public:
 	void addInHead(Atom* a){head.push_back(a);};
 	///This method adds an atom in the body
 	void addInBody(Atom* a){body.push_back(a);};
+	void addInBody(vector<Atom*>::iterator begin,vector<Atom*>::iterator end){body.insert(body.begin(),begin,end);};
 
 	///This method returns the set of predicate in the head
 	set_predicate getPredicateInHead(){return calculatePredicate(head,0,0);};

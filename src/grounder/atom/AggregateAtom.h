@@ -25,7 +25,7 @@ class AggregateAtom: public Atom {
 public:
 
 	///Default constructor
-	AggregateAtom(): firstBinop(Binop::NONE_OP), secondBinop(Binop::NONE_OP), aggregateFunction(AggregateFunction::NONE), negative(false) {lowerGueard=nullptr;upperGuard=nullptr;};
+	AggregateAtom(): firstBinop(Binop::NONE_OP), secondBinop(Binop::NONE_OP), aggregateFunction(AggregateFunction::NONE), negative(false) {lowerGuard=nullptr;upperGuard=nullptr;};
 
 	/** Constructor
 		 * @param f set the first term of comparison
@@ -37,10 +37,10 @@ public:
 		 * @param negative set whether the atom is negated with negation as failure
 		 */
 	AggregateAtom(Term* f, Binop fB,Term* s, Binop sB, AggregateFunction aF, vector<AggregateElement> aE, bool n):
-		firstBinop(fB), secondBinop(sB), aggregateFunction(aF), aggregateElements(move(aE)), negative(n) {lowerGueard=f;upperGuard=s;};
+		firstBinop(fB), secondBinop(sB), aggregateFunction(aF), aggregateElements(move(aE)), negative(n) {lowerGuard=f;upperGuard=s;};
 
 	Atom* clone() {
-		Atom* atom = new AggregateAtom(lowerGueard,firstBinop,upperGuard,secondBinop,aggregateFunction,aggregateElements,negative);
+		Atom* atom = new AggregateAtom(lowerGuard,firstBinop,upperGuard,secondBinop,aggregateFunction,aggregateElements,negative);
 		atom->setTerms(this->terms);
 		return atom;
 	};
@@ -49,7 +49,6 @@ public:
 	size_t hash() ;
 
 	bool operator==(const Atom& a);
-
 
 	///Getter method for the aggregate elements
 	vector<AggregateElement> getAggregateElements() {return aggregateElements;};
@@ -60,8 +59,13 @@ public:
 	/// Add aggregate element
 	void addAggregateElement(AggregateElement& element){aggregateElements.push_back(element);};
 
-	void setLowerGueard(Term* lower){lowerGueard=lower;};
-	void setUpperGueard(Term* upper){upperGuard=upper;};
+	void setLowerGuard(Term* lower){lowerGuard=lower;};
+	void setUpperGuard(Term* upper){upperGuard=upper;};
+
+	///Get the lower guard of aggregate
+	virtual Term* getLowerGuard() const {return terms[0];};
+	///Get the  upper guard of aggregate
+	virtual Term* getUpperGuard() const {return terms[1];};
 
 	AggregateFunction getAggregateFunction() const {return aggregateFunction;};
 	///Setter method for the aggregate function
@@ -99,7 +103,7 @@ private:
 	///Negated with naf
 	bool negative;
 
-	Term* lowerGueard;
+	Term* lowerGuard;
 	Term* upperGuard;
 
 	/* For the vector of terms, it contains the first and the second term of comparison.

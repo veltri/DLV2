@@ -22,6 +22,7 @@
 #include "../grounder/ground/StatementDependency.h"
 #include "../grounder/table/PredicateExtension.h"
 #include "../grounder/term/RangeTerm.h"
+#include "../grounder/statement/InputRewriter.h"
 
 using namespace std;
 
@@ -103,6 +104,10 @@ private:
 
 	Atom *currentAggregate;
 
+	InputRewriter* inputRewriter;
+
+	bool foundAnAggregateAtom;
+
  	void createRule(vector<Atom*>* head, vector<Atom*>* body=0);
 	void createFact(Atom* fact);
 
@@ -112,6 +117,7 @@ private:
 	void expandAtoms(const vector<vector<Atom*>>& atoms, vector<Atom*>& currentAtoms, vector<vector<Atom*>>& atomsExpanded, unsigned currentPosition);
 	void expandRulePart(vector<Atom*>::const_iterator start, vector<Atom*>::const_iterator end, vector<vector<Atom*> >& atomsExpanded);
 	void expandRangeAtom(Atom* fact, vector<Atom*>& atomExpanded);
+	void addRuleMapping(Rule* rule);
 };
 
 } /* namespace grounder */
