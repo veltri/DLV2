@@ -12,6 +12,7 @@
 #include "ProgramGrounder.h"
 #include "../atom/ClassicalLiteral.h"
 #include "../../util/Timer.h"
+#include "../table/IdGenerator.h"
 
 namespace DLV2{
 
@@ -262,6 +263,7 @@ bool ProgramGrounder::groundRule(Rule* rule) {
 ProgramGrounder::~ProgramGrounder() {
 	HashString::freeInstance();
 	HashVecInt::freeInstance();
+	IdGenerator::freeInstance();
 	delete statementDependency;
 	delete predicateExtTable;
 	delete termsMap;
