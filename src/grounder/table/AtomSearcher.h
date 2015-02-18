@@ -304,9 +304,9 @@ public:
 	HashSetAtomSearcher(AtomVector* table, Predicate *p) : BaseAtomSearcher(table), createdSearchingTable(false) {}
 
 	virtual Atom* findAtom(Atom *atom);
-	virtual void add(Atom* atom) { searchingTable.insert(atom);}
-	virtual void remove(Atom* atom) { searchingTable.erase(atom);}
-	virtual void clear() { searchingTable.clear();}
+	virtual void add(Atom* atom) { searchingTable.insert(atom); }
+	virtual void remove(Atom* atom) { searchingTable.erase(atom); }
+	virtual void clear() { searchingTable.clear(); }
 
 private:
 	/// An unordered set of Atoms, the chosen searching data structure for this kind of indexing strategies.

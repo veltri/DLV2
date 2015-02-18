@@ -263,24 +263,11 @@ void SingleTermMapAtomSearcher::initializeIndexMaps(unsigned int indexingTerm){
 #ifdef NDEBUG
 	cout<<"Predicate: "<<predicate->getName()<<" Created Index on term: "<<indexingTerm<<endl;
 #endif
-#ifdef DEBUG_RULE_TIME
-	Timer::getInstanif(indexingTermSetByUser>-1 && createdSearchingTables[indexingTermSetByUser] && possibleTableToSearch.count(indexingTermSetByUser))
-	return indexingTermSetByUser;
 
-auto it=possibleTableToSearch.begin();
-unsigned tableMinSize=(*it).first;
-unsigned minSize=(searchingTables[(*it).first][(*it).second]).size();
-for(it++;it!=possibleTableToSearch.end();it++){
-	if(createdSearchingTables[(*it).first]){
-		unsigned currentSize=(searchingTables[(*it).first][(*it).second]).size();
-		if(minSize>currentSize){
-			minSize=currentSize;
-			tableMinSize=(*it).first;
-		}
-	}
-}
-return tableMinSize;ce()->start("Create index "+predicate->getName()+" index "+boost::lexical_cast<string>(indexingTerm));
+#ifdef DEBUG_RULE_TIME
+	Timer::getInstance()->start("Create index "+predicate->getName()+" index "+boost::lexical_cast<string>(indexingTerm));
 #endif
+
 	createdSearchingTables[indexingTerm]=true;
 	unordered_set<index_object> termToBeIndexedIndices;
 	for (Atom* a : *table) {
@@ -294,6 +281,7 @@ return tableMinSize;ce()->start("Create index "+predicate->getName()+" index "+b
 			searchingTables[indexingTerm][termIndex].insert(a);
 		}
 	}
+
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->stop("Create index "+predicate->getName()+" index "+boost::lexical_cast<string>(indexingTerm));
 #endif
