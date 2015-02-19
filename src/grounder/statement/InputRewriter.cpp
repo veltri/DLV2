@@ -15,36 +15,37 @@
 namespace DLV2 {
 namespace grounder {
 
-
 const string AUXILIARY="#aux";
+const string SEPARATOR=".";
 
 void BaseInputRewriter::translateAggregate(Rule* rule, vector<Rule*>& ruleRewrited) {
+	Term * one_term=new NumericConstantTerm(false,1);
+	TermTable::getInstance()->addTerm(one_term);
 
-	/// First, auxiliary rules for aggregates elements are generated
 	for(auto it=rule->getBeginBody();it!=rule->getEndBody();it++){
 		vector<AggregateElement> aggElements=(*it)->getAggregateElements();
 		if(aggElements.size()>0){
+
 			//Atom that represent the aggregate
 			Atom* rewritedAggregateAtom;
 			unsigned id=IdGenerator::getInstance()->getId();
 			unsigned counter=1;
 			vector<pair<Atom*,Term*>> weightAtoms;
-			Term * one_term=new NumericConstantTerm(false,1);
-			TermTable::getInstance()->addTerm(one_term);
-			for(auto& aggElem:aggElements){
-				//Generation of set
 
-				Rule* rule=new Rule;
+			/// First, auxiliary rules for aggregates elements are generated
+			for(auto& aggElem:aggElements){
+				Rule* aggElementRrule=new Rule;
+
 				vector<Atom*> atoms=aggElem.getNafLiterals();
 				vector<Term*> terms=aggElem.getTerms();
-				rule->addInBody(atoms.begin(),atoms.end());
+				aggElementRrule->addInBody(atoms.begin(),atoms.end());
 
-				Predicate* predicate=getPredicate(AUXILIARY+"."+to_string(id)+".1."+to_string(counter),terms.size());
-
+				Predicate* predicate=createPredicate(AUXILIARY+SEPARATOR+to_string(id)+SEPARATOR+"1"+SEPARATOR+to_string(counter),terms.size());
 				Atom* auxiliaryAtom=new ClassicalLiteral(predicate,terms,false,false);
-				rule->addInHead(auxiliaryAtom);
+				aggElementRrule->addInHead(auxiliaryAtom);
+
 				counter++;
-				ruleRewrited.push_back(rule);
+				ruleRewrited.push_back(aggElementRrule);
 
 				if((*it)->getAggregateFunction()==AggregateFunction::COUNT)
 					weightAtoms.push_back({auxiliaryAtom,one_term});
@@ -54,87 +55,68 @@ void BaseInputRewriter::translateAggregate(Rule* rule, vector<Rule*>& ruleRewrit
 			}
 
 			if((*it)->getFirstBinop()!=Binop::EQUAL && (*it)->getSecondBinop()!=Binop::EQUAL){
-				Rule* rule=new Rule;
+
+				///Set the head of aggregateRule
 				Rule* aggregateRule=new Rule;
-
-				Predicate* predicate=getPredicate(AUXILIARY+"."+to_string(id),0);
-
+				Predicate* predicate=createPredicate(AUXILIARY+SEPARATOR+to_string(id),0);
 				rewritedAggregateAtom=new ClassicalLiteral(predicate,false,false);
 				aggregateRule->addInHead(rewritedAggregateAtom);
 
-				//Rule for lower guard
+				//Rule for the lower guard
 				Term *lowerGuard=(*it)->getLowerGuard();
 				if(lowerGuard!=nullptr){
-					Predicate* predicate=getPredicate(AUXILIARY+"."+to_string(id)+".2.1",0);
-					Atom* auxiliaryAtom=new ClassicalLiteral(predicate,false,false);
-					rule->addInHead(auxiliaryAtom);
 
-					Atom *auxiliaryWeightAtom=new WeightConstraint(lowerGuard,weightAtoms);
-					rule->addInBody(auxiliaryWeightAtom);
-					ruleRewrited.push_back(rule);
+					Predicate* predicate=createPredicate(AUXILIARY+SEPARATOR+to_string(id)+SEPARATOR+"1"+SEPARATOR+"2",0);
+					Atom* auxiliaryAtom=new ClassicalLiteral(predicate,false,false);
+
+					Rule* guardRule=generateGuardRule(auxiliaryAtom,lowerGuard,weightAtoms);
+					ruleRewrited.push_back(guardRule);
 
 					aggregateRule->addInBody(auxiliaryAtom);
 				}
 
-				//Rule for upper guard
+				//Rule for the upper guard
 				Term *upperGuard=(*it)->getUpperGuard();
 				if(upperGuard!=nullptr){
-					rule = new Rule;
 
-					Predicate* predicate=getPredicate(AUXILIARY+"."+to_string(id)+".2.2",0);
+					Predicate* predicate=createPredicate(AUXILIARY+SEPARATOR+to_string(id)+SEPARATOR+"2"+SEPARATOR+"2",0);
 					Atom* auxiliaryAtom=new ClassicalLiteral(predicate,false,false);
-					rule->addInHead(auxiliaryAtom);
 
-					Atom *auxiliaryWeightAtom=new WeightConstraint(upperGuard,weightAtoms);
-					rule->addInBody(auxiliaryWeightAtom);
+					Rule* guardRule=generateGuardRule(auxiliaryAtom,upperGuard,weightAtoms);
+					ruleRewrited.push_back(guardRule);
 
-					ruleRewrited.push_back(rule);
-
-					//set the auxiliary to false (Upper guard)
+					//The auxiliary atom for the upper guard has to be negated
 					auxiliaryAtom=new ClassicalLiteral(predicate,false,true);
 					aggregateRule->addInBody(auxiliaryAtom);
 				}
 
 				ruleRewrited.push_back(aggregateRule);
 
+			} else{ //Aggregate with = Variable
 
-
-			} else{
-				//Aggregate with = Variable
-
-				Rule* rule=new Rule;
-
-				//Find the variable
+				//Find the variable among the guards
 				Term* variableTerm = nullptr;
 				if((*it)->getLowerGuard()!=nullptr){
 					variableTerm=(*it)->getLowerGuard();
 				}else
 					variableTerm=(*it)->getUpperGuard();
 
-				//Generate WC rule
-
-				Predicate* predicate=getPredicate(AUXILIARY+"."+to_string(id)+".2",1);
-
+				//Generate the WeightConstraint rule
+				Rule* rule=new Rule;
+				Predicate* predicate=createPredicate(AUXILIARY+SEPARATOR+to_string(id)+SEPARATOR+"2",1);
 				vector<Term*> terms({variableTerm});
 				Atom* auxiliaryAtom=new ClassicalLiteral(predicate,terms,false,false);
 				rule->addInHead(auxiliaryAtom);
-
 				Atom *auxiliaryWeightAtom=new WeightConstraint(variableTerm,weightAtoms);
 				rule->addInBody(auxiliaryWeightAtom);
-
 				ruleRewrited.push_back(rule);
 
-
-				//Generate the lower not upper rule
+				//Generate just the rule for the lower (not for the upper one)
 				rule= new Rule;
-
-				predicate=getPredicate(AUXILIARY+"."+to_string(id),1);
-				//Reset the terms (moved previously)
-				terms ={variableTerm};
+				predicate=createPredicate(AUXILIARY+SEPARATOR+to_string(id),1);
+				terms ={variableTerm}; //Reset the terms (moved previously)
 				rewritedAggregateAtom = new ClassicalLiteral(predicate,terms,false,false);
-
 				rule->addInHead(rewritedAggregateAtom);
-
 				rule->addInBody(auxiliaryAtom);
 				//Generate arith term (variable +1)
 				vector<Term*> arith({variableTerm,one_term});
@@ -143,35 +125,35 @@ void BaseInputRewriter::translateAggregate(Rule* rule, vector<Rule*>& ruleRewrit
 				vector<Term*> terms2({arithTerm});
 				auxiliaryAtom=new ClassicalLiteral(auxiliaryAtom->getPredicate(),terms2,false,true);
 				rule->addInBody(auxiliaryAtom);
-
 				ruleRewrited.push_back(rule);
-
-
 
 			}
 
-
 			delete (*it);
 			(*it)=rewritedAggregateAtom;
-		}
 
+		}
 	}
 
-	/// Second, rules with weight constraints are generated
-	// TODO set the guard properly
-
+	ruleRewrited.push_back(rule);
 	for(auto r:ruleRewrited){
 		r->print();
 	}
-	rule->print();
-
 }
 
-Predicate* BaseInputRewriter::getPredicate(string name,int arity){
+Predicate* BaseInputRewriter::createPredicate(string name,int arity){
 	Predicate* predicate=new Predicate(name,arity);
 	predicateTable->getInstance()->insertPredicate(predicate);
 	predicateExtTable->addPredicateExt(predicate);
 	return predicate;
+}
+
+Rule* BaseInputRewriter::generateGuardRule(Atom* auxiliaryAtom,Term* guard,const vector<pair<Atom*,Term*>>& weightAtoms){
+	Rule* guardRule = new Rule;
+	guardRule->addInHead(auxiliaryAtom);
+	Atom *auxiliaryWeightAtom=new WeightConstraint(guard,weightAtoms);
+	guardRule->addInBody(auxiliaryWeightAtom);
+	return guardRule;
 }
 
 } /* namespace grounder */
