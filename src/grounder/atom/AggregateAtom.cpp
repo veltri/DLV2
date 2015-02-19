@@ -112,33 +112,39 @@ void DLV2::grounder::AggregateAtom::changeInStandardFormat() {
 	if(secondBinop==NONE_OP && firstBinop==Binop::UNEQUAL){
 		firstBinop=EQUAL;
 		this->negative=true;
-		this->print();
-		return;
 	}
-	else
-		if(firstBinop==NONE_OP && secondBinop==Binop::UNEQUAL){
-			firstBinop=EQUAL;
-			secondBinop=NONE_OP;
-			this->negative=true;
-			return;
+	if(firstBinop==NONE_OP && secondBinop==Binop::UNEQUAL){
+		firstBinop=EQUAL;
+		secondBinop=NONE_OP;
+		lowerGuard=upperGuard;
+		upperGuard=0;
+		this->negative=true;
 	}
-	else
-		if((firstBinop==Binop::GREATER || firstBinop==Binop::GREATER_OR_EQ) || (secondBinop==Binop::GREATER || secondBinop==Binop::GREATER_OR_EQ)){
-			Binop tmpB=firstBinop;
-			firstBinop=secondBinop;
-			secondBinop=tmpB;
-			Term* tmpT=lowerGuard;
+	if((secondBinop==NONE_OP && firstBinop==Binop::EQUAL && lowerGuard->getType()==NUMERIC_CONSTANT)
+			|| (firstBinop==NONE_OP && secondBinop==Binop::EQUAL && upperGuard->getType()==NUMERIC_CONSTANT)){
+		if(firstBinop==NONE_OP)
 			lowerGuard=upperGuard;
-			upperGuard=tmpT;
-			if(firstBinop==Binop::GREATER)
-				firstBinop=Binop::LESS;
-			if(secondBinop==Binop::GREATER)
-				secondBinop=Binop::LESS;
-			if(firstBinop==Binop::GREATER_OR_EQ)
-				firstBinop=Binop::LESS_OR_EQ;
-			if(secondBinop==Binop::GREATER_OR_EQ)
-				secondBinop=Binop::LESS_OR_EQ;
-		}
+		upperGuard=new NumericConstantTerm(false, lowerGuard->getConstantValue() + 1);
+		TermTable::getInstance()->addTerm(upperGuard);
+		firstBinop=LESS_OR_EQ;
+		secondBinop=LESS;
+	}
+	if((firstBinop==Binop::GREATER || firstBinop==Binop::GREATER_OR_EQ) || (secondBinop==Binop::GREATER || secondBinop==Binop::GREATER_OR_EQ)){
+		Binop tmpB=firstBinop;
+		firstBinop=secondBinop;
+		secondBinop=tmpB;
+		Term* tmpT=lowerGuard;
+		lowerGuard=upperGuard;
+		upperGuard=tmpT;
+		if(firstBinop==Binop::GREATER)
+			firstBinop=Binop::LESS;
+		if(secondBinop==Binop::GREATER)
+			secondBinop=Binop::LESS;
+		if(firstBinop==Binop::GREATER_OR_EQ)
+			firstBinop=Binop::LESS_OR_EQ;
+		if(secondBinop==Binop::GREATER_OR_EQ)
+			secondBinop=Binop::LESS_OR_EQ;
+	}
 	if(firstBinop==Binop::LESS && lowerGuard!=0){
 		Term* t=changeInStandardFormatGuard(lowerGuard);
 		lowerGuard=t;
@@ -149,5 +155,4 @@ void DLV2::grounder::AggregateAtom::changeInStandardFormat() {
 		upperGuard=t;
 		secondBinop==Binop::LESS;
 	}
-
 }

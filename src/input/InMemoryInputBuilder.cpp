@@ -26,9 +26,9 @@ InMemoryInputBuilder::InMemoryInputBuilder() {
 
 	currentRule = new Rule;
 	currentAtom = nullptr;
-	currentBinop = Binop::NONE_OP;
 	currentAggregateElement= nullptr;
 	currentAggregate = nullptr;
+	currentBinop = Binop::NONE_OP;
 	foundAnAggregateAtom=false;
 }
 
@@ -36,6 +36,8 @@ InMemoryInputBuilder::~InMemoryInputBuilder() {
 	delete currentRule;
 	delete currentAtom;
 	delete inputRewriter;
+	delete currentAggregateElement;
+	delete currentAggregate;
 }
 
 void InMemoryInputBuilder::onDirective(char* directiveName,
