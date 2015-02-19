@@ -363,6 +363,8 @@ void InMemoryInputBuilder::onAggregateElement() {
 
 void InMemoryInputBuilder::onAggregate(bool naf) {
 	currentAtom = currentAggregate;
+	AggregateAtom* ag=dynamic_cast<AggregateAtom*>(currentAtom);
+	ag->changeInStandardFormat();
 	currentAggregate = nullptr;
 }
 
@@ -370,7 +372,6 @@ void InMemoryInputBuilder::addRuleMapping(Rule* rule) {
 	if (foundAnAggregateAtom) {
 		vector<Rule*> rules;
 		inputRewriter->translateAggregate(rule, rules);
-		delete rule;
 		for (auto r : rules)
 			statementDependency->addRuleMapping(r);
 	} else

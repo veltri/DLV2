@@ -129,6 +129,8 @@ void BaseInputRewriter::translateAggregate(Rule* rule, vector<Rule*>& ruleRewrit
 
 			}
 
+			if((*it)->isNegative())
+				rewritedAggregateAtom=new ClassicalLiteral(rewritedAggregateAtom->getPredicate(),false,true);
 			delete (*it);
 			(*it)=rewritedAggregateAtom;
 
