@@ -63,9 +63,9 @@ public:
 	void setUpperGuard(Term* upper){upperGuard=upper;};
 
 	///Get the lower guard of aggregate
-	virtual Term* getLowerGuard() const {return terms[0];};
+	virtual Term* getLowerGuard() const {return lowerGuard;};
 	///Get the  upper guard of aggregate
-	virtual Term* getUpperGuard() const {return terms[1];};
+	virtual Term* getUpperGuard() const {return upperGuard;};
 
 	AggregateFunction getAggregateFunction() const {return aggregateFunction;};
 	///Setter method for the aggregate function

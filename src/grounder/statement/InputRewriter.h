@@ -30,6 +30,8 @@ class BaseInputRewriter : public InputRewriter {
 public:
 	BaseInputRewriter():InputRewriter(){};
 	void translateAggregate(Rule* rule, vector<Rule*>& ruleRewrited);
+private:
+	Predicate* getPredicate(string name,int arity);
 };
 
 
