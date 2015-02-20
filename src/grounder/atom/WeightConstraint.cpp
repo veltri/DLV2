@@ -6,6 +6,7 @@
  */
 
 #include "WeightConstraint.h"
+#include "../table/PredicateExtension.h"
 
 namespace DLV2 {
 namespace grounder {
@@ -61,8 +62,38 @@ bool WeightConstraint::containsAnonymous() {
 	return false;
 }
 
-void WeightConstraint::expand() {
+Atom* WeightConstraint::expand() {
+
+
+	vector<pair<Atom*,Term*>> newWeightAtoms;
+	PredicateExtension *predicateExt;
+	PredicateExtTable * predExtTable=PredicateExtTable::getInstance();
+	for(auto& weightPair:weightAtoms){
+		predicateExt=predExtTable->getPredicateExt(weightPair.first->getPredicate());
+
+		for(unsigned i =0;i<predicateExt->getSearchersSize();i++){
+			auto tableAtoms=predicateExt->getAtomSearcher(i)->getAllExtension();
+
+			for(auto& ground_atom:*tableAtoms){
+				ClassicalLiteral *classicalLiteral=new ClassicalLiteral(weightPair.first->getPredicate(),false,false);
+				classicalLiteral->setTerms(ground_atom->getTerms());
+				Term *weightTerm;
+				if(weightPair.second->isGround())
+					weightTerm=weightPair.second;
+				else
+					weightTerm=ground_atom->getTerm(0);
+
+				newWeightAtoms.push_back({classicalLiteral,weightTerm});
+			}
+		}
+
+
+
+	}
+	Atom *weightConstraint = new WeightConstraint(terms[0],newWeightAtoms);
+	return weightConstraint;
 }
+
 
 Atom* WeightConstraint::substitute(map_term_term& substitutionTerm) {
 	vector<Term*> newTerms;
@@ -76,7 +107,7 @@ Atom* WeightConstraint::substitute(map_term_term& substitutionTerm) {
 		Term* termGround=pair.second->substitute(substitutionTerm);
 		newWeightAtoms.push_back({atomGround,termGround});
 	}
-	return new WeightConstraint(terms,weightAtoms);
+	return new WeightConstraint(newTerms,newWeightAtoms);
 }
 
 void WeightConstraint::substitute(map_term_term& substitutionTerm, Atom* templateAtom) {

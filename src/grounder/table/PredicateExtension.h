@@ -88,6 +88,8 @@ public:
 	 //Moves the content of the tableFrom (source) to the tableTo (destination)
 	 void swapTables(unsigned tableFrom,unsigned tableTo);
 
+	 unsigned getSearchersSize(){return atomSearchers.size();};
+
 	///Printer method for a single table
 	inline void print(unsigned table){for(auto fact:*tables[table]){ClassicalLiteral::print(predicate,fact->getTerms(),false,false); cout<<"."<<endl;}}
 

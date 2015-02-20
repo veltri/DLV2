@@ -13,6 +13,7 @@
 #include "../atom/ClassicalLiteral.h"
 #include "../../util/Timer.h"
 #include "../table/IdGenerator.h"
+#include "../statement/InputRewriter.h"
 
 namespace DLV2{
 
@@ -35,6 +36,8 @@ void ProgramGrounder::ground() {
 	statementDependency->createComponentGraphAndComputeAnOrdering(exitRules, recursiveRules, componentPredicateInHead);
 //	printFact();
 
+	BaseInputRewriter rewriter;
+
 	// Ground each module according to the ordering:
 	// For each component, each rule is either recursive or exit,
 	// Exit rules are grounded just once, while recursive rules are grounded until no more knowledge is derived
@@ -48,8 +51,20 @@ void ProgramGrounder::ground() {
 
 		// Ground exit rules
 		for (Rule* r : exitRules[component]){
-			inizializeSearchInsertPredicate(r);
-			groundRule(r);
+
+			//FIXME
+			vector<Rule*> rewritedRules;
+			rewriter.expandEqualweightConstraint(r,rewritedRules);
+			if(rewritedRules.size()>0){
+				for(auto& rewritedRule:rewritedRules){
+					inizializeSearchInsertPredicate(rewritedRule);
+					groundRule(rewritedRule);
+				}
+			}else{
+				inizializeSearchInsertPredicate(r);
+				groundRule(r);
+			}
+
 #ifdef DEBUG_RULE_TIME
 			Timer::getInstance()->print();
 #endif

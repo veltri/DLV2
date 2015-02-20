@@ -170,7 +170,7 @@ public:
 	/*****************************************************/
 
 	/******* Weight Constraint Atom *****************/
-	virtual void expand(){};
+	virtual Atom* expand(){return nullptr;};
 	virtual unsigned getWeightAtomsSize() const {return 0;};
 	virtual pair<Atom*,Term*> getWeightAtom(unsigned i) const {return {0,0};};
 	virtual void setWeightAtom(unsigned i, const pair<Atom*,Term*>& pair) {};

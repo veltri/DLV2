@@ -124,6 +124,8 @@ public:
 	///It clears the searching data-structure(s).
 	virtual void clear() = 0;
 
+	AtomVector* getAllExtension(){return table;}
+
 	///Printer method. Useful mainly for debug purpose.
 	virtual void print(){};
 

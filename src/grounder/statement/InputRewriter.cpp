@@ -73,7 +73,7 @@ void BaseInputRewriter::translateAggregate(Rule* rule, vector<Rule*>& ruleRewrit
 				Term *lowerGuard=(*it)->getLowerGuard();
 				if(lowerGuard!=nullptr){
 
-					Predicate* predicate=createPredicate(AUXILIARY+SEPARATOR+to_string(id)+SEPARATOR+"1"+SEPARATOR+"2",0);
+					Predicate* predicate=createPredicate(AUXILIARY+SEPARATOR+to_string(id)+SEPARATOR+"2"+SEPARATOR+"1",0);
 					Atom* auxiliaryAtom=new ClassicalLiteral(predicate,false,false);
 
 					Rule* guardRule=generateGuardRule(auxiliaryAtom,lowerGuard,weightAtoms);
@@ -145,9 +145,10 @@ void BaseInputRewriter::translateAggregate(Rule* rule, vector<Rule*>& ruleRewrit
 	}
 
 	ruleRewrited.push_back(rule);
-	for(auto r:ruleRewrited){
-		r->print();
-	}
+
+//	for(auto& rule2:ruleRewrited){
+//		rule2->print();cout<<endl;
+//	}
 }
 
 Predicate* BaseInputRewriter::createPredicate(string name,int arity){
@@ -155,6 +156,51 @@ Predicate* BaseInputRewriter::createPredicate(string name,int arity){
 	predicateTable->getInstance()->insertPredicate(predicate);
 	predicateExtTable->addPredicateExt(predicate);
 	return predicate;
+}
+
+void BaseInputRewriter::expandEqualweightConstraint(Rule* rule,vector<Rule*>& ruleRewrited) {
+
+	//Find weight constraint
+	Atom* weightConstraint=nullptr;
+	for(auto it=rule->getBeginBody();it!=rule->getEndBody();it++){
+		if((*it)->getWeightAtomsSize()>0 && !(*it)->getLowerGuard()->isGround()){
+			weightConstraint=(*it);
+			break;
+		}
+	}
+	if(weightConstraint==nullptr)
+		return;
+
+	//Calculate dimension
+	PredicateExtension *predicateExt;
+	PredicateExtTable * predExtTable=PredicateExtTable::getInstance();
+	unsigned dim=0;
+	for(unsigned i=0;i<weightConstraint->getWeightAtomsSize();i++){
+		predicateExt=predExtTable->getPredicateExt(weightConstraint->getWeightAtom(i).first->getPredicate());
+		for(unsigned j =0;j<predicateExt->getSearchersSize();j++){
+			auto tableAtoms=predicateExt->getAtomSearcher(j)->getAllExtension();
+			dim+=tableAtoms->size();
+		}
+	}
+
+	map_term_term assignment;
+	for(unsigned i=0;i<=dim;i++){
+		Rule *newRule=new Rule;
+		Term *constantTerm=new NumericConstantTerm(false,i);
+		TermTable::getInstance()->addTerm(constantTerm);
+
+		assignment.insert({weightConstraint->getLowerGuard(),constantTerm});
+
+		newRule->addInHead((*rule->getBeginHead())->ground(assignment));
+		newRule->addInBody(weightConstraint->ground(assignment));
+
+		ruleRewrited.push_back(newRule);
+
+		assignment.clear();
+
+
+	}
+
 }
 
 Rule* BaseInputRewriter::generateGuardRule(Atom* auxiliaryAtom,Term* guard,const vector<pair<Atom*,Term*>>& weightAtoms){
