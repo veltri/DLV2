@@ -57,9 +57,6 @@ void InMemoryInputBuilder::onRule() {
 			createFact(fact);
 		currentRule->clear();
 	}else{
-		currentRule->print();
-		set_predicate pred_head=currentRule->getPredicateInHead();
-		for(auto p:pred_head)p->setIdb();
 		if(currentRule->containsRangeAtoms()){
 			vector<vector<Atom*>> headExpanded; expandRulePart(currentRule->getBeginHead(),currentRule->getEndHead(), headExpanded);
 			vector<vector<Atom*>> bodyExpanded;
