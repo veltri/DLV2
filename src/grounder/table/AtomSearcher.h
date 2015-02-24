@@ -180,8 +180,45 @@ protected:
 	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom){return new VectorIterator(table->begin(),table->end());}
 };
 
+class SingleTermAtomSearcher : public BaseAtomSearcher{
+public:
+	SingleTermAtomSearcher(AtomVector* table, Predicate* p) : BaseAtomSearcher(table), predicate(p) {
+			createdSearchingTables.reserve(predicate->getArity());
+			for(unsigned int i=0;i<predicate->getArity();i++)
+				createdSearchingTables.push_back(false);
+			indexingTermSetByUser = Options::globalOptions()->getPredicateIndexTerm(this->predicate->getName());
+			if(indexingTermSetByUser>-1)
+				assert_msg((indexingTermSetByUser>=0 && unsigned(indexingTermSetByUser)<this->predicate->getArity()), "The specified index is not valid.");
+	#ifdef NDEBUG
+			cout<<"Predicate: "<<predicate->getName()<<"  Index Term Set By User: "<<indexingTermSetByUser<<endl;
+	#endif
+		};
+	///This method chooses the best indexing term among the one allowed.
+	virtual unsigned int selectBestIndex(const vector<pair<int,index_object>>& possibleTableToSearch) = 0;
+
+protected:
+	/// The predicate
+	Predicate* predicate;
+	///The indexing term set by user. It is -1 if not set.
+	int indexingTermSetByUser;
+	/// A vector of boolean used in order to determine if the data-structure for a particular indexing terms has been created.
+	vector<bool> createdSearchingTables;
+
+	/// This method determines the possible indexing terms for the given atoms.
+	/// Then invokes the selectBestIndex method to determine the best one among them.
+	/// If the data-structure for the best indexing term is not created, then it fills in
+	/// the data structures by means of initializeIndexMaps method.
+	int manageIndex(Atom* templateAtom);
+
+	///This method fills in the searching data structure for the given indexing term
+	virtual void initializeIndexMaps(unsigned int indexingTerm) = 0;
+
+	int computePossibleIndexingTermTable(const vector<pair<int,index_object>>& possibleTableToSearch);
+
+};
+
 /**
- * @brief This class is a more advanced implementation of BaseAtomSearcher (@see BaseAtomSearcher )
+ * @brief This class is a more advanced implementation of SingleTermAtomSearcher (@see SingleTermAtomSearcher )
  * @details Searching for match is performed over unordered maps indexed by a single term, namely an indexing term.
  * Instead of performing the search among the whole base vector, it is performed among the atoms,
  * that match for that term.
@@ -189,24 +226,14 @@ protected:
  * that are mapped to unordered sets of atoms in which that term appears with that value.
  * Moreover is it possibly created one of this data-structure for each possible indexing term, so up the predicate arity,
  * accordingly to the searching needs during grounding.
- * This implementation is sibling to the one with multimaps @see SingleTermMultipleStrategiesAtomSearcherMultiMap,
- * since the two are implemented to be independent.
  */
-class SingleTermMapAtomSearcher: public BaseAtomSearcher {
+class SingleTermMapAtomSearcher: public SingleTermAtomSearcher {
 public:
-	SingleTermMapAtomSearcher(AtomVector* table, Predicate* p) : BaseAtomSearcher(table), predicate(p) {
+	SingleTermMapAtomSearcher(AtomVector* table, Predicate* p) : SingleTermAtomSearcher(table,p) {
 		searchingTables.reserve(predicate->getArity());
-		createdSearchingTables.reserve(predicate->getArity());
 		for(unsigned int i=0;i<predicate->getArity();i++){
 			searchingTables.push_back(unordered_map<index_object,AtomTable>());
-			createdSearchingTables.push_back(false);
 		}
-		indexingTermSetByUser = Options::globalOptions()->getPredicateIndexTerm(this->predicate->getName());
-		if(indexingTermSetByUser>-1)
-			assert_msg((indexingTermSetByUser>=0 && unsigned(indexingTermSetByUser)<this->predicate->getArity()), "The specified index is not valid.");
-#ifdef NDEBUG
-		cout<<"Predicate: "<<predicate->getName()<<"  Index Term Set By User: "<<indexingTermSetByUser<<endl;
-#endif
 	};
 
 	virtual Atom* findAtom(Atom *atom);
@@ -218,29 +245,18 @@ public:
 	unsigned int selectBestIndex(const vector<pair<int,index_object>>& possibleTableToSearch);
 
 private:
-	/// The predicate
-	Predicate* predicate;
-	///The indexing term set by user. It is -1 if not set.
-	int indexingTermSetByUser;
 	///A vector of chosen searching data structure for this kind of indexing strategies, one for each possible indexing term.
 	vector<unordered_map<index_object,AtomTable>> searchingTables;
-	/// A vector of boolean used in order to determine if the data-structure for a particular indexing terms has been created.
-	vector<bool> createdSearchingTables;
 
 	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom);
 
 	///This method fills in the searching data structure for the given indexing term
 	void initializeIndexMaps(unsigned int indexingTerm);
 
-	/// This method determines the possible indexing terms for the given atoms.
-	/// Then invokes the selectBestIndex method to determine the best one among them.
-	/// If the data-structure for the best indexing term is not created, then it fills in
-	/// the data structures by means of initializeIndexMaps method.
-	int manageIndex(Atom* templateAtom);
 };
 
 /**
- * @brief This class is a more advanced implementation of BaseAtomSearcher (@see BaseAtomSearcher )
+ * @brief This class is a more advanced implementation of SingleTermAtomSearcher (@see SingleTermAtomSearcher )
  * @details Searching for match is performed over unordered maps indexed by a single term, namely an indexing term.
  * Instead of performing the search among the whole base vector, it is performed among the atoms,
  * that match for that term.
@@ -248,24 +264,14 @@ private:
  * that are mapped to atoms in which that term appears with that value.
  * Moreover is it possibly created one of this data-structure for each possible indexing term, so up the predicate arity,
  * accordingly to the searching needs during grounding.
- * This implementation is sibling to the one with maps @see SingleTermMultipleStrategiesAtomSearcher,
- * since the two are implemented to be independent.
  */
-class SingleTermMultiMapAtomSearcher: public BaseAtomSearcher {
+class SingleTermMultiMapAtomSearcher: public SingleTermAtomSearcher {
 public:
-	SingleTermMultiMapAtomSearcher(AtomVector* table, Predicate *p) : BaseAtomSearcher(table), predicate(p) {
+	SingleTermMultiMapAtomSearcher(AtomVector* table, Predicate *p) : SingleTermAtomSearcher(table,p) {
 		searchingTables.reserve(predicate->getArity());
-		createdSearchingTables.reserve(predicate->getArity());
 		for(unsigned int i=0;i<predicate->getArity();i++){
 			searchingTables.push_back(Multimap_Atom());
-			createdSearchingTables.push_back(false);
 		}
-		indexingTermSetByUser = Options::globalOptions()->getPredicateIndexTerm(this->predicate->getName());
-		if(indexingTermSetByUser>-1)
-			assert_msg((indexingTermSetByUser>=0 && unsigned(indexingTermSetByUser)<this->predicate->getArity()), "The specified index is not valid.");
-		#ifdef NDEBUG
-				cout<<"Predicate: "<<predicate->getName()<<"  Index Term Set By User: "<<indexingTermSetByUser<<endl;
-		#endif
 	};
 
 	virtual Atom* findAtom(Atom *atom);
@@ -277,25 +283,13 @@ public:
 	unsigned int selectBestIndex(const vector<pair<int,index_object>>& possibleTableToSearch);
 
 private:
-	/// The predicate
-	Predicate* predicate;
-	/// The indexing term set by user. It is -1 if not set.
-	int indexingTermSetByUser;
 	/// A vector of chosen searching data structure for this kind of indexing strategies, one for each possible indexing term.
 	vector<Multimap_Atom> searchingTables;
-	/// A vector of boolean used in order to determine if the data-structure for a particular indexing terms has been created.
-	vector<bool> createdSearchingTables;
 
  	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom);
 
  	///This method fills in the indexing data structures
 	void initializeIndexMaps(unsigned int indexTable);
-
-	/// This method determines the possible indexing terms for the given atoms.
-	/// Then invokes the selectBestIndex method to determine the best one among them.
-	/// If the data-structure for the best indexing term is not created, then it fills in
-	/// the data structures by means of initializeIndexMaps method.
-	int manageIndex(Atom* templateAtom);
 
 };
 

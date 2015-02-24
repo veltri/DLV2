@@ -147,7 +147,7 @@ public:
 	unsigned int getSize() {return predicateExtTable.size();};
 
 	///Printer method for the first table in Predicate Extension
-	void print(unsigned table) {for (auto& i : predicateExtTable)i.second->print(table);};
+	void print(unsigned table) {for (auto& i : predicateExtTable) i.second->print(table);};
 
 	///Destructor
 	~PredicateExtTable(){for(auto pair_predExt:predicateExtTable) delete pair_predExt.second;};

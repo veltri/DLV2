@@ -24,7 +24,7 @@ void PredicateExtension::setAtomSearchers(){
 		int indexType=Options::globalOptions()->getPredicateIndexType(predicate->getName());
 
 		if(indexType==-1){
-			if(StatementDependency::getInstance()->isOnlyInHead(predicate->getIndex()))
+			if(StatementDependency::getInstance()->isOnlyInHead(predicate->getIndex()) || predicate->getArity()==1)
 				indexType=HASHSET;
 			else
 				indexType=Options::globalOptions()->getIndexType();
