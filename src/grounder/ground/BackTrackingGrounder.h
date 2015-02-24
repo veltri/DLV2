@@ -61,7 +61,7 @@ protected:
 	/// Current atom iterator for grounding rule
 	vector<Atom*>::iterator current_atom_it;
 	/// Current atom index for grounding rule
-	unsigned index_current_atom;
+	int index_current_atom;
 	//vector index atom and if is undefined
 	vector<bool> atom_undef_inbody;
 	//vector of bool if the atom is ground

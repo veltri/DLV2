@@ -47,8 +47,7 @@ bool BackTrackingGrounder::isGroundCurrentAtom(){
 	Timer::getInstance()->stop("Is Ground");
 	return isGround;
 #endif
-	if(is_ground_atom.size()<=index_current_atom)
-		is_ground_atom.push_back(((*current_atom_it)->isBuiltIn() || (*current_atom_it)->isNegative() || current_variables_atoms[index_current_atom].size()==0));
+
 	return (is_ground_atom[index_current_atom]);
 
 }
@@ -280,7 +279,6 @@ bool BackTrackingGrounder::foundAssignment() {
 
 bool BackTrackingGrounder::back() {
 
-
 	if (index_current_atom <=  0)
 		return false;
 
@@ -291,9 +289,7 @@ bool BackTrackingGrounder::back() {
 	current_atom_it--;
 	index_current_atom--;
 
-
 	while (isGroundCurrentAtom()){
-
 		if (index_current_atom <= 0){
 #ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("Back");return false;
@@ -307,7 +303,6 @@ bool BackTrackingGrounder::back() {
 		index_current_atom--;
 
 	}
-
 	removeBindValueInAssignment(current_variables_atoms[index_current_atom]);
 	generateTemplateAtom();
 
@@ -364,6 +359,11 @@ void BackTrackingGrounder::findBindVariablesRule() {
 
 		for (auto variable : variablesInAtom)
 			total_variable.insert(variable);
+
+		///Set true if is ground
+		if(is_ground_atom.size()<=index_current_atom)
+				is_ground_atom.push_back(((*current_atom_it)->isBuiltIn() || (*current_atom_it)->isNegative() || current_variables_atoms[index_current_atom].size()==0));
+
 	}
 #ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("Find Bind");
