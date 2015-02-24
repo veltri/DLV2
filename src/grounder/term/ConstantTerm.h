@@ -53,6 +53,8 @@ public:
 	virtual int getConstantValue() const {return numeric_constant;};
 	virtual string getName() const {return boost::lexical_cast<string>(numeric_constant);}
 	virtual void print() {cout<<numeric_constant;}
+	void setNegative(bool n){numeric_constant=-numeric_constant;};
+
 private:
 	int numeric_constant;
 };

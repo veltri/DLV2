@@ -239,6 +239,7 @@ void InMemoryInputBuilder::onFunction(char* functionSymbol, int nTerms) {
 }
 
 void InMemoryInputBuilder::onTermDash() {
+	terms_parsered.back()->setNegative(true);
 }
 
 void InMemoryInputBuilder::onTermParams() {

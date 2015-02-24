@@ -63,7 +63,7 @@ public:
 	///Return the negation of the term
 	bool isNegative(){return negative;};
 	///Set the negation of the term
-	void setNegative(bool n){negative=n;};
+	virtual void setNegative(bool n){negative=n;};
 	///Return the numeric term constant
 	virtual int getConstantValue() const {return 0;};
 	///Return the name of the term
