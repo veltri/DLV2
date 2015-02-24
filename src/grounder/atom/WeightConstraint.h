@@ -18,8 +18,6 @@ public:
 	WeightConstraint() : Atom() {};
 	WeightConstraint(vector<pair<Atom*,Term*> > weightAtoms ) : Atom(), weightAtoms(weightAtoms) {};
 	WeightConstraint(vector<Term*> terms, vector<pair<Atom*,Term*> > weightAtoms ) : Atom(terms), weightAtoms(weightAtoms) {};
-	WeightConstraint(Term* term, vector<pair<Atom*,Term*> > weightAtoms ) : Atom(), weightAtoms(weightAtoms) {terms.push_back(term);};
-
 
 	virtual ~WeightConstraint() {};
 
