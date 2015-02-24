@@ -166,10 +166,6 @@ public:
 	virtual void setFact(bool isFact) {  }
 	/*****************************************************/
 
-	/******* Weight Constraint Atom *****************/
-	virtual void expand(){};
-	/***********************************************/
-
 
 	/// Substitute the terms in the atom with the given terms and return the atom with terms sobstitute
 	/// @param substritutionTerm map of index_object. The first index is the ID of term to substitute and second the value
