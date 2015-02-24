@@ -45,7 +45,7 @@ void  Rule::print(){
 			cout<<";";
 		i++;
 	}
-	if(body.size()>0){
+	if(body.size()>0 || isAStrongConstraint()){
 		cout<<":-";
 		unsigned int i=0;
 		for (auto atom:body) {
