@@ -55,7 +55,6 @@ void InMemoryInputBuilder::onRule() {
 			createFact(fact);
 		currentRule->clear();
 	}else{
-		currentRule->print();
 		set_predicate pred_head=currentRule->getPredicateInHead();
 		for(auto p:pred_head)p->setIdb();
 		if(currentRule->containsRangeAtoms()){
@@ -87,7 +86,7 @@ void InMemoryInputBuilder::onConstraint() {
 		currentRule->clear();
 	}
 	else{
-		addRuleMapping(currentRule);
+		statementDependency->addRuleMapping(currentRule);
 		currentRule = new Rule;
 	}
 }

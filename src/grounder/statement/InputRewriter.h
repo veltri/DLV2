@@ -31,8 +31,7 @@ public:
 	BaseInputRewriter():InputRewriter(){};
 	void translateAggregate(Rule* rule, vector<Rule*>& ruleRewrited);
 private:
-	Predicate* createPredicate(string name,int arity);
-	Rule* generateGuardRule(Atom* auxiliaryAtom,Term* guard,const vector<pair<Atom*,Term*>>& weightAtoms);
+	Predicate* getPredicate(string name,int arity);
 };
 
 
