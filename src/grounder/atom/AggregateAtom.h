@@ -37,7 +37,7 @@ public:
 		 * @param negative set whether the atom is negated with negation as failure
 		 */
 	AggregateAtom(Term* f, Binop fB,Term* s, Binop sB, AggregateFunction aF, vector<AggregateElement> aE, bool n):
-		firstBinop(fB), secondBinop(sB), aggregateFunction(aF), aggregateElements(move(aE)), negative(n) {lowerGuard=f;upperGuard=s; chechAggregateValidity();};
+		firstBinop(fB), secondBinop(sB), aggregateFunction(aF), aggregateElements(move(aE)), negative(n) {lowerGuard=f;upperGuard=s;};
 
 	Atom* clone() {
 		Atom* atom = new AggregateAtom(lowerGuard,firstBinop,upperGuard,secondBinop,aggregateFunction,aggregateElements,negative);
@@ -59,8 +59,8 @@ public:
 	/// Add aggregate element
 	void addAggregateElement(AggregateElement& element){aggregateElements.push_back(element);};
 
-	void setLowerGuard(Term* lower){lowerGuard=lower; chechAggregateValidity();};
-	void setUpperGuard(Term* upper){upperGuard=upper; chechAggregateValidity();};
+	void setLowerGuard(Term* lower){lowerGuard=lower;};
+	void setUpperGuard(Term* upper){upperGuard=upper;};
 
 	///Get the lower guard of aggregate
 	virtual Term* getLowerGuard() const {return lowerGuard;};
@@ -73,17 +73,15 @@ public:
 	///Getter method for the first binary operation
 	Binop getFirstBinop() const {return firstBinop;};
 	///Setter method for the first binary operation
-	void setFirstBinop(Binop firstBinop) {this->firstBinop = firstBinop; chechAggregateValidity();};
+	void setFirstBinop(Binop firstBinop) {this->firstBinop = firstBinop;};
 	///Getter method for the second binary operation
 	Binop getSecondBinop() const {return secondBinop;};
 	///Setter method for the second binary operation
-	void setSecondBinop(Binop secondBinop) {this->secondBinop = secondBinop; chechAggregateValidity();};
+	void setSecondBinop(Binop secondBinop) {this->secondBinop = secondBinop;};
 	///Returns true if the atom is negated with negation as failure
 	bool isNegative() const {return negative;};
 	///Set whether the atom is negated with negation as failure
 	void setNegative(bool negative) {this->negative = negative;};
-
-	void changeInStandardFormat();
 
 	///This method compute the resulting hash for an aggregateElement TODO
 	size_t getHash() const {return 0;};
@@ -91,11 +89,7 @@ public:
 	///Printer method
 	void print();
 
-	~AggregateAtom() {
-	}
-	void chechAggregateValidity();
-
-	;
+	~AggregateAtom() {	};
 
 private:
 	///First binary operation
@@ -115,8 +109,6 @@ private:
 	/* For the vector of terms, it contains the first and the second term of comparison.
 	 * Notice that the vector contains the terms in the same order as they appear: the first term in position 0, the second in position 1.
 	 */
-
-	Term* changeInStandardFormatGuard(Term* guard);
 };
 
 };
