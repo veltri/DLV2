@@ -150,7 +150,7 @@ public:
 	void print(unsigned table) {for (auto& i : predicateExtTable)i.second->print(table);};
 
 	///Destructor
-	~PredicateExtTable(){for(auto pair_predExt:predicateExtTable) delete pair_predExt.second;};
+	~PredicateExtTable(){cout<<"aaa£"<<endl;for(auto pair_predExt:predicateExtTable) delete pair_predExt.second;};
 
 	static PredicateExtTable* getInstance(){
 		if(predicateExtTable_== nullptr)
