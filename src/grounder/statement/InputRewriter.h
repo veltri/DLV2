@@ -35,6 +35,10 @@ public:
 private:
 	Predicate* createPredicate(string name,int arity);
 	Rule* generateGuardRule(Atom* auxiliaryAtom,Term* guard,const vector<pair<Atom*,Term*>>& weightAtoms);
+
+	Atom* rewriteBoundAggregateCountSum(Atom* aggregateAtom,unsigned id, vector<pair<Atom*,Term*>>& weightAtoms,vector<Rule*>& ruleRewrited);
+	Atom* rewriteEqualAggregateCountSum(Atom* aggregateAtom,unsigned id, vector<pair<Atom*,Term*>>& weightAtoms,vector<Rule*>& ruleRewrited);
+
 };
 
 
