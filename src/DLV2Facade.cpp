@@ -198,9 +198,9 @@ DLV2Facade::solve()
     if( getOptions().getInputBuilderPolicy() == BUILDER_IN_MEMORY )
     {
 
-    	DLV2::grounder::ProgramGrounder *grounder= new DLV2::grounder::BackTrackingGrounder();
-    	grounder->ground();
-    	delete grounder;
+//    	DLV2::grounder::ProgramGrounder *grounder= new DLV2::grounder::BackTrackingGrounder();
+//    	grounder->ground();
+//    	delete grounder;
 
     }
 

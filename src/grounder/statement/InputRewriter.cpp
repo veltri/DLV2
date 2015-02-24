@@ -25,14 +25,7 @@ void BaseInputRewriter::translateAggregate(Rule* rule, vector<Rule*>& ruleRewrit
 	for(auto it=rule->getBeginBody();it!=rule->getEndBody();it++){
 		vector<AggregateElement> aggElements=(*it)->getAggregateElements();
 		if(aggElements.size()>0){
-			if((*it)->getLowerGuard()!=0 && (*it)->getUpperGuard()!=0 &&
-					(*it)->getLowerGuard()->getConstantValue()>(*it)->getUpperGuard()->getConstantValue()){
-				delete rule;
-				for(auto rule:ruleRewrited)
-					delete rule;
-				ruleRewrited.clear();
-				return;
-			}
+
 			//Atom that represent the aggregate
 			Atom* rewritedAggregateAtom;
 			unsigned id=IdGenerator::getInstance()->getId();
