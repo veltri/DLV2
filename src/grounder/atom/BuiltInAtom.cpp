@@ -85,10 +85,10 @@ void BuiltInAtom::print(){
 	secondTerm->print();
 }
 
-Atom* BuiltInAtom::substitute(map_term_term& substitutionTerm) {
+Atom* BuiltInAtom::substitute(map_term_term& substritutionTerm) {
 	vector<Term*> terms_substitute(terms.size());
 	for(unsigned int i=0;i<terms.size();i++){
-		terms_substitute[i]=terms[i]->substitute(substitutionTerm) ;
+		terms_substitute[i]=terms[i]->substitute(substritutionTerm) ;
 	}
 	return new BuiltInAtom(binop,negative,terms_substitute);
 }

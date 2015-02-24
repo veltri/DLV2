@@ -72,8 +72,8 @@ public:
 	void print();
 
 	/// Substitute the term and return a new Atom with term substituted
-	virtual Atom* substitute(map_term_term& substitutionTerm);
-	virtual void substitute(map_term_term& substitutionTerm,Atom* templateAtom);
+	virtual Atom* substitute(map_term_term& substritutionTerm);
+	virtual void substitute(map_term_term& substritutionTerm,Atom* templateAtom);
 
 
 	///Destructor

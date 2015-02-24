@@ -15,49 +15,49 @@ namespace grounder {
 
 class WeightConstraint: public Atom{
 public:
-	WeightConstraint() : Atom() {};
-	WeightConstraint(vector<pair<Atom*,Term*> > weightAtoms ) : Atom(), weightAtoms(weightAtoms) {};
-	WeightConstraint(vector<Term*> terms, vector<pair<Atom*,Term*> > weightAtoms ) : Atom(terms), weightAtoms(weightAtoms) {};
+	WeightConstraint();
+	virtual ~WeightConstraint();
 
-	virtual ~WeightConstraint() {};
 
-	Term* getLowerGuard() const {return terms[0];}
-	void setLowerGuard(Term* lower) {if(terms.empty()) terms.push_back(lower);}
-
-	unsigned getWeightAtomsSize() const {return this->weightAtoms.size();};
-	pair<Atom*,Term*> getWeightAtom(unsigned i) const {return weightAtoms[i];};
-	void setWeightAtom(unsigned i, const pair<Atom*,Term*>& pair) {weightAtoms[i]=pair;};
-
-	Atom* clone();
-
-	size_t hash();
+	Atom* clone() = 0;
 
 	///Equal-to operator for atoms
-	bool operator==(const Atom& a);
+	bool operator==(const Atom& a)=0;
 
 	///Return the term of variable present in the Atom
-	set_term getVariable();
+	set_term getVariable(){};
 
 	/// Return true if is ground, each term is constant term
-	bool isGround();
+	bool isGround(){}
+
+	/// Return true if contains a range term
+	bool containsRangeTerms(){
+		return false;
+	};
 
 	/// Return true if contains an anonymous term
-	bool containsAnonymous();
-	bool containsRangeTerms();
+	bool containsAnonymous(){
+		return false;
+	};
 
-	void expand();
 
-	/// Substitute the terms in the atom with the given terms and return the atom with terms substitute
+	void setLowerGueard(Term* lower){};
+
+
+	void expand(){};
+
+
+	/// Substitute the terms in the atom with the given terms and return the atom with terms sobstitute
 	/// @param substritutionTerm map of index_object. The first index is the ID of term to substitute and second the value
-	Atom* substitute(map_term_term& substitutionTerm);
+	virtual Atom* substitute(map_term_term& substitutionTerm){};
 	/// Similiar to substitute(map_term_term& substitutionTerm) but not create new atom
-	void substitute(map_term_term& substitutionTerm,Atom* templateAtom);
+	virtual void substitute(map_term_term& substitutionTerm,Atom* templateAtom){};
 
 	///Printer method
-	virtual void print();
+	virtual void print() = 0;
 
 private:
-	/// A vector containing the atoms and the weight associated to them
+	Term* guard;
 	vector<pair<Atom*,Term*> > weightAtoms;
 
 };

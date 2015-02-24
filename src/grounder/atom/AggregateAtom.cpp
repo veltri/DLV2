@@ -9,18 +9,17 @@
 using namespace std;
 
 size_t DLV2::grounder::AggregateAtom::hash() {
-	// TODO Hash Aggregate Atoms
-	return 0;
+
+
+
 }
 
 bool DLV2::grounder::AggregateAtom::operator ==(const Atom& a) {
-	// TODO Op == Aggregate Atoms
-	return false;
 }
 
 void DLV2::grounder::AggregateAtom::print() {
-	if(lowerGuard!=nullptr)
-		lowerGuard->print();
+	if(lowerGueard!=nullptr)
+		lowerGueard->print();
 	cout<<"#";
 	if(aggregateFunction==AggregateFunction::COUNT){
 		cout<<"count";
