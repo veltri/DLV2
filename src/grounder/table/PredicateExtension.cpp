@@ -22,16 +22,13 @@ void PredicateExtension::setAtomSearchers(){
 	while(atomSearchers.size()<tables.size()){
 		AtomSearcher* atomSearcher;
 		int indexType=Options::globalOptions()->getPredicateIndexType(predicate->getName());
-
-		if(indexType==-1){
-			if(StatementDependency::getInstance()->isOnlyInHead(predicate->getIndex()))
-				indexType=HASHSET;
-			else
-				indexType=Options::globalOptions()->getIndexType();
-		}
+		if(indexType==-1)
+			indexType=Options::globalOptions()->getIndexType();
 
 		if(predicate->getArity()==0)
 			indexType=DEFAULT;
+		if(StatementDependency::getInstance()->isOnlyInHead(predicate->getIndex()))
+			indexType=HASHSET;
 
 #ifdef NDEBUG
 		cout<<"Predicate: "<<predicate->getName()<<"  Index type: "<<indexType<<endl;
