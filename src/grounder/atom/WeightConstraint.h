@@ -47,7 +47,7 @@ public:
 	bool containsAnonymous();
 	bool containsRangeTerms();
 
-	Atom* expand();
+	void expand();
 
 	/// Substitute the terms in the atom with the given terms and return the atom with terms substitute
 	/// @param substritutionTerm map of index_object. The first index is the ID of term to substitute and second the value

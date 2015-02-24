@@ -48,7 +48,7 @@ bool BackTrackingGrounder::isGroundCurrentAtom(){
 	return isGround;
 #endif
 	if(is_ground_atom.size()<=index_current_atom)
-		is_ground_atom.push_back(((*current_atom_it)->isBuiltIn() || (*current_atom_it)->isNegative() || current_variables_atoms[index_current_atom].size()==0) || templateSetAtom[index_current_atom]->getWeightAtomsSize()>0);
+		is_ground_atom.push_back(((*current_atom_it)->isBuiltIn() || (*current_atom_it)->isNegative() || current_variables_atoms[index_current_atom].size()==0));
 	return (is_ground_atom[index_current_atom]);
 
 }
@@ -56,7 +56,6 @@ bool BackTrackingGrounder::match() {
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("Match");
 #endif
-
 
 	/// If match is called at the end and there isn't bind variable return false else continue
 	if(index_current_atom + 1 >= currentRule->getSizeBody() && isGroundCurrentAtom()){
@@ -81,10 +80,6 @@ bool BackTrackingGrounder::match() {
 #endif
 
 		return templateSetAtom[index_current_atom] -> evaluate(current_var_assign);
-
-	}if(templateSetAtom[index_current_atom]->getWeightAtomsSize()>0){
-
-		return true;
 
 	}else{
 		bool match;
@@ -227,16 +222,11 @@ bool BackTrackingGrounder::foundAssignment() {
 	unsigned index_body_atom=0;
 	for(auto atom=currentRule->getBeginBody();atom!=currentRule->getEndBody();atom++,index_body_atom++){
 
-		if((*atom)->isBuiltIn())continue;
-		if(templateSetAtom[index_current_atom]->getWeightAtomsSize()>0){
-			groundRule->addInBody(templateSetAtom[index_current_atom]->expand());
-			continue;
-		}
-
 		if(!atom_undef_inbody[index_body_atom])
 			if(!((*atom)->isNegative() && StatementDependency::getInstance()->isPredicateNegativeStratified((*atom)->getPredicate()->getIndex())))
 				continue;
 
+		if((*atom)->isBuiltIn())continue;
 
 		Atom *bodyGroundAtom=(*atom)->ground(current_var_assign);
 		groundRule->addInBody(bodyGroundAtom);

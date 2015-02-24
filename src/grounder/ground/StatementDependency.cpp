@@ -97,18 +97,11 @@ void DependencyGraph::addInDependency(Rule* r) {
 
 					// Check if the predicate in the head has been visited
 					if (pred_body!=nullptr  && !body_predicateVisited.count(pred_body->getIndex())) {
+
 						// Set this predicate as visited
 						body_predicateVisited.insert(pred_body->getIndex());
 						addEdge(pred_body->getIndex(), pred_head->getIndex(),1);
 
-					}else if((*body_it)->getWeightAtomsSize()> 0){
-						//Is Weight Atom
-						for(unsigned i=0;i<(*body_it)->getWeightAtomsSize();i++){
-							Atom *atom=(*body_it)->getWeightAtom(i).first;
-							pred_body=atom->getPredicate();
-							body_predicateVisited.insert(pred_body->getIndex());
-							addEdge(pred_body->getIndex(), pred_head->getIndex(),1);
-						}
 					}
 				}
 				else{
@@ -238,6 +231,7 @@ void DependencyGraph::addEdge(index_object pred_body, index_object pred_head, in
 }
 
 void DependencyGraph::calculateStrongComponent(unordered_map<index_object, unsigned int> &componentDepependency) {
+
 	using namespace boost;
 	typedef graph_traits<Graph>::vertex_descriptor Vertex;
 
@@ -561,8 +555,6 @@ void ComponentGraph::computeAllPossibleOrdering(vector<vector<unsigned int>>& co
 void StatementDependency::addRuleMapping(Rule* r) {
 	if(r->isAStrongConstraint()) constraints.push_back(r);
 	else{
-		set_predicate pred_head=r->getPredicateInHead();
-		for(auto p:pred_head)p->setIdb();
 		statementAtomMapping.addRule(r);
 		rules.push_back(r);
 		r->setIndex(rules.size()-1);
