@@ -56,20 +56,11 @@ bool BackTrackingGrounder::match() {
 	Timer::getInstance()->start("Match");
 #endif
 
-	/// If match is called at the end and there isn't bind variable return false else continue
-	if(index_current_atom + 1 >= currentRule->getSizeBody() && isGroundCurrentAtom()){
-		if(!lastMatch)
-			lastMatch = true;
-		else{
-#ifdef DEBUG_RULE_TIME
-		Timer::getInstance()->stop("Match");
-#endif
-			return false;
-		}
 
-	}else
-		lastMatch = false;
-
+	//Avoid call multiple time method match for the ground atom in the last position of the rule
+	if(isGroundCurrentAtom() && callFoundAssignment){
+		return false;
+	}
 
 	if(templateSetAtom[index_current_atom]->isBuiltIn() ){
 #ifdef DEBUG_RULE_TIME
@@ -77,6 +68,9 @@ bool BackTrackingGrounder::match() {
 		Timer::getInstance()->stop("Match");
 		return evaluate;
 #endif
+
+
+		current_id_match[index_current_atom][0].second=1;
 
 		return templateSetAtom[index_current_atom] -> evaluate(current_var_assign);
 
@@ -113,19 +107,22 @@ bool BackTrackingGrounder::firstMatch(){
 	while(current_table<n_table){
 		unsigned tableToSearch = current_id_match[index_current_atom][current_table].first;
 		AtomSearcher *searcher=predicateExtTable->getPredicateExt(templateAtom->getPredicate())->getAtomSearcher(tableToSearch);
-		//inizialize false for negative atom
+		//Initialize false for negative atom
 		bool undef=false;
 
 		unsigned id = searcher->firstMatch(templateAtom,current_var_assign,find,undef);
 		atom_undef_inbody[index_current_atom]=undef;
 		if(templateAtom->isNegative() && find) find=!undef;
 
+
 		if(find){
 
 			if(!isGroundCurrentAtom())
 				current_id_match[index_current_atom][current_table].second = id;
-			else
-				current_table=n_table;
+			else{
+				current_id_match[index_current_atom][current_table].second = NO_MATCH;
+				current_id_match_iterator[index_current_atom]=0;
+			}
 #ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("F-Match "+boost::lexical_cast<string>(index_current_atom));
 #endif
@@ -133,8 +130,10 @@ bool BackTrackingGrounder::firstMatch(){
 		}
 		current_id_match[index_current_atom][current_table].second = NO_MATCH;
 		current_id_match_iterator[index_current_atom]=++current_table;
+
 	}
 	current_id_match_iterator[index_current_atom]=0;
+
 #ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("F-Match "+boost::lexical_cast<string>(index_current_atom));
 #endif
@@ -174,6 +173,7 @@ bool BackTrackingGrounder::nextMatch(){
 		current_id_match_iterator[index_current_atom]=++current_table;
 	}
 	current_id_match_iterator[index_current_atom]=0;
+
 #ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("N-Match "+boost::lexical_cast<string>(index_current_atom));
 #endif
@@ -184,16 +184,10 @@ bool BackTrackingGrounder::next() {
 #ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->start("Next");
 #endif
-	// first next the check have to be jumped, because start with second atom else
-	if(start && currentRule->getSizeBody()>0){
-		start=false;generateTemplateAtom();
-#ifdef DEBUG_RULE_TIME
-		Timer::getInstance()->stop("Next");
-#endif
-		return true;
-	}
 
-	if( index_current_atom+1>=currentRule->getSizeBody()){
+
+	callFoundAssignment = false;
+	if( index_current_atom+1>=(unsigned)currentRule->getSizeBody()){
 #ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("Next");return false;
 #endif
@@ -216,6 +210,8 @@ bool BackTrackingGrounder::foundAssignment() {
 #ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->start("Body");
 #endif
+
+	callFoundAssignment=true;
 	Rule* groundRule=new Rule;
 	bool head_true= (currentRule->getSizeHead() <= 1 );
 	unsigned index_body_atom=0;
@@ -279,6 +275,7 @@ bool BackTrackingGrounder::foundAssignment() {
 
 bool BackTrackingGrounder::back() {
 
+	callFoundAssignment = false;
 	if (index_current_atom <=  0)
 		return false;
 
@@ -322,15 +319,16 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 	current_id_match.clear();
 	current_atom_it = currentRule->getBeginBody();
 	index_current_atom = 0;
+	callFoundAssignment = false;
 	for(auto atom:templateSetAtom) delete atom;
 	templateSetAtom.resize(rule->getSizeBody());
 	for(auto& atom:templateSetAtom) atom=nullptr;
-	start=true;
-	lastMatch=false;
 	atom_undef_inbody.reserve(rule->getSizeBody());
 	is_ground_atom.clear();
 	findBindVariablesRule();
 	findSearchTable();
+	if(rule->getSizeBody()>0)
+		generateTemplateAtom();
 #ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("Init");
 #endif

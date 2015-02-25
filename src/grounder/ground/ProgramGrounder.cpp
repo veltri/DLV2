@@ -233,7 +233,7 @@ bool ProgramGrounder::groundRule(Rule* rule) {
 
 	inizialize(rule);
 
-	if(!next()){
+	if(rule->getSizeBody()==0){
 		foundAssignment();
 		return true;
 	}

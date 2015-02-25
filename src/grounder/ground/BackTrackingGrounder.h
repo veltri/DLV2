@@ -18,7 +18,7 @@ namespace grounder {
  */
 class BackTrackingGrounder : public ProgramGrounder {
 public:
-	BackTrackingGrounder():ProgramGrounder(),currentRule(0),index_current_atom(0),start(true),lastMatch(false){};
+	BackTrackingGrounder():ProgramGrounder(),currentRule(0),index_current_atom(0),callFoundAssignment(0){};
 	virtual ~BackTrackingGrounder() { for(auto atom:templateSetAtom) delete atom; };
 
 
@@ -67,15 +67,12 @@ protected:
 	//vector of bool if the atom is ground
 	vector<bool> is_ground_atom;
 
+	bool callFoundAssignment;
+
 	/// Set of current templateAtom
 	vector<Atom*> templateSetAtom;
 
 
-
-	/// start is false if the grounding process not start, otherwise true
-	bool start;
-	/// Is true if is calling nextMatch on ground atom at the end of rule
-	bool lastMatch;
 
 	///Find the bind variable on rule
 	void findBindVariablesRule();
