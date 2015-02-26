@@ -239,7 +239,14 @@ void InMemoryInputBuilder::onFunction(char* functionSymbol, int nTerms) {
 }
 
 void InMemoryInputBuilder::onTermDash() {
-	terms_parsered.back()->setNegative(true);
+	Term *oldTerm=terms_parsered.back();
+	Term * newTerm=oldTerm->clone();
+
+	newTerm->setNegative(true);
+
+	TermTable::getInstance()->addTerm(newTerm);
+	terms_parsered.pop_back();
+	terms_parsered.push_back(newTerm);
 }
 
 void InMemoryInputBuilder::onTermParams() {

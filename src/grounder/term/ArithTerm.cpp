@@ -16,7 +16,7 @@ namespace DLV2{
 namespace grounder{
 
 Term* ArithTerm::calculate() {
-	unsigned int result = terms[0]->getConstantValue();
+	int result = terms[0]->getConstantValue();
 	for (unsigned int i = 1; i < terms.size(); i++) {
 		unsigned int value=terms[i]->getConstantValue();
 		if (operators[i-1] == Operator::PLUS)
@@ -33,7 +33,7 @@ Term* ArithTerm::calculate() {
 			result *= value;
 	}
 
-	Term *constantTerm=new NumericConstantTerm(negative,result);
+	Term *constantTerm=new NumericConstantTerm(result<0,result);
 	TermTable::getInstance()->addTerm(constantTerm);
 	return constantTerm;
 }

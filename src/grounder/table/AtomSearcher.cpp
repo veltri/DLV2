@@ -22,9 +22,11 @@ bool AtomSearcher::checkMatch(Atom *genericAtom, Atom *templateAtom, map_term_te
 	// Checks the match for each term and, if all the terms match, updates the current assignment accordingly
 	map_term_term assignInTerm;
 
-	for(unsigned int i=0;i<genericAtom->getTermsSize();i++)
+	for(unsigned int i=0;i<genericAtom->getTermsSize();i++){
 			if(!matchTerm(genericAtom->getTerm(i),templateAtom->getTerm(i),assignInTerm))
 				return false;
+	}
+
 
 	currentAssignment.insert(assignInTerm.begin(),assignInTerm.end());
 
@@ -47,6 +49,11 @@ bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, map_term_term
 		return true;
 	}
 
+	if(termToMatch->getType()==TermType::ARITH){
+		Term *new_term=termToMatch->substitute(varAssignment);
+		assert_msg(new_term->isGround(),"Arith term not safe");
+		termToMatch=new_term->calculate();
+	}
 
 	if((genericTerm->getType()==TermType::NUMERIC_CONSTANT || genericTerm->getType()==TermType::STRING_CONSTANT )){
 
@@ -54,6 +61,7 @@ bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, map_term_term
 		if ((termToMatch->getType()==TermType::NUMERIC_CONSTANT || termToMatch->getType()==TermType::STRING_CONSTANT ) && termToMatch->getIndex() == genericTerm->getIndex()) return true;
 
 	}else if(genericTerm->getType()==TermType::FUNCTION){
+
 		if(termToMatch->getType()==TermType::ANONYMOUS) return true;
 		if(termToMatch->getType()!=TermType::FUNCTION) return false;
 		if(termToMatch->getName().compare(genericTerm->getName()) != 0)return false;

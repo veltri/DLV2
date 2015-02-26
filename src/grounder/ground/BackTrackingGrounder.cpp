@@ -56,7 +56,6 @@ bool BackTrackingGrounder::match() {
 	Timer::getInstance()->start("Match");
 #endif
 
-
 	//Avoid call multiple time method match for the ground atom in the last position of the rule
 	if(isGroundCurrentAtom() && callFoundAssignment){
 		return false;
@@ -396,6 +395,7 @@ void BackTrackingGrounder::removeBindValueInAssignment(const set_term& bind_vari
 
 	for (auto variable : bind_variables)
 		current_var_assign.erase(variable);
+
 
 #ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("Remove Assignment");

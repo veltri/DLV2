@@ -47,9 +47,12 @@ public:
 class NumericConstantTerm: public ConstantTerm{
 public:
 	NumericConstantTerm(bool negative,int n): ConstantTerm(negative), numeric_constant(n){};
+
+	virtual Term* clone(){return new NumericConstantTerm(negative,numeric_constant);};
+
 	virtual bool contain(TermType type) { return TermType::NUMERIC_CONSTANT==type;};
 	virtual bool operator==(const Term& term) {return (TermType::NUMERIC_CONSTANT==term.getType() && this->numeric_constant==term.getConstantValue());}
-	virtual size_t hash() {return numeric_constant;};
+	virtual size_t hash() {if(numeric_constant<0)return abs(numeric_constant); return numeric_constant;};
 	virtual int getConstantValue() const {return numeric_constant;};
 	virtual string getName() const {return boost::lexical_cast<string>(numeric_constant);}
 	virtual void print() {cout<<numeric_constant;}
