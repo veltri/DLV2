@@ -277,7 +277,7 @@ public:
 	virtual Atom* findAtom(Atom *atom);
 	virtual void add(Atom* atom);
 	virtual void remove(Atom* atom);
-	virtual void clear(){for(auto table:searchingTables) searchingTables.clear();};
+	virtual void clear(){for(auto table:searchingTables) table.clear();};
 
 	///This method chooses the best indexing term among the one allowed.
 	unsigned int selectBestIndex(const vector<pair<int,index_object>>& possibleTableToSearch);
