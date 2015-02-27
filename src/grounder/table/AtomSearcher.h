@@ -103,7 +103,7 @@ public:
 	/// This method implementation is demanded to sub-classes.
 	/// It have to find all the matching atoms and return just the first of those.
 	/// The returned integer will be used to get the other ones through nextMatch method (@See nextMatch)
-	virtual unsigned int firstMatch(Atom *templateAtom, map_term_term& currentAssignment, bool& find,bool& undef)=0;
+	virtual unsigned int firstMatch(Atom *templateAtom, map_term_term& currentAssignment, bool& find, bool& undef)=0;
 	/// This method implementation is demanded to sub-classes.
 	/// It is used to get the further matching atoms one by one each time it is invoked.
 	virtual void nextMatch(unsigned int id, Atom* templateAtom, map_term_term& currentAssignment, bool& find, bool &undef)=0;
@@ -252,6 +252,49 @@ private:
 
 	///This method fills in the searching data structure for the given indexing term
 	void initializeIndexMaps(unsigned int indexingTerm);
+
+};
+
+class DoubleTermMapAtomSearcher: public BaseAtomSearcher{
+public:
+	DoubleTermMapAtomSearcher(AtomVector* table, Predicate* p) : BaseAtomSearcher(table) {
+		this->predicate=p;
+		searchingTables.reserve(predicate->getArity()-1);
+		createdSearchingTables.reserve(predicate->getArity()-1);
+		for(unsigned int i=0;i<predicate->getArity()-1;++i){
+			searchingTables.push_back(unordered_map<index_object,Multimap_Atom>());
+			createdSearchingTables.push_back(false);
+		}
+		indexingTermSetByUser = Options::globalOptions()->getPredicateIndexTerm(this->predicate->getName());
+		if(indexingTermSetByUser>-1)
+			assert_msg((indexingTermSetByUser>=0 && unsigned(indexingTermSetByUser)<this->predicate->getArity()), "The specified index is not valid.");
+	};
+
+	virtual Atom* findAtom(Atom *atom);
+	virtual void add(Atom* atom);
+	virtual void remove(Atom* atom);
+	virtual void clear(){for(auto table:searchingTables) table.clear();};
+
+	///This method chooses the best indexing term among the one allowed.
+	unsigned int selectBestIndex(const vector<pair<int,pair<index_object,int>>>& possibleTableToSearch);
+
+private:
+	/// The predicate
+	Predicate* predicate;
+	///The indexing term set by user. It is -1 if not set.
+	int indexingTermSetByUser;
+	/// A vector of boolean used in order to determine if the data-structure for a particular indexing terms has been created.
+	vector<bool> createdSearchingTables;
+	///A vector of chosen searching data structure for this kind of indexing strategies, one for each possible indexing term.
+	vector<unordered_map<index_object,Multimap_Atom>> searchingTables;
+
+	int manageIndex(Atom* templateAtom);
+
+	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom);
+
+	void initializeIndexMaps(unsigned int indexingTerm);
+
+	int computePossibleIndexingTermTable(const vector<pair<int,pair<index_object,int>>>& possibleTableToSearch);
 
 };
 
