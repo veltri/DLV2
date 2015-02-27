@@ -553,8 +553,10 @@ void ComponentGraph::computeAllPossibleOrdering(vector<vector<unsigned int>>& co
  */
 
 void StatementDependency::addRuleMapping(Rule* r) {
-	if(r->isAStrongConstraint()) constraints.push_back(r);
-	else{
+	if(r->isAStrongConstraint()){
+		constraints.push_back(r);
+		statementAtomMapping.addRule(r);
+	}else{
 		set_predicate pred_head=r->getPredicateInHead();
 		for(auto p:pred_head)p->setIdb();
 		statementAtomMapping.addRule(r);
