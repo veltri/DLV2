@@ -18,8 +18,10 @@ namespace grounder{
 unsigned int PredicateExtension::MAX_TABLE_NUMBER = 4;
 
 void PredicateExtension::setAtomSearchers(){
+
 	// Properly set the IndexAtom type
 	while(atomSearchers.size()<tables.size()){
+
 		AtomSearcher* atomSearcher;
 		int indexType=Options::globalOptions()->getPredicateIndexType(predicate->getName());
 
@@ -33,6 +35,7 @@ void PredicateExtension::setAtomSearchers(){
 		if(predicate->getArity()==0)
 			indexType=DEFAULT;
 
+		cout<<"AAA"<<predicate->getName()<<endl;
 #ifdef NDEBUG
 		cout<<"Predicate: "<<predicate->getName()<<"  Index type: "<<indexType<<endl;
 #endif
