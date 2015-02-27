@@ -35,7 +35,6 @@ void PredicateExtension::setAtomSearchers(){
 		if(predicate->getArity()==0)
 			indexType=DEFAULT;
 
-		cout<<"AAA"<<predicate->getName()<<endl;
 #ifdef NDEBUG
 		cout<<"Predicate: "<<predicate->getName()<<"  Index type: "<<indexType<<endl;
 #endif
@@ -61,13 +60,13 @@ void PredicateExtension::setAtomSearchers(){
 PredicateExtension::~PredicateExtension() {
 	for(unsigned int i=0;i<tables.size();i++){
 		AtomVector* table=tables[i];
-		for (auto it = table->begin(); it != table->end(); it++){
+		for (auto it = table->begin(); it != table->end(); ++it){
 			delete *it;
 		}
 		delete table;
 	}
 
-	for(unsigned int i=0;i<atomSearchers.size();i++){
+	for(unsigned int i=0;i<atomSearchers.size();++i){
 		delete atomSearchers[i];
 	}
 }
