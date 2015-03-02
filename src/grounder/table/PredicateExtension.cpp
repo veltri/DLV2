@@ -18,8 +18,10 @@ namespace grounder{
 unsigned int PredicateExtension::MAX_TABLE_NUMBER = 4;
 
 void PredicateExtension::setAtomSearchers(){
+
 	// Properly set the IndexAtom type
 	while(atomSearchers.size()<tables.size()){
+
 		AtomSearcher* atomSearcher;
 		int indexType=Options::globalOptions()->getPredicateIndexType(predicate->getName());
 
@@ -59,13 +61,13 @@ void PredicateExtension::setAtomSearchers(){
 PredicateExtension::~PredicateExtension() {
 	for(unsigned int i=0;i<tables.size();i++){
 		AtomVector* table=tables[i];
-		for (auto it = table->begin(); it != table->end(); it++){
+		for (auto it = table->begin(); it != table->end(); ++it){
 			delete *it;
 		}
 		delete table;
 	}
 
-	for(unsigned int i=0;i<atomSearchers.size();i++){
+	for(unsigned int i=0;i<atomSearchers.size();++i){
 		delete atomSearchers[i];
 	}
 }

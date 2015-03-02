@@ -34,7 +34,7 @@ public:
 			tables.reserve(MAX_TABLE_NUMBER);
 			atomSearchers.reserve(MAX_TABLE_NUMBER);
 		}
-		for(unsigned i=0;i<tableNumber;i++)
+		for(unsigned i=0;i<tableNumber;++i)
 			tables.push_back(new AtomVector());
 	}
 
@@ -57,10 +57,13 @@ public:
 	///Add generic atom in specified table
 	bool addGenericAtom(unsigned table, Atom* genericAtom, bool search = false){
 		assert_msg(table<tables.size(),"The specified table doesn't exist.");
-		if(search || (atomSearchers.size()>table && atomSearchers[table]!=nullptr)){
+		if(search){
 			AtomSearcher *atomSearcher=getAtomSearcher(table);
 			if((atomSearcher->findAtom(genericAtom))!=nullptr)
 				return false;
+		}
+		if(atomSearchers.size()>table){
+			AtomSearcher *atomSearcher=getAtomSearcher(table);
 			atomSearcher->add(genericAtom);
 		}
 		tables[table]->push_back(genericAtom);
@@ -70,7 +73,7 @@ public:
 	///Get an generic atom in specified table
 	Atom* getGenericAtom(unsigned table, Atom* genericAtom){
 		assert_msg(table<tables.size(),"The specified table doesn't exist.");
-		if(tables[table]->size()==0)return nullptr;
+		if(tables[table]->size()==0) return nullptr;
 		AtomSearcher* atomSearcher=getAtomSearcher(table);
 		Atom* atomFound=atomSearcher->findAtom(genericAtom);
 		return atomFound;
@@ -78,7 +81,7 @@ public:
 
 	///Get an generic atom searching in all table
 	Atom* getGenericAtom(Atom* genericAtom){
-		for(unsigned i=0;i<atomSearchers.size();i++){
+		for(unsigned i=0;i<tables.size();++i){
 			if(tables[i]->size()==0) continue;
 			Atom* atomFound=getGenericAtom(i,genericAtom);
 			if(atomFound!=nullptr)
