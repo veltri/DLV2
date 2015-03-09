@@ -342,6 +342,7 @@ Atom* SingleTermMultiMapAtomSearcher::findAtom(Atom *atom){
 	index_object term = atom->getTerm(indexingTerm)->getIndex();
 	AtomTableComparator comparator;
 	auto pair=searchingTables[indexingTerm].equal_range(term);
+
 	for(auto it=pair.first;it!=pair.second;++it){
 		if(comparator(it->second,atom))
 			return it->second;
@@ -416,6 +417,179 @@ Atom* HashSetAtomSearcher::findAtom(Atom* atom) {
 		return *atomFound_it;
 	return nullptr;
 }
+
+
+/****************************************************** DOUBLE TERM MAP ATOM SEARCH ***************************************************/
+
+void DoubleTermMapAtomSearcher::add(Atom* atom) {
+	for (unsigned int i = 0; i < predicate->getArity()-1; ++i) {
+		if(createdSearchingTables[i]){
+			index_object termIndex=atom->getTerm(i)->getIndex();
+			index_object nextTermIndex=atom->getTerm(i+1)->getIndex();
+			if(searchingTables[i].count(termIndex))
+				searchingTables[i][termIndex].insert({nextTermIndex,atom});
+			else{
+				Multimap_Atom values;
+				values.insert({nextTermIndex,atom});
+				searchingTables[i].insert({termIndex,values});
+			}
+		}
+	}
+}
+
+void DoubleTermMapAtomSearcher::remove(Atom* atom) {
+	for (unsigned int i = 0; i < predicate->getArity()-1; ++i) {
+		if(createdSearchingTables[i]){
+			index_object termIndex=atom->getTerm(i)->getIndex();
+			index_object nextTermIndex=atom->getTerm(i+1)->getIndex();
+			if(searchingTables[i].count(termIndex))
+				searchingTables[termIndex][i].erase(nextTermIndex);
+		}
+	}
+}
+
+Atom* DoubleTermMapAtomSearcher::findAtom(Atom *atom){
+	int tableToSearch=manageIndex(atom);
+	assert_msg(tableToSearch>-1, "Invalid index");
+
+	index_object term = atom->getTerm(tableToSearch)->getIndex();
+	Multimap_Atom::iterator start;
+	Multimap_Atom::iterator end;
+
+	if(tableToSearch < predicate->getArity()-1){
+		index_object nextTerm=atom->getTerm(tableToSearch+1)->getIndex();
+		auto pair=searchingTables[tableToSearch][term].equal_range(nextTerm);
+		start=pair.first;
+		end=pair.second;
+	}
+	else{
+		start=searchingTables[tableToSearch][term].begin();
+		end=searchingTables[tableToSearch][term].end();
+	}
+
+	AtomTableComparator comparator;
+	for(auto it=start;it!=end;++it){
+		if(comparator(it->second,atom))
+			return it->second;
+	}
+	return nullptr;
+}
+
+int DoubleTermMapAtomSearcher::manageIndex(Atom* templateAtom) {
+	vector<pair<int,pair<index_object,int>>> possibleTableToSearch;
+	unsigned termsSize=templateAtom->getTermsSize();
+	for(unsigned int i=0;i<termsSize;++i){
+		Term* t=templateAtom->getTerm(i);
+		if(t->isGround()){
+			if(i<termsSize-1){
+				Term* nextTerm=templateAtom->getTerm(i+1);
+				if(nextTerm->isGround())
+					possibleTableToSearch.push_back({i,{t->getIndex(),nextTerm->getIndex()}});
+				else
+					possibleTableToSearch.push_back({i,{t->getIndex(),-1}});
+			}
+			else
+				possibleTableToSearch.push_back({i,{t->getIndex(),-1}});
+		}
+	}
+
+	int indexSelected=-1;
+	if(!possibleTableToSearch.empty()){
+		indexSelected=selectBestIndex(possibleTableToSearch);
+		if(!createdSearchingTables[indexSelected])
+			initializeIndexMaps(indexSelected);
+	}
+	return indexSelected;
+}
+
+int DoubleTermMapAtomSearcher::computePossibleIndexingTermTable(const vector<pair<int,pair<index_object,int>>>& possibleTableToSearch){
+	if(indexingTermSetByUser>-1 && createdSearchingTables[indexingTermSetByUser])
+		for(unsigned int i=0;i<possibleTableToSearch.size();++i){
+			if(possibleTableToSearch[i].first==indexingTermSetByUser)
+				return indexingTermSetByUser;
+			if(possibleTableToSearch[i].first>indexingTermSetByUser)
+				return -1;
+		}
+	return -1;
+}
+
+unsigned int DoubleTermMapAtomSearcher::selectBestIndex(const vector<pair<int,pair<index_object,int>>>& possibleTableToSearch){
+	computePossibleIndexingTermTable(possibleTableToSearch);
+
+	auto it=possibleTableToSearch.begin();
+	unsigned tableMinSize=(*it).first;
+	unsigned termIndex=(*it).second.first;
+	int nextTermIndex=(*it).second.second;
+	unsigned minSize=searchingTables[tableMinSize][termIndex].size();
+
+	if(nextTermIndex!=-1)
+		 minSize=searchingTables[tableMinSize][termIndex].count(nextTermIndex);
+
+	for(it++;it!=possibleTableToSearch.end();++it){
+		if(createdSearchingTables[(*it).first]){
+			termIndex=(*it).second.first;
+			nextTermIndex=(*it).second.first;
+			unsigned currentSize=searchingTables[(*it).first][termIndex].size();
+			if(nextTermIndex!=-1)
+				currentSize=searchingTables[tableMinSize][termIndex].count(nextTermIndex);
+			if(minSize>currentSize){
+				minSize=currentSize;
+				tableMinSize=(*it).first;
+			}
+		}
+	}
+	return tableMinSize;
+}
+
+GeneralIterator* DoubleTermMapAtomSearcher::computeGenericIterator(Atom* templateAtom) {
+	int indexingTerm=manageIndex(templateAtom);
+	GeneralIterator* currentMatch;
+
+	//If no searching table is available (the atom is completely unbound)
+	//the search is performed in the base vector
+	if(indexingTerm!=-1){
+		index_object term = templateAtom->getTerm(indexingTerm)->getIndex();
+		Multimap_Atom::iterator start;
+		Multimap_Atom::iterator end;
+
+		Term* nextTerm=templateAtom->getTerm(indexingTerm+1);
+		if(indexingTerm < predicate->getArity()-1 && nextTerm->isGround()){
+//			cout<<"GENERIC IT: Next Term is ground"<<endl;
+			index_object nextTermIndex=nextTerm->getIndex();
+			auto pair=searchingTables[indexingTerm][term].equal_range(nextTermIndex);
+			start=pair.first;
+			end=pair.second;
+		}
+		else{
+//			cout<<"GENERIC IT: Next Term is NOT ground"<<endl;
+			start=searchingTables[indexingTerm][term].begin();
+			end=searchingTables[indexingTerm][term].end();
+		}
+		currentMatch=new UnorderedMultiMapIterator(start,end);
+	}
+	else
+		currentMatch=new VectorIterator(table->begin(), table->end());
+	return currentMatch;
+}
+
+void DoubleTermMapAtomSearcher::initializeIndexMaps(unsigned int indexingTerm){
+//	cout<<"Predicate: "<<predicate->getName()<<" Created Index on term: "<<indexingTerm<<endl;
+	assert(indexingTerm<predicate->getArity()-1);
+	createdSearchingTables[indexingTerm]=true;
+	for (Atom* a : *table) {
+		index_object termIndex=a->getTerm(indexingTerm)->getIndex();
+		index_object nextTermIndex=a->getTerm(indexingTerm+1)->getIndex();
+		if(searchingTables[indexingTerm].count(termIndex)){
+			searchingTables[indexingTerm][termIndex].insert({nextTermIndex,a});
+		}
+		else{
+			Multimap_Atom values;
+			values.insert({nextTermIndex,a});
+			searchingTables[indexingTerm].insert({termIndex,values});
+		}
+	}
+}
+
 
 };
 };
