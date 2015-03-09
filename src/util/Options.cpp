@@ -251,7 +251,7 @@ Options::init(
 
             case OPTIONID_indexType:
             	indexType = atoi(optarg);
-                assert_msg((indexType>=DEFAULT && indexType<=HASHSET),"Index type not supported");
+                assert_msg((indexType>=DEFAULT && indexType<=DOUBLEMAP),"Index type not supported");
                 break;
 
             case OPTIONID_predIndexTerm:

@@ -49,9 +49,11 @@ void PredicateExtension::setAtomSearchers(){
 		case (HASHSET):
 			atomSearcher = new HashSetAtomSearcher(tables[atomSearchers.size()],predicate);
 			break;
-		default:
+		case (DOUBLEMAP):
 			atomSearcher = new DoubleTermMapAtomSearcher(tables[atomSearchers.size()],predicate);
-//			atomSearcher = new BaseAtomSearcher(tables[atomSearchers.size()]);
+			break;
+		default:
+			atomSearcher = new BaseAtomSearcher(tables[atomSearchers.size()]);
 			break;
 		}
 		atomSearchers.push_back(atomSearcher);

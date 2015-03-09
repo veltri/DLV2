@@ -88,6 +88,7 @@ namespace grounder{
 	#define MAP 1
 	#define MULTIMAP 2
 	#define HASHSET 3
+	#define DOUBLEMAP 4
 
 	typedef unsigned index_object;
 

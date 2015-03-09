@@ -456,7 +456,7 @@ Atom* DoubleTermMapAtomSearcher::findAtom(Atom *atom){
 	Multimap_Atom::iterator start;
 	Multimap_Atom::iterator end;
 
-	if(tableToSearch < predicate->getArity()-1){
+	if(unsigned(tableToSearch) < predicate->getArity()-1){
 		index_object nextTerm=atom->getTerm(tableToSearch+1)->getIndex();
 		auto pair=searchingTables[tableToSearch][term].equal_range(nextTerm);
 		start=pair.first;
@@ -553,15 +553,13 @@ GeneralIterator* DoubleTermMapAtomSearcher::computeGenericIterator(Atom* templat
 		Multimap_Atom::iterator end;
 
 		Term* nextTerm=templateAtom->getTerm(indexingTerm+1);
-		if(indexingTerm < predicate->getArity()-1 && nextTerm->isGround()){
-//			cout<<"GENERIC IT: Next Term is ground"<<endl;
+		if(unsigned(indexingTerm) < predicate->getArity()-1 && nextTerm->isGround()){
 			index_object nextTermIndex=nextTerm->getIndex();
 			auto pair=searchingTables[indexingTerm][term].equal_range(nextTermIndex);
 			start=pair.first;
 			end=pair.second;
 		}
 		else{
-//			cout<<"GENERIC IT: Next Term is NOT ground"<<endl;
 			start=searchingTables[indexingTerm][term].begin();
 			end=searchingTables[indexingTerm][term].end();
 		}
@@ -573,7 +571,10 @@ GeneralIterator* DoubleTermMapAtomSearcher::computeGenericIterator(Atom* templat
 }
 
 void DoubleTermMapAtomSearcher::initializeIndexMaps(unsigned int indexingTerm){
-//	cout<<"Predicate: "<<predicate->getName()<<" Created Index on term: "<<indexingTerm<<endl;
+#ifdef NDEBUG
+	cout<<"Predicate: "<<predicate->getName()<<" Created Index on term: "<<indexingTerm<<endl;
+#endif
+
 	assert(indexingTerm<predicate->getArity()-1);
 	createdSearchingTables[indexingTerm]=true;
 	for (Atom* a : *table) {
