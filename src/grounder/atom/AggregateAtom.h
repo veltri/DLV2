@@ -53,16 +53,31 @@ public:
 
 	///Getter method for the aggregate elements
 	vector<AggregateElement> getAggregateElements() {return aggregateElements;};
+	///Getter method for the i-th aggregate element
+	AggregateElement* getAggregateElement(unsigned i) {return &aggregateElements[i];}
 	///Setter method for the aggregate elements
 	void setAggregateElements(const vector<AggregateElement>& aggregateElements) {this->aggregateElements = aggregateElements;};
-	///Getter method for the aggregate function
-
+	///Setter method for the i-th aggregate element
+	void setAggregateElement(unsigned i, const vector<Atom*>& nafLits, const vector<Term*>& terms) {
+		aggregateElements[i].clearNafLiterals();
+		aggregateElements[i].setNafLiterals(nafLits);
+		aggregateElements[i].clearTerms();
+		aggregateElements[i].setTerms(terms);
+	}
+	///Setter method for the i-th aggregate element
+	void setAggregateElement(unsigned i, const vector<Atom*>& nafLits) {
+		aggregateElements[i].clearNafLiterals();
+		aggregateElements[i].setNafLiterals(nafLits);
+	}
+	///Getter method for the aggregate elements size
+	virtual unsigned getAggregateElementsSize() {return aggregateElements.size();};
 	/// Add aggregate element
 	void addAggregateElement(AggregateElement& element){aggregateElements.push_back(element);};
 
 	void setLowerGueard(Term* lower){lowerGueard=lower;};
 	void setUpperGueard(Term* upper){upperGuard=upper;};
 
+	///Getter method for the aggregate function
 	AggregateFunction getAggregateFunction() const {return aggregateFunction;};
 	///Setter method for the aggregate function
 	void setAggregateFunction(AggregateFunction aggregateFunction) {this->aggregateFunction = aggregateFunction;};
@@ -85,7 +100,7 @@ public:
 	///Printer method
 	void print();
 
-	~AggregateAtom() {	};
+	~AggregateAtom() {for(auto& atom:aggregateElements) for(auto naf:atom.getNafLiterals()) delete naf;};
 
 private:
 	///First binary operation

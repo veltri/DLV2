@@ -11,17 +11,18 @@
 #include <list>
 
 #include "InputBuilder.h"
-#include "../grounder/table/TermTable.h"
-#include "../grounder/table/PredicateTable.h"
 #include "../grounder/atom/Atom.h"
-#include "../grounder/statement/Rule.h"
+#include "../grounder/ground/StatementDependency.h"
+#include "../grounder/table/PredicateExtension.h"
 #include "../grounder/term/ConstantTerm.h"
 #include "../grounder/term/VariableTerm.h"
 #include "../grounder/term/ArithTerm.h"
 #include "../grounder/term/FunctionTerm.h"
-#include "../grounder/ground/StatementDependency.h"
-#include "../grounder/table/PredicateExtension.h"
 #include "../grounder/term/RangeTerm.h"
+#include "../grounder/table/TermTable.h"
+#include "../grounder/table/PredicateTable.h"
+#include "../grounder/statement/InputRewriter.h"
+#include "../grounder/statement/Rule.h"
 
 using namespace std;
 
@@ -91,18 +92,25 @@ private:
 
     PredicateExtTable* instancesTable;
 
-    vector<Term*> terms_parsered;
+	InputRewriter* inputRewriter;
 
-    Atom *currentAtom;
+	vector<Term*> terms_parsered;
+
+	bool foundAnAggregateInCurrentRule;
+
+	bool foundARangeAtomInCurrentRule;
 
 	Rule *currentRule;
 
+	Atom *currentAtom;
+
 	Binop currentBinop;
 
-	AggregateElement *currentAggregateElement;
+	AggregateElement currentAggregateElement;
 
 	Atom *currentAggregate;
 
+ 	void addRule();
  	void createRule(vector<Atom*>* head, vector<Atom*>* body=0);
 	void createFact(Atom* fact);
 

@@ -23,13 +23,12 @@ namespace grounder{
 
 class Atom;
 
-
 /// This class represents an aggregate element
 class AggregateElement {
 
 	public:
 		//Default constructor
-		AggregateElement() {};
+		AggregateElement() {}
 
 		///Getter for terms
 		const vector<Term*>& getTerms() const {return terms;}
@@ -40,12 +39,16 @@ class AggregateElement {
 		///Setter for naf literals
 		void setNafLiterals(const vector<Atom*>& nafLiterals) {this->nafLiterals = nafLiterals;}
 		///Add term in terms
-		void addTerm(Term* term){terms.push_back(term);};
+		void addTerm(Term* term){terms.push_back(term);}
 		///Add Naf literal in nafLiterals
-		void addNafLiterals(Atom* atom){nafLiterals.push_back(atom);};
+		void addNafLiterals(Atom* atom){nafLiterals.push_back(atom);}
+		/// Remove all Naf literals
+		void clearNafLiterals(){nafLiterals.clear();}
+		/// Remove all terms
+		void clearTerms(){terms.clear();}
 
 		//Destructor
-		virtual ~AggregateElement() {};
+		virtual ~AggregateElement() {}
 
 	private:
 		///Vector of terms

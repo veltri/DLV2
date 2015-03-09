@@ -44,16 +44,11 @@ public:
 	///This method returns true if it is a fact
 	bool isAFact(){return body.empty() && head.size()==1;}
 
-	bool containsRangeAtoms(){
-		for(auto atom:head) if(atom->containsRangeTerms()) return true;
-		for(auto atom:body) if(atom->containsRangeTerms()) return true;
-		return false;
-	}
-
 	///This method adds an atom in the head
 	void addInHead(Atom* a){head.push_back(a);};
 	///This method adds an atom in the body
 	void addInBody(Atom* a){body.push_back(a);};
+	void addInBody(vector<Atom*>::iterator begin,vector<Atom*>::iterator end){body.insert(body.begin(),begin,end);};
 
 	///This method returns the set of predicate in the head
 	set_predicate getPredicateInHead(){return calculatePredicate(head,0,0);};

@@ -132,8 +132,16 @@ public:
 	/******** Methods useful for AggregateAtom ********/
 	///Getter method for the aggregate elements
 	virtual vector<AggregateElement> getAggregateElements() {return vector<AggregateElement>(0);};
+	///Getter method for the i-th aggregate element
+	virtual AggregateElement* getAggregateElement(unsigned i) {return 0;}
 	///Setter method for the aggregate elements
 	virtual void setAggregateElements(const vector<AggregateElement>& aggregateElements) {};
+	///Getter method for the aggregate elements size
+	virtual unsigned getAggregateElementsSize() {return 0;};
+	///Setter method for the i-th aggregate element
+	virtual void setAggregateElement(unsigned i, const vector<Atom*>& nafLits, const vector<Term*>& terms) {}
+	///Setter method for the i-th aggregate element
+	virtual void setAggregateElement(unsigned i, const vector<Atom*>& nafLits) {}
 	///Getter method for the aggregate function
 	virtual AggregateFunction getAggregateFunction() const {return AggregateFunction::NONE;};
 	///Set lower guard of aggregate

@@ -9,12 +9,11 @@
 using namespace std;
 
 size_t DLV2::grounder::AggregateAtom::hash() {
-
-
-
+	return 0; //TODO
 }
 
 bool DLV2::grounder::AggregateAtom::operator ==(const Atom& a) {
+	return false; //TODO
 }
 
 void DLV2::grounder::AggregateAtom::print() {
