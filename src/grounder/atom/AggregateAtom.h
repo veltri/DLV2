@@ -97,9 +97,8 @@ public:
 
 	/// Substitute the term with constant term and calculate the arithmetic terms
 	/// The subclasses have to implement the substitute method for create correct type class of Atom
-	virtual Atom* ground(map_term_term& substritutionTerm);
 	/// Similiar to ground(map_term_term& substritutionTerm) but not create new atom
-	virtual void ground(map_term_term& substritutionTerm,Atom* templateAtom);
+	virtual void ground(map_term_term& substritutionTerm,Atom*& templateAtom);
 
 	///Printer method
 	void print();

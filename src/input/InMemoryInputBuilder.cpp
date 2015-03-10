@@ -348,8 +348,7 @@ void InMemoryInputBuilder::onAggregateVariableTerm(char* value) {
 	string value_string(value);
 	Term *term=new VariableTerm(false,value_string);
 	termTable->addTerm(term);
-	if(currentAggregateElement.getTerms().size()==0)
-		currentAggregateElement=AggregateElement();
+
 	currentAggregateElement.addTerm(term);
 }
 
@@ -357,8 +356,6 @@ void InMemoryInputBuilder::onAggregateUnknownVariable() {
 }
 
 void InMemoryInputBuilder::onAggregateNafLiteral() {
-	if(currentAggregateElement.getNafLiterals().size()==0)
-		currentAggregateElement=AggregateElement();
 	currentAggregateElement.addNafLiterals(currentAtom);
 	currentAtom=nullptr;
 }

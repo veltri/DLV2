@@ -23,7 +23,6 @@ void BackTrackingGrounder::generateTemplateAtom(){
 #endif
 
 	(*current_atom_it)->ground(current_var_assign,templateSetAtom[index_current_atom]);
-
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->stop("Generate Template");
 #endif

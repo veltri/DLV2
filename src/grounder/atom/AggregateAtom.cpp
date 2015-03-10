@@ -6,6 +6,7 @@
  */
 
 #include "AggregateAtom.h"
+#include "../../util/Assert.h"
 using namespace std;
 
 namespace DLV2{
@@ -20,10 +21,50 @@ bool AggregateAtom::operator ==(const Atom& a) {
 	return false; //TODO
 }
 
-Atom* AggregateAtom::ground(map_term_term& substritutionTerm) {
-}
 
-void AggregateAtom::ground(map_term_term& substritutionTerm, Atom* templateAtom) {
+void AggregateAtom::ground(map_term_term& substritutionTerm, Atom*& templateAtom) {
+	//Ground guard
+	Term* template_lowerGueard=lowerGueard->substitute(substritutionTerm);
+	Term* template_upperGueard=upperGuard->substitute(substritutionTerm);
+	assert_msg((template_lowerGueard->isGround() && template_upperGueard->isGround()),"Arith term not safe");
+
+	if(templateAtom==nullptr){
+		//Ground Aggregate Element
+		vector<AggregateElement> template_aggregate_element;
+		for(auto& agg_element:aggregateElements){
+			AggregateElement newElement;
+			//Set all terms of aggregate in the new aggregate
+			newElement.setTerms(agg_element.getTerms());
+			//For each aggregate element ground the naf of the aggregate element and push
+			//in the new aggregate element
+			for(auto atom_agg_element:agg_element.getNafLiterals()){
+				Atom *groundAtom=nullptr;
+				atom_agg_element->ground(substritutionTerm,groundAtom);
+				newElement.addNafLiterals(groundAtom);
+			}
+			template_aggregate_element.push_back(std::move(newElement));
+		}
+		templateAtom=new AggregateAtom(template_lowerGueard,firstBinop,template_upperGueard,secondBinop,aggregateFunction,template_aggregate_element,negative);
+
+	}else{
+		templateAtom->setLowerGueard(template_lowerGueard);
+		templateAtom->setUpperGueard(template_upperGueard);
+		//Ground Aggregate Element
+		for(unsigned i=0;i<templateAtom->getAggregateElementsSize();i++){
+			//Set all terms of aggregate in the new aggregate
+			templateAtom->getAggregateElement(i)->setTerms(aggregateElements[i].getTerms());
+			//clear all the naf literal
+			templateAtom->getAggregateElement(i)->clearNafLiterals();
+			//For each aggregate element ground the naf of the aggregate element and push
+			//in the new aggregate element
+			for(auto atom_agg_element:aggregateElements[i].getNafLiterals()){
+				Atom *groundAtom=nullptr;
+				atom_agg_element->ground(substritutionTerm,groundAtom);
+				templateAtom->getAggregateElement(i)->addNafLiterals(groundAtom);
+			}
+		}
+	}
+	cout<<"TEMPLATE ";templateAtom->print();cout<<endl;
 }
 
 void AggregateAtom::print() {

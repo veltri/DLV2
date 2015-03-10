@@ -30,6 +30,8 @@ class AggregateElement {
 		//Default constructor
 		AggregateElement() {}
 
+		//AggregateElement(AggregateElement&& element_to_move):terms(std::move(element_to_move.terms)),nafLiterals(std::move(element_to_move.nafLiterals)) {}
+
 		///Getter for terms
 		const vector<Term*>& getTerms() const {return terms;}
 		///Setter for terms
