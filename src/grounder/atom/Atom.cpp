@@ -15,22 +15,8 @@ namespace DLV2{
 
 namespace grounder{
 
-Atom* Atom::ground(map_term_term& substritutionTerm){
-	Atom *substitute_atom=substitute(substritutionTerm);
 
-	for(unsigned int i=0;i<substitute_atom->getTermsSize();i++){
-		Term* term=substitute_atom->getTerm(i);
-		if(term->isGround() && term->contain(TermType::ARITH)){
-			/// Calculate the value of arithmetic term and add in terms table
-			substitute_atom->setTerm(i,term->calculate());
-		}
-
-	}
-
-	return substitute_atom;
-};
-
-void Atom::ground(map_term_term& substritutionTerm,Atom* templateAtom){
+void Atom::ground(map_term_term& substritutionTerm,Atom*& templateAtom){
 	substitute(substritutionTerm,templateAtom);
 
 	for(unsigned int i=0;i<templateAtom->getTermsSize();i++){

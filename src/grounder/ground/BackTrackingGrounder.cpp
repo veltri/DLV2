@@ -22,10 +22,7 @@ void BackTrackingGrounder::generateTemplateAtom(){
 	Timer::getInstance()->start("Generate Template");
 #endif
 
-	if(templateSetAtom[index_current_atom]==nullptr)
-		templateSetAtom[index_current_atom]=(*current_atom_it)->ground(current_var_assign);
-	else
-		(*current_atom_it)->ground(current_var_assign,templateSetAtom[index_current_atom]);
+	(*current_atom_it)->ground(current_var_assign,templateSetAtom[index_current_atom]);
 
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->stop("Generate Template");
@@ -224,7 +221,8 @@ bool BackTrackingGrounder::foundAssignment() {
 
 		if((*atom)->isBuiltIn())continue;
 
-		Atom *bodyGroundAtom=(*atom)->ground(current_var_assign);
+		Atom *bodyGroundAtom=nullptr;
+		(*atom)->ground(current_var_assign,bodyGroundAtom);
 		groundRule->addInBody(bodyGroundAtom);
 
 	}
@@ -237,7 +235,8 @@ bool BackTrackingGrounder::foundAssignment() {
 	unsigned atom_counter=0;
 	Atom *searchAtom=0;
 	for(auto atom=currentRule->getBeginHead();atom!=currentRule->getEndHead();++atom,++atom_counter){
-		Atom *headGroundAtom=(*atom)->ground(current_var_assign);
+		Atom *headGroundAtom=nullptr;
+		(*atom)->ground(current_var_assign,headGroundAtom);
 
 		PredicateExtension* predicateExt=predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
 		searchAtom=predicateExt->getGenericAtom(headGroundAtom);
