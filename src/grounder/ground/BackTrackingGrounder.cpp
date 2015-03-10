@@ -68,6 +68,10 @@ bool BackTrackingGrounder::match() {
 		current_id_match[index_current_atom][0].second=1;
 		return templateSetAtom[index_current_atom] -> evaluate(current_var_assign);
 
+	}else if(templateSetAtom[index_current_atom]->getAggregateElementsSize()>0){
+
+		return groundAggregate();
+
 	}else{
 
 		bool match;
@@ -366,6 +370,7 @@ void BackTrackingGrounder::findBindVariablesRule() {
 #endif
 }
 
+
 void BackTrackingGrounder::findSearchTable() {
 #ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->start("Find Search");
@@ -399,6 +404,23 @@ void BackTrackingGrounder::removeBindValueInAssignment(const set_term& bind_vari
 #ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("Remove Assignment");
 #endif
+
+}
+
+
+
+
+
+
+
+
+bool BackTrackingGrounder::groundAggregate() {
+
+	//TODO
+	//Groundizza
+
+
+
 
 }
 
