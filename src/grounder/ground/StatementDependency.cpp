@@ -102,6 +102,16 @@ void DependencyGraph::addInDependency(Rule* r) {
 						body_predicateVisited.insert(pred_body->getIndex());
 						addEdge(pred_body->getIndex(), pred_head->getIndex(),1);
 
+					}else if((*body_it)->getAggregateElementsSize()> 0){
+						//Is Aggregate Atom
+						for(unsigned i=0;i<(*body_it)->getAggregateElementsSize();i++){
+							//For each atom in aggregate element add in graph dep
+							for(auto& atom:(*body_it)->getAggregateElement(i)->getNafLiterals()){
+								pred_body=atom->getPredicate();
+								body_predicateVisited.insert(pred_body->getIndex());
+								addEdge(pred_body->getIndex(), pred_head->getIndex(),1);
+							}
+						}
 					}
 				}
 				else{

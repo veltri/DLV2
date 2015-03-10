@@ -64,7 +64,6 @@ void AggregateAtom::ground(map_term_term& substritutionTerm, Atom*& templateAtom
 			}
 		}
 	}
-	cout<<"TEMPLATE ";templateAtom->print();cout<<endl;
 }
 
 void AggregateAtom::print() {

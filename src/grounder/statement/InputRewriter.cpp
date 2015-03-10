@@ -43,9 +43,9 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited)
 	}
 
 	ruleRewrited.push_back(r);
-	for(auto r:ruleRewrited){
-		r->print();
-	}
+//	for(auto r:ruleRewrited){
+//		r->print();
+//	}
 }
 
 } /* namespace grounder */
