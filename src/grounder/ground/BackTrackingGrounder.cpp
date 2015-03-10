@@ -62,29 +62,31 @@ bool BackTrackingGrounder::match() {
 	}
 
 	if(templateSetAtom[index_current_atom]->isBuiltIn() ){
+
 #ifdef DEBUG_RULE_TIME
 		bool evaluate=templateSetAtom[index_current_atom] -> evaluate(current_var_assign);
 		Timer::getInstance()->stop("Match");
 		return evaluate;
 #endif
 
-
 		current_id_match[index_current_atom][0].second=1;
-
 		return templateSetAtom[index_current_atom] -> evaluate(current_var_assign);
 
 	}else{
+
 		bool match;
 		unsigned current_table=current_id_match_iterator[index_current_atom];
 		//if is the first table to visit and the id of first match is NO_MATCH
 		if(current_table==0 && current_id_match[index_current_atom][current_table].second==NO_MATCH){
-			match=firstMatch() == !templateSetAtom[index_current_atom]->isNegative();
+			match = firstMatch() == !templateSetAtom[index_current_atom]->isNegative();
 		}else{
 			match = nextMatch() == !templateSetAtom[index_current_atom]->isNegative();
 		}
+
 #ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("Match");
 #endif
+
 		return match;
 	}
 
@@ -186,7 +188,7 @@ bool BackTrackingGrounder::next() {
 
 
 	callFoundAssignment = false;
-	if( index_current_atom+1>=(unsigned)currentRule->getSizeBody()){
+	if( unsigned(index_current_atom+1)>=currentRule->getSizeBody()){
 #ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("Next");return false;
 #endif
@@ -194,8 +196,8 @@ bool BackTrackingGrounder::next() {
 	}
 
 
-	current_atom_it++;
-	index_current_atom++;
+	++current_atom_it;
+	++index_current_atom;
 
 
 	generateTemplateAtom();
@@ -214,7 +216,7 @@ bool BackTrackingGrounder::foundAssignment() {
 	Rule* groundRule=new Rule;
 	bool head_true= (currentRule->getSizeHead() <= 1 );
 	unsigned index_body_atom=0;
-	for(auto atom=currentRule->getBeginBody();atom!=currentRule->getEndBody();atom++,index_body_atom++){
+	for(auto atom=currentRule->getBeginBody();atom!=currentRule->getEndBody();++atom,++index_body_atom){
 
 		if(!atom_undef_inbody[index_body_atom])
 			if(!((*atom)->isNegative() && StatementDependency::getInstance()->isPredicateNegativeStratified((*atom)->getPredicate()->getIndex())))
@@ -234,7 +236,7 @@ bool BackTrackingGrounder::foundAssignment() {
 	bool ground_new_atom=false;
 	unsigned atom_counter=0;
 	Atom *searchAtom=0;
-	for(auto atom=currentRule->getBeginHead();atom!=currentRule->getEndHead();atom++,atom_counter++){
+	for(auto atom=currentRule->getBeginHead();atom!=currentRule->getEndHead();++atom,++atom_counter){
 		Atom *headGroundAtom=(*atom)->ground(current_var_assign);
 
 		PredicateExtension* predicateExt=predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
@@ -247,7 +249,7 @@ bool BackTrackingGrounder::foundAssignment() {
 			GenericAtom *genericGroundAtom=new GenericAtom;
 			genericGroundAtom->setTerms(headGroundAtom->getTerms());
 			genericGroundAtom->setFact(head_true);
-			for(unsigned i=0;i<predicate_searchInsert_table[atom_counter].size();i++)
+			for(unsigned i=0;i<predicate_searchInsert_table[atom_counter].size();++i)
 				predicateExt->addGenericAtom(predicate_searchInsert_table[atom_counter][i],genericGroundAtom);
 		}else{
 
@@ -282,8 +284,8 @@ bool BackTrackingGrounder::back() {
 		Timer::getInstance()->start("Back");
 #endif
 
-	current_atom_it--;
-	index_current_atom--;
+	--current_atom_it;
+	--index_current_atom;
 
 	while (isGroundCurrentAtom()){
 		if (index_current_atom <= 0){
@@ -295,8 +297,8 @@ bool BackTrackingGrounder::back() {
 
 		removeBindValueInAssignment(current_variables_atoms[index_current_atom]);
 
-		current_atom_it--;
-		index_current_atom--;
+		--current_atom_it;
+		--index_current_atom;
 
 	}
 	removeBindValueInAssignment(current_variables_atoms[index_current_atom]);
@@ -344,7 +346,7 @@ void BackTrackingGrounder::findBindVariablesRule() {
 	current_variables_atoms.clear();
 
 	//For each atom determines the bound and the bind variables
-	for (auto current_atom_it = currentRule->getBeginBody(); current_atom_it != currentRule->getEndBody(); current_atom_it++,index_current_atom++) {
+	for (auto current_atom_it = currentRule->getBeginBody(); current_atom_it != currentRule->getEndBody(); ++current_atom_it,++index_current_atom) {
 		Atom *current_atom = *current_atom_it;
 		set_term variablesInAtom = current_atom->getVariable();
 		current_variables_atoms.push_back(set_term());
@@ -354,12 +356,11 @@ void BackTrackingGrounder::findBindVariablesRule() {
 				current_variables_atoms[index_current_atom].insert(variable);
 		}
 
-		for (auto variable : variablesInAtom)
-			total_variable.insert(variable);
+		total_variable.insert(variablesInAtom.begin(),variablesInAtom.end());
 
 		///Set true if is ground
 		if(is_ground_atom.size()<=index_current_atom)
-				is_ground_atom.push_back(((*current_atom_it)->isBuiltIn() || (*current_atom_it)->isNegative() || current_variables_atoms[index_current_atom].size()==0));
+				is_ground_atom.push_back((current_atom->isBuiltIn() || current_atom->isNegative() || current_variables_atoms[index_current_atom].size()==0));
 
 	}
 #ifdef DEBUG_RULE_TIME
@@ -373,10 +374,10 @@ void BackTrackingGrounder::findSearchTable() {
 #endif
 
 
-	for (unsigned index_current_atom = 0; index_current_atom < currentRule->getSizeBody(); index_current_atom++) {
+	for (unsigned index_current_atom = 0; index_current_atom < currentRule->getSizeBody(); ++index_current_atom) {
 		//find the table to search for each atom in the body
 		current_id_match.insert({index_current_atom,vector<pair<unsigned,int>>()});
-		for(unsigned i=0;i<predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom].size();i++){
+		for(unsigned i=0;i<predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom].size();++i){
 			current_id_match[index_current_atom].push_back({predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom][i],NO_MATCH});
 		}
 		current_id_match_iterator[index_current_atom]=0;

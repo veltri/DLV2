@@ -8,15 +8,25 @@
 #include "AggregateAtom.h"
 using namespace std;
 
-size_t DLV2::grounder::AggregateAtom::hash() {
+namespace DLV2{
+namespace grounder{
+
+
+size_t AggregateAtom::hash() {
 	return 0; //TODO
 }
 
-bool DLV2::grounder::AggregateAtom::operator ==(const Atom& a) {
+bool AggregateAtom::operator ==(const Atom& a) {
 	return false; //TODO
 }
 
-void DLV2::grounder::AggregateAtom::print() {
+Atom* AggregateAtom::ground(map_term_term& substritutionTerm) {
+}
+
+void AggregateAtom::ground(map_term_term& substritutionTerm, Atom* templateAtom) {
+}
+
+void AggregateAtom::print() {
 	if(lowerGueard!=nullptr)
 		lowerGueard->print();
 	cout<<"#";
@@ -49,3 +59,5 @@ void DLV2::grounder::AggregateAtom::print() {
 	if(upperGuard!=nullptr)
 		upperGuard->print();
 }
+
+}}

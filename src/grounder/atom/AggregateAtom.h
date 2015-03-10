@@ -47,9 +47,10 @@ public:
 
 	///This method compute the resulting hash a classical atom using its terms
 	size_t hash() ;
+	///This method compute the resulting hash for an aggregateElement TODO
+	size_t getHash() const {return 0;};
 
 	bool operator==(const Atom& a);
-
 
 	///Getter method for the aggregate elements
 	vector<AggregateElement> getAggregateElements() {return aggregateElements;};
@@ -94,8 +95,11 @@ public:
 	///Set whether the atom is negated with negation as failure
 	void setNegative(bool negative) {this->negative = negative;};
 
-	///This method compute the resulting hash for an aggregateElement TODO
-	size_t getHash() const {return 0;};
+	/// Substitute the term with constant term and calculate the arithmetic terms
+	/// The subclasses have to implement the substitute method for create correct type class of Atom
+	virtual Atom* ground(map_term_term& substritutionTerm);
+	/// Similiar to ground(map_term_term& substritutionTerm) but not create new atom
+	virtual void ground(map_term_term& substritutionTerm,Atom* templateAtom);
 
 	///Printer method
 	void print();
