@@ -67,7 +67,7 @@ void InMemoryInputBuilder::onRule() {
 			currentRule->clear();
 		}
 		else{
-			addRule();
+			addRule(currentRule);
 			currentRule = new Rule;
 		}
 	}
@@ -84,7 +84,7 @@ void InMemoryInputBuilder::onConstraint() {
 		currentRule->clear();
 	}
 	else{
-		addRule();
+		addRule(currentRule);
 		currentRule = new Rule;
 	}
 	foundAnAggregateInCurrentRule=false;
@@ -317,12 +317,12 @@ void InMemoryInputBuilder::onBuiltinAtom() {
 void InMemoryInputBuilder::onAggregateLowerGuard() {
 	if(currentAggregate==nullptr)
 		currentAggregate = new AggregateAtom;
-	currentAggregate->setLowerGueard(terms_parsered.back());
+	currentAggregate->setLowerGuard(terms_parsered.back());
 	terms_parsered.pop_back();
 }
 
 void InMemoryInputBuilder::onAggregateUpperGuard() {
-	currentAggregate->setUpperGueard(terms_parsered.back());
+	currentAggregate->setUpperGuard(terms_parsered.back());
 	terms_parsered.pop_back();
 }
 
@@ -371,21 +371,21 @@ void InMemoryInputBuilder::onAggregate(bool naf) {
 	currentAggregate = nullptr;
 }
 
-void InMemoryInputBuilder::addRule() {
+void InMemoryInputBuilder::addRule(Rule* rule) {
 	if (foundAnAggregateInCurrentRule) {
 		vector<Rule*> rules;
-		inputRewriter->translateAggregate(currentRule, rules);
+		inputRewriter->translateAggregate(rule, rules);
 		for (auto r : rules)
 			statementDependency->addRuleMapping(r);
 	} else
-		statementDependency->addRuleMapping(currentRule);
+		statementDependency->addRuleMapping(rule);
 }
 
 void InMemoryInputBuilder::createRule(vector<Atom*>* head, vector<Atom*>* body) {
 	Rule* rule=new Rule;
 	if(head!=0) rule->setHead(*head);
 	if(body!=0)rule->setBody(*body);
-	addRule();
+	addRule(rule);
 }
 
 void InMemoryInputBuilder::createFact(Atom* fact) {

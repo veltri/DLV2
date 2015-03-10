@@ -75,8 +75,11 @@ public:
 	/// Add aggregate element
 	void addAggregateElement(AggregateElement& element){aggregateElements.push_back(element);};
 
-	void setLowerGueard(Term* lower){lowerGueard=lower;};
-	void setUpperGueard(Term* upper){upperGuard=upper;};
+	void setLowerGuard(Term* lower){lowerGueard=lower;};
+	void setUpperGuard(Term* upper){upperGuard=upper;};
+
+	Term* getLowerGuard(){return lowerGueard;};
+	Term* getUpperGuard(){return upperGuard;};
 
 	///Getter method for the aggregate function
 	AggregateFunction getAggregateFunction() const {return aggregateFunction;};

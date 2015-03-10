@@ -38,6 +38,8 @@ class AggregateElement {
 		void setTerms(const vector<Term*>& terms) {this->terms = terms;}
 		///Getter for naf literals
 		const vector<Atom*>& getNafLiterals() const {return nafLiterals;}
+		///Getter for naf literal
+		Atom* getNafLiteral(unsigned i) const {return nafLiterals[i];}
 		///Setter for naf literals
 		void setNafLiterals(const vector<Atom*>& nafLiterals) {this->nafLiterals = nafLiterals;}
 		///Add term in terms

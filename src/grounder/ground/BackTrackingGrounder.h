@@ -69,6 +69,8 @@ protected:
 	vector<bool> atom_undef_inbody;
 	//vector of bool if the atom is ground
 	vector<bool> is_ground_atom;
+	//vector of ground atom in body
+	vector<Atom*> ground_atom_body;
 
 	bool callFoundAssignment;
 

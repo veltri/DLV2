@@ -8,6 +8,7 @@
 #include "BackTrackingGrounder.h"
 #include "../../util/Timer.h"
 #include <boost/lexical_cast.hpp>
+#include "../atom/AggregateAtom.h"
 
 
 namespace DLV2 {
@@ -69,7 +70,6 @@ bool BackTrackingGrounder::match() {
 		return templateSetAtom[index_current_atom] -> evaluate(current_var_assign);
 
 	}else if(templateSetAtom[index_current_atom]->getAggregateElementsSize()>0){
-
 		return groundAggregate();
 
 	}else{
@@ -223,9 +223,13 @@ bool BackTrackingGrounder::foundAssignment() {
 				continue;
 
 		if((*atom)->isBuiltIn())continue;
-
 		Atom *bodyGroundAtom=nullptr;
-		(*atom)->ground(current_var_assign,bodyGroundAtom);
+
+		if((*atom)->getAggregateElementsSize()>0)
+			bodyGroundAtom=ground_atom_body[index_body_atom];
+		else
+			(*atom)->ground(current_var_assign,bodyGroundAtom);
+
 		groundRule->addInBody(bodyGroundAtom);
 
 	}
@@ -269,7 +273,9 @@ bool BackTrackingGrounder::foundAssignment() {
 
 	if(!(groundRule->getSizeBody()==0 && groundRule->getSizeHead()==0 && !groundRule->isAStrongConstraint()) && !(head_true && searchAtom!=nullptr))
 		groundRule->print();
+
 	delete groundRule;
+
 
 	if(currentRule->getSizeBody() > 0)
 		removeBindValueInAssignment(current_variables_atoms[index_current_atom]);
@@ -330,6 +336,8 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 	is_ground_atom.clear();
 	findBindVariablesRule();
 	findSearchTable();
+	ground_atom_body.resize(rule->getSizeBody());
+	for(auto& atom:ground_atom_body)atom=nullptr;
 	if(rule->getSizeBody()>0)
 		generateTemplateAtom();
 #ifdef DEBUG_RULE_TIME
@@ -362,7 +370,7 @@ void BackTrackingGrounder::findBindVariablesRule() {
 
 		///Set true if is ground
 		if(is_ground_atom.size()<=index_current_atom)
-				is_ground_atom.push_back((current_atom->isBuiltIn() || current_atom->isNegative() || current_variables_atoms[index_current_atom].size()==0));
+				is_ground_atom.push_back((current_atom->isBuiltIn() || current_atom->isNegative() || current_variables_atoms[index_current_atom].size()==0) || current_atom->getAggregateElementsSize()>0);
 
 	}
 #ifdef DEBUG_RULE_TIME
@@ -416,12 +424,41 @@ void BackTrackingGrounder::removeBindValueInAssignment(const set_term& bind_vari
 
 bool BackTrackingGrounder::groundAggregate() {
 
-	//TODO
-	//Groundizza
+	Atom *aggregateAtom=templateSetAtom[index_current_atom];
+	vector<AggregateElement> ground_aggregateElements;
+	atom_undef_inbody[index_current_atom]=true;
 
+	for(unsigned i=0;i<aggregateAtom->getAggregateElementsSize();i++){
+		Atom* atom=aggregateAtom->getAggregateElement(i)->getNafLiteral(0);
+		AggregateElement ground_aggregateElement;
+		Predicate *predicate_atom=atom->getPredicate();
+		vector<unsigned> tablesToSearch={FACT,NOFACT};
+		for(auto table:tablesToSearch){
+			AtomSearcher *searcher=predicateExtTable->getPredicateExt(predicate_atom)->getAtomSearcher(table);
+			bool find=false,undef=false;
+			map_term_term copy_current_var_assign(current_var_assign);
+			unsigned id = searcher->firstMatch(atom,copy_current_var_assign,find,undef);
+			while(find){
+				Atom *groundAtom=nullptr;
+				atom->ground(copy_current_var_assign,groundAtom);
+				ground_aggregateElement.addNafLiterals(groundAtom);
+				for(auto term_aggregateElement:aggregateAtom->getAggregateElement(i)->getTerms())
+					ground_aggregateElement.addTerm(copy_current_var_assign[term_aggregateElement]);
+				ground_aggregateElements.push_back(ground_aggregateElement);
+				ground_aggregateElement=AggregateElement();
 
+				copy_current_var_assign=current_var_assign;
+				searcher->nextMatch(id,atom,copy_current_var_assign,find,undef);
+			}
+		}
+	}
 
+	if(ground_aggregateElements.size()==0) return false;
+	Atom *ground_aggregate=new AggregateAtom(aggregateAtom->getLowerGuard(),aggregateAtom->getFirstBinop(),aggregateAtom->getUpperGuard(),aggregateAtom->getSecondBinop(),aggregateAtom->getAggregateFunction(),ground_aggregateElements,aggregateAtom->isNegative());
 
+	ground_atom_body[index_current_atom]=ground_aggregate;
+
+	return true;
 }
 
 } /* namespace grounder */

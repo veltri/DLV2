@@ -47,8 +47,8 @@ void AggregateAtom::ground(map_term_term& substritutionTerm, Atom*& templateAtom
 		templateAtom=new AggregateAtom(template_lowerGueard,firstBinop,template_upperGueard,secondBinop,aggregateFunction,template_aggregate_element,negative);
 
 	}else{
-		templateAtom->setLowerGueard(template_lowerGueard);
-		templateAtom->setUpperGueard(template_upperGueard);
+		templateAtom->setLowerGuard(template_lowerGueard);
+		templateAtom->setUpperGuard(template_upperGueard);
 		//Ground Aggregate Element
 		for(unsigned i=0;i<templateAtom->getAggregateElementsSize();i++){
 			//Set all terms of aggregate in the new aggregate

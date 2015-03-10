@@ -145,9 +145,13 @@ public:
 	///Getter method for the aggregate function
 	virtual AggregateFunction getAggregateFunction() const {return AggregateFunction::NONE;};
 	///Set lower guard of aggregate
-	virtual void setLowerGueard(Term* lower){};
+	virtual void setLowerGuard(Term* lower){};
 	///Set upper guard of aggregate
-	virtual void setUpperGueard(Term* upper){};
+	virtual void setUpperGuard(Term* upper){};
+	///Get lower guard of aggregate
+	virtual Term* getLowerGuard(){return nullptr;};
+	///Get upper guard of aggregate
+	virtual Term* getUpperGuard(){return nullptr;};
 	///Setter method for the aggregate function
 	virtual void setAggregateFunction(AggregateFunction aggregateFunction) {};
 	///Getter method for the first binary operation
