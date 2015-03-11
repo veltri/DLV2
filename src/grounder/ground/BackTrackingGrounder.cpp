@@ -425,12 +425,12 @@ void BackTrackingGrounder::removeBindValueInAssignment(const set_term& bind_vari
 bool BackTrackingGrounder::groundAggregate() {
 
 	Atom *aggregateAtom=templateSetAtom[index_current_atom];
-	vector<AggregateElement> ground_aggregateElements;
+	vector<AggregateElement*> ground_aggregateElements;
 	atom_undef_inbody[index_current_atom]=true;
 
 	for(unsigned i=0;i<aggregateAtom->getAggregateElementsSize();i++){
 		Atom* atom=aggregateAtom->getAggregateElement(i)->getNafLiteral(0);
-		AggregateElement ground_aggregateElement;
+		AggregateElement *ground_aggregateElement=new AggregateElement;
 		Predicate *predicate_atom=atom->getPredicate();
 		vector<unsigned> tablesToSearch={FACT,NOFACT};
 		for(auto table:tablesToSearch){
@@ -441,11 +441,11 @@ bool BackTrackingGrounder::groundAggregate() {
 			while(find){
 				Atom *groundAtom=nullptr;
 				atom->ground(copy_current_var_assign,groundAtom);
-				ground_aggregateElement.addNafLiterals(groundAtom);
+				ground_aggregateElement->addNafLiterals(groundAtom);
 				for(auto term_aggregateElement:aggregateAtom->getAggregateElement(i)->getTerms())
-					ground_aggregateElement.addTerm(copy_current_var_assign[term_aggregateElement]);
+					ground_aggregateElement->addTerm(copy_current_var_assign[term_aggregateElement]);
 				ground_aggregateElements.push_back(ground_aggregateElement);
-				ground_aggregateElement=AggregateElement();
+				ground_aggregateElement=new AggregateElement;
 
 				copy_current_var_assign=current_var_assign;
 				searcher->nextMatch(id,atom,copy_current_var_assign,find,undef);

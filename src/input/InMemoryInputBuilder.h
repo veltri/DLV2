@@ -106,7 +106,7 @@ private:
 
 	Binop currentBinop;
 
-	AggregateElement currentAggregateElement;
+	AggregateElement *currentAggregateElement;
 
 	Atom *currentAggregate;
 

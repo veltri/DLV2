@@ -43,6 +43,7 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited)
 	}
 
 	ruleRewrited.push_back(r);
+//	cout<<"AAA"<<endl;
 //	for(auto r:ruleRewrited){
 //		r->print();
 //	}

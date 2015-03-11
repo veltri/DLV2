@@ -30,19 +30,19 @@ void AggregateAtom::ground(map_term_term& substritutionTerm, Atom*& templateAtom
 
 	if(templateAtom==nullptr){
 		//Ground Aggregate Element
-		vector<AggregateElement> template_aggregate_element;
+		vector<AggregateElement*> template_aggregate_element;
 		for(auto& agg_element:aggregateElements){
-			AggregateElement newElement;
+			AggregateElement *newElement=new AggregateElement;
 			//Set all terms of aggregate in the new aggregate
-			newElement.setTerms(agg_element.getTerms());
+			newElement->setTerms(agg_element->getTerms());
 			//For each aggregate element ground the naf of the aggregate element and push
 			//in the new aggregate element
-			for(auto atom_agg_element:agg_element.getNafLiterals()){
+			for(auto atom_agg_element:agg_element->getNafLiterals()){
 				Atom *groundAtom=nullptr;
 				atom_agg_element->ground(substritutionTerm,groundAtom);
-				newElement.addNafLiterals(groundAtom);
+				newElement->addNafLiterals(groundAtom);
 			}
-			template_aggregate_element.push_back(std::move(newElement));
+			template_aggregate_element.push_back(newElement);
 		}
 		templateAtom=new AggregateAtom(template_lowerGueard,firstBinop,template_upperGueard,secondBinop,aggregateFunction,template_aggregate_element,negative);
 
@@ -52,12 +52,12 @@ void AggregateAtom::ground(map_term_term& substritutionTerm, Atom*& templateAtom
 		//Ground Aggregate Element
 		for(unsigned i=0;i<templateAtom->getAggregateElementsSize();i++){
 			//Set all terms of aggregate in the new aggregate
-			templateAtom->getAggregateElement(i)->setTerms(aggregateElements[i].getTerms());
+			templateAtom->getAggregateElement(i)->setTerms(aggregateElements[i]->getTerms());
 			//clear all the naf literal
 			templateAtom->getAggregateElement(i)->clearNafLiterals();
 			//For each aggregate element ground the naf of the aggregate element and push
 			//in the new aggregate element
-			for(auto atom_agg_element:aggregateElements[i].getNafLiterals()){
+			for(auto atom_agg_element:aggregateElements[i]->getNafLiterals()){
 				Atom *groundAtom=nullptr;
 				atom_agg_element->ground(substritutionTerm,groundAtom);
 				templateAtom->getAggregateElement(i)->addNafLiterals(groundAtom);
@@ -84,12 +84,12 @@ void AggregateAtom::print() {
 	bool firstElement=true;
 	for(auto& element:aggregateElements){
 		if(!firstElement)cout<<";";else firstElement=false;
-		for(auto& term:element.getTerms()){
+		for(auto& term:element->getTerms()){
 			if(!first)cout<<",";else first=false;
 			term->print();
 		}
 		cout<<":";first=true;
-		for(auto& naf:element.getNafLiterals()){
+		for(auto& naf:element->getNafLiterals()){
 			if(!first)cout<<",";else first=false;
 			naf->print();
 		}

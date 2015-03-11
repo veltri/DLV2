@@ -36,7 +36,7 @@ public:
 		 * @param aE set the vector of aggregate elements
 		 * @param negative set whether the atom is negated with negation as failure
 		 */
-	AggregateAtom(Term* f, Binop fB,Term* s, Binop sB, AggregateFunction aF, vector<AggregateElement> aE, bool n):
+	AggregateAtom(Term* f, Binop fB,Term* s, Binop sB, AggregateFunction aF, vector<AggregateElement*> aE, bool n):
 		firstBinop(fB), secondBinop(sB), aggregateFunction(aF), aggregateElements(move(aE)), negative(n) {lowerGueard=f;upperGuard=s;};
 
 	Atom* clone() {
@@ -53,27 +53,27 @@ public:
 	bool operator==(const Atom& a);
 
 	///Getter method for the aggregate elements
-	vector<AggregateElement> getAggregateElements() {return aggregateElements;};
+	vector<AggregateElement*> getAggregateElements() {return aggregateElements;};
 	///Getter method for the i-th aggregate element
-	AggregateElement* getAggregateElement(unsigned i) {return &aggregateElements[i];}
+	AggregateElement* getAggregateElement(unsigned i) {return aggregateElements[i];}
 	///Setter method for the aggregate elements
-	void setAggregateElements(const vector<AggregateElement>& aggregateElements) {this->aggregateElements = aggregateElements;};
+	void setAggregateElements(const vector<AggregateElement*>& aggregateElements) {this->aggregateElements = aggregateElements;};
 	///Setter method for the i-th aggregate element
 	void setAggregateElement(unsigned i, const vector<Atom*>& nafLits, const vector<Term*>& terms) {
-		aggregateElements[i].clearNafLiterals();
-		aggregateElements[i].setNafLiterals(nafLits);
-		aggregateElements[i].clearTerms();
-		aggregateElements[i].setTerms(terms);
+		aggregateElements[i]->clearNafLiterals();
+		aggregateElements[i]->setNafLiterals(nafLits);
+		aggregateElements[i]->clearTerms();
+		aggregateElements[i]->setTerms(terms);
 	}
 	///Setter method for the i-th aggregate element
 	void setAggregateElement(unsigned i, const vector<Atom*>& nafLits) {
-		aggregateElements[i].clearNafLiterals();
-		aggregateElements[i].setNafLiterals(nafLits);
+		aggregateElements[i]->clearNafLiterals();
+		aggregateElements[i]->setNafLiterals(nafLits);
 	}
 	///Getter method for the aggregate elements size
 	virtual unsigned getAggregateElementsSize() {return aggregateElements.size();};
 	/// Add aggregate element
-	void addAggregateElement(AggregateElement& element){aggregateElements.push_back(element);};
+	void addAggregateElement(AggregateElement *element){aggregateElements.push_back(element);};
 
 	void setLowerGuard(Term* lower){lowerGueard=lower;};
 	void setUpperGuard(Term* upper){upperGuard=upper;};
@@ -106,7 +106,7 @@ public:
 	///Printer method
 	void print();
 
-	~AggregateAtom() {for(auto& atom:aggregateElements) for(auto naf:atom.getNafLiterals()) delete naf;};
+	~AggregateAtom() {for(auto& aggregateElem:aggregateElements) for(auto naf:aggregateElem->getNafLiterals()) delete naf;};
 
 private:
 	///First binary operation
@@ -116,7 +116,7 @@ private:
 	///Aggregate function @see AggregateFunction
 	AggregateFunction aggregateFunction;
 	///Vector of the aggregate elements
-	vector<AggregateElement> aggregateElements;
+	vector<AggregateElement*> aggregateElements;
 	///Negated with naf
 	bool negative;
 

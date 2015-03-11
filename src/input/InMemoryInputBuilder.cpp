@@ -28,13 +28,15 @@ InMemoryInputBuilder::InMemoryInputBuilder() :
 	currentRule(new Rule()),
 	currentAtom(nullptr),
 	currentBinop(Binop::NONE_OP),
-	currentAggregate(nullptr)
+	currentAggregate(nullptr),
+	currentAggregateElement(new AggregateElement)
 {}
 
 InMemoryInputBuilder::~InMemoryInputBuilder() {
 	delete currentRule;
 	delete currentAtom;
 	delete inputRewriter;
+	delete currentAggregateElement;
 }
 
 void InMemoryInputBuilder::onDirective(char* directiveName,
@@ -349,21 +351,20 @@ void InMemoryInputBuilder::onAggregateVariableTerm(char* value) {
 	Term *term=new VariableTerm(false,value_string);
 	termTable->addTerm(term);
 
-	currentAggregateElement.addTerm(term);
+	currentAggregateElement->addTerm(term);
 }
 
 void InMemoryInputBuilder::onAggregateUnknownVariable() {
 }
 
 void InMemoryInputBuilder::onAggregateNafLiteral() {
-	currentAggregateElement.addNafLiterals(currentAtom);
+	currentAggregateElement->addNafLiterals(currentAtom);
 	currentAtom=nullptr;
 }
 
 void InMemoryInputBuilder::onAggregateElement() {
 	currentAggregate->addAggregateElement(currentAggregateElement);
-	currentAggregateElement.clearNafLiterals();
-	currentAggregateElement.clearTerms();
+	currentAggregateElement=new AggregateElement;
 }
 
 void InMemoryInputBuilder::onAggregate(bool naf) {
