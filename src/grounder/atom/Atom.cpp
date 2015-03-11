@@ -30,9 +30,18 @@ void Atom::ground(map_term_term& substritutionTerm,Atom*& templateAtom){
 
 set_term Atom::getVariable(){
 	set_term variables;
-	for(auto term:terms)
-		term->getVariable(variables);
+	getVariables(this,variables);
 	return variables;
+}
+
+void Atom::getVariables(Atom* atom,set_term& variables){
+	for(auto term:atom->getTerms())
+		term->getVariable(variables);
+}
+
+void Atom::getVariables(const vector<Atom*>& atoms,set_term& variables){
+	for(auto atom:atoms)
+		getVariables(atom,variables);
 }
 
 };

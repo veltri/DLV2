@@ -15,6 +15,8 @@ const string AUXILIARY="#aux";
 
 void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited) {
 
+	set_term variablesRule=getVariablesInClassicalLit(r);
+
 	/// First, auxiliary rules for aggregates elements are generated
 	for(auto it=r->getBeginBody();it!=r->getEndBody();it++){
 		unsigned aggElementsSize=(*it)->getAggregateElementsSize();
@@ -22,9 +24,17 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited)
 			unsigned id=IdGenerator::getInstance()->getId();
 			unsigned counter=1;
 			for(unsigned i=0;i<aggElementsSize;++i){
+				vector<Term*> terms=(*it)->getAggregateElement(i)->getTerms();
+
+				//For each variable in the aggregate element and in the rule add in head of auxiliary rule
+				set_term variablesAggElem=getVariablesInAggregateElem((*it)->getAggregateElement(i));
+				for(auto term:variablesAggElem)if(variablesRule.count(term))terms.push_back(term);
+
+
 				Rule* rule=new Rule;
 				vector<Atom*> atoms=(*it)->getAggregateElement(i)->getNafLiterals();
-				vector<Term*> terms=(*it)->getAggregateElement(i)->getTerms();
+
+
 				rule->addInBody(atoms.begin(),atoms.end());
 				string predName=AUXILIARY+"."+to_string(id)+"."+to_string(counter);
 				Predicate* predicate=new Predicate(predName,terms.size());
@@ -37,7 +47,7 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited)
 				Atom* atomClone=auxiliaryAtom->clone();
 				vector<Atom*> newAggElem;
 				newAggElem.push_back(atomClone);
-				(*it)->setAggregateElement(i,newAggElem);
+				(*it)->getAggregateElement(i)->setNafLiterals(newAggElem);
 			}
 		}
 	}
@@ -47,6 +57,21 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited)
 //	for(auto r:ruleRewrited){
 //		r->print();
 //	}
+}
+
+set_term BaseInputRewriter::getVariablesInClassicalLit(Rule* rule){
+	set_term variables;
+	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();++atom){
+		if((*atom)->getAggregateElementsSize()==0)
+			Atom::getVariables(*atom,variables);
+	}
+	return variables;
+}
+set_term BaseInputRewriter::getVariablesInAggregateElem(AggregateElement* aggregateElem){
+	set_term variables;
+	Atom::getVariables(aggregateElem->getNafLiterals(),variables);
+	for(auto term:aggregateElem->getTerms())variables.erase(term);
+	return variables;
 }
 
 } /* namespace grounder */

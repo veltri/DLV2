@@ -226,7 +226,7 @@ bool BackTrackingGrounder::foundAssignment() {
 		Atom *bodyGroundAtom=nullptr;
 
 		if((*atom)->getAggregateElementsSize()>0)
-			bodyGroundAtom=ground_atom_body[index_body_atom];
+			bodyGroundAtom=ground_atom_body[index_body_atom]->clone();
 		else
 			(*atom)->ground(current_var_assign,bodyGroundAtom);
 
@@ -430,7 +430,6 @@ bool BackTrackingGrounder::groundAggregate() {
 
 	for(unsigned i=0;i<aggregateAtom->getAggregateElementsSize();i++){
 		Atom* atom=aggregateAtom->getAggregateElement(i)->getNafLiteral(0);
-		AggregateElement *ground_aggregateElement=new AggregateElement;
 		Predicate *predicate_atom=atom->getPredicate();
 		vector<unsigned> tablesToSearch={FACT,NOFACT};
 		for(auto table:tablesToSearch){
@@ -441,11 +440,11 @@ bool BackTrackingGrounder::groundAggregate() {
 			while(find){
 				Atom *groundAtom=nullptr;
 				atom->ground(copy_current_var_assign,groundAtom);
+				AggregateElement *ground_aggregateElement=new AggregateElement;
 				ground_aggregateElement->addNafLiterals(groundAtom);
 				for(auto term_aggregateElement:aggregateAtom->getAggregateElement(i)->getTerms())
 					ground_aggregateElement->addTerm(copy_current_var_assign[term_aggregateElement]);
 				ground_aggregateElements.push_back(ground_aggregateElement);
-				ground_aggregateElement=new AggregateElement;
 
 				copy_current_var_assign=current_var_assign;
 				searcher->nextMatch(id,atom,copy_current_var_assign,find,undef);
@@ -455,9 +454,8 @@ bool BackTrackingGrounder::groundAggregate() {
 
 	if(ground_aggregateElements.size()==0) return false;
 	Atom *ground_aggregate=new AggregateAtom(aggregateAtom->getLowerGuard(),aggregateAtom->getFirstBinop(),aggregateAtom->getUpperGuard(),aggregateAtom->getSecondBinop(),aggregateAtom->getAggregateFunction(),ground_aggregateElements,aggregateAtom->isNegative());
-
+	delete ground_atom_body[index_current_atom];
 	ground_atom_body[index_current_atom]=ground_aggregate;
-
 	return true;
 }
 

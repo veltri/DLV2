@@ -194,6 +194,9 @@ public:
 	///Destructor
 	virtual ~Atom() {};
 
+	static void getVariables(Atom* atom,set_term& variables);
+	static void getVariables(const vector<Atom*>& atoms,set_term& variables);
+
 protected:
 	vector<Term*> terms;
 };

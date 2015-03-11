@@ -30,6 +30,8 @@ class AggregateElement {
 		//Default constructor
 		AggregateElement() {}
 
+		AggregateElement* clone();
+
 		///Getter for terms
 		const vector<Term*>& getTerms() const {return terms;}
 		///Setter for terms
@@ -45,12 +47,12 @@ class AggregateElement {
 		///Add Naf literal in nafLiterals
 		void addNafLiterals(Atom* atom){nafLiterals.push_back(atom);}
 		/// Remove all Naf literals
-		void clearNafLiterals(){nafLiterals.clear();}
+		void clearNafLiterals();
 		/// Remove all terms
 		void clearTerms(){terms.clear();}
 
 		//Destructor
-		virtual ~AggregateElement() {}
+		virtual ~AggregateElement();
 
 	private:
 		///Vector of terms

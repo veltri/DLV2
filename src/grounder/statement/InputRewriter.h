@@ -30,6 +30,12 @@ class BaseInputRewriter : public InputRewriter {
 public:
 	BaseInputRewriter():InputRewriter(){};
 	void translateAggregate(Rule* rule, vector<Rule*>& ruleRewrited);
+private:
+	//Get all variable in rule except the variables in the aggregate
+	set_term getVariablesInClassicalLit(Rule* rule);
+	//Get all variable in the aggregate element except the variables in the terms of aggregate element
+	set_term getVariablesInAggregateElem(AggregateElement* aggregateElem);
+
 };
 
 

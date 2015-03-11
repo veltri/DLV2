@@ -39,9 +39,15 @@ public:
 	AggregateAtom(Term* f, Binop fB,Term* s, Binop sB, AggregateFunction aF, vector<AggregateElement*> aE, bool n):
 		firstBinop(fB), secondBinop(sB), aggregateFunction(aF), aggregateElements(move(aE)), negative(n) {lowerGueard=f;upperGuard=s;};
 
+	AggregateAtom(Term* f, Binop fB,Term* s, Binop sB, AggregateFunction aF, bool n):
+		firstBinop(fB), secondBinop(sB), aggregateFunction(aF), negative(n) {lowerGueard=f;upperGuard=s;};
+
+
 	Atom* clone() {
-		Atom* atom = new AggregateAtom(lowerGueard,firstBinop,upperGuard,secondBinop,aggregateFunction,aggregateElements,negative);
+		Atom* atom = new AggregateAtom(lowerGueard,firstBinop,upperGuard,secondBinop,aggregateFunction,negative);
 		atom->setTerms(this->terms);
+		for(auto agg_element:aggregateElements)
+			atom->addAggregateElement(agg_element->clone());
 		return atom;
 	};
 
@@ -58,18 +64,6 @@ public:
 	AggregateElement* getAggregateElement(unsigned i) {return aggregateElements[i];}
 	///Setter method for the aggregate elements
 	void setAggregateElements(const vector<AggregateElement*>& aggregateElements) {this->aggregateElements = aggregateElements;};
-	///Setter method for the i-th aggregate element
-	void setAggregateElement(unsigned i, const vector<Atom*>& nafLits, const vector<Term*>& terms) {
-		aggregateElements[i]->clearNafLiterals();
-		aggregateElements[i]->setNafLiterals(nafLits);
-		aggregateElements[i]->clearTerms();
-		aggregateElements[i]->setTerms(terms);
-	}
-	///Setter method for the i-th aggregate element
-	void setAggregateElement(unsigned i, const vector<Atom*>& nafLits) {
-		aggregateElements[i]->clearNafLiterals();
-		aggregateElements[i]->setNafLiterals(nafLits);
-	}
 	///Getter method for the aggregate elements size
 	virtual unsigned getAggregateElementsSize() {return aggregateElements.size();};
 	/// Add aggregate element
@@ -106,7 +100,7 @@ public:
 	///Printer method
 	void print();
 
-	~AggregateAtom() {for(auto& aggregateElem:aggregateElements) for(auto naf:aggregateElem->getNafLiterals()) delete naf;};
+	~AggregateAtom() {for(auto& aggregateElem:aggregateElements) delete aggregateElem;};
 
 private:
 	///First binary operation
