@@ -17,6 +17,10 @@ namespace DLV2{
 
 namespace grounder{
 
+enum ResultEvaluation{
+	SATISFY=0, UNSATISFY, UNDEF
+};
+
 /**
  * This class implements an aggregate atom extending atom
  */
@@ -25,7 +29,7 @@ class AggregateAtom: public Atom {
 public:
 
 	///Default constructor
-	AggregateAtom(): firstBinop(Binop::NONE_OP), secondBinop(Binop::NONE_OP), aggregateFunction(AggregateFunction::NONE), negative(false) {lowerGueard=nullptr;upperGuard=nullptr;};
+	AggregateAtom(): firstBinop(Binop::NONE_OP), secondBinop(Binop::NONE_OP), aggregateFunction(AggregateFunction::NONE), negative(false),partialEvaluation(0) {lowerGueard=nullptr;upperGuard=nullptr;};
 
 	/** Constructor
 		 * @param f set the first term of comparison
@@ -37,10 +41,10 @@ public:
 		 * @param negative set whether the atom is negated with negation as failure
 		 */
 	AggregateAtom(Term* f, Binop fB,Term* s, Binop sB, AggregateFunction aF, vector<AggregateElement*> aE, bool n):
-		firstBinop(fB), secondBinop(sB), aggregateFunction(aF), aggregateElements(move(aE)), negative(n) {lowerGueard=f;upperGuard=s;};
+		firstBinop(fB), secondBinop(sB), aggregateFunction(aF), aggregateElements(move(aE)), negative(n),partialEvaluation(0) {lowerGueard=f;upperGuard=s;};
 
 	AggregateAtom(Term* f, Binop fB,Term* s, Binop sB, AggregateFunction aF, bool n):
-		firstBinop(fB), secondBinop(sB), aggregateFunction(aF), negative(n) {lowerGueard=f;upperGuard=s;};
+		firstBinop(fB), secondBinop(sB), aggregateFunction(aF), negative(n),partialEvaluation(0) {lowerGueard=f;upperGuard=s;};
 
 
 	Atom* clone() {
@@ -97,6 +101,14 @@ public:
 	/// Similiar to ground(map_term_term& substritutionTerm) but not create new atom
 	virtual void ground(map_term_term& substritutionTerm,Atom*& templateAtom);
 
+	///Update the evaluation of the aggregate with the last aggregate element
+	/// Return the result of the evaluation
+	virtual ResultEvaluation partialEvaluate();
+
+	///return true if one guard is an equal
+	bool isAnAssigment(){return ((firstBinop==Binop::EQUAL && !lowerGueard->isGround()) || (secondBinop==Binop::EQUAL && !upperGuard->isGround() ));}
+
+
 	///Printer method
 	void print();
 
@@ -120,6 +132,15 @@ private:
 	/* For the vector of terms, it contains the first and the second term of comparison.
 	 * Notice that the vector contains the terms in the same order as they appear: the first term in position 0, the second in position 1.
 	 */
+
+
+	virtual ResultEvaluation partialEvaluateCount();
+	virtual ResultEvaluation partialEvaluateMax();
+	virtual ResultEvaluation partialEvaluateMin();
+	virtual ResultEvaluation partialEvaluateSum();
+
+	int partialEvaluation;
+
 };
 
 };

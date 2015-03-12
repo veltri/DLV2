@@ -35,6 +35,7 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited)
 				vector<Atom*> atoms=(*it)->getAggregateElement(i)->getNafLiterals();
 
 
+
 				rule->addInBody(atoms.begin(),atoms.end());
 				string predName=AUXILIARY+"."+to_string(id)+"."+to_string(counter);
 				Predicate* predicate=new Predicate(predName,terms.size());
