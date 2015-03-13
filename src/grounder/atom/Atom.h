@@ -164,6 +164,12 @@ public:
 	virtual void setSecondBinop(Binop secondBinop) {};
 	/// Add aggregate Element
 	virtual void addAggregateElement(AggregateElement* element){};
+
+	virtual ResultEvaluation partialEvaluate(){return 0;};
+
+	///return true if one guard is an equal
+	virtual bool isAnAssigment(){return false;};
+
 	/*****************************************************/
 
 	/******** Methods useful for Choice ********/

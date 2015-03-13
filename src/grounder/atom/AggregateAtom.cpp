@@ -7,6 +7,7 @@
 
 #include "AggregateAtom.h"
 #include "../../util/Assert.h"
+#include "../table/PredicateExtension.h"
 using namespace std;
 
 namespace DLV2{
@@ -67,7 +68,7 @@ void AggregateAtom::ground(map_term_term& substritutionTerm, Atom*& templateAtom
 }
 
 ResultEvaluation AggregateAtom::partialEvaluate() {
-	switch (AggregateFunction) {
+	switch (aggregateFunction) {
 		case COUNT:
 			return partialEvaluateCount();
 			break;
