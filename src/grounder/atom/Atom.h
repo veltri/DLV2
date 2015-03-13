@@ -36,6 +36,11 @@ enum AggregateFunction {NONE=0,COUNT,MAX,MIN,SUM};
 /// Binary Operation Types
 enum Binop {NONE_OP=0,EQUAL,UNEQUAL,LESS,GREATER,LESS_OR_EQ,GREATER_OR_EQ};
 
+enum ResultEvaluation{
+	SATISFY=0, UNSATISFY, UNDEF
+};
+
+
 /**      The hierarchy is this:
 *      									Atom
 *      	|					|				|					|
@@ -165,7 +170,7 @@ public:
 	/// Add aggregate Element
 	virtual void addAggregateElement(AggregateElement* element){};
 
-	virtual ResultEvaluation partialEvaluate(){return 0;};
+	virtual ResultEvaluation partialEvaluate(){};
 
 	///return true if one guard is an equal
 	virtual bool isAnAssigment(){return false;};

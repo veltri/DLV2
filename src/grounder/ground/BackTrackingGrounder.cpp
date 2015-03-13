@@ -425,8 +425,8 @@ void BackTrackingGrounder::removeBindValueInAssignment(const set_term& bind_vari
 bool BackTrackingGrounder::groundAggregate() {
 
 	Atom *aggregateAtom=templateSetAtom[index_current_atom];
-	vector<AggregateElement*> ground_aggregateElements;
 	atom_undef_inbody[index_current_atom]=true;
+	Atom *ground_aggregate=new AggregateAtom(aggregateAtom->getLowerGuard(),aggregateAtom->getFirstBinop(),aggregateAtom->getUpperGuard(),aggregateAtom->getSecondBinop(),aggregateAtom->getAggregateFunction(),aggregateAtom->isNegative());
 
 	for(unsigned i=0;i<aggregateAtom->getAggregateElementsSize();i++){
 		Atom* atom=aggregateAtom->getAggregateElement(i)->getNafLiteral(0);
@@ -444,7 +444,8 @@ bool BackTrackingGrounder::groundAggregate() {
 				ground_aggregateElement->addNafLiterals(groundAtom);
 				for(auto term_aggregateElement:aggregateAtom->getAggregateElement(i)->getTerms())
 					ground_aggregateElement->addTerm(copy_current_var_assign[term_aggregateElement]);
-				ground_aggregateElements.push_back(ground_aggregateElement);
+				ground_aggregate->addAggregateElement(ground_aggregateElement);
+				cout<<ground_aggregate->partialEvaluate()<<endl;
 
 				copy_current_var_assign=current_var_assign;
 				searcher->nextMatch(id,atom,copy_current_var_assign,find,undef);
@@ -452,8 +453,7 @@ bool BackTrackingGrounder::groundAggregate() {
 		}
 	}
 
-	if(ground_aggregateElements.size()==0) return false;
-	Atom *ground_aggregate=new AggregateAtom(aggregateAtom->getLowerGuard(),aggregateAtom->getFirstBinop(),aggregateAtom->getUpperGuard(),aggregateAtom->getSecondBinop(),aggregateAtom->getAggregateFunction(),ground_aggregateElements,aggregateAtom->isNegative());
+	if(ground_aggregate->getAggregateElementsSize()==0) {delete ground_aggregate;return false;}
 	delete ground_atom_body[index_current_atom];
 	ground_atom_body[index_current_atom]=ground_aggregate;
 	return true;

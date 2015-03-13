@@ -25,10 +25,12 @@ bool AggregateAtom::operator ==(const Atom& a) {
 
 void AggregateAtom::ground(map_term_term& substritutionTerm, Atom*& templateAtom) {
 	//Ground guard
-	Term* template_lowerGueard=lowerGueard->substitute(substritutionTerm);
-	Term* template_upperGueard=upperGuard->substitute(substritutionTerm);
-	assert_msg((template_lowerGueard->isGround() && template_upperGueard->isGround()),"Arith term not safe");
-
+	Term* template_lowerGueard=nullptr,*template_upperGueard=nullptr;
+	if(firstBinop!=NONE_OP)
+		template_lowerGueard=lowerGueard->substitute(substritutionTerm);
+	if(secondBinop!=NONE_OP)
+		template_upperGueard=upperGuard->substitute(substritutionTerm);
+	assert_msg(((firstBinop==NONE_OP ||template_lowerGueard->isGround()  )  && (secondBinop==NONE_OP || template_upperGueard->isGround())),"Arith term not safe");
 	if(templateAtom==nullptr){
 		//Ground Aggregate Element
 		vector<AggregateElement*> template_aggregate_element;
@@ -141,7 +143,6 @@ ResultEvaluation AggregateAtom::partialEvaluateCount() {
 
 	if(firstBinop!=NONE_OP && secondBinop==NONE_OP && partialEvaluation>= lowerGueard->getConstantValue())
 		return SATISFY;
-
 	return UNDEF;
 }
 

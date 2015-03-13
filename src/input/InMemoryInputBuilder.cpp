@@ -320,11 +320,15 @@ void InMemoryInputBuilder::onAggregateLowerGuard() {
 	if(currentAggregate==nullptr)
 		currentAggregate = new AggregateAtom;
 	currentAggregate->setLowerGuard(terms_parsered.back());
+	currentAggregate->setFirstBinop(currentBinop);
 	terms_parsered.pop_back();
 }
 
 void InMemoryInputBuilder::onAggregateUpperGuard() {
+	if(currentAggregate==nullptr)
+		currentAggregate = new AggregateAtom;
 	currentAggregate->setUpperGuard(terms_parsered.back());
+	currentAggregate->setSecondBinop(currentBinop);
 	terms_parsered.pop_back();
 }
 

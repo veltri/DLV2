@@ -17,9 +17,6 @@ namespace DLV2{
 
 namespace grounder{
 
-enum ResultEvaluation{
-	SATISFY=0, UNSATISFY, UNDEF
-};
 
 /**
  * This class implements an aggregate atom extending atom
