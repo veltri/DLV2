@@ -172,6 +172,13 @@ public:
 
 	virtual ResultEvaluation partialEvaluate(){};
 
+	/// Return the result of the evaluation of the aggregate
+	virtual ResultEvaluation finalEvaluation(){};
+
+	///Return the value of evaluation
+	virtual int getPartialEvaluation(){return 0;};
+
+
 	///return true if one guard is an equal
 	virtual bool isAnAssigment(){return false;};
 

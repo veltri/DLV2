@@ -9,6 +9,7 @@
 #include "../../util/Timer.h"
 #include <boost/lexical_cast.hpp>
 #include "../atom/AggregateAtom.h"
+#include "../term/ConstantTerm.h"
 
 
 namespace DLV2 {
@@ -453,6 +454,17 @@ bool BackTrackingGrounder::groundAggregate() {
 		}
 	}
 
+	if(ground_aggregate->isAnAssigment()){
+		Term *term_value=new NumericConstantTerm(false,ground_aggregate->getPartialEvaluation());
+		termsMap->addTerm(term_value);
+		if(ground_aggregate->getFirstBinop()!=NONE_OP){
+			current_var_assign.insert({ground_aggregate->getLowerGuard(),term_value});
+			ground_aggregate->setLowerGuard(term_value);
+		}else{
+			current_var_assign.insert({ground_aggregate->getUpperGuard(),term_value});
+			ground_aggregate->setUpperGuard(term_value);
+		}
+	}
 	if(ground_aggregate->getAggregateElementsSize()==0) {delete ground_aggregate;return false;}
 	delete ground_atom_body[index_current_atom];
 	ground_atom_body[index_current_atom]=ground_aggregate;

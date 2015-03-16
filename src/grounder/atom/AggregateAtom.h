@@ -26,7 +26,7 @@ class AggregateAtom: public Atom {
 public:
 
 	///Default constructor
-	AggregateAtom(): firstBinop(Binop::NONE_OP), secondBinop(Binop::NONE_OP), aggregateFunction(AggregateFunction::NONE), negative(false),partialEvaluation(0) {lowerGueard=nullptr;upperGuard=nullptr;};
+	AggregateAtom(): firstBinop(Binop::NONE_OP), secondBinop(Binop::NONE_OP), aggregateFunction(AggregateFunction::NONE), negative(false),partialEvaluation(0),undefAtomContained(0) {lowerGueard=nullptr;upperGuard=nullptr;};
 
 	/** Constructor
 		 * @param f set the first term of comparison
@@ -38,10 +38,10 @@ public:
 		 * @param negative set whether the atom is negated with negation as failure
 		 */
 	AggregateAtom(Term* f, Binop fB,Term* s, Binop sB, AggregateFunction aF, vector<AggregateElement*> aE, bool n):
-		firstBinop(fB), secondBinop(sB), aggregateFunction(aF), aggregateElements(move(aE)), negative(n),partialEvaluation(0) {lowerGueard=f;upperGuard=s;};
+		firstBinop(fB), secondBinop(sB), aggregateFunction(aF), aggregateElements(move(aE)), negative(n),partialEvaluation(0),undefAtomContained(0) {lowerGueard=f;upperGuard=s;};
 
 	AggregateAtom(Term* f, Binop fB,Term* s, Binop sB, AggregateFunction aF, bool n):
-		firstBinop(fB), secondBinop(sB), aggregateFunction(aF), negative(n),partialEvaluation(0) {lowerGueard=f;upperGuard=s;};
+		firstBinop(fB), secondBinop(sB), aggregateFunction(aF), negative(n),partialEvaluation(0),undefAtomContained(0) {lowerGueard=f;upperGuard=s;};
 
 
 	Atom* clone() {
@@ -100,7 +100,13 @@ public:
 
 	///Update the evaluation of the aggregate with the last aggregate element
 	/// Return the result of the evaluation
-	virtual ResultEvaluation partialEvaluate();
+	 ResultEvaluation partialEvaluate();
+
+	 /// Return the result of the evaluation of the aggregate
+	 /// Call before partialEvaluate for update the partial evaluation
+	 ResultEvaluation finalEvaluation();
+
+	 int getPartialEvaluation(){return partialEvaluation+undefAtomContained;};
 
 	///return true if one guard is an equal
 	bool isAnAssigment(){return ((firstBinop==Binop::EQUAL && !lowerGueard->isGround()) || (secondBinop==Binop::EQUAL && !upperGuard->isGround() ));}
@@ -131,12 +137,19 @@ private:
 	 */
 
 
-	virtual ResultEvaluation partialEvaluateCount();
-	virtual ResultEvaluation partialEvaluateMax();
-	virtual ResultEvaluation partialEvaluateMin();
-	virtual ResultEvaluation partialEvaluateSum();
+	ResultEvaluation partialEvaluateCount();
+	ResultEvaluation partialEvaluateMax();
+	ResultEvaluation partialEvaluateMin();
+	ResultEvaluation partialEvaluateSum();
+
+	ResultEvaluation finalEvaluateCount();
+	ResultEvaluation finalEvaluateMax();
+	ResultEvaluation finalEvaluateMin();
+	ResultEvaluation finalEvaluateSum();
 
 	int partialEvaluation;
+
+	int undefAtomContained;
 
 };
 

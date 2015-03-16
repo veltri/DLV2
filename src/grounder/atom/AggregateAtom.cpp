@@ -30,7 +30,7 @@ void AggregateAtom::ground(map_term_term& substritutionTerm, Atom*& templateAtom
 		template_lowerGueard=lowerGueard->substitute(substritutionTerm);
 	if(secondBinop!=NONE_OP)
 		template_upperGueard=upperGuard->substitute(substritutionTerm);
-	assert_msg(((firstBinop==NONE_OP ||template_lowerGueard->isGround()  )  && (secondBinop==NONE_OP || template_upperGueard->isGround())),"Arith term not safe");
+	assert_msg(((firstBinop==NONE_OP || firstBinop==EQUAL ||template_lowerGueard->isGround()  )  && (secondBinop==NONE_OP || secondBinop==EQUAL || template_upperGueard->isGround())),"Arith term not safe");
 	if(templateAtom==nullptr){
 		//Ground Aggregate Element
 		vector<AggregateElement*> template_aggregate_element;
@@ -91,6 +91,28 @@ ResultEvaluation AggregateAtom::partialEvaluate() {
 	}
 }
 
+ResultEvaluation AggregateAtom::finalEvaluation() {
+	switch (aggregateFunction) {
+		case COUNT:
+			return finalEvaluateCount();
+			break;
+		case MIN:
+			return finalEvaluateMin();
+
+			break;
+		case MAX:
+			return finalEvaluateMax();
+
+			break;
+		case SUM:
+			return finalEvaluateSum();
+
+			break;
+		default:
+			break;
+	}
+}
+
 void AggregateAtom::print() {
 	if(lowerGueard!=nullptr)
 		lowerGueard->print();
@@ -127,8 +149,10 @@ void AggregateAtom::print() {
 
 ResultEvaluation AggregateAtom::partialEvaluateCount() {
 	Atom *lastAtom=aggregateElements.back()->getNafLiteral(0);
-	if(!PredicateExtTable::getInstance()->getPredicateExt(lastAtom->getPredicate())->getGenericAtom(lastAtom)->isFact())
+	if(!PredicateExtTable::getInstance()->getPredicateExt(lastAtom->getPredicate())->getGenericAtom(lastAtom)->isFact()){
+		undefAtomContained++;
 		return UNDEF;
+	}
 
 	partialEvaluation++;
 
@@ -138,10 +162,10 @@ ResultEvaluation AggregateAtom::partialEvaluateCount() {
 	if(secondBinop==Binop::EQUAL && upperGuard->isGround() && partialEvaluation>upperGuard->getConstantValue())
 		return UNSATISFY;
 
-	if(secondBinop!=NONE_OP && partialEvaluation>upperGuard->getConstantValue())
+	if(secondBinop!=NONE_OP && partialEvaluation>=upperGuard->getConstantValue())
 		return UNSATISFY;
 
-	if(firstBinop!=NONE_OP && secondBinop==NONE_OP && partialEvaluation>= lowerGueard->getConstantValue())
+	if(firstBinop!=NONE_OP && secondBinop==NONE_OP && partialEvaluation >= lowerGueard->getConstantValue())
 		return SATISFY;
 	return UNDEF;
 }
@@ -155,4 +179,46 @@ ResultEvaluation AggregateAtom::partialEvaluateMin() {
 ResultEvaluation AggregateAtom::partialEvaluateSum() {
 }
 
-}}
+ResultEvaluation AggregateAtom::finalEvaluateCount() {
+
+	if(firstBinop==Binop::EQUAL && lowerGueard->isGround()){
+		if(partialEvaluation+undefAtomContained < lowerGueard->getConstantValue())
+			return UNSATISFY;
+		else if(lowerGueard->getConstantValue()==partialEvaluation && undefAtomContained==0)
+			return SATISFY;
+	}
+	if(secondBinop==Binop::EQUAL && upperGuard->isGround()){
+		if(partialEvaluation+undefAtomContained < upperGuard->getConstantValue())
+			return UNSATISFY;
+		else if(upperGuard->getConstantValue()==partialEvaluation && undefAtomContained==0)
+			return SATISFY;
+	}
+
+	if(firstBinop!=NONE_OP && partialEvaluation+undefAtomContained<lowerGueard->getConstantValue())
+		return UNSATISFY;
+
+	if(secondBinop!=NONE_OP && firstBinop==NONE_OP && partialEvaluation+undefAtomContained<upperGuard->getConstantValue())
+		return SATISFY;
+
+	if(secondBinop!=NONE_OP && firstBinop!=NONE_OP && partialEvaluation+undefAtomContained<upperGuard->getConstantValue() && partialEvaluation+undefAtomContained>=lowerGueard->getConstantValue())
+		return SATISFY;
+
+	return UNDEF;
+
+
+}
+
+ResultEvaluation AggregateAtom::finalEvaluateMax() {
+}
+
+ResultEvaluation AggregateAtom::finalEvaluateMin() {
+}
+
+ResultEvaluation AggregateAtom::finalEvaluateSum() {
+}
+
+
+}
+}
+
+
