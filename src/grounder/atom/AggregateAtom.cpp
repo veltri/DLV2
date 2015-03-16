@@ -14,6 +14,29 @@ namespace DLV2{
 namespace grounder{
 
 
+static string getBinopToStrng(Binop binop){
+	switch (binop) {
+		case LESS:
+			return "<";
+			break;
+		case LESS_OR_EQ:
+			return "<=";
+			break;
+		case EQUAL:
+			return "=";
+			break;
+		case GREATER:
+			return ">";
+			break;
+		case GREATER_OR_EQ:
+			return ">=";
+			break;
+		default:
+			break;
+	}
+}
+
+
 size_t AggregateAtom::hash() {
 	return 0; //TODO
 }
@@ -113,39 +136,6 @@ ResultEvaluation AggregateAtom::finalEvaluation() {
 	}
 }
 
-void AggregateAtom::print() {
-	if(lowerGueard!=nullptr)
-		lowerGueard->print();
-	cout<<"#";
-	if(aggregateFunction==AggregateFunction::COUNT){
-		cout<<"count";
-	}else if(aggregateFunction==AggregateFunction::MIN){
-		cout<<"min";
-	}else if(aggregateFunction==AggregateFunction::MAX){
-		cout<<"max";
-	}else if(aggregateFunction==AggregateFunction::SUM){
-		cout<<"sum";
-	}
-	cout<<"{";
-	bool first=true;
-	bool firstElement=true;
-	for(auto& element:aggregateElements){
-		if(!firstElement)cout<<";";else firstElement=false;
-		for(auto& term:element->getTerms()){
-			if(!first)cout<<",";else first=false;
-			term->print();
-		}
-		cout<<":";first=true;
-		for(auto& naf:element->getNafLiterals()){
-			if(!first)cout<<",";else first=false;
-			naf->print();
-		}
-		first=true;
-	}
-	cout<<"}";
-	if(upperGuard!=nullptr)
-		upperGuard->print();
-}
 
 ResultEvaluation AggregateAtom::partialEvaluateCount() {
 	Atom *lastAtom=aggregateElements.back()->getNafLiteral(0);
@@ -216,6 +206,45 @@ ResultEvaluation AggregateAtom::finalEvaluateMin() {
 
 ResultEvaluation AggregateAtom::finalEvaluateSum() {
 }
+
+void AggregateAtom::print() {
+	if(lowerGueard!=nullptr){
+		lowerGueard->print();
+		cout<<getBinopToStrng(firstBinop);
+	}
+	cout<<"#";
+	if(aggregateFunction==AggregateFunction::COUNT){
+		cout<<"count";
+	}else if(aggregateFunction==AggregateFunction::MIN){
+		cout<<"min";
+	}else if(aggregateFunction==AggregateFunction::MAX){
+		cout<<"max";
+	}else if(aggregateFunction==AggregateFunction::SUM){
+		cout<<"sum";
+	}
+	cout<<"{";
+	bool first=true;
+	bool firstElement=true;
+	for(auto& element:aggregateElements){
+		if(!firstElement)cout<<";";else firstElement=false;
+		for(auto& term:element->getTerms()){
+			if(!first)cout<<",";else first=false;
+			term->print();
+		}
+		cout<<":";first=true;
+		for(auto& naf:element->getNafLiterals()){
+			if(!first)cout<<",";else first=false;
+			naf->print();
+		}
+		first=true;
+	}
+	cout<<"}";
+	if(upperGuard!=nullptr){
+		cout<<getBinopToStrng(secondBinop);
+		upperGuard->print();
+	}
+}
+
 
 
 }
