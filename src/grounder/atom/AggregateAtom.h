@@ -115,6 +115,11 @@ public:
 	///return true if one guard is an equal
 	bool isAnAssigment(){return ((firstBinop==Binop::EQUAL && !lowerGueard->isGround()) || (secondBinop==Binop::EQUAL && !upperGuard->isGround() ));}
 
+	bool invalideGuards(){
+		if(firstBinop!=NONE_OP && secondBinop!=NONE_OP && lowerGueard->isGround() && upperGuard->isGround() && lowerGueard->getConstantValue()>upperGuard->getConstantValue())
+			return true;
+		return false;
+	}
 
 	///Printer method
 	void print();
@@ -140,15 +145,22 @@ private:
 	 * Notice that the vector contains the terms in the same order as they appear: the first term in position 0, the second in position 1.
 	 */
 
-
+	///Partial evaluate the count aggregate
 	ResultEvaluation partialEvaluateCount();
+	///Partial evaluate the max aggregate
 	ResultEvaluation partialEvaluateMax();
+	///Partial evaluate the min aggregate
 	ResultEvaluation partialEvaluateMin();
+	///Partial evaluate the sum aggregate
 	ResultEvaluation partialEvaluateSum();
 
+	///Final evaluate the count aggregate
 	ResultEvaluation finalEvaluateCount();
+	///Final evaluate the max aggregate
 	ResultEvaluation finalEvaluateMax();
+	///Final evaluate the min aggregate
 	ResultEvaluation finalEvaluateMin();
+	///Final evaluate the sum aggregate
 	ResultEvaluation finalEvaluateSum();
 
 	///Evaluation of true atom
