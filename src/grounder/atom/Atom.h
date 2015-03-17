@@ -178,6 +178,9 @@ public:
 	///Return the value of evaluation
 	virtual int getPartialEvaluation(){return 0;};
 
+	virtual int getUndefEvaluation(){return 0;};
+
+
 
 	///return true if one guard is an equal
 	virtual bool isAnAssigment(){return false;};

@@ -36,6 +36,16 @@ static string getBinopToStrng(Binop binop){
 	}
 }
 
+set_term AggregateAtom::getVariable(){
+	set_term variables;
+	if(firstBinop!= NONE_OP && lowerGueard->getType()==TermType::VARIABLE)
+		variables.insert(lowerGueard);
+	if(secondBinop != NONE_OP && upperGuard->getType()==TermType::VARIABLE)
+		variables.insert(upperGuard);
+
+	return variables;
+}
+
 
 size_t AggregateAtom::hash() {
 	return 0; //TODO
@@ -140,7 +150,7 @@ ResultEvaluation AggregateAtom::finalEvaluation() {
 ResultEvaluation AggregateAtom::partialEvaluateCount() {
 	Atom *lastAtom=aggregateElements.back()->getNafLiteral(0);
 	if(!PredicateExtTable::getInstance()->getPredicateExt(lastAtom->getPredicate())->getGenericAtom(lastAtom)->isFact()){
-		undefAtomContained++;
+		undefAtomEvaluation++;
 		return UNDEF;
 	}
 
@@ -172,25 +182,25 @@ ResultEvaluation AggregateAtom::partialEvaluateSum() {
 ResultEvaluation AggregateAtom::finalEvaluateCount() {
 
 	if(firstBinop==Binop::EQUAL && lowerGueard->isGround()){
-		if(partialEvaluation+undefAtomContained < lowerGueard->getConstantValue())
+		if(partialEvaluation+undefAtomEvaluation < lowerGueard->getConstantValue())
 			return UNSATISFY;
-		else if(lowerGueard->getConstantValue()==partialEvaluation && undefAtomContained==0)
+		else if(lowerGueard->getConstantValue()==partialEvaluation && undefAtomEvaluation==0)
 			return SATISFY;
 	}
 	if(secondBinop==Binop::EQUAL && upperGuard->isGround()){
-		if(partialEvaluation+undefAtomContained < upperGuard->getConstantValue())
+		if(partialEvaluation+undefAtomEvaluation < upperGuard->getConstantValue())
 			return UNSATISFY;
-		else if(upperGuard->getConstantValue()==partialEvaluation && undefAtomContained==0)
+		else if(upperGuard->getConstantValue()==partialEvaluation && undefAtomEvaluation==0)
 			return SATISFY;
 	}
 
-	if(firstBinop!=NONE_OP && partialEvaluation+undefAtomContained<lowerGueard->getConstantValue())
+	if(firstBinop!=NONE_OP && partialEvaluation+undefAtomEvaluation<lowerGueard->getConstantValue())
 		return UNSATISFY;
 
-	if(secondBinop!=NONE_OP && firstBinop==NONE_OP && partialEvaluation+undefAtomContained<upperGuard->getConstantValue())
+	if(secondBinop!=NONE_OP && firstBinop==NONE_OP && partialEvaluation+undefAtomEvaluation<upperGuard->getConstantValue())
 		return SATISFY;
 
-	if(secondBinop!=NONE_OP && firstBinop!=NONE_OP && partialEvaluation+undefAtomContained<upperGuard->getConstantValue() && partialEvaluation+undefAtomContained>=lowerGueard->getConstantValue())
+	if(secondBinop!=NONE_OP && firstBinop!=NONE_OP && partialEvaluation+undefAtomEvaluation<upperGuard->getConstantValue() && partialEvaluation+undefAtomEvaluation>=lowerGueard->getConstantValue())
 		return SATISFY;
 
 	return UNDEF;

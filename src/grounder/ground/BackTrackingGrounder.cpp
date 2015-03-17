@@ -45,7 +45,6 @@ bool BackTrackingGrounder::isGroundCurrentAtom(){
 	Timer::getInstance()->stop("Is Ground");
 	return isGround;
 #endif
-
 	return (is_ground_atom[index_current_atom]);
 
 }
@@ -371,7 +370,7 @@ void BackTrackingGrounder::findBindVariablesRule() {
 
 		///Set true if is ground
 		if(is_ground_atom.size()<=index_current_atom)
-				is_ground_atom.push_back((current_atom->isBuiltIn() || current_atom->isNegative() || current_variables_atoms[index_current_atom].size()==0) || current_atom->getAggregateElementsSize()>0);
+				is_ground_atom.push_back((current_atom->isBuiltIn() || current_atom->isNegative() || current_variables_atoms[index_current_atom].size()==0));
 
 	}
 #ifdef DEBUG_RULE_TIME
@@ -426,8 +425,32 @@ void BackTrackingGrounder::removeBindValueInAssignment(const set_term& bind_vari
 bool BackTrackingGrounder::groundAggregate() {
 
 	Atom *aggregateAtom=templateSetAtom[index_current_atom];
+	Atom *ground_aggregate;
+	if(aggregateAtom->isAnAssigment() && ground_atom_body[index_current_atom]!=nullptr){
+		//The atom is alredy grounded, just change the guard
+		ground_aggregate=ground_atom_body[index_current_atom];
+
+		if(ground_aggregate->getFirstBinop()!=NONE_OP){
+			if(ground_aggregate->getLowerGuard()->getConstantValue()>ground_aggregate->getPartialEvaluation()+ground_aggregate->getUndefEvaluation())
+				return false;
+			Term *term_value=new NumericConstantTerm(false,ground_aggregate->getLowerGuard()->getConstantValue()+1);
+			termsMap->addTerm(term_value);
+			ground_aggregate->setLowerGuard(term_value);
+			current_var_assign.insert({aggregateAtom->getLowerGuard(),term_value});
+
+		}else{
+			if(ground_aggregate->getUpperGuard()->getConstantValue()>ground_aggregate->getPartialEvaluation()+ground_aggregate->getUndefEvaluation())
+				return false;
+			Term *term_value=new NumericConstantTerm(false,ground_aggregate->getUpperGuard()->getConstantValue()+1);
+			termsMap->addTerm(term_value);
+			ground_aggregate->setUpperGuard(term_value);
+			current_var_assign.insert({aggregateAtom->getUpperGuard(),term_value});
+		}
+		return true;
+	}
+
 	atom_undef_inbody[index_current_atom]=true;
-	Atom *ground_aggregate=new AggregateAtom(aggregateAtom->getLowerGuard(),aggregateAtom->getFirstBinop(),aggregateAtom->getUpperGuard(),aggregateAtom->getSecondBinop(),aggregateAtom->getAggregateFunction(),aggregateAtom->isNegative());
+	ground_aggregate=new AggregateAtom(aggregateAtom->getLowerGuard(),aggregateAtom->getFirstBinop(),aggregateAtom->getUpperGuard(),aggregateAtom->getSecondBinop(),aggregateAtom->getAggregateFunction(),aggregateAtom->isNegative());
 
 	for(unsigned i=0;i<aggregateAtom->getAggregateElementsSize();i++){
 		Atom* atom=aggregateAtom->getAggregateElement(i)->getNafLiteral(0);
