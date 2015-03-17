@@ -7,6 +7,7 @@
 
 #include "InputRewriter.h"
 #include "../table/IdGenerator.h"
+#include "../atom/AggregateAtom.h"
 
 namespace DLV2 {
 namespace grounder {
@@ -54,10 +55,6 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited)
 	}
 
 	ruleRewrited.push_back(r);
-//	cout<<"AAA"<<endl;
-//	for(auto r:ruleRewrited){
-//		r->print();
-//	}
 }
 
 set_term BaseInputRewriter::getVariablesInClassicalLit(Rule* rule){

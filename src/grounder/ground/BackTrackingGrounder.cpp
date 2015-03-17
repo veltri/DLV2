@@ -435,13 +435,13 @@ bool BackTrackingGrounder::groundAggregate() {
 
 		//Find the variable if is lower or upper guard
 			//If the current value in the guard exceeded the maximal value that have to reach return false
-		if(ground_aggregate->getLowerGuard()->getConstantValue()>=ground_aggregate->getPartialEvaluation()+ground_aggregate->getUndefEvaluation())
+		if(ground_aggregate->getFirstGuard()->getConstantValue()>=ground_aggregate->getPartialEvaluation()+ground_aggregate->getUndefEvaluation())
 			return false;
 		//Otherwise increment the current guard by one and add in the ground aggregate
-		Term *term_value=new NumericConstantTerm(false,ground_aggregate->getLowerGuard()->getConstantValue()+1);
+		Term *term_value=new NumericConstantTerm(false,ground_aggregate->getFirstGuard()->getConstantValue()+1);
 		termsMap->addTerm(term_value);
-		ground_aggregate->setLowerGuard(term_value);
-		current_var_assign.insert({aggregateAtom->getLowerGuard(),term_value});
+		ground_aggregate->setFirstGuard(term_value);
+		current_var_assign.insert({aggregateAtom->getFirstGuard(),term_value});
 
 		return true;
 	}
@@ -449,7 +449,7 @@ bool BackTrackingGrounder::groundAggregate() {
 	//Atom is undef for printing the aggregate and check if is correct
 	atom_undef_inbody[index_current_atom]=true;
 	//Create a ground aggregate empty
-	ground_aggregate=new AggregateAtom(aggregateAtom->getLowerGuard(),aggregateAtom->getFirstBinop(),aggregateAtom->getUpperGuard(),aggregateAtom->getSecondBinop(),aggregateAtom->getAggregateFunction(),aggregateAtom->isNegative());
+	ground_aggregate=new AggregateAtom(aggregateAtom->getFirstGuard(),aggregateAtom->getFirstBinop(),aggregateAtom->getSecondGuard(),aggregateAtom->getSecondBinop(),aggregateAtom->getAggregateFunction(),aggregateAtom->isNegative());
 
 	for(unsigned i=0;i<aggregateAtom->getAggregateElementsSize();i++){
 
@@ -489,8 +489,8 @@ bool BackTrackingGrounder::groundAggregate() {
 	if(ground_aggregate->isAnAssigment()){
 		Term *term_value=new NumericConstantTerm(false,ground_aggregate->getPartialEvaluation());
 		termsMap->addTerm(term_value);
-		current_var_assign.insert({ground_aggregate->getLowerGuard(),term_value});
-		ground_aggregate->setLowerGuard(term_value);
+		current_var_assign.insert({ground_aggregate->getFirstGuard(),term_value});
+		ground_aggregate->setFirstGuard(term_value);
 	}
 
 	if(ground_aggregate->getAggregateElementsSize()==0) {delete ground_aggregate;return false;}

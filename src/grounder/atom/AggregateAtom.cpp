@@ -8,11 +8,12 @@
 #include "AggregateAtom.h"
 #include "../../util/Assert.h"
 #include "../table/PredicateExtension.h"
+#include "../term/ConstantTerm.h"
+#include "../term/ArithTerm.h"
 using namespace std;
 
 namespace DLV2{
 namespace grounder{
-
 
 static string getBinopToStrng(Binop binop){
 	switch (binop) {
@@ -38,10 +39,10 @@ static string getBinopToStrng(Binop binop){
 
 set_term AggregateAtom::getVariable(){
 	set_term variables;
-	if(firstBinop!= NONE_OP && lowerGueard->getType()==TermType::VARIABLE)
-		variables.insert(lowerGueard);
-	if(secondBinop != NONE_OP && upperGuard->getType()==TermType::VARIABLE)
-		variables.insert(upperGuard);
+	if(firstBinop!= NONE_OP && firstGuard->getType()==TermType::VARIABLE)
+		variables.insert(firstGuard);
+	if(secondBinop != NONE_OP && secondGuard->getType()==TermType::VARIABLE)
+		variables.insert(secondGuard);
 
 	return variables;
 }
@@ -59,10 +60,16 @@ bool AggregateAtom::operator ==(const Atom& a) {
 void AggregateAtom::ground(map_term_term& substritutionTerm, Atom*& templateAtom) {
 	//Ground guard
 	Term* template_lowerGueard=nullptr,*template_upperGueard=nullptr;
-	if(firstBinop!=NONE_OP)
-		template_lowerGueard=lowerGueard->substitute(substritutionTerm);
-	if(secondBinop!=NONE_OP)
-		template_upperGueard=upperGuard->substitute(substritutionTerm);
+	if(firstBinop!=NONE_OP){
+		template_lowerGueard=firstGuard->substitute(substritutionTerm);
+		if(template_lowerGueard->isGround() && firstGuard->contain(TermType::ARITH))
+			template_lowerGueard=template_lowerGueard->calculate();
+	}
+	if(secondBinop!=NONE_OP){
+		template_upperGueard=secondGuard->substitute(substritutionTerm);
+		if(template_upperGueard->isGround() && secondGuard->contain(TermType::ARITH))
+			template_upperGueard=template_upperGueard->calculate();
+	}
 	assert_msg(((firstBinop==NONE_OP || firstBinop==EQUAL ||template_lowerGueard->isGround()  )  && (secondBinop==NONE_OP || secondBinop==EQUAL || template_upperGueard->isGround())),"Arith term not safe");
 	if(templateAtom==nullptr){
 		//Ground Aggregate Element
@@ -83,8 +90,8 @@ void AggregateAtom::ground(map_term_term& substritutionTerm, Atom*& templateAtom
 		templateAtom=new AggregateAtom(template_lowerGueard,firstBinop,template_upperGueard,secondBinop,aggregateFunction,template_aggregate_element,negative);
 
 	}else{
-		templateAtom->setLowerGuard(template_lowerGueard);
-		templateAtom->setUpperGuard(template_upperGueard);
+		templateAtom->setFirstGuard(template_lowerGueard);
+		templateAtom->setSecondGuard(template_upperGueard);
 		//Ground Aggregate Element
 		for(unsigned i=0;i<templateAtom->getAggregateElementsSize();i++){
 			//Set all terms of aggregate in the new aggregate
@@ -158,14 +165,13 @@ ResultEvaluation AggregateAtom::partialEvaluateCount() {
 
 	partialEvaluation++;
 
-	if(firstBinop==Binop::EQUAL && lowerGueard->isGround() && partialEvaluation>lowerGueard->getConstantValue())
+	if(firstBinop==Binop::EQUAL && firstGuard->isGround() && partialEvaluation>firstGuard->getConstantValue())
 		return UNSATISFY;
 
-
-	if(secondBinop!=NONE_OP && partialEvaluation>=upperGuard->getConstantValue())
+	if(secondBinop!=NONE_OP && partialEvaluation>=secondGuard->getConstantValue())
 		return UNSATISFY;
 
-	if(firstBinop==LESS_OR_EQ && secondBinop==NONE_OP && partialEvaluation >= lowerGueard->getConstantValue())
+	if(firstBinop==LESS_OR_EQ && secondBinop==NONE_OP && partialEvaluation >= firstGuard->getConstantValue())
 		return SATISFY;
 	return UNDEF;
 }
@@ -190,20 +196,20 @@ ResultEvaluation AggregateAtom::partialEvaluateSum() {
 
 ResultEvaluation AggregateAtom::finalEvaluateCount() {
 
-	if(firstBinop==Binop::EQUAL && lowerGueard->isGround()){
-		if(partialEvaluation+undefAtomEvaluation < lowerGueard->getConstantValue())
+	if(firstBinop==Binop::EQUAL && firstGuard->isGround()){
+		if(partialEvaluation+undefAtomEvaluation < firstGuard->getConstantValue())
 			return UNSATISFY;
-		else if(lowerGueard->getConstantValue()==partialEvaluation && undefAtomEvaluation==0)
+		else if(firstGuard->getConstantValue()==partialEvaluation && undefAtomEvaluation==0)
 			return SATISFY;
 	}
 
-	if(firstBinop==LESS_OR_EQ && partialEvaluation+undefAtomEvaluation<lowerGueard->getConstantValue())
+	if(firstBinop==LESS_OR_EQ && partialEvaluation+undefAtomEvaluation<firstGuard->getConstantValue())
 		return UNSATISFY;
 
-	if(secondBinop!=NONE_OP && firstBinop==NONE_OP && partialEvaluation+undefAtomEvaluation<upperGuard->getConstantValue())
+	if(secondBinop!=NONE_OP && firstBinop==NONE_OP && partialEvaluation+undefAtomEvaluation<secondGuard->getConstantValue())
 		return SATISFY;
 
-	if(secondBinop!=NONE_OP && firstBinop==LESS_OR_EQ && partialEvaluation+undefAtomEvaluation<upperGuard->getConstantValue() && partialEvaluation+undefAtomEvaluation>=lowerGueard->getConstantValue())
+	if(secondBinop!=NONE_OP && firstBinop==LESS_OR_EQ && partialEvaluation+undefAtomEvaluation<secondGuard->getConstantValue() && partialEvaluation+undefAtomEvaluation>=firstGuard->getConstantValue())
 		return SATISFY;
 
 	return UNDEF;
@@ -219,8 +225,10 @@ ResultEvaluation AggregateAtom::finalEvaluateSum() {
 }
 
 void AggregateAtom::print() {
-	if(lowerGueard!=nullptr){
-		lowerGueard->print();
+	if(negative)
+		cout<<"not ";
+	if(firstGuard!=nullptr){
+		firstGuard->print();
 		cout<<getBinopToStrng(firstBinop);
 	}
 	cout<<"#";
@@ -250,15 +258,89 @@ void AggregateAtom::print() {
 		first=true;
 	}
 	cout<<"}";
-	if(upperGuard!=nullptr){
+	if(secondGuard!=nullptr){
 		cout<<getBinopToStrng(secondBinop);
-		upperGuard->print();
+		secondGuard->print();
 	}
 }
 
-
-
+Term* AggregateAtom::changeInStandardFormatGuard(Term* guard) {
+	Term* t = nullptr;
+	if (guard->getType() == TermType::NUMERIC_CONSTANT) {
+		t=new NumericConstantTerm(false, guard->getConstantValue() + 1);
+		TermTable::getInstance()->addTerm(t);
+	}
+	if (guard->getType() == TermType::VARIABLE) {
+		vector<Operator> operators;
+		operators.push_back(Operator::PLUS);
+		vector<Term*> terms;
+		terms.push_back(guard);
+		Term* one_term = new NumericConstantTerm(false, 1);
+		TermTable::getInstance()->addTerm(one_term);
+		terms.push_back(one_term);
+		t = new ArithTerm(false, operators, terms);
+		TermTable::getInstance()->addTerm(t);
+	}
+	return t;
 }
+
+void AggregateAtom::changeInStandardFormat() {
+
+	// If one of the binop is UNEQUAL
+	if(secondBinop==NONE_OP && firstBinop==Binop::UNEQUAL){
+		firstBinop=EQUAL;
+		this->negative=true;
+	}
+	if(firstBinop==NONE_OP && secondBinop==Binop::UNEQUAL){
+		firstBinop=EQUAL;
+		secondBinop=NONE_OP;
+		firstGuard=secondGuard;
+		secondGuard=0;
+		this->negative=true;
+	}
+
+	// If the second binop is an EQUAL
+	if(secondBinop==Binop::EQUAL){
+		firstBinop=Binop::EQUAL;
+		firstGuard=secondGuard;
+		secondBinop=Binop::NONE_OP;
+		secondGuard=0;
+	}
+
+	// One of the following cases hold:
+	// Case: 1 > x > 3 or 1 >= x > 3 or 1 > x >= 3 or 1 >= x >= 3
+	// Case: x >= 3 or x > 3
+	// Case: 1 > x or 1 >= x
+	if((firstBinop==Binop::GREATER || firstBinop==Binop::GREATER_OR_EQ) || (secondBinop==Binop::GREATER || secondBinop==Binop::GREATER_OR_EQ)){
+		Binop tmpB=firstBinop;
+		firstBinop=secondBinop;
+		secondBinop=tmpB;
+		Term* tmpT=firstGuard;
+		firstGuard=secondGuard;
+		secondGuard=tmpT;
+		if(firstBinop==Binop::GREATER)
+			firstBinop=Binop::LESS;
+		if(secondBinop==Binop::GREATER)
+			secondBinop=Binop::LESS;
+		if(firstBinop==Binop::GREATER_OR_EQ)
+			firstBinop=Binop::LESS_OR_EQ;
+		if(secondBinop==Binop::GREATER_OR_EQ)
+			secondBinop=Binop::LESS_OR_EQ;
+	}
+
+	// Case: 1 < x
+	if(firstBinop==Binop::LESS && firstGuard!=0){
+		firstGuard=changeInStandardFormatGuard(firstGuard);
+		firstBinop=Binop::LESS_OR_EQ;
+	}
+
+	// Case: x >= 1
+	if(secondBinop==Binop::LESS_OR_EQ && secondGuard!=0){
+		secondGuard=changeInStandardFormatGuard(secondGuard);
+		secondBinop=Binop::LESS;
+	}
 }
+
+}}
 
 

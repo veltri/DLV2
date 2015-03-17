@@ -149,14 +149,14 @@ public:
 	virtual void setAggregateElement(unsigned i, const vector<Atom*>& nafLits) {}
 	///Getter method for the aggregate function
 	virtual AggregateFunction getAggregateFunction() const {return AggregateFunction::NONE;};
-	///Set lower guard of aggregate
-	virtual void setLowerGuard(Term* lower){};
-	///Set upper guard of aggregate
-	virtual void setUpperGuard(Term* upper){};
+	///Set first guard of aggregate
+	virtual void setFirstGuard(Term* lower){};
+	///Set second guard of aggregate
+	virtual void setSecondGuard(Term* upper){};
 	///Get lower guard of aggregate
-	virtual Term* getLowerGuard(){return nullptr;};
+	virtual Term* getFirstGuard(){return nullptr;};
 	///Get upper guard of aggregate
-	virtual Term* getUpperGuard(){return nullptr;};
+	virtual Term* getSecondGuard(){return nullptr;};
 	///Setter method for the aggregate function
 	virtual void setAggregateFunction(AggregateFunction aggregateFunction) {};
 	///Getter method for the first binary operation

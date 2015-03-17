@@ -26,7 +26,7 @@ class AggregateAtom: public Atom {
 public:
 
 	///Default constructor
-	AggregateAtom(): firstBinop(Binop::NONE_OP), secondBinop(Binop::NONE_OP), aggregateFunction(AggregateFunction::NONE), negative(false),partialEvaluation(0),undefAtomEvaluation(0) {lowerGueard=nullptr;upperGuard=nullptr;};
+	AggregateAtom(): firstBinop(Binop::NONE_OP), secondBinop(Binop::NONE_OP), aggregateFunction(AggregateFunction::NONE), negative(false),partialEvaluation(0),undefAtomEvaluation(0) {firstGuard=nullptr;secondGuard=nullptr;};
 
 	/** Constructor
 		 * @param f set the first term of comparison
@@ -37,15 +37,14 @@ public:
 		 * @param aE set the vector of aggregate elements
 		 * @param negative set whether the atom is negated with negation as failure
 		 */
-	AggregateAtom(Term* f, Binop fB,Term* s, Binop sB, AggregateFunction aF, vector<AggregateElement*> aE, bool n):
-		firstBinop(fB), secondBinop(sB), aggregateFunction(aF), aggregateElements(move(aE)), negative(n),partialEvaluation(0),undefAtomEvaluation(0) {lowerGueard=f;upperGuard=s;};
+	AggregateAtom(Term* f, Binop fB, Term* s, Binop sB, AggregateFunction aF, vector<AggregateElement*> aE, bool n):
+		firstBinop(fB), secondBinop(sB), aggregateFunction(aF), aggregateElements(move(aE)), negative(n),partialEvaluation(0),undefAtomEvaluation(0) {firstGuard=f;secondGuard=s;};
 
-	AggregateAtom(Term* f, Binop fB,Term* s, Binop sB, AggregateFunction aF, bool n):
-		firstBinop(fB), secondBinop(sB), aggregateFunction(aF), negative(n),partialEvaluation(0),undefAtomEvaluation(0) {lowerGueard=f;upperGuard=s;};
-
+	AggregateAtom(Term* f, Binop fB, Term* s, Binop sB, AggregateFunction aF, bool n):
+		firstBinop(fB), secondBinop(sB), aggregateFunction(aF), negative(n),partialEvaluation(0),undefAtomEvaluation(0) {firstGuard=f;secondGuard=s;};
 
 	Atom* clone() {
-		Atom* atom = new AggregateAtom(lowerGueard,firstBinop,upperGuard,secondBinop,aggregateFunction,negative);
+		Atom* atom = new AggregateAtom(firstGuard,firstBinop,secondGuard,secondBinop,aggregateFunction,negative);
 		atom->setTerms(this->terms);
 		for(auto agg_element:aggregateElements)
 			atom->addAggregateElement(agg_element->clone());
@@ -72,11 +71,11 @@ public:
 	/// Add aggregate element
 	void addAggregateElement(AggregateElement *element){aggregateElements.push_back(element);};
 
-	void setLowerGuard(Term* lower){lowerGueard=lower;};
-	void setUpperGuard(Term* upper){upperGuard=upper;};
+	void setFirstGuard(Term* lower){firstGuard=lower;};
+	void setSecondGuard(Term* upper){secondGuard=upper;};
 
-	Term* getLowerGuard(){return lowerGueard;};
-	Term* getUpperGuard(){return upperGuard;};
+	Term* getFirstGuard(){return firstGuard;};
+	Term* getSecondGuard(){return secondGuard;};
 
 	///Getter method for the aggregate function
 	AggregateFunction getAggregateFunction() const {return aggregateFunction;};
@@ -113,13 +112,18 @@ public:
 	 int getUndefEvaluation(){return undefAtomEvaluation;}
 
 	///return true if one guard is an equal
-	bool isAnAssigment(){return ((firstBinop==Binop::EQUAL && !lowerGueard->isGround()) || (secondBinop==Binop::EQUAL && !upperGuard->isGround() ));}
+	bool isAnAssigment(){return ((firstBinop==Binop::EQUAL && !firstGuard->isGround()) || (secondBinop==Binop::EQUAL && !secondGuard->isGround() ));}
 
 	bool invalideGuards(){
-		if(firstBinop!=NONE_OP && secondBinop!=NONE_OP && lowerGueard->isGround() && upperGuard->isGround() && lowerGueard->getConstantValue()>upperGuard->getConstantValue())
+		if(firstBinop!=NONE_OP && secondBinop!=NONE_OP && firstGuard->isGround() && secondGuard->isGround() && firstGuard->getConstantValue()>secondGuard->getConstantValue())
 			return true;
 		return false;
 	}
+
+	/// Set the aggregate atom to standard format:
+	/// - if it has an EQUAL binop, its first binop is set to EQUAL
+	/// - else the first binop is LESS_EQUAL and the second LESS
+	void changeInStandardFormat();
 
 	///Printer method
 	void print();
@@ -135,15 +139,16 @@ private:
 	AggregateFunction aggregateFunction;
 	///Vector of the aggregate elements
 	vector<AggregateElement*> aggregateElements;
-	///Negated with naf
+	///Negated with negation as failure
 	bool negative;
-
-	Term* lowerGueard;
-	Term* upperGuard;
-
-	/* For the vector of terms, it contains the first and the second term of comparison.
-	 * Notice that the vector contains the terms in the same order as they appear: the first term in position 0, the second in position 1.
-	 */
+	///The first (or lower) guard)
+	Term* firstGuard;
+	///The second (or upper) guard)
+	Term* secondGuard;
+	///Evaluation of true atoms
+	int partialEvaluation;
+	///Evaluation of undef atoms
+	int undefAtomEvaluation;
 
 	///Partial evaluate the count aggregate
 	ResultEvaluation partialEvaluateCount();
@@ -163,16 +168,11 @@ private:
 	///Final evaluate the sum aggregate
 	ResultEvaluation finalEvaluateSum();
 
-	///Evaluation of true atom
-	int partialEvaluation;
-
-	///Evaluation of undef atom
-	int undefAtomEvaluation;
+	///Utility method: change the guards according to the standard format
+	Term* changeInStandardFormatGuard(Term* guard);
 
 };
 
-};
-
-};
+}}
 
 #endif /* AGGREGATEATOM_H_ */
