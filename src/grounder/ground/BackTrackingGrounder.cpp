@@ -426,21 +426,27 @@ bool BackTrackingGrounder::groundAggregate() {
 
 	Atom *aggregateAtom=templateSetAtom[index_current_atom];
 	Atom *ground_aggregate;
+
 	if(aggregateAtom->isAnAssigment() && ground_atom_body[index_current_atom]!=nullptr){
 		//The atom is alredy grounded, just change the guard
 		ground_aggregate=ground_atom_body[index_current_atom];
 
+		//Find the variable if is lower or upper guard
 		if(ground_aggregate->getFirstBinop()!=NONE_OP){
-			if(ground_aggregate->getLowerGuard()->getConstantValue()>ground_aggregate->getPartialEvaluation()+ground_aggregate->getUndefEvaluation())
+			//If the current value in the guard exceeded the maximal value that have to reach return false
+			if(ground_aggregate->getLowerGuard()->getConstantValue()>=ground_aggregate->getPartialEvaluation()+ground_aggregate->getUndefEvaluation())
 				return false;
+			//Otherwise increment the current guard by one and add in the ground aggregate
 			Term *term_value=new NumericConstantTerm(false,ground_aggregate->getLowerGuard()->getConstantValue()+1);
 			termsMap->addTerm(term_value);
 			ground_aggregate->setLowerGuard(term_value);
 			current_var_assign.insert({aggregateAtom->getLowerGuard(),term_value});
 
 		}else{
-			if(ground_aggregate->getUpperGuard()->getConstantValue()>ground_aggregate->getPartialEvaluation()+ground_aggregate->getUndefEvaluation())
+			//If the current value in the guard exceeded the maximal value that have to reach return false
+			if(ground_aggregate->getUpperGuard()->getConstantValue()>=ground_aggregate->getPartialEvaluation()+ground_aggregate->getUndefEvaluation())
 				return false;
+			//Otherwise increment the current guard by one and add in the ground aggregate
 			Term *term_value=new NumericConstantTerm(false,ground_aggregate->getUpperGuard()->getConstantValue()+1);
 			termsMap->addTerm(term_value);
 			ground_aggregate->setUpperGuard(term_value);
@@ -449,10 +455,18 @@ bool BackTrackingGrounder::groundAggregate() {
 		return true;
 	}
 
+	//Atom is undef for printing the aggregate and check if is correct
 	atom_undef_inbody[index_current_atom]=true;
+	//Create a ground aggregate empty
 	ground_aggregate=new AggregateAtom(aggregateAtom->getLowerGuard(),aggregateAtom->getFirstBinop(),aggregateAtom->getUpperGuard(),aggregateAtom->getSecondBinop(),aggregateAtom->getAggregateFunction(),aggregateAtom->isNegative());
 
 	for(unsigned i=0;i<aggregateAtom->getAggregateElementsSize();i++){
+
+		// For each atom in the aggregate element (is assumed to be one because the rewriting)
+		// search in the table of fact and nofact the extension and put in the ground aggregate all the extension
+		// with a new aggregate element
+		// For reasoning of correctness the current assignment have to be copied for maintaining the current assignment
+
 		Atom* atom=aggregateAtom->getAggregateElement(i)->getNafLiteral(0);
 		Predicate *predicate_atom=atom->getPredicate();
 		vector<unsigned> tablesToSearch={FACT,NOFACT};
@@ -466,6 +480,7 @@ bool BackTrackingGrounder::groundAggregate() {
 				atom->ground(copy_current_var_assign,groundAtom);
 				AggregateElement *ground_aggregateElement=new AggregateElement;
 				ground_aggregateElement->addNafLiterals(groundAtom);
+				//Add the id ground term in the ground aggregate element
 				for(auto term_aggregateElement:aggregateAtom->getAggregateElement(i)->getTerms())
 					ground_aggregateElement->addTerm(copy_current_var_assign[term_aggregateElement]);
 				ground_aggregate->addAggregateElement(ground_aggregateElement);
