@@ -78,6 +78,8 @@ public:
 	///This method remove all the atoms in the body and in the head
 	void clear(){head.clear();body.clear();};
 
+	bool isSafe();
+
 	///Printer method
 	void print();
 

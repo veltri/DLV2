@@ -477,6 +477,7 @@ bool BackTrackingGrounder::groundAggregate() {
 				ground_aggregate->addAggregateElement(ground_aggregateElement);
 				cout<<ground_aggregate->partialEvaluate()<<endl;
 
+
 				copy_current_var_assign=current_var_assign;
 				searcher->nextMatch(id,atom,copy_current_var_assign,find,undef);
 			}

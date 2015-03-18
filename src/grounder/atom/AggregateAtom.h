@@ -171,6 +171,24 @@ private:
 	///Utility method: change the guards according to the standard format
 	Term* changeInStandardFormatGuard(Term* guard);
 
+	/// Check if the binop is equal and the evaluation of true atom is greater than guard
+	bool checkEqualisGreater();
+	/// Check if the binop is equal and the evaluation of true atom + the undef atom is less than guard
+	bool checkEqualisLess();
+	/// Check if the binop is equal and the evaluation of true atom is equal than guard and there is not undef atom
+	bool checkEqualisEqual();
+	/// Check if the first binop is less or equal and the evaluation of true atom is greater then guard
+	bool checkFirstGuardIsGreaterOrEqual();
+	/// Check if the first binop is less or equal and the evaluation of true atom + the undef atom is less than guard
+	bool checkFirstGuardIsLess();
+	/// Check if the second binop is less and the evaluation of true atom is greater or equal then guard
+	bool checkSecondGuardIsGreaterEqual();
+	/// Check if the second binop is less or equal and the evaluation of true atom + the undef atom is less than guard
+	bool checkSecondGuardIsLess();
+	///Check if the first binop is less or equal and the second is less and the evaluation of true atom is greater then first guard
+	// and the evaluation of true atom + the undef atom is less then second guard
+	bool checkSecondAndFirstGuard();
+
 };
 
 }}

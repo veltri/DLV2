@@ -165,14 +165,16 @@ ResultEvaluation AggregateAtom::partialEvaluateCount() {
 
 	partialEvaluation++;
 
-	if(firstBinop==Binop::EQUAL && firstGuard->isGround() && partialEvaluation>firstGuard->getConstantValue())
+
+	if(checkEqualisGreater())
 		return UNSATISFY;
 
-	if(secondBinop!=NONE_OP && partialEvaluation>=secondGuard->getConstantValue())
+	if(checkSecondGuardIsGreaterEqual())
 		return UNSATISFY;
 
-	if(firstBinop==LESS_OR_EQ && secondBinop==NONE_OP && partialEvaluation >= firstGuard->getConstantValue())
+	if(checkFirstGuardIsGreaterOrEqual())
 		return SATISFY;
+
 	return UNDEF;
 }
 
@@ -196,20 +198,19 @@ ResultEvaluation AggregateAtom::partialEvaluateSum() {
 
 ResultEvaluation AggregateAtom::finalEvaluateCount() {
 
-	if(firstBinop==Binop::EQUAL && firstGuard->isGround()){
-		if(partialEvaluation+undefAtomEvaluation < firstGuard->getConstantValue())
-			return UNSATISFY;
-		else if(firstGuard->getConstantValue()==partialEvaluation && undefAtomEvaluation==0)
-			return SATISFY;
-	}
-
-	if(firstBinop==LESS_OR_EQ && partialEvaluation+undefAtomEvaluation<firstGuard->getConstantValue())
+	if(checkEqualisLess())
 		return UNSATISFY;
 
-	if(secondBinop!=NONE_OP && firstBinop==NONE_OP && partialEvaluation+undefAtomEvaluation<secondGuard->getConstantValue())
+	if(checkEqualisEqual())
 		return SATISFY;
 
-	if(secondBinop!=NONE_OP && firstBinop==LESS_OR_EQ && partialEvaluation+undefAtomEvaluation<secondGuard->getConstantValue() && partialEvaluation+undefAtomEvaluation>=firstGuard->getConstantValue())
+	if(checkFirstGuardIsLess())
+		return UNSATISFY;
+
+	if(checkSecondGuardIsLess())
+		return SATISFY;
+
+	if(checkSecondAndFirstGuard())
 		return SATISFY;
 
 	return UNDEF;
@@ -222,6 +223,29 @@ ResultEvaluation AggregateAtom::finalEvaluateMin() {
 }
 
 ResultEvaluation AggregateAtom::finalEvaluateSum() {
+	if(checkEqualisGreater() || checkEqualisLess())
+		return UNSATISFY;
+
+	if(checkEqualisEqual())
+		return SATISFY;
+
+	if(checkFirstGuardIsLess())
+		return UNSATISFY;
+
+	if(checkSecondGuardIsGreaterEqual())
+		return UNSATISFY;
+
+	if(checkFirstGuardIsGreaterOrEqual())
+		return SATISFY;
+
+	if(checkSecondGuardIsLess())
+		return SATISFY;
+
+	if(checkSecondAndFirstGuard())
+		return SATISFY;
+
+	return UNDEF;
+
 }
 
 void AggregateAtom::print() {
@@ -341,6 +365,59 @@ void AggregateAtom::changeInStandardFormat() {
 	}
 }
 
-}}
+bool AggregateAtom::checkEqualisGreater() {
+	if(firstBinop==Binop::EQUAL && firstGuard->isGround())
+		if( partialEvaluation > firstGuard->getConstantValue())
+			return true;
+	return false;
+}
+
+bool AggregateAtom::checkEqualisLess() {
+	if(firstBinop==Binop::EQUAL && firstGuard->isGround())
+		if(partialEvaluation+undefAtomEvaluation < firstGuard->getConstantValue())
+			return true;
+		return false;
+}
+
+
+bool AggregateAtom::checkEqualisEqual() {
+	if(firstBinop==Binop::EQUAL && firstGuard->isGround())
+		if(firstGuard->getConstantValue()==partialEvaluation && undefAtomEvaluation==0)
+			return true;
+	return false;
+}
+
+bool AggregateAtom::checkFirstGuardIsGreaterOrEqual() {
+	if(firstBinop==LESS_OR_EQ && secondBinop==NONE_OP && partialEvaluation>=firstGuard->getConstantValue())
+		return true;
+	return false;
+}
+
+bool AggregateAtom::checkFirstGuardIsLess() {
+	if(firstBinop==LESS_OR_EQ && partialEvaluation+undefAtomEvaluation<firstGuard->getConstantValue())
+		return true;
+	return false;
+}
+
+bool AggregateAtom::checkSecondGuardIsGreaterEqual() {
+	if(secondBinop==LESS && partialEvaluation>=secondGuard->getConstantValue())
+		return true;
+	return false;
+}
+
+bool AggregateAtom::checkSecondGuardIsLess() {
+	if(secondBinop==LESS && firstBinop==NONE_OP  && partialEvaluation+undefAtomEvaluation<secondGuard->getConstantValue())
+		return true;
+	return false;
+}
+
+bool AggregateAtom::checkSecondAndFirstGuard() {
+	if(secondBinop==LESS && firstBinop==LESS_OR_EQ && partialEvaluation+undefAtomEvaluation<secondGuard->getConstantValue() && partialEvaluation>=firstGuard->getConstantValue())
+		return true;
+	return false;
+}
+
+}
+}
 
 

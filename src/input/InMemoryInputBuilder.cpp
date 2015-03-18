@@ -44,6 +44,8 @@ void InMemoryInputBuilder::onDirective(char* directiveName,
 }
 
 void InMemoryInputBuilder::onRule() {
+	if(!currentRule->isSafe())currentRule->print();
+	assert_action(currentRule->isSafe(),"Rule is not safe");
 	if(currentRule->isAFact()){
 		Atom *fact=*currentRule->getBeginHead();
 		if(fact->containsRangeTerms()){
