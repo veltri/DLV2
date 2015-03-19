@@ -182,8 +182,11 @@ private:
 	Term* changeInStandardFormatGuard(Term* guard);
 
 
+	///Check if the binopGuard is equal to binop and check the value of true atom if checkUndef is false otherwise the getCheckValue, between
+	/// the constant value of term with the operator op
 	bool checkOperator(Term* term,Binop binopGuard,Binop binop, Binop op, bool checkUndef);
 
+	///Get the sum of undef and true evaluation with sum and count, the maximum between undef and true with max,the minimun between undef and true with min
 	int getCheckValue();
 };
 
