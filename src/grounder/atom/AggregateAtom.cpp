@@ -19,14 +19,17 @@ namespace grounder{
 
 static string getBinopToStrng(Binop binop){
 	switch (binop) {
+		case EQUAL:
+			return "=";
+			break;
+		case UNEQUAL:
+			return "!=";
+			break;
 		case LESS:
 			return "<";
 			break;
 		case LESS_OR_EQ:
 			return "<=";
-			break;
-		case EQUAL:
-			return "=";
 			break;
 		case GREATER:
 			return ">";
@@ -35,6 +38,7 @@ static string getBinopToStrng(Binop binop){
 			return ">=";
 			break;
 		default:
+			return "";
 			break;
 	}
 }
@@ -119,15 +123,12 @@ ResultEvaluation AggregateAtom::partialEvaluate() {
 			break;
 		case MIN:
 			return partialEvaluateMin();
-
 			break;
 		case MAX:
 			return partialEvaluateMax();
-
 			break;
 		case SUM:
 			return partialEvaluateSum();
-
 			break;
 		default:
 			break;
@@ -141,15 +142,12 @@ ResultEvaluation AggregateAtom::finalEvaluation() {
 			break;
 		case MIN:
 			return finalEvaluateMin();
-
 			break;
 		case MAX:
 			return finalEvaluateMax();
-
 			break;
 		case SUM:
 			return finalEvaluateSum();
-
 			break;
 		default:
 			break;
@@ -281,20 +279,20 @@ ResultEvaluation AggregateAtom::finalEvaluateMax() {
 }
 
 ResultEvaluation AggregateAtom::finalEvaluateMin() {
-	if(checkEqualisLess())
-		return UNSATISFY;
-
-	if(checkEqualisEqual())
-		return SATISFY;
-
-	if(checkFirstGuardIsLess())
-		return UNSATISFY;
-
-	if(checkSecondGuardIsLess())
-		return SATISFY;
-
-	if(checkSecondAndFirstGuard())
-		return SATISFY;
+//	if(checkEqualisLess())
+//		return UNSATISFY;
+//
+//	if(checkEqualisEqual())
+//		return SATISFY;
+//
+//	if(checkFirstGuardIsLess())
+//		return UNSATISFY;
+//
+//	if(checkSecondGuardIsLess())
+//		return SATISFY;
+//
+//	if(checkSecondAndFirstGuard())
+//		return SATISFY;
 
 	return UNDEF;
 }

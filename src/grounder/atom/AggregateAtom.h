@@ -27,7 +27,8 @@ class AggregateAtom: public Atom {
 public:
 
 	///Default constructor
-	AggregateAtom(): firstBinop(Binop::NONE_OP), secondBinop(Binop::NONE_OP), aggregateFunction(AggregateFunction::NONE), negative(false),partialEvaluation(0),undefAtomEvaluation(0) {firstGuard=nullptr;secondGuard=nullptr;};
+	AggregateAtom(): firstBinop(Binop::NONE_OP), secondBinop(Binop::NONE_OP), aggregateFunction(AggregateFunction::NONE), negative(false),
+		partialEvaluation(0), undefAtomEvaluation(0), firstGuard(nullptr), secondGuard(nullptr){};
 
 	/** Constructor
 		 * @param f set the first term of comparison
@@ -39,10 +40,14 @@ public:
 		 * @param negative set whether the atom is negated with negation as failure
 		 */
 	AggregateAtom(Term* f, Binop fB, Term* s, Binop sB, AggregateFunction aF, vector<AggregateElement*> aE, bool n):
-		firstBinop(fB), secondBinop(sB), aggregateFunction(aF), aggregateElements(move(aE)), negative(n),partialEvaluation(0),undefAtomEvaluation(0) {firstGuard=f;secondGuard=s;};
+		firstBinop(fB), secondBinop(sB), aggregateElements(move(aE)), negative(n), partialEvaluation(0), undefAtomEvaluation(0), firstGuard(f), secondGuard(s) {
+		setAggregateFunction(aF);
+	}
 
 	AggregateAtom(Term* f, Binop fB, Term* s, Binop sB, AggregateFunction aF, bool n):
-		firstBinop(fB), secondBinop(sB), aggregateFunction(aF), negative(n),partialEvaluation(0),undefAtomEvaluation(0) {firstGuard=f;secondGuard=s;};
+		firstBinop(fB), secondBinop(sB), negative(n),partialEvaluation(0), undefAtomEvaluation(0), firstGuard(f), secondGuard(s) {
+		setAggregateFunction(aF);
+	}
 
 	Atom* clone() {
 		Atom* atom = new AggregateAtom(firstGuard,firstBinop,secondGuard,secondBinop,aggregateFunction,negative);
@@ -82,8 +87,8 @@ public:
 	AggregateFunction getAggregateFunction() const {return aggregateFunction;};
 	///Setter method for the aggregate function
 	void setAggregateFunction(AggregateFunction aggregateFunction) {
-		if(aggregateFunction==MIN){partialEvaluation=INT_MAX;undefAtomEvaluation=INT_MAX;}
-		if(aggregateFunction==MAX){partialEvaluation=INT_MIN;undefAtomEvaluation=INT_MIN;}
+		if(aggregateFunction==MIN){partialEvaluation=undefAtomEvaluation=INT_MAX;}
+		if(aggregateFunction==MAX){partialEvaluation=undefAtomEvaluation=INT_MIN;}
 		this->aggregateFunction = aggregateFunction;
 	};
 	///Getter method for the first binary operation
@@ -146,14 +151,14 @@ private:
 	vector<AggregateElement*> aggregateElements;
 	///Negated with negation as failure
 	bool negative;
-	///The first (or lower) guard)
-	Term* firstGuard;
-	///The second (or upper) guard)
-	Term* secondGuard;
 	///Evaluation of true atoms
 	int partialEvaluation;
 	///Evaluation of undef atoms
 	int undefAtomEvaluation;
+	///The first (or lower) guard)
+	Term* firstGuard;
+	///The second (or upper) guard)
+	Term* secondGuard;
 
 	///Partial evaluate the count aggregate
 	ResultEvaluation partialEvaluateCount();
