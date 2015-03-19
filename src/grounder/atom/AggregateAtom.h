@@ -10,6 +10,7 @@
 
 #include <vector>
 #include "Atom.h"
+#include <limits.h>
 
 using namespace std;
 
@@ -80,7 +81,11 @@ public:
 	///Getter method for the aggregate function
 	AggregateFunction getAggregateFunction() const {return aggregateFunction;};
 	///Setter method for the aggregate function
-	void setAggregateFunction(AggregateFunction aggregateFunction) {this->aggregateFunction = aggregateFunction;};
+	void setAggregateFunction(AggregateFunction aggregateFunction) {
+		if(aggregateFunction==MIN){partialEvaluation=INT_MAX;undefAtomEvaluation=INT_MAX;}
+		if(aggregateFunction==MAX){partialEvaluation=INT_MIN;undefAtomEvaluation=INT_MIN;}
+		this->aggregateFunction = aggregateFunction;
+	};
 	///Getter method for the first binary operation
 	Binop getFirstBinop() const {return firstBinop;};
 	///Setter method for the first binary operation
@@ -188,7 +193,7 @@ private:
 	///Check if the first binop is less or equal and the second is less and the evaluation of true atom is greater then first guard
 	// and the evaluation of true atom + the undef atom is less then second guard
 	bool checkSecondAndFirstGuard();
-
+	int getCheckValue();
 };
 
 }}

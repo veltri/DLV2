@@ -10,6 +10,8 @@
 #include "../table/PredicateExtension.h"
 #include "../term/ConstantTerm.h"
 #include "../term/ArithTerm.h"
+#include <algorithm>
+
 using namespace std;
 
 namespace DLV2{
@@ -179,9 +181,52 @@ ResultEvaluation AggregateAtom::partialEvaluateCount() {
 }
 
 ResultEvaluation AggregateAtom::partialEvaluateMax() {
+	Atom *lastAtom=aggregateElements.back()->getNafLiteral(0);
+	if(!PredicateExtTable::getInstance()->getPredicateExt(lastAtom->getPredicate())->getGenericAtom(lastAtom)->isFact()){
+		int value=aggregateElements.back()->getTerms().front()->getConstantValue();
+		if(undefAtomEvaluation<value)
+			undefAtomEvaluation=value;
+		return UNDEF;
+	}
+	int value=aggregateElements.back()->getTerms().front()->getConstantValue();
+	if(partialEvaluation<value)
+		partialEvaluation=value;
+
+	if(checkEqualisGreater())
+		return UNSATISFY;
+
+	if(checkSecondGuardIsGreaterEqual())
+		return UNSATISFY;
+
+	if(checkFirstGuardIsGreaterOrEqual())
+		return SATISFY;
+
+	return UNDEF;
+
 }
 
 ResultEvaluation AggregateAtom::partialEvaluateMin() {
+	Atom *lastAtom=aggregateElements.back()->getNafLiteral(0);
+	if(!PredicateExtTable::getInstance()->getPredicateExt(lastAtom->getPredicate())->getGenericAtom(lastAtom)->isFact()){
+		int value=aggregateElements.back()->getTerms().front()->getConstantValue();
+		if(undefAtomEvaluation>value)
+			undefAtomEvaluation=value;
+		return UNDEF;
+	}
+	int value=aggregateElements.back()->getTerms().front()->getConstantValue();
+	if(partialEvaluation>value)
+		partialEvaluation=value;
+
+	if(checkEqualisGreater())
+		return UNSATISFY;
+
+	if(checkSecondGuardIsGreaterEqual())
+		return UNSATISFY;
+
+	if(checkFirstGuardIsGreaterOrEqual())
+		return SATISFY;
+
+	return UNDEF;
 }
 
 ResultEvaluation AggregateAtom::partialEvaluateSum() {
@@ -217,9 +262,41 @@ ResultEvaluation AggregateAtom::finalEvaluateCount() {
 }
 
 ResultEvaluation AggregateAtom::finalEvaluateMax() {
+	if(checkEqualisLess())
+		return UNSATISFY;
+
+	if(checkEqualisEqual())
+		return SATISFY;
+
+	if(checkFirstGuardIsLess())
+		return UNSATISFY;
+
+	if(checkSecondGuardIsLess())
+		return SATISFY;
+
+	if(checkSecondAndFirstGuard())
+		return SATISFY;
+
+	return UNDEF;
 }
 
 ResultEvaluation AggregateAtom::finalEvaluateMin() {
+	if(checkEqualisLess())
+		return UNSATISFY;
+
+	if(checkEqualisEqual())
+		return SATISFY;
+
+	if(checkFirstGuardIsLess())
+		return UNSATISFY;
+
+	if(checkSecondGuardIsLess())
+		return SATISFY;
+
+	if(checkSecondAndFirstGuard())
+		return SATISFY;
+
+	return UNDEF;
 }
 
 ResultEvaluation AggregateAtom::finalEvaluateSum() {
@@ -372,11 +449,28 @@ bool AggregateAtom::checkEqualisGreater() {
 	return false;
 }
 
+int AggregateAtom::getCheckValue() {
+	int value = partialEvaluation + undefAtomEvaluation;
+	switch (aggregateFunction) {
+	case MAX:
+		value = max(partialEvaluation, undefAtomEvaluation);
+		break;
+	case MIN:
+		value = min(partialEvaluation, undefAtomEvaluation);
+		break;
+	default:
+		break;
+	}
+	return value;
+}
+
 bool AggregateAtom::checkEqualisLess() {
-	if(firstBinop==Binop::EQUAL && firstGuard->isGround())
-		if(partialEvaluation+undefAtomEvaluation < firstGuard->getConstantValue())
+	if(firstBinop==Binop::EQUAL && firstGuard->isGround()){
+		int value = getCheckValue();
+		if(value < firstGuard->getConstantValue())
 			return true;
-		return false;
+	}
+	return false;
 }
 
 
@@ -394,8 +488,10 @@ bool AggregateAtom::checkFirstGuardIsGreaterOrEqual() {
 }
 
 bool AggregateAtom::checkFirstGuardIsLess() {
-	if(firstBinop==LESS_OR_EQ && partialEvaluation+undefAtomEvaluation<firstGuard->getConstantValue())
-		return true;
+	if(firstBinop==LESS_OR_EQ){
+		int value = getCheckValue();
+		if(value<firstGuard->getConstantValue())return true;
+	}
 	return false;
 }
 
@@ -406,14 +502,18 @@ bool AggregateAtom::checkSecondGuardIsGreaterEqual() {
 }
 
 bool AggregateAtom::checkSecondGuardIsLess() {
-	if(secondBinop==LESS && firstBinop==NONE_OP  && partialEvaluation+undefAtomEvaluation<secondGuard->getConstantValue())
-		return true;
+	if(secondBinop==LESS && firstBinop==NONE_OP){
+		int value = getCheckValue();
+		if(value<secondGuard->getConstantValue())return true;
+	}
 	return false;
 }
 
 bool AggregateAtom::checkSecondAndFirstGuard() {
-	if(secondBinop==LESS && firstBinop==LESS_OR_EQ && partialEvaluation+undefAtomEvaluation<secondGuard->getConstantValue() && partialEvaluation>=firstGuard->getConstantValue())
-		return true;
+	if(secondBinop==LESS && firstBinop==LESS_OR_EQ){
+		int value = getCheckValue();
+		if(value<secondGuard->getConstantValue() && partialEvaluation>=firstGuard->getConstantValue())return true;
+	}
 	return false;
 }
 

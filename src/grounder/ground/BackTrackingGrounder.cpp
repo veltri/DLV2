@@ -450,8 +450,8 @@ bool BackTrackingGrounder::groundAggregate() {
 	atom_undef_inbody[index_current_atom]=true;
 	//Create a ground aggregate empty
 	ground_aggregate=new AggregateAtom(aggregateAtom->getFirstGuard(),aggregateAtom->getFirstBinop(),aggregateAtom->getSecondGuard(),aggregateAtom->getSecondBinop(),aggregateAtom->getAggregateFunction(),aggregateAtom->isNegative());
-
-	for(unsigned i=0;i<aggregateAtom->getAggregateElementsSize();i++){
+	ResultEvaluation result=UNDEF;
+	for(unsigned i=0;i<aggregateAtom->getAggregateElementsSize()&&result==UNDEF;i++){
 
 		// For each atom in the aggregate element (is assumed to be one because the rewriting)
 		// search in the table of fact and nofact the extension and put in the ground aggregate all the extension
@@ -461,7 +461,8 @@ bool BackTrackingGrounder::groundAggregate() {
 		Atom* atom=aggregateAtom->getAggregateElement(i)->getNafLiteral(0);
 		Predicate *predicate_atom=atom->getPredicate();
 		vector<unsigned> tablesToSearch={FACT,NOFACT};
-		for(auto table:tablesToSearch){
+		for(unsigned j=0;j<tablesToSearch.size()&&result==UNDEF;j++){
+			unsigned table=tablesToSearch[j];
 			AtomSearcher *searcher=predicateExtTable->getPredicateExt(predicate_atom)->getAtomSearcher(table);
 			bool find=false,undef=false;
 			map_term_term copy_current_var_assign(current_var_assign);
@@ -474,9 +475,11 @@ bool BackTrackingGrounder::groundAggregate() {
 				//Add the id ground term in the ground aggregate element
 				for(auto term_aggregateElement:aggregateAtom->getAggregateElement(i)->getTerms())
 					ground_aggregateElement->addTerm(copy_current_var_assign[term_aggregateElement]);
-				ground_aggregate->addAggregateElement(ground_aggregateElement);
-				cout<<ground_aggregate->partialEvaluate()<<endl;
 
+				ground_aggregate->addAggregateElement(ground_aggregateElement);
+
+				result=ground_aggregate->partialEvaluate();
+				if(result!=UNDEF)break;
 
 				copy_current_var_assign=current_var_assign;
 				searcher->nextMatch(id,atom,copy_current_var_assign,find,undef);
@@ -484,7 +487,8 @@ bool BackTrackingGrounder::groundAggregate() {
 		}
 	}
 
-	cout<<ground_aggregate->finalEvaluation()<<endl;
+	if(result==UNDEF)
+		result=ground_aggregate->finalEvaluation();
 
 	//If is a first assignment set the initial value of the guard to the partial value
 	if(ground_aggregate->isAnAssigment()){
@@ -494,8 +498,17 @@ bool BackTrackingGrounder::groundAggregate() {
 		ground_aggregate->setFirstGuard(term_value);
 	}
 
-	if(ground_aggregate->getAggregateElementsSize()==0) {delete ground_aggregate;return false;}
 	delete ground_atom_body[index_current_atom];
+
+	if(ground_aggregate->getAggregateElementsSize()==0 || result!=UNDEF)
+	{
+		delete ground_aggregate;
+		if(result==UNSATISFY)
+			return false;
+		//Aggregate is satisfy
+		atom_undef_inbody[index_current_atom]=false;
+		return true;
+	}
 	ground_atom_body[index_current_atom]=ground_aggregate;
 	return true;
 }
