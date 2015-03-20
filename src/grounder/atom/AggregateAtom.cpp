@@ -221,7 +221,7 @@ ResultEvaluation AggregateAtom::partialEvaluateMin() {
 	if(checkOperator(firstGuard,firstBinop,LESS_OR_EQ,LESS,false))
 		return UNSATISFY;
 
-	if(secondBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS,LESS,false))
+	if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS,LESS,false))
 		return SATISFY;
 
 	return UNDEF;
@@ -279,7 +279,7 @@ ResultEvaluation AggregateAtom::finalEvaluateMax() {
 }
 
 ResultEvaluation AggregateAtom::finalEvaluateMin() {
-	if(undefAtomEvaluation == INT_MIN && checkOperator(firstGuard,firstBinop,EQUAL,EQUAL,false))
+	if(undefAtomEvaluation == INT_MAX && checkOperator(firstGuard,firstBinop,EQUAL,EQUAL,false))
 		return SATISFY;
 
 	if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,true))
@@ -456,6 +456,7 @@ int AggregateAtom::getCheckValue() {
 
 bool AggregateAtom::checkOperator(Term* term,Binop binopGuard,Binop binop, Binop op, bool checkUndef) {
 	if(binopGuard!=binop)return false;
+	if(binop==EQUAL && !term->isGround() ) return false;
 	int value=partialEvaluation;
 	if(checkUndef)value=getCheckValue();
 	switch (op) {
@@ -472,7 +473,7 @@ bool AggregateAtom::checkOperator(Term* term,Binop binopGuard,Binop binop, Binop
 			if(value>=term->getConstantValue())return true;
 			break;
 		case EQUAL:
-			if(term->isGround() && value==term->getConstantValue())return true;
+			if(value==term->getConstantValue())return true;
 			break;
 		default:
 			return false;
