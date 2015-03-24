@@ -36,6 +36,8 @@ class AggregateElement {
 		const vector<Term*>& getTerms() const {return terms;}
 		///Setter for terms
 		void setTerms(const vector<Term*>& terms) {this->terms = terms;}
+		///Get the i-th term
+		Term* getTerm(unsigned i) const {return terms[i];}
 		///Getter for naf literals
 		const vector<Atom*>& getNafLiterals() const {return nafLiterals;}
 		///Getter for naf literal

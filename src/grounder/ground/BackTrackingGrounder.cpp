@@ -430,15 +430,16 @@ bool BackTrackingGrounder::groundAggregate() {
 	if(aggregateAtom->isAnAssigment() && ground_atom_body[index_current_atom]!=nullptr){
 		//An assignment is in the lower guard
 
-		//The atom is alredy grounded, just change the guard
+		//The atom is already grounded, just change the guard
 		ground_aggregate=ground_atom_body[index_current_atom];
 
-		//Find the variable if is lower or upper guard
-			//If the current value in the guard exceeded the maximal value that have to reach return false
-		if(ground_aggregate->getFirstGuard()->getConstantValue()>=ground_aggregate->getPartialEvaluation()+ground_aggregate->getUndefEvaluation())
+		bool finish=0;
+		int val=ground_aggregate->generateNextCombination(finish);
+
+		if(finish)
 			return false;
-		//Otherwise increment the current guard by one and add in the ground aggregate
-		Term *term_value=new NumericConstantTerm(false,ground_aggregate->getFirstGuard()->getConstantValue()+1);
+
+		Term *term_value=new NumericConstantTerm(false,val);
 		termsMap->addTerm(term_value);
 		ground_aggregate->setFirstGuard(term_value);
 		current_var_assign.insert({aggregateAtom->getFirstGuard(),term_value});
@@ -492,7 +493,9 @@ bool BackTrackingGrounder::groundAggregate() {
 
 	//If is a first assignment set the initial value of the guard to the partial value
 	if(ground_aggregate->isAnAssigment()){
-		Term *term_value=new NumericConstantTerm(false,ground_aggregate->getPartialEvaluation());
+		bool finish=0;
+		int val=ground_aggregate->generateNextCombination(finish);
+		Term *term_value=new NumericConstantTerm(false,val);
 		termsMap->addTerm(term_value);
 		current_var_assign.insert({ground_aggregate->getFirstGuard(),term_value});
 		ground_aggregate->setFirstGuard(term_value);

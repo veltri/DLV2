@@ -185,6 +185,7 @@ public:
 	///return true if one guard is an equal
 	virtual bool isAnAssigment(){return false;};
 
+	virtual int generateNextCombination(bool& finish) {return 0;};
 	/*****************************************************/
 
 	/******** Methods useful for Choice ********/

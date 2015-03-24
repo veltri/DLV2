@@ -256,6 +256,7 @@ ResultEvaluation AggregateAtom::finalEvaluateCount() {
 	if(checkOperator(secondGuard,secondBinop,LESS,LESS,true) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
 		return SATISFY;
 
+	findUndefAtoms();
 	return UNDEF;
 }
 
@@ -275,6 +276,7 @@ ResultEvaluation AggregateAtom::finalEvaluateMax() {
 	if(checkOperator(secondGuard,secondBinop,LESS,LESS,true) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
 		return SATISFY;
 
+	if(isAnAssigment()) findUndefAtoms();
 	return UNDEF;
 }
 
@@ -291,6 +293,7 @@ ResultEvaluation AggregateAtom::finalEvaluateMin() {
 	if(checkOperator(secondGuard,secondBinop,LESS,LESS,false) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,true))
 		return SATISFY;
 
+	if(isAnAssigment()) findUndefAtoms();
 	return UNDEF;
 }
 
@@ -316,6 +319,7 @@ ResultEvaluation AggregateAtom::finalEvaluateSum() {
 	if(checkOperator(secondGuard,secondBinop,LESS,LESS,true) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
 		return SATISFY;
 
+	if(isAnAssigment()) findUndefAtoms();
 	return UNDEF;
 
 }
@@ -480,10 +484,60 @@ bool AggregateAtom::checkOperator(Term* term,Binop binopGuard,Binop binop, Binop
 			break;
 	}
 	return false;
-
 }
 
+void AggregateAtom::computeNextCombination(){
+	for(unsigned i=current_number.size()-1;i>=0;i--){
+		if(!current_number[i]){
+			current_number[i]=true;
+			break;
+		}
+		current_number[i]=false;
+	}
+}
 
+void AggregateAtom::findUndefAtoms(){
+	//Compute the number of undefined atoms, and store the map between their position and the position in the boolean vector
+	current_number.push_back(false);
+	for(unsigned i=0;i<this->aggregateElements.size();i++){
+		Atom* aggElementAtom=this->aggregateElements[i]->getNafLiteral(0);
+		if(!PredicateExtTable::getInstance()->getPredicateExt(aggElementAtom->getPredicate())->getGenericAtom(aggElementAtom)->isFact()){
+			map_undefAtom_position.insert({map_undefAtom_position.size()+1,i});
+			current_number.push_back(false);
+		}
+	}
 }
+
+int AggregateAtom::generateNextCombination(bool& finish){
+	if(current_number.front()){
+		finish=true;
+		return 0;
+	}
+	finish=false;
+	int evaluation=partialEvaluation;
+	for(unsigned j=0;j<current_number.size();j++){
+		if(current_number[j]){
+			int x=aggregateElements[map_undefAtom_position[j]]->getTerm(0)->getConstantValue();
+			applayAggregateOperator(evaluation, x);
+		}
+	}
+	computeNextCombination();
+	return evaluation;
 }
+
+void AggregateAtom::applayAggregateOperator(int& n1, int n2){
+	switch (aggregateFunction) {
+		case MIN:
+			n1=min(n1,n2);
+			break;
+		case MAX:
+			n1=max(n1,n2);
+			break;
+		default:
+			n1+=n2;
+			break;
+	}
+}
+
+}}
 

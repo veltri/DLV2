@@ -128,7 +128,6 @@ void ProgramGrounder::computeRecursiveCombinationPredicate(){
 			break;
 		}
 		predicate_combination[i]=false;
-
 	}
 }
 

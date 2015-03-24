@@ -28,7 +28,8 @@ public:
 
 	///Default constructor
 	AggregateAtom(): firstBinop(Binop::NONE_OP), secondBinop(Binop::NONE_OP), aggregateFunction(AggregateFunction::NONE), negative(false),
-		partialEvaluation(0), undefAtomEvaluation(0), firstGuard(nullptr), secondGuard(nullptr){};
+		partialEvaluation(0), undefAtomEvaluation(0), firstGuard(nullptr), secondGuard(nullptr){
+	};
 
 	/** Constructor
 		 * @param f set the first term of comparison
@@ -135,6 +136,8 @@ public:
 	/// - else the first binop is LESS_EQUAL and the second LESS
 	void changeInStandardFormat();
 
+	virtual int generateNextCombination(bool& finish);
+
 	///Printer method
 	void print();
 
@@ -178,9 +181,14 @@ private:
 	///Final evaluate the sum aggregate
 	ResultEvaluation finalEvaluateSum();
 
+	unordered_map<unsigned, unsigned> map_undefAtom_position;
+	vector<bool> current_number;
+	void findUndefAtoms();
+	void applayAggregateOperator(int& n1, int n2);
+	void computeNextCombination();
+
 	///Utility method: change the guards according to the standard format
 	Term* changeInStandardFormatGuard(Term* guard);
-
 
 	///Check if the binopGuard is equal to binop and check the value of true atom if checkUndef is false otherwise the getCheckValue, between
 	/// the constant value of term with the operator op
@@ -188,6 +196,9 @@ private:
 
 	///Get the sum of undef and true evaluation with sum and count, the maximum between undef and true with max,the minimun between undef and true with min
 	int getCheckValue();
+
+
+
 };
 
 }}
