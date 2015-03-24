@@ -250,7 +250,7 @@ ResultEvaluation AggregateAtom::finalEvaluateCount() {
 	if(checkOperator(firstGuard,firstBinop,LESS_OR_EQ,LESS,true))
 		return UNSATISFY;
 
-	if(checkOperator(secondGuard,secondBinop,LESS,LESS,true) && firstBinop==NONE_OP)
+	if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS,LESS,true))
 		return SATISFY;
 
 	if(checkOperator(secondGuard,secondBinop,LESS,LESS,true) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
@@ -263,13 +263,13 @@ ResultEvaluation AggregateAtom::finalEvaluateMax() {
 	if(checkOperator(firstGuard,firstBinop,EQUAL,LESS,true))
 		return UNSATISFY;
 
-	if(undefAtomEvaluation==INT_MAX && checkOperator(firstGuard,firstBinop,EQUAL,EQUAL,false))
+	if(undefAtomEvaluation==INT_MIN && checkOperator(firstGuard,firstBinop,EQUAL,EQUAL,false))
 		return SATISFY;
 
 	if(checkOperator(firstGuard,firstBinop,LESS_OR_EQ,LESS,true))
 		return UNSATISFY;
 
-	if(checkOperator(secondGuard,secondBinop,LESS,LESS,true) && firstBinop==NONE_OP)
+	if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS,LESS,true))
 		return SATISFY;
 
 	if(checkOperator(secondGuard,secondBinop,LESS,LESS,true) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
@@ -310,7 +310,7 @@ ResultEvaluation AggregateAtom::finalEvaluateSum() {
 	if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
 		return SATISFY;
 
-	if(checkOperator(secondGuard,secondBinop,LESS,LESS,true) && firstBinop==NONE_OP)
+	if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS,LESS,true))
 		return SATISFY;
 
 	if(checkOperator(secondGuard,secondBinop,LESS,LESS,true) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
@@ -456,7 +456,7 @@ int AggregateAtom::getCheckValue() {
 
 bool AggregateAtom::checkOperator(Term* term,Binop binopGuard,Binop binop, Binop op, bool checkUndef) {
 	if(binopGuard!=binop)return false;
-	if(binop==EQUAL && !term->isGround() ) return false;
+	if(binop==EQUAL && !term->isGround()) return false;
 	int value=partialEvaluation;
 	if(checkUndef)value=getCheckValue();
 	switch (op) {
