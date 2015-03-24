@@ -183,6 +183,7 @@ private:
 
 	unordered_map<unsigned, unsigned> map_undefAtom_position;
 	vector<bool> current_number;
+	unordered_set<int> possibleUndefValue;
 	void findUndefAtoms();
 	void applayAggregateOperator(int& n1, int n2);
 	void computeNextCombination();

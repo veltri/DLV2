@@ -522,6 +522,9 @@ int AggregateAtom::generateNextCombination(bool& finish){
 		}
 	}
 	computeNextCombination();
+	if(possibleUndefValue.count(evaluation))
+		return generateNextCombination(finish);
+	possibleUndefValue.insert(evaluation);
 	return evaluation;
 }
 

@@ -64,7 +64,8 @@ private:
 
 class StringConstantTerm: public ConstantTerm{
 public:
-	StringConstantTerm(bool negative,string& n): ConstantTerm(negative), string_constant(n){};
+//	StringConstantTerm(bool negative,string& n): ConstantTerm(negative), string_constant(n){};
+	StringConstantTerm(bool negative,const string& n): ConstantTerm(negative), string_constant(n){};
 	virtual TermType getType() const {return TermType::STRING_CONSTANT;};
 	virtual bool contain(TermType type) { return TermType::STRING_CONSTANT==type;};
 	virtual bool operator==(const Term& term) {return (TermType::STRING_CONSTANT==term.getType() && this->string_constant==term.getName());}

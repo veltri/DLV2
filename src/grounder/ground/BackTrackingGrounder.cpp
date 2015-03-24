@@ -495,7 +495,13 @@ bool BackTrackingGrounder::groundAggregate() {
 	if(ground_aggregate->isAnAssigment()){
 		bool finish=0;
 		int val=ground_aggregate->generateNextCombination(finish);
-		Term *term_value=new NumericConstantTerm(false,val);
+		Term* term_value;
+		if(val==INT_MAX)
+			term_value=new StringConstantTerm(false,"#sup");
+		else if(val==INT_MIN)
+			term_value=new StringConstantTerm(false,"#inf");
+		else
+			term_value=new NumericConstantTerm(false,val);
 		termsMap->addTerm(term_value);
 		current_var_assign.insert({ground_aggregate->getFirstGuard(),term_value});
 		ground_aggregate->setFirstGuard(term_value);
