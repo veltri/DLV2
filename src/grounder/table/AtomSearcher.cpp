@@ -526,7 +526,7 @@ unsigned int DoubleTermMapAtomSearcher::selectBestIndex(const vector<pair<int,pa
 		 minSize=searchingTables[tableMinSize][termIndex].count(nextTermIndex);
 
 	for(it++;it!=possibleTableToSearch.end();++it){
-		if(createdSearchingTables[(*it).first]){
+		if(unsigned((*it).first)<createdSearchingTables.size() && createdSearchingTables[(*it).first]){
 			termIndex=(*it).second.first;
 			nextTermIndex=(*it).second.first;
 			unsigned currentSize=searchingTables[(*it).first][termIndex].size();
