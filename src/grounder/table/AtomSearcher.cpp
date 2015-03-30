@@ -515,10 +515,8 @@ int DoubleTermMapAtomSearcher::computePossibleIndexingTermTable(const vector<pai
 unsigned int DoubleTermMapAtomSearcher::selectBestIndex(const vector<pair<int,pair<index_object,int>>>& possibleTableToSearch){
 	computePossibleIndexingTermTable(possibleTableToSearch);
 
-	unsigned tableMinSize=0;
-	unsigned termIndex=0;
+	unsigned tableMinSize=0, termIndex=0,minSize=INT_MAX;
 	int nextTermIndex=0;
-	unsigned minSize=INT_MAX;
 
 	for(auto it=possibleTableToSearch.begin();it!=possibleTableToSearch.end();++it){
 		if(unsigned((*it).first)<createdSearchingTables.size() && createdSearchingTables[(*it).first]){

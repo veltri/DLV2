@@ -14,7 +14,7 @@ namespace DLV2{
 
 namespace grounder{
 
-class RangeTerm: public DLV2::grounder::Term {
+class RangeTerm: public Term {
 public:
 	RangeTerm():Term(),lowerBound(0),upperBound(0){}
 	RangeTerm(int l, int u):Term(),lowerBound(l),upperBound(u){}
@@ -26,6 +26,9 @@ public:
 
 	int getUpperBound() const {return upperBound;}
 	void setUpperBound(int upperBound) {this->upperBound = upperBound;}
+
+	void setNegative(bool n){if(n) lowerBound=-lowerBound;};
+
 private:
 	int lowerBound;
 	int upperBound;
