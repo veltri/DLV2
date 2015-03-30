@@ -276,7 +276,7 @@ GeneralIterator* SingleTermMapAtomSearcher::computeGenericIterator(Atom* templat
 }
 
 void SingleTermMapAtomSearcher::initializeIndexMaps(unsigned int indexingTerm){
-#ifdef NDEBUG
+#ifdef DEBUG_ATOM_SEARCHER
 	cout<<"Predicate: "<<predicate->getName()<<" Created Index on term: "<<indexingTerm<<endl;
 #endif
 
@@ -392,7 +392,7 @@ GeneralIterator* SingleTermMultiMapAtomSearcher::computeGenericIterator(Atom* te
 }
 
 void SingleTermMultiMapAtomSearcher::initializeIndexMaps(unsigned int indexingTerm){
-#ifdef NDEBUG
+#ifdef DEBUG_ATOM_SEARCHER
 	cout<<"Predicate: "<<predicate->getName()<<" Created Index on term: "<<indexingTerm<<endl;
 #endif
 #ifdef DEBUG_RULE_TIME
@@ -477,7 +477,7 @@ Atom* DoubleTermMapAtomSearcher::findAtom(Atom *atom){
 
 int DoubleTermMapAtomSearcher::manageIndex(Atom* templateAtom) {
 	vector<pair<int,pair<index_object,int>>> possibleTableToSearch;
-	unsigned termsSize=templateAtom->getTermsSize();
+	unsigned termsSize=predicate->getArity();
 	for(unsigned int i=0;i<termsSize;++i){
 		Term* t=templateAtom->getTerm(i);
 		if(t->isGround()){
@@ -492,7 +492,6 @@ int DoubleTermMapAtomSearcher::manageIndex(Atom* templateAtom) {
 				possibleTableToSearch.push_back({i,{t->getIndex(),-1}});
 		}
 	}
-
 	int indexSelected=-1;
 	if(!possibleTableToSearch.empty()){
 		indexSelected=selectBestIndex(possibleTableToSearch);
@@ -516,16 +515,12 @@ int DoubleTermMapAtomSearcher::computePossibleIndexingTermTable(const vector<pai
 unsigned int DoubleTermMapAtomSearcher::selectBestIndex(const vector<pair<int,pair<index_object,int>>>& possibleTableToSearch){
 	computePossibleIndexingTermTable(possibleTableToSearch);
 
-	auto it=possibleTableToSearch.begin();
-	unsigned tableMinSize=(*it).first;
-	unsigned termIndex=(*it).second.first;
-	int nextTermIndex=(*it).second.second;
-	unsigned minSize=searchingTables[tableMinSize][termIndex].size();
+	unsigned tableMinSize=0;
+	unsigned termIndex=0;
+	int nextTermIndex=0;
+	unsigned minSize=INT_MAX;
 
-	if(nextTermIndex!=-1)
-		 minSize=searchingTables[tableMinSize][termIndex].count(nextTermIndex);
-
-	for(it++;it!=possibleTableToSearch.end();++it){
+	for(auto it=possibleTableToSearch.begin();it!=possibleTableToSearch.end();++it){
 		if(unsigned((*it).first)<createdSearchingTables.size() && createdSearchingTables[(*it).first]){
 			termIndex=(*it).second.first;
 			nextTermIndex=(*it).second.first;
@@ -571,7 +566,7 @@ GeneralIterator* DoubleTermMapAtomSearcher::computeGenericIterator(Atom* templat
 }
 
 void DoubleTermMapAtomSearcher::initializeIndexMaps(unsigned int indexingTerm){
-#ifdef NDEBUG
+#ifdef DEBUG_ATOM_SEARCHER
 	cout<<"Predicate: "<<predicate->getName()<<" Created Index on term: "<<indexingTerm<<endl;
 #endif
 

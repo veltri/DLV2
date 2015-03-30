@@ -189,7 +189,7 @@ public:
 			indexingTermSetByUser = Options::globalOptions()->getPredicateIndexTerm(this->predicate->getName());
 			if(indexingTermSetByUser>=0)
 				assert_msg(unsigned(indexingTermSetByUser)<this->predicate->getArity(), "The specified index for the predicate \""+(this->predicate)->getName()+"\" is not valid.");
-#ifdef NDEBUG
+#ifdef DEBUG_ATOM_SEARCHER
 		cout<<"Predicate: "<<predicate->getName()<<"  Index Term Set By User: "<<indexingTermSetByUser<<endl;
 #endif
 		};
@@ -339,7 +339,7 @@ public:
 		indexingTermSetByUser = Options::globalOptions()->getPredicateIndexTerm(this->predicate->getName());
 		if(indexingTermSetByUser>=0)
 			assert_msg(unsigned(indexingTermSetByUser)<this->predicate->getArity(), "The specified index for the predicate \""+(this->predicate)->getName()+"\" is not valid.");
-#ifdef NDEBUG
+#ifdef DEBUG_ATOM_SEARCHER
 		cout<<"Predicate: "<<predicate->getName()<<"  Index Term Set By User: "<<indexingTermSetByUser<<endl;
 #endif
 	};

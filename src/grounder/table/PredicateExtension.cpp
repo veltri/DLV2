@@ -35,7 +35,7 @@ void PredicateExtension::setAtomSearchers(){
 		if(predicate->getArity()==0)
 			indexType=DEFAULT;
 
-#ifdef NDEBUG
+#ifdef DEBUG_ATOM_SEARCHER
 		cout<<"Predicate: "<<predicate->getName()<<"  Index type: "<<indexType<<endl;
 #endif
 
