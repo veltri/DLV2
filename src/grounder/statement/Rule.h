@@ -64,6 +64,10 @@ public:
 	unsigned int getSizeHead() const {return head.size();}
 	///This method return the size of the body
 	unsigned int getSizeBody() const {return body.size();}
+	///Remove atom in body
+	void removeInBody(unsigned position){body.erase(body.begin()+position);};
+	///Insert an element in the body at specified position
+	void insertInBody(Atom* atom,unsigned position){body.insert(body.begin()+position,atom);};
 
 	///This method returns an iterator that points to the first atom in the body
 	vector<Atom*>::iterator getBeginBody(){return body.begin();};

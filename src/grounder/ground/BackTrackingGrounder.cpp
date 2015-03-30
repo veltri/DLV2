@@ -334,6 +334,7 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 	for(auto& atom:templateSetAtom) atom=nullptr;
 	atom_undef_inbody.reserve(rule->getSizeBody());
 	is_ground_atom.clear();
+	orderRule();
 	findBindVariablesRule();
 	findSearchTable();
 	ground_atom_body.resize(rule->getSizeBody());
@@ -415,6 +416,22 @@ void BackTrackingGrounder::removeBindValueInAssignment(const set_term& bind_vari
 
 }
 
+
+void BackTrackingGrounder::orderRule(){
+
+	unordered_map<unsigned,set_term> builtin_negative_variable;
+	//Find the variable for builtin and negative atom
+	unsigned index_current_atom=0;
+	for (auto current_atom_it = currentRule->getBeginBody(); current_atom_it != currentRule->getEndBody(); ++current_atom_it,++index_current_atom) {
+		if((*current_atom_it)->isBuiltIn() || (*current_atom_it)->isNegative()){
+			set_term variables=(*current_atom_it)->getVariable();
+			builtin_negative_variable.insert({index_current_atom,variables});
+		}
+	}
+
+
+
+}
 
 
 
