@@ -429,6 +429,31 @@ void BackTrackingGrounder::orderRule(){
 		}
 	}
 
+	//Remove the variable for each positive atom
+	index_current_atom=0;
+	vector<unsigned> orderedRule;
+	for (auto current_atom_it = currentRule->getBeginBody(); current_atom_it != currentRule->getEndBody(); ++current_atom_it,++index_current_atom) {
+		if(!((*current_atom_it)->isBuiltIn() || (*current_atom_it)->isNegative())){
+			orderedRule.push_back(index_current_atom);
+			vector<unsigned> removed_builtin_negative;
+			for(auto& index_builtint_negative:builtin_negative_variable){
+				for(auto term:(*current_atom_it)->getVariable())index_builtint_negative.second.erase(term);
+				if(index_builtint_negative.second.size()==0){
+					orderedRule.push_back(index_builtint_negative.first);
+					removed_builtin_negative.push_back(index_builtint_negative.first);
+				}
+			}
+			for(auto builtin_negative_to_remove:removed_builtin_negative)builtin_negative_variable.erase(builtin_negative_to_remove);
+
+		}
+
+	}
+
+	for(auto i:orderedRule)
+		cout<<i<<" ";
+	cout<<endl;
+
+
 
 
 }
