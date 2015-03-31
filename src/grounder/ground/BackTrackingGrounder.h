@@ -83,9 +83,6 @@ protected:
 
 	//find the table to search for each atom in the body
 	void findSearchTable();
-
-	///Order atom in the rule (decide where to put the function)
-	void orderRule();
 };
 
 } /* namespace grounder */
