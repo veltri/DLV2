@@ -170,10 +170,10 @@ public:
 	/// Add aggregate Element
 	virtual void addAggregateElement(AggregateElement* element){};
 
-	virtual ResultEvaluation partialEvaluate(){};
+	virtual ResultEvaluation partialEvaluate(){return ResultEvaluation::SATISFY;};
 
 	/// Return the result of the evaluation of the aggregate
-	virtual ResultEvaluation finalEvaluation(){};
+	virtual ResultEvaluation finalEvaluate(){return ResultEvaluation::SATISFY;};
 
 	///Return the value of evaluation
 	virtual int getPartialEvaluation(){return 0;};

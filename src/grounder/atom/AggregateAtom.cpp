@@ -131,11 +131,12 @@ ResultEvaluation AggregateAtom::partialEvaluate() {
 			return partialEvaluateSum();
 			break;
 		default:
+			return UNDEF;
 			break;
 	}
 }
 
-ResultEvaluation AggregateAtom::finalEvaluation() {
+ResultEvaluation AggregateAtom::finalEvaluate() {
 	switch (aggregateFunction) {
 		case COUNT:
 			return finalEvaluateCount();
@@ -150,6 +151,7 @@ ResultEvaluation AggregateAtom::finalEvaluation() {
 			return finalEvaluateSum();
 			break;
 		default:
+			return UNDEF;
 			break;
 	}
 }

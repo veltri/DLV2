@@ -531,7 +531,7 @@ bool BackTrackingGrounder::groundAggregate() {
 	}
 
 	if(result==UNDEF)
-		result=ground_aggregate->finalEvaluation();
+		result=ground_aggregate->finalEvaluate();
 
 	//If is a first assignment set the initial value of the guard to the partial value
 	if(ground_aggregate->isAnAssigment()){

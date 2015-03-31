@@ -112,11 +112,11 @@ public:
 
 	///Update the evaluation of the aggregate with the last aggregate element
 	/// Return the result of the evaluation
-	 ResultEvaluation partialEvaluate();
+	ResultEvaluation partialEvaluate();
 
 	 /// Return the result of the evaluation of the aggregate
 	 /// Call before partialEvaluate for update the partial evaluation
-	 ResultEvaluation finalEvaluation();
+	 ResultEvaluation finalEvaluate();
 
 	 int getPartialEvaluation(){return partialEvaluation;};
 

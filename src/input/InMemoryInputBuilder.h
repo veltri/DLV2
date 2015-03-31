@@ -106,9 +106,9 @@ private:
 
 	Binop currentBinop;
 
-	AggregateElement *currentAggregateElement;
-
 	Atom *currentAggregate;
+
+	AggregateElement *currentAggregateElement;
 
  	void addRule(Rule* rule);
  	void createRule(vector<Atom*>* head, vector<Atom*>* body=0);
