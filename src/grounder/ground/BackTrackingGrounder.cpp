@@ -423,30 +423,27 @@ void BackTrackingGrounder::removeBindValueInAssignment(const set_term& bind_vari
 
 
 bool BackTrackingGrounder::groundAggregate() {
-
 	Atom *aggregateAtom=templateSetAtom[index_current_atom];
 	Atom *ground_aggregate;
-
 	if(aggregateAtom->isAnAssigment() && ground_atom_body[index_current_atom]!=nullptr){
 		//An assignment is in the lower guard
-
 		//The atom is already grounded, just change the guard
 		ground_aggregate=ground_atom_body[index_current_atom];
 
 		bool finish=0;
 		int val=ground_aggregate->generateNextCombination(finish);
-
-		if(finish)
+		if(finish){
+			delete ground_atom_body[index_current_atom];
+			ground_atom_body[index_current_atom]=nullptr;
 			return false;
+		}
 
 		Term *term_value=new NumericConstantTerm(false,val);
 		termsMap->addTerm(term_value);
 		ground_aggregate->setFirstGuard(term_value);
 		current_var_assign.insert({aggregateAtom->getFirstGuard(),term_value});
-
 		return true;
 	}
-
 	//Atom is undef for printing the aggregate and check if is correct
 	atom_undef_inbody[index_current_atom]=true;
 	//Create a ground aggregate empty
@@ -509,7 +506,7 @@ bool BackTrackingGrounder::groundAggregate() {
 
 	delete ground_atom_body[index_current_atom];
 
-	if(ground_aggregate->getAggregateElementsSize()==0 || result!=UNDEF)
+	if(( ground_aggregate->getAggregateElementsSize()==0 && !aggregateAtom->isAnAssigment() ) || result!=UNDEF)
 	{
 		delete ground_aggregate;
 		if(result==UNSATISFY)
