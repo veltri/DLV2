@@ -14,6 +14,8 @@ namespace grounder {
 
 const string AUXILIARY="#aux";
 
+const string SEPARATOR=".";
+
 void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited) {
 
 	set_term variablesRule=getVariablesInClassicalLit(r);
@@ -38,7 +40,7 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited)
 
 
 				rule->addInBody(atoms.begin(),atoms.end());
-				string predName=AUXILIARY+"."+to_string(id)+"."+to_string(counter);
+				string predName=AUXILIARY+SEPARATOR+to_string(id)+SEPARATOR+to_string(counter);
 				Predicate* predicate=new Predicate(predName,terms.size());
 				predicateTable->getInstance()->insertPredicate(predicate);
 				predicateExtTable->addPredicateExt(predicate);

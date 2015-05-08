@@ -70,56 +70,58 @@ bool Rule::isSafe()
 }
 
 void Rule::basicSortBody(){
-	unordered_map<unsigned,set_term> builtin_negative_variable;
-	//Find the variable for builtin and negative atom
-	unsigned index_current_atom=0;
-	for(auto current_atom:body){
-		if( ( current_atom->isBuiltIn() && current_atom->getBinop()!=EQUAL ) || current_atom->isNegative() ){
-			set_term variables=current_atom->getVariable();
-			builtin_negative_variable.insert({index_current_atom,variables});
-		}else if(current_atom->getBinop()==EQUAL ){
-			//If the binop is equal insert the variable that compare in positive atom, because an assigment can have
-			// variable that non compare in the positive atom
-			set_term variable_in_builtin=current_atom->getVariable();
+	if(!this->getPositivePredicateIndexInBody().empty()){
+		unordered_map<unsigned,set_term> builtin_negative_variable;
+		//Find the variable for builtin and negative atom
+		unsigned index_current_atom=0;
+		for(auto current_atom:body){
+			if( ( current_atom->isBuiltIn() && current_atom->getBinop()!=EQUAL ) || current_atom->isNegative() ){
+				set_term variables=current_atom->getVariable();
+				builtin_negative_variable.insert({index_current_atom,variables});
+			}else if(current_atom->getBinop()==EQUAL ){
+				//If the binop is equal insert the variable that compare in positive atom, because an assigment can have
+				// variable that non compare in the positive atom
+				set_term variable_in_builtin=current_atom->getVariable();
 
-			set_term variable_to_search;
-			for(auto body_atom:body){
-				if(!body_atom->isBuiltIn() && !body_atom->isNegative() ){
-					set_term variables=body_atom->getVariable();
-					for(auto term:variables)
-						if(variable_in_builtin.count(term))
-							variable_to_search.insert(term);
+				set_term variable_to_search;
+				for(auto body_atom:body){
+					if(!body_atom->isBuiltIn() && !body_atom->isNegative() ){
+						set_term variables=body_atom->getVariable();
+						for(auto term:variables)
+							if(variable_in_builtin.count(term))
+								variable_to_search.insert(term);
+					}
 				}
+				builtin_negative_variable.insert({index_current_atom,variable_to_search});
+
 			}
-			builtin_negative_variable.insert({index_current_atom,variable_to_search});
-
+			index_current_atom++;
 		}
-		index_current_atom++;
-	}
 
-	//Remove the variable for each positive atom
-	index_current_atom=0;
-	vector<Atom*> body_ordered;
-	for(auto current_atom:body){
-		if(!(current_atom->isBuiltIn() || current_atom->isNegative())){
-			body_ordered.push_back(body[index_current_atom]);
-			vector<unsigned> removed_builtin_negative;
-			for(auto& index_builtint_negative:builtin_negative_variable){
-				for(auto term:current_atom->getVariable())index_builtint_negative.second.erase(term);
-				if(index_builtint_negative.second.size()==0){
-					//If all variable are erased then the position of atom have to be changed hear
+		//Remove the variable for each positive atom
+		index_current_atom=0;
+		vector<Atom*> body_ordered;
+		for(auto current_atom:body){
+			if(!(current_atom->isBuiltIn() || current_atom->isNegative())){
+				body_ordered.push_back(body[index_current_atom]);
+				vector<unsigned> removed_builtin_negative;
+				for(auto& index_builtint_negative:builtin_negative_variable){
+					for(auto term:current_atom->getVariable())index_builtint_negative.second.erase(term);
+					if(index_builtint_negative.second.size()==0){
+						//If all variable are erased then the position of atom have to be changed hear
 
-					body_ordered.push_back(body[index_builtint_negative.first]);
-					removed_builtin_negative.push_back(index_builtint_negative.first);
+						body_ordered.push_back(body[index_builtint_negative.first]);
+						removed_builtin_negative.push_back(index_builtint_negative.first);
+					}
 				}
+				for(auto builtin_negative_to_remove:removed_builtin_negative)builtin_negative_variable.erase(builtin_negative_to_remove);
+
 			}
-			for(auto builtin_negative_to_remove:removed_builtin_negative)builtin_negative_variable.erase(builtin_negative_to_remove);
-
+			index_current_atom++;
 		}
-		index_current_atom++;
-	}
 
-	setBody(body_ordered);
+		setBody(body_ordered);
+	}
 
 }
 
