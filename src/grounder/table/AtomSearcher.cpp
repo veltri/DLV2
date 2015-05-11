@@ -422,7 +422,7 @@ Atom* HashSetAtomSearcher::findAtom(Atom* atom) {
 /****************************************************** DOUBLE TERM MAP ATOM SEARCH ***************************************************/
 
 void DoubleTermMapAtomSearcher::add(Atom* atom) {
-	for (unsigned int i = 0; i < predicate->getArity()-1; ++i) {
+	for (unsigned int i = 0; i < predicate->getArity(); ++i) {
 		if(createdSearchingTables[i]){
 			index_object termIndex=atom->getTerm(i)->getIndex();
 			index_object nextTermIndex=atom->getTerm(i+1)->getIndex();
@@ -438,7 +438,7 @@ void DoubleTermMapAtomSearcher::add(Atom* atom) {
 }
 
 void DoubleTermMapAtomSearcher::remove(Atom* atom) {
-	for (unsigned int i = 0; i < predicate->getArity()-1; ++i) {
+	for (unsigned int i = 0; i < predicate->getArity(); ++i) {
 		if(createdSearchingTables[i]){
 			index_object termIndex=atom->getTerm(i)->getIndex();
 			index_object nextTermIndex=atom->getTerm(i+1)->getIndex();
@@ -515,8 +515,8 @@ int DoubleTermMapAtomSearcher::computePossibleIndexingTermTable(const vector<pai
 unsigned int DoubleTermMapAtomSearcher::selectBestIndex(const vector<pair<int,pair<index_object,int>>>& possibleTableToSearch){
 	computePossibleIndexingTermTable(possibleTableToSearch);
 
-	unsigned tableMinSize=0, termIndex=0,minSize=INT_MAX;
-	int nextTermIndex=0;
+	unsigned tableMinSize=possibleTableToSearch[0].first, termIndex=possibleTableToSearch[0].second.first, minSize=INT_MAX;
+	int nextTermIndex=possibleTableToSearch[0].second.second;
 
 	for(auto it=possibleTableToSearch.begin();it!=possibleTableToSearch.end();++it){
 		if(unsigned((*it).first)<createdSearchingTables.size() && createdSearchingTables[(*it).first]){
@@ -567,18 +567,24 @@ void DoubleTermMapAtomSearcher::initializeIndexMaps(unsigned int indexingTerm){
 #ifdef DEBUG_ATOM_SEARCHER
 	cout<<"Predicate: "<<predicate->getName()<<" Created Index on term: "<<indexingTerm<<endl;
 #endif
-
-	assert(indexingTerm<predicate->getArity()-1);
 	createdSearchingTables[indexingTerm]=true;
 	for (Atom* a : *table) {
 		index_object termIndex=a->getTerm(indexingTerm)->getIndex();
-		index_object nextTermIndex=a->getTerm(indexingTerm+1)->getIndex();
+		index_object nextTermIndex=-1;
+		if(indexingTerm<(predicate->getArity()-1))
+			nextTermIndex=a->getTerm(indexingTerm+1)->getIndex();
 		if(searchingTables[indexingTerm].count(termIndex)){
-			searchingTables[indexingTerm][termIndex].insert({nextTermIndex,a});
+			if(nextTermIndex>-1)
+				searchingTables[indexingTerm][termIndex].insert({nextTermIndex,a});
+			else
+				searchingTables[indexingTerm][termIndex].insert({termIndex,a});
 		}
 		else{
 			Multimap_Atom values;
-			values.insert({nextTermIndex,a});
+			if(nextTermIndex>-1)
+				values.insert({nextTermIndex,a});
+			else
+				values.insert({termIndex,a});
 			searchingTables[indexingTerm].insert({termIndex,values});
 		}
 	}

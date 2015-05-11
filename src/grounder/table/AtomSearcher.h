@@ -330,9 +330,9 @@ class DoubleTermMapAtomSearcher: public BaseAtomSearcher{
 public:
 	DoubleTermMapAtomSearcher(AtomVector* table, Predicate* p) : BaseAtomSearcher(table) {
 		this->predicate=p;
-		searchingTables.reserve(predicate->getArity()-1);
-		createdSearchingTables.reserve(predicate->getArity()-1);
-		for(unsigned int i=0;i<predicate->getArity()-1;++i){
+		searchingTables.reserve(predicate->getArity());
+		createdSearchingTables.reserve(predicate->getArity());
+		for(unsigned int i=0;i<predicate->getArity();++i){
 			searchingTables.push_back(unordered_map<index_object,Multimap_Atom>());
 			createdSearchingTables.push_back(false);
 		}
