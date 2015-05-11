@@ -65,7 +65,6 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited)
 		r->addInBody(r->getAtomInBody(aggregateIndex));
 		r->removeInBody(aggregateIndex);
 	}
-	cout<<"RULE ";r->print();
 
 	ruleRewrited.push_back(r);
 }
