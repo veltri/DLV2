@@ -12,18 +12,21 @@
 namespace DLV2 {
 namespace grounder {
 
-const string AUXILIARY="#aux";
+const string AUXILIARY="aux";
 
-const string SEPARATOR=".";
+const string SEPARATOR="_";
 
 void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited) {
 
 	set_term variablesRule=getVariablesInClassicalLit(r);
 
 	/// First, auxiliary rules for aggregates elements are generated
-	for(auto it=r->getBeginBody();it!=r->getEndBody();it++){
+	vector<unsigned int> aggregateAtoms;
+	unsigned int index_atom=0;
+	for(auto it=r->getBeginBody();it!=r->getEndBody();it++,index_atom++){
 		unsigned aggElementsSize=(*it)->getAggregateElementsSize();
 		if(aggElementsSize>0){
+			aggregateAtoms.push_back(index_atom);
 			unsigned id=IdGenerator::getInstance()->getId();
 			unsigned counter=1;
 			for(unsigned i=0;i<aggElementsSize;++i){
@@ -52,9 +55,17 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited)
 				vector<Atom*> newAggElem;
 				newAggElem.push_back(atomClone);
 				(*it)->getAggregateElement(i)->setNafLiterals(newAggElem);
+
 			}
 		}
 	}
+
+	//Move aggregate at the end of rule
+	for(auto aggregateIndex:aggregateAtoms){
+		r->addInBody(r->getAtomInBody(aggregateIndex));
+		r->removeInBody(aggregateIndex);
+	}
+	cout<<"RULE ";r->print();
 
 	ruleRewrited.push_back(r);
 }
