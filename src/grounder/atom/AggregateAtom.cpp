@@ -119,43 +119,39 @@ ResultEvaluation AggregateAtom::partialEvaluate() {
 	if(invalideGuards())return UNSATISFY;
 	switch (aggregateFunction) {
 		case COUNT:
-			return partialEvaluateCount();
-			break;
+			return returnEvaluation(partialEvaluateCount());
 		case MIN:
-			return partialEvaluateMin();
-			break;
+			return returnEvaluation(partialEvaluateMin());
 		case MAX:
-			return partialEvaluateMax();
-			break;
+			return returnEvaluation(partialEvaluateMax());
 		case SUM:
-			return partialEvaluateSum();
-			break;
+			return returnEvaluation(partialEvaluateSum());
 		default:
 			return UNDEF;
-			break;
 	}
 }
 
 ResultEvaluation AggregateAtom::finalEvaluate() {
 	switch (aggregateFunction) {
 		case COUNT:
-			return finalEvaluateCount();
-			break;
+			return returnEvaluation(finalEvaluateCount());
 		case MIN:
-			return finalEvaluateMin();
-			break;
+			return returnEvaluation(finalEvaluateMin());
 		case MAX:
-			return finalEvaluateMax();
-			break;
+			return returnEvaluation(finalEvaluateMax());
 		case SUM:
-			return finalEvaluateSum();
-			break;
+			return returnEvaluation(finalEvaluateSum());
 		default:
 			return UNDEF;
-			break;
 	}
 }
 
+ResultEvaluation AggregateAtom::returnEvaluation(ResultEvaluation evaluation){
+	if(!negative)return evaluation;
+	if(evaluation==SATISFY)return UNSATISFY;
+	if(evaluation==UNSATISFY)return SATISFY;
+	return evaluation;
+}
 
 ResultEvaluation AggregateAtom::partialEvaluateCount() {
 
@@ -167,10 +163,8 @@ ResultEvaluation AggregateAtom::partialEvaluateCount() {
 
 	partialEvaluation++;
 
-
 	if(checkOperator(firstGuard,firstBinop,EQUAL,GREATER,false))
 		return UNSATISFY;
-
 	if(checkOperator(secondGuard,secondBinop,LESS,GREATER_OR_EQ,false))
 		return UNSATISFY;
 
@@ -537,6 +531,9 @@ void AggregateAtom::applayAggregateOperator(int& n1, int n2){
 			break;
 		case MAX:
 			n1=max(n1,n2);
+			break;
+		case COUNT:
+			n1+=1;
 			break;
 		default:
 			n1+=n2;

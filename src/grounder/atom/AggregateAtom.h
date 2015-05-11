@@ -163,6 +163,9 @@ private:
 	///The second (or upper) guard)
 	Term* secondGuard;
 
+	///Return the evaluation if the aggregate is not negated else invert the evaluation
+	ResultEvaluation returnEvaluation(ResultEvaluation evaluation);
+
 	///Partial evaluate the count aggregate
 	ResultEvaluation partialEvaluateCount();
 	///Partial evaluate the max aggregate
@@ -197,7 +200,6 @@ private:
 
 	///Get the sum of undef and true evaluation with sum and count, the maximum between undef and true with max,the minimun between undef and true with min
 	int getCheckValue();
-
 
 
 };

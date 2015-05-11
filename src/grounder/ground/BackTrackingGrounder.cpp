@@ -219,8 +219,9 @@ bool BackTrackingGrounder::foundAssignment() {
 	for(auto atom=currentRule->getBeginBody();atom!=currentRule->getEndBody();++atom,++index_body_atom){
 
 		if(!atom_undef_inbody[index_body_atom])
-			if(!((*atom)->isNegative() && StatementDependency::getInstance()->isPredicateNegativeStratified((*atom)->getPredicate()->getIndex())))
+			if((*atom)->getAggregateElementsSize()==0 && !( (*atom)->isNegative() && StatementDependency::getInstance()->isPredicateNegativeStratified((*atom)->getPredicate()->getIndex())))
 				continue;
+
 
 		if((*atom)->isBuiltIn())continue;
 		Atom *bodyGroundAtom=nullptr;
@@ -459,13 +460,16 @@ bool BackTrackingGrounder::groundAggregate() {
 		Atom* atom=aggregateAtom->getAggregateElement(i)->getNafLiteral(0);
 		Predicate *predicate_atom=atom->getPredicate();
 		vector<unsigned> tablesToSearch={FACT,NOFACT};
+
 		for(unsigned j=0;j<tablesToSearch.size()&&result==UNDEF;j++){
+
 			unsigned table=tablesToSearch[j];
 			AtomSearcher *searcher=predicateExtTable->getPredicateExt(predicate_atom)->getAtomSearcher(table);
 			bool find=false,undef=false;
 			map_term_term copy_current_var_assign(current_var_assign);
 			unsigned id = searcher->firstMatch(atom,copy_current_var_assign,find,undef);
 			while(find){
+
 				Atom *groundAtom=nullptr;
 				atom->ground(copy_current_var_assign,groundAtom);
 				AggregateElement *ground_aggregateElement=new AggregateElement;
@@ -475,7 +479,6 @@ bool BackTrackingGrounder::groundAggregate() {
 					ground_aggregateElement->addTerm(copy_current_var_assign[term_aggregateElement]);
 
 				ground_aggregate->addAggregateElement(ground_aggregateElement);
-
 				result=ground_aggregate->partialEvaluate();
 				if(result!=UNDEF)break;
 

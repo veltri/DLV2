@@ -378,6 +378,7 @@ void InMemoryInputBuilder::onAggregateElement() {
 }
 
 void InMemoryInputBuilder::onAggregate(bool naf) {
+	currentAggregate->setNegative(naf);
 	currentAtom = currentAggregate;
 	AggregateAtom* aggAtom=dynamic_cast<AggregateAtom*> (currentAtom);
 	aggAtom->changeInStandardFormat();
