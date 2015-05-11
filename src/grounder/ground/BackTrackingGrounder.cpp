@@ -219,7 +219,7 @@ bool BackTrackingGrounder::foundAssignment() {
 	for(auto atom=currentRule->getBeginBody();atom!=currentRule->getEndBody();++atom,++index_body_atom){
 
 		if(!atom_undef_inbody[index_body_atom])
-			if((*atom)->getAggregateElementsSize()==0 && !( (*atom)->isNegative() && StatementDependency::getInstance()->isPredicateNegativeStratified((*atom)->getPredicate()->getIndex())))
+			if((*atom)->getAggregateElementsSize()>0 || !( (*atom)->isNegative() && StatementDependency::getInstance()->isPredicateNegativeStratified((*atom)->getPredicate()->getIndex())))
 				continue;
 
 
