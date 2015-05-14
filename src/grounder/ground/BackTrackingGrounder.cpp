@@ -508,6 +508,7 @@ bool BackTrackingGrounder::groundAggregate() {
 	}
 
 	delete ground_atom_body[index_current_atom];
+	ground_atom_body[index_current_atom]=0;
 
 	if(( ground_aggregate->getAggregateElementsSize()==0 && !aggregateAtom->isAnAssigment() ) || result!=UNDEF)
 	{
