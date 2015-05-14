@@ -30,9 +30,9 @@ public:
 	 * @param hasMinus set whether the atom is negated with true negation
 	 * @param negative set whether the atom is negated with negation as failure
 	 */
-	ClassicalLiteral(Predicate* predicate, vector<Term*> &terms, bool hasMinus, bool negative): Atom(terms), predicate(predicate), hasMinus(hasMinus), negative(negative) {};
+	ClassicalLiteral(Predicate* predicate, vector<Term*> &terms, bool hasMinus, bool negative): Atom(terms), predicate(predicate), hasMinus(hasMinus), negative(negative), fact(false) {};
 
-	ClassicalLiteral(Predicate* predicate, bool hasMinus, bool negative): Atom(), predicate(predicate), hasMinus(hasMinus), negative(negative) {};
+	ClassicalLiteral(Predicate* predicate, bool hasMinus, bool negative): Atom(), predicate(predicate), hasMinus(hasMinus), negative(negative), fact(false) {};
 
 	Atom* clone() {
 		Atom* atom = new ClassicalLiteral(this->predicate,this->hasMinus,this->negative);
@@ -73,7 +73,8 @@ public:
 	/// Substitute the term and return a new Atom with term substituted
 	virtual void substitute(map_term_term& substritutionTerm,Atom*& templateAtom);
 
-
+	virtual bool isFact() const { return fact; }
+	virtual void setFact(bool isFact) { this->fact=isFact; }
 
 	///Destructor
 	virtual ~ClassicalLiteral() {};
@@ -85,6 +86,8 @@ private:
 	bool hasMinus;
 	///Negated with naf
 	bool negative;
+	//A boolean to set whether it is a true fact or is undefined
+	bool fact;
 };
 
 };

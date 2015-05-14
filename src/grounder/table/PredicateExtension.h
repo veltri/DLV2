@@ -54,8 +54,8 @@ public:
 		setAtomSearchers();
 	}
 
-	///Add generic atom in specified table
-	bool addGenericAtom(unsigned table, Atom* genericAtom, bool search = false){
+	///Add a given atom in specified table
+	bool addAtom(unsigned table, Atom* genericAtom, bool search = false){
 		assert_msg(table<tables.size(),"The specified table doesn't exist.");
 		if(search){
 			AtomSearcher *atomSearcher=getAtomSearcher(table);
@@ -70,8 +70,8 @@ public:
 		return true;
 	}
 
-	///Get an generic atom in specified table
-	Atom* getGenericAtom(unsigned table, Atom* genericAtom){
+	///Get an atom in specified table
+	Atom* getAtom(unsigned table, Atom* genericAtom){
 		assert_msg(table<tables.size(),"The specified table doesn't exist.");
 		if(tables[table]->size()==0) return nullptr;
 		AtomSearcher* atomSearcher=getAtomSearcher(table);
@@ -79,11 +79,11 @@ public:
 		return atomFound;
 	}
 
-	///Get an generic atom searching in all table
-	Atom* getGenericAtom(Atom* genericAtom){
+	///Get a atom searching in all table
+	Atom* getAtom(Atom* genericAtom){
 		for(unsigned i=0;i<tables.size();++i){
 			if(tables[i]->size()==0) continue;
-			Atom* atomFound=getGenericAtom(i,genericAtom);
+			Atom* atomFound=getAtom(i,genericAtom);
 			if(atomFound!=nullptr)
 				return atomFound;
 		}

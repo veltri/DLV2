@@ -156,7 +156,7 @@ ResultEvaluation AggregateAtom::returnEvaluation(ResultEvaluation evaluation){
 ResultEvaluation AggregateAtom::partialEvaluateCount() {
 
 	Atom *lastAtom=aggregateElements.back()->getNafLiteral(0);
-	if(!PredicateExtTable::getInstance()->getPredicateExt(lastAtom->getPredicate())->getGenericAtom(lastAtom)->isFact()){
+	if(!PredicateExtTable::getInstance()->getPredicateExt(lastAtom->getPredicate())->getAtom(lastAtom)->isFact()){
 		undefAtomEvaluation++;
 		return UNDEF;
 	}
@@ -176,7 +176,7 @@ ResultEvaluation AggregateAtom::partialEvaluateCount() {
 
 ResultEvaluation AggregateAtom::partialEvaluateMax() {
 	Atom *lastAtom=aggregateElements.back()->getNafLiteral(0);
-	if(!PredicateExtTable::getInstance()->getPredicateExt(lastAtom->getPredicate())->getGenericAtom(lastAtom)->isFact()){
+	if(!PredicateExtTable::getInstance()->getPredicateExt(lastAtom->getPredicate())->getAtom(lastAtom)->isFact()){
 		int value=aggregateElements.back()->getTerms().front()->getConstantValue();
 		if(undefAtomEvaluation<value)
 			undefAtomEvaluation=value;
@@ -201,7 +201,7 @@ ResultEvaluation AggregateAtom::partialEvaluateMax() {
 
 ResultEvaluation AggregateAtom::partialEvaluateMin() {
 	Atom *lastAtom=aggregateElements.back()->getNafLiteral(0);
-	if(!PredicateExtTable::getInstance()->getPredicateExt(lastAtom->getPredicate())->getGenericAtom(lastAtom)->isFact()){
+	if(!PredicateExtTable::getInstance()->getPredicateExt(lastAtom->getPredicate())->getAtom(lastAtom)->isFact()){
 		int value=aggregateElements.back()->getTerms().front()->getConstantValue();
 		if(undefAtomEvaluation>value)
 			undefAtomEvaluation=value;
@@ -225,7 +225,7 @@ ResultEvaluation AggregateAtom::partialEvaluateMin() {
 
 ResultEvaluation AggregateAtom::partialEvaluateSum() {
 	Atom *lastAtom=aggregateElements.back()->getNafLiteral(0);
-	if(!PredicateExtTable::getInstance()->getPredicateExt(lastAtom->getPredicate())->getGenericAtom(lastAtom)->isFact()){
+	if(!PredicateExtTable::getInstance()->getPredicateExt(lastAtom->getPredicate())->getAtom(lastAtom)->isFact()){
 		undefAtomEvaluation+=aggregateElements.back()->getTerms().front()->getConstantValue();
 		return UNDEF;
 	}
@@ -497,7 +497,7 @@ void AggregateAtom::findUndefAtoms(){
 	current_number.push_back(false);
 	for(unsigned i=0;i<this->aggregateElements.size();i++){
 		Atom* aggElementAtom=this->aggregateElements[i]->getNafLiteral(0);
-		if(!PredicateExtTable::getInstance()->getPredicateExt(aggElementAtom->getPredicate())->getGenericAtom(aggElementAtom)->isFact()){
+		if(!PredicateExtTable::getInstance()->getPredicateExt(aggElementAtom->getPredicate())->getAtom(aggElementAtom)->isFact()){
 			map_undefAtom_position.insert({map_undefAtom_position.size()+1,i});
 			current_number.push_back(false);
 		}

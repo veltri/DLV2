@@ -403,14 +403,13 @@ void InMemoryInputBuilder::createRule(vector<Atom*>* head, vector<Atom*>* body) 
 }
 
 void InMemoryInputBuilder::createFact(Atom* fact) {
+	fact->setFact(true);
 	Predicate* predicate = fact->getPredicate();
-	Atom* genericAtom = new GenericAtom(fact->getTerms(), true);
-	delete fact;
-	if (!(instancesTable->getPredicateExt(predicate)->addGenericAtom(FACT, genericAtom)))
-		delete genericAtom;
+	if (!(instancesTable->getPredicateExt(predicate)->addAtom(FACT, fact)))
+		delete fact;
 	else
 		if (!Options::globalOptions()->isNofacts()) {
-			ClassicalLiteral::print(predicate, genericAtom->getTerms(), false, false);
+			ClassicalLiteral::print(predicate, fact->getTerms(), false, false);
 			cout << "." << endl;
 		}
 }

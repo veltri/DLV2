@@ -12,7 +12,6 @@
 
 #include "../hash/HashVecInt.h"
 #include "../atom/ClassicalLiteral.h"
-#include "../atom/GenericAtom.h"
 #include "PredicateTable.h"
 
 using namespace std;
