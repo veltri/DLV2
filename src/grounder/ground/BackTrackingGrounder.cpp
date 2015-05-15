@@ -466,7 +466,7 @@ bool BackTrackingGrounder::groundAggregate() {
 
 				ground_aggregate->addAggregateElement(ground_aggregateElement);
 				result=ground_aggregate->partialEvaluate();
-				if(result!=UNDEF)break;
+				if(result!=UNDEF || atom->isGround())break;
 
 				copy_current_var_assign=current_var_assign;
 				searcher->nextMatch(id,atom,copy_current_var_assign,atomFound);
@@ -474,7 +474,6 @@ bool BackTrackingGrounder::groundAggregate() {
 			}
 		}
 	}
-
 	if(result==UNDEF)
 		result=ground_aggregate->finalEvaluate();
 
