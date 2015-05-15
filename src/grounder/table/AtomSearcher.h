@@ -102,13 +102,13 @@ public:
 	/// This method implementation is demanded to sub-classes.
 	/// It have to find all the matching atoms and return just the first of those.
 	/// The returned integer will be used to get the other ones through nextMatch method (@See nextMatch)
-	virtual unsigned int firstMatch(Atom *templateAtom, map_term_term& currentAssignment, Atom* atomFound)=0;
+	virtual unsigned int firstMatch(Atom *templateAtom, map_term_term& currentAssignment, Atom*& atomFound)=0;
 	/// This method implementation is demanded to sub-classes.
 	/// It is used to get the further matching atoms one by one each time it is invoked.
-	virtual void nextMatch(unsigned int id, Atom* templateAtom, map_term_term& currentAssignment, Atom* atomFound)=0;
+	virtual void nextMatch(unsigned int id, Atom* templateAtom, map_term_term& currentAssignment, Atom*& atomFound)=0;
 	/// This method implementation is demanded to sub-classes.
 	/// It have to find if the given atom exist. This atom must be ground.
-	virtual void findIfExist(Atom *templateAtom, Atom* atomFound)=0;
+	virtual void findIfExist(Atom *templateAtom, Atom*& atomFound)=0;
 
 	/// This method implementation is demanded to sub-classes.
 	/// It have to find if the given atom exist and returns it, else returns nullptr.
@@ -149,9 +149,9 @@ class BaseAtomSearcher: public AtomSearcher {
 public:
 	BaseAtomSearcher(AtomVector* table) : AtomSearcher(table), counter(0) {};
 
-	virtual unsigned int firstMatch(Atom* templateAtom, map_term_term& currentAssignment, Atom* atomFound);
-	virtual void nextMatch(unsigned int id, Atom* templateAtom, map_term_term& currentAssignment, Atom* atomFound);
-	virtual void findIfExist(Atom *templateAtom, Atom* atomFound);
+	virtual unsigned int firstMatch(Atom* templateAtom, map_term_term& currentAssignment, Atom*& atomFound);
+	virtual void nextMatch(unsigned int id, Atom* templateAtom, map_term_term& currentAssignment, Atom*& atomFound);
+	virtual void findIfExist(Atom *templateAtom, Atom*& atomFound);
 
 	virtual Atom* findAtom(Atom *atom);
 	virtual void add(Atom* atom){};
@@ -171,10 +171,10 @@ protected:
 
 	/// This method invokes findIfAFactExists method if all the variables are bound,
 	/// otherwise invokes the computeFirstMatch method.
-	bool searchForFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term_term& currentAssignment, Atom* atomFound);
+	bool searchForFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term_term& currentAssignment, Atom*& atomFound);
 	/// This method given an iterator increases it in order to find matching atoms with the given atom
 	/// according to the current assignment.
-	bool computeMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term_term& currentAssignment, Atom* atomFound);
+	bool computeMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term_term& currentAssignment, Atom*& atomFound);
 	/// This method computes an iterator pointing to the starting point of the search
 	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom){return new VectorIterator(table->begin(),table->end());}
 };

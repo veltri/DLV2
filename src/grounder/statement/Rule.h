@@ -27,15 +27,24 @@ namespace grounder{
 
 class Rule : public Indexable {
 public:
-	Rule():Indexable(), ground(false) {};
-	Rule(bool g):Indexable(), ground(g) {};
-	Rule(bool g, unsigned sizeHead, unsigned sizeBody) : Indexable(), ground(g) {
-		head.reserve(sizeHead);
-		for(unsigned i=0;i<sizeHead;i++)
-			head.push_back(nullptr);
-		body.reserve(sizeBody);
-		for(unsigned i=0;i<sizeBody;i++)
-			body.push_back(nullptr);
+	Rule():Indexable(), ground(false), simplifiedHead(0), simplifiedBody(0)  {};
+	Rule(bool g):Indexable(), ground(g), simplifiedHead(0), simplifiedBody(0)  {};
+	Rule(bool g, unsigned sizeHead, unsigned sizeBody) : Indexable(), ground(g), simplifiedHead(0), simplifiedBody(0) {
+		if(ground){
+			simplifiedHead=new bool[sizeHead];
+			simplifiedBody=new bool[sizeBody];
+			head.reserve(sizeHead);
+			for(unsigned i=0;i<sizeHead;i++){
+				simplifiedHead[i]=false;
+				head.push_back(nullptr);
+			}
+			body.reserve(sizeBody);
+			for(unsigned i=0;i<sizeBody;i++){
+				simplifiedBody[i]=false;
+				body.push_back(nullptr);
+			}
+		}
+
 	};
 
 	///Getter method for body atoms
@@ -95,6 +104,14 @@ public:
 	///Set the specific atom in the body
 	void setAtomInBody(unsigned i,Atom* atom) {body[i]=atom;};
 
+	///Set the specific atom in the body
+	void setAtomInHead(unsigned i,Atom* atom) {head[i]=atom;};
+
+	///Set the simplification of the atom in the given position in the head
+	void setAtomToSimplifyInHead(unsigned position, bool simplify = true){ simplifiedHead[position]=simplify;}
+	///Set the simplification of the atom in the given position in the body
+	void setAtomToSimplifyInBody(unsigned position, bool simplify = true){ simplifiedBody[position]=simplify;}
+
 	///This method remove all the atoms in the body and in the head
 	void clear(){head.clear();body.clear();};
 
@@ -117,6 +134,10 @@ public:
 			for(auto atom:body)
 				delete atom;
 		}
+		if(ground){
+			delete[] simplifiedBody;
+			delete[] simplifiedHead;
+		}
 	}
 
 	bool isGround() const;
@@ -138,6 +159,11 @@ private:
 	vector<Atom*> body;
 	//Boolean to set whether the rule is ground
 	bool ground;
+
+	///An array containing true at a position in the head if that atom has to be simplified, false otherwise
+	bool* simplifiedHead;
+	///An array containing true at a position in the body if that atom has to be simplified, false otherwise
+	bool* simplifiedBody;
 };
 
 

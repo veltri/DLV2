@@ -128,19 +128,29 @@ void Rule::basicSortBody(){
 
 void  Rule::print(){
 	unsigned int i=0;
+	bool firstAtomPrinted=false;
 	for (auto atom:head) {
-		atom->print();
-		if(i!=head.size()-1)
+		if(firstAtomPrinted && !simplifiedHead[i])
 			cout<<";";
+		if(!simplifiedHead[i]){
+			atom->print();
+			if(!firstAtomPrinted)
+				firstAtomPrinted=true;
+		}
 		i++;
 	}
+	firstAtomPrinted=false;
 	if(body.size()>0 || isAStrongConstraint()){
 		cout<<":-";
 		unsigned int i=0;
 		for (auto atom:body) {
-			atom->print();
-			if(i!=body.size()-1)
+			if(firstAtomPrinted && !simplifiedBody[i])
 				cout<<";";
+			if(!simplifiedBody[i]){
+				atom->print();
+				if(!firstAtomPrinted)
+					firstAtomPrinted=true;
+			}
 			i++;
 		}
 	}

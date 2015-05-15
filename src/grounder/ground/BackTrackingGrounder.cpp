@@ -67,6 +67,7 @@ bool BackTrackingGrounder::match() {
 #endif
 
 		current_id_match[index_current_atom][0].second=1;
+		ground_rule->setAtomToSimplifyInBody(index_current_atom);
 		return templateSetAtom[index_current_atom] -> evaluate(current_var_assign);
 
 	}else if(templateSetAtom[index_current_atom]->getAggregateElementsSize()>0){
@@ -86,7 +87,6 @@ bool BackTrackingGrounder::match() {
 #ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("Match");
 #endif
-
 		return match;
 	}
 
@@ -114,22 +114,24 @@ bool BackTrackingGrounder::firstMatch(){
 		Atom* atomFound=nullptr;
 		unsigned id = searcher->firstMatch(templateAtom,current_var_assign,atomFound);
 		find=(atomFound!=nullptr);
-		undef=!atomFound->isFact();
+		if(atomFound!=nullptr) undef=!atomFound->isFact();
 
 		if(templateAtom->isNegative() && find) find=!undef;
 
-		if(templateAtom->isNegative() && !find)
+		if(templateAtom->isNegative() && !find){
+			atomFound=templateAtom->clone();
 			substiteInGroundRule(index_current_atom,atomFound);
+		}
 
 		if(find){
-
 			if(!isGroundCurrentAtom()){
-				substiteInGroundRule(index_current_atom,atomFound);
 				current_id_match[index_current_atom][current_table].second = id;
 			}else{
 				current_id_match[index_current_atom][current_table].second = NO_MATCH;
 				current_id_match_iterator[index_current_atom]=0;
 			}
+			substiteInGroundRule(index_current_atom,atomFound);
+
 #ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("F-Match "+boost::lexical_cast<string>(index_current_atom));
 #endif
@@ -258,19 +260,20 @@ bool BackTrackingGrounder::foundAssignment() {
 
 		if(searchAtom==nullptr){
 			ground_new_atom = true;
-			ground_rule->addInHead(headGroundAtom);
 
 			Atom *genericGroundAtom=new ClassicalLiteral(headGroundAtom->getPredicate(), false, false);
 			genericGroundAtom->setTerms(headGroundAtom->getTerms());
 			genericGroundAtom->setFact(head_true);
 			for(unsigned i=0;i<predicate_searchInsert_table[atom_counter].size();++i)
 				predicateExt->addAtom(predicate_searchInsert_table[atom_counter][i],genericGroundAtom);
+
+			ground_rule->setAtomInHead(atom_counter,genericGroundAtom);
 		}else{
 
 			if(head_true)
 				searchAtom->setFact(true);
 
-			ground_rule->addInHead(headGroundAtom);
+			ground_rule->setAtomInHead(atom_counter,headGroundAtom);
 
 		}
 
@@ -337,7 +340,6 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 	for(auto atom:templateSetAtom) delete atom;
 	templateSetAtom.resize(rule->getSizeBody());
 	for(auto& atom:templateSetAtom) atom=nullptr;
-//	atom_undef_inbody.reserve(rule->getSizeBody());
 	is_ground_atom.clear();
 	findBindVariablesRule();
 	findSearchTable();
@@ -348,10 +350,15 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 #ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("Init");
 #endif
-	for(auto it=ground_rule->getBeginBody();it!=ground_rule->getEndBody();it++)
-		deleteGroundAtom(*it);
-	delete ground_rule;
-	ground_rule=new Rule(true, rule->getSizeHead(), rule->getSizeBody());
+	if(ground_rule==0){
+		ground_rule=new Rule(true, rule->getSizeHead(), rule->getSizeBody());
+	}
+	else{
+		for(auto it=ground_rule->getBeginBody();it!=ground_rule->getEndBody();it++)
+			deleteGroundAtom(*it);
+		delete ground_rule;
+		ground_rule=new Rule(true, rule->getSizeHead(), rule->getSizeBody());
+	}
 }
 
 void BackTrackingGrounder::findBindVariablesRule() {
@@ -430,102 +437,102 @@ void BackTrackingGrounder::removeBindValueInAssignment(const set_term& bind_vari
 
 
 bool BackTrackingGrounder::groundAggregate() {
-	Atom *aggregateAtom=templateSetAtom[index_current_atom];
-	Atom *ground_aggregate;
-	if(aggregateAtom->isAnAssigment() && ground_rule->getAtomInBody(index_current_atom)!=nullptr){
-		//An assignment is in the lower guard
-		//The atom is already grounded, just change the guard
-		ground_aggregate=ground_rule->getAtomInBody(index_current_atom);
-
-		bool finish=0;
-		int val=ground_aggregate->generateNextCombination(finish);
-		if(finish){
-			delete ground_atom_body[index_current_atom];
-			ground_atom_body[index_current_atom]=nullptr;
-			return false;
-		}
-
-		Term *term_value=new NumericConstantTerm(false,val);
-		termsMap->addTerm(term_value);
-		ground_aggregate->setFirstGuard(term_value);
-		current_var_assign.insert({aggregateAtom->getFirstGuard(),term_value});
-		return true;
-	}
-	//Atom is undef for printing the aggregate and check if is correct
-	atom_undef_inbody[index_current_atom]=true;
-	//Create a ground aggregate empty
-	ground_aggregate=new AggregateAtom(aggregateAtom->getFirstGuard(),aggregateAtom->getFirstBinop(),aggregateAtom->getSecondGuard(),aggregateAtom->getSecondBinop(),aggregateAtom->getAggregateFunction(),aggregateAtom->isNegative());
-	ResultEvaluation result=UNDEF;
-	for(unsigned i=0;i<aggregateAtom->getAggregateElementsSize()&&result==UNDEF;i++){
-
-		// For each atom in the aggregate element (is assumed to be one because the rewriting)
-		// search in the table of fact and nofact the extension and put in the ground aggregate all the extension
-		// with a new aggregate element
-		// For reasoning of correctness the current assignment have to be copied for maintaining the current assignment
-
-		Atom* atom=aggregateAtom->getAggregateElement(i)->getNafLiteral(0);
-		Predicate *predicate_atom=atom->getPredicate();
-		vector<unsigned> tablesToSearch={FACT,NOFACT};
-
-		for(unsigned j=0;j<tablesToSearch.size()&&result==UNDEF;j++){
-
-			unsigned table=tablesToSearch[j];
-			AtomSearcher *searcher=predicateExtTable->getPredicateExt(predicate_atom)->getAtomSearcher(table);
-			bool find=false,undef=false;
-			map_term_term copy_current_var_assign(current_var_assign);
-			unsigned id = searcher->firstMatch(atom,copy_current_var_assign,find,undef);
-			while(find){
-
-				Atom *groundAtom=nullptr;
-				atom->ground(copy_current_var_assign,groundAtom);
-				AggregateElement *ground_aggregateElement=new AggregateElement;
-				ground_aggregateElement->addNafLiterals(groundAtom);
-				//Add the id ground term in the ground aggregate element
-				for(auto term_aggregateElement:aggregateAtom->getAggregateElement(i)->getTerms())
-					ground_aggregateElement->addTerm(copy_current_var_assign[term_aggregateElement]);
-
-				ground_aggregate->addAggregateElement(ground_aggregateElement);
-				result=ground_aggregate->partialEvaluate();
-				if(result!=UNDEF)break;
-
-				copy_current_var_assign=current_var_assign;
-				searcher->nextMatch(id,atom,copy_current_var_assign,find,undef);
-			}
-		}
-	}
-
-	if(result==UNDEF)
-		result=ground_aggregate->finalEvaluate();
-
-	//If is a first assignment set the initial value of the guard to the partial value
-	if(ground_aggregate->isAnAssigment()){
-		bool finish=0;
-		int val=ground_aggregate->generateNextCombination(finish);
-		Term* term_value;
-		if(val==INT_MAX)
-			term_value=new StringConstantTerm(false,"#sup");
-		else if(val==INT_MIN)
-			term_value=new StringConstantTerm(false,"#inf");
-		else
-			term_value=new NumericConstantTerm(false,val);
-		termsMap->addTerm(term_value);
-		current_var_assign.insert({ground_aggregate->getFirstGuard(),term_value});
-		ground_aggregate->setFirstGuard(term_value);
-	}
-
-	delete ground_atom_body[index_current_atom];
-	ground_atom_body[index_current_atom]=0;
-
-	if(( ground_aggregate->getAggregateElementsSize()==0 && !aggregateAtom->isAnAssigment() ) || result!=UNDEF)
-	{
-		delete ground_aggregate;
-		if(result==UNSATISFY)
-			return false;
-		//Aggregate is satisfy
-		atom_undef_inbody[index_current_atom]=false;
-		return true;
-	}
-	ground_atom_body[index_current_atom]=ground_aggregate;
+//	Atom *aggregateAtom=templateSetAtom[index_current_atom];
+//	Atom *ground_aggregate;
+//	if(aggregateAtom->isAnAssigment() && ground_rule->getAtomInBody(index_current_atom)!=nullptr){
+//		//An assignment is in the lower guard
+//		//The atom is already grounded, just change the guard
+//		ground_aggregate=ground_rule->getAtomInBody(index_current_atom);
+//
+//		bool finish=0;
+//		int val=ground_aggregate->generateNextCombination(finish);
+//		if(finish){
+//			delete ground_atom_body[index_current_atom];
+//			ground_atom_body[index_current_atom]=nullptr;
+//			return false;
+//		}
+//
+//		Term *term_value=new NumericConstantTerm(false,val);
+//		termsMap->addTerm(term_value);
+//		ground_aggregate->setFirstGuard(term_value);
+//		current_var_assign.insert({aggregateAtom->getFirstGuard(),term_value});
+//		return true;
+//	}
+//	//Atom is undef for printing the aggregate and check if is correct
+//	atom_undef_inbody[index_current_atom]=true;
+//	//Create a ground aggregate empty
+//	ground_aggregate=new AggregateAtom(aggregateAtom->getFirstGuard(),aggregateAtom->getFirstBinop(),aggregateAtom->getSecondGuard(),aggregateAtom->getSecondBinop(),aggregateAtom->getAggregateFunction(),aggregateAtom->isNegative());
+//	ResultEvaluation result=UNDEF;
+//	for(unsigned i=0;i<aggregateAtom->getAggregateElementsSize()&&result==UNDEF;i++){
+//
+//		// For each atom in the aggregate element (is assumed to be one because the rewriting)
+//		// search in the table of fact and nofact the extension and put in the ground aggregate all the extension
+//		// with a new aggregate element
+//		// For reasoning of correctness the current assignment have to be copied for maintaining the current assignment
+//
+//		Atom* atom=aggregateAtom->getAggregateElement(i)->getNafLiteral(0);
+//		Predicate *predicate_atom=atom->getPredicate();
+//		vector<unsigned> tablesToSearch={FACT,NOFACT};
+//
+//		for(unsigned j=0;j<tablesToSearch.size()&&result==UNDEF;j++){
+//
+//			unsigned table=tablesToSearch[j];
+//			AtomSearcher *searcher=predicateExtTable->getPredicateExt(predicate_atom)->getAtomSearcher(table);
+//			bool find=false,undef=false;
+//			map_term_term copy_current_var_assign(current_var_assign);
+//			unsigned id = searcher->firstMatch(atom,copy_current_var_assign,find,undef);
+//			while(find){
+//
+//				Atom *groundAtom=nullptr;
+//				atom->ground(copy_current_var_assign,groundAtom);
+//				AggregateElement *ground_aggregateElement=new AggregateElement;
+//				ground_aggregateElement->addNafLiterals(groundAtom);
+//				//Add the id ground term in the ground aggregate element
+//				for(auto term_aggregateElement:aggregateAtom->getAggregateElement(i)->getTerms())
+//					ground_aggregateElement->addTerm(copy_current_var_assign[term_aggregateElement]);
+//
+//				ground_aggregate->addAggregateElement(ground_aggregateElement);
+//				result=ground_aggregate->partialEvaluate();
+//				if(result!=UNDEF)break;
+//
+//				copy_current_var_assign=current_var_assign;
+//				searcher->nextMatch(id,atom,copy_current_var_assign,find,undef);
+//			}
+//		}
+//	}
+//
+//	if(result==UNDEF)
+//		result=ground_aggregate->finalEvaluate();
+//
+//	//If is a first assignment set the initial value of the guard to the partial value
+//	if(ground_aggregate->isAnAssigment()){
+//		bool finish=0;
+//		int val=ground_aggregate->generateNextCombination(finish);
+//		Term* term_value;
+//		if(val==INT_MAX)
+//			term_value=new StringConstantTerm(false,"#sup");
+//		else if(val==INT_MIN)
+//			term_value=new StringConstantTerm(false,"#inf");
+//		else
+//			term_value=new NumericConstantTerm(false,val);
+//		termsMap->addTerm(term_value);
+//		current_var_assign.insert({ground_aggregate->getFirstGuard(),term_value});
+//		ground_aggregate->setFirstGuard(term_value);
+//	}
+//
+//	delete ground_atom_body[index_current_atom];
+//	ground_atom_body[index_current_atom]=0;
+//
+//	if(( ground_aggregate->getAggregateElementsSize()==0 && !aggregateAtom->isAnAssigment() ) || result!=UNDEF)
+//	{
+//		delete ground_aggregate;
+//		if(result==UNSATISFY)
+//			return false;
+//		//Aggregate is satisfy
+//		atom_undef_inbody[index_current_atom]=false;
+//		return true;
+//	}
+//	ground_atom_body[index_current_atom]=ground_aggregate;
 	return true;
 }
 
