@@ -75,7 +75,7 @@ void Rule::basicSortBody(){
 		//Find the variable for builtin and negative atom
 		unsigned index_current_atom=0;
 		for(auto current_atom:body){
-			if( ( current_atom->isBuiltIn() && current_atom->getBinop()!=EQUAL ) || current_atom->isNegative() ){
+			if( (current_atom->isBuiltIn() && current_atom->getBinop()!=EQUAL ) || current_atom->isNegative() ){
 				set_term variables=current_atom->getVariable();
 				builtin_negative_variable.insert({index_current_atom,variables});
 			}else if(current_atom->getBinop()==EQUAL ){
@@ -140,7 +140,7 @@ void  Rule::print(){
 		i++;
 	}
 	firstAtomPrinted=false;
-	if(body.size()>0 || isAStrongConstraint()){
+	if(areThereUndefinedAtomInBody() || isAStrongConstraint()){
 		cout<<":-";
 		unsigned int i=0;
 		for (auto atom:body) {

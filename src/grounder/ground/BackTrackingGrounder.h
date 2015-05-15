@@ -55,7 +55,7 @@ protected:
 	//Delete the atom at the given position and substitute it with the given atom at that position
 	void substiteInGroundRule(unsigned position, Atom* new_atom) {deleteGroundAtom(ground_rule->getAtomInBody(position)); ground_rule->setAtomInBody(position,new_atom); }
 
-protected:
+private:
 	/// Current assignment for grounding rule
 	/// The map of the assignment, map each variables to its assigned value
 	map_term_term current_var_assign;
