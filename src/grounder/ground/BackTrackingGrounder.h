@@ -51,7 +51,7 @@ protected:
 	void printAssignment();
 
 	//Delete the given atom if is a false negative atom or is an aggregate (atoms not present in PredicateExtension)
-	void deleteGroundAtom(Atom* atom) {if(atom!=nullptr && atom->isNegative()) delete atom; } //|| atom->getAggregateElementsSize()>0
+	void deleteGroundAtom(Atom* atom) {if(atom!=nullptr && (atom->isNegative() || atom->getAggregateElementsSize()>0)) delete atom; }
 	//Delete the atom at the given position and substitute it with the given atom at that position
 	void substiteInGroundRule(unsigned position, Atom* new_atom) {deleteGroundAtom(ground_rule->getAtomInBody(position)); ground_rule->setAtomInBody(position,new_atom); }
 
