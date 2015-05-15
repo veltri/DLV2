@@ -83,56 +83,53 @@ bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, map_term_term
 
 /****************************************************** BASE ATOM SEARCHER ***************************************************/
 
-unsigned int BaseAtomSearcher::firstMatch(Atom *templateAtom, map_term_term& currentAssignment, bool& find,bool &undef) {
+unsigned int BaseAtomSearcher::firstMatch(Atom *templateAtom, map_term_term& currentAssignment, Atom* atomFound) {
 	unsigned int id = ++counter;
 	GeneralIterator* currentMatch=computeGenericIterator(templateAtom);
-	if(searchForFirstMatch(currentMatch, templateAtom, currentAssignment,undef)){
-		find=true;
+	if(searchForFirstMatch(currentMatch, templateAtom, currentAssignment,atomFound)){
 		resultMap.insert({id,currentMatch});
 		return id;
 	}
 
 	delete currentMatch;
-	find=false;
 	return id;
 }
 
-bool BaseAtomSearcher::searchForFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term_term& currentAssignment,bool &undef){
+bool BaseAtomSearcher::searchForFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term_term& currentAssignment, Atom* atomFound){
 	//Call findIfAFactExist only if all the terms are bound
 	if(templateAtom->isGround()){
 		bool find=0;
-		findIfExist(templateAtom,find,undef);
+		findIfExist(templateAtom,atomFound);
 		return find;
 	}
 
 	//Compute the first match
-	bool find=computeMatch(currentMatch,templateAtom,currentAssignment);
-	if(find) undef=!currentMatch->currentItem()->isFact();
+	bool find=computeMatch(currentMatch,templateAtom,currentAssignment,atomFound);
 	return find;
 }
 
-bool BaseAtomSearcher::computeMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term_term& currentAssignment){
+bool BaseAtomSearcher::computeMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term_term& currentAssignment, Atom* atomFound){
 	for(;!currentMatch->isDone();currentMatch->next()){
-		if (checkMatch(currentMatch->currentItem(),templateAtom,currentAssignment))
+		if (checkMatch(currentMatch->currentItem(),templateAtom,currentAssignment)){
+			atomFound=currentMatch->currentItem();
 			return true;
+		}
 	}
+	atomFound=nullptr;
 	return false;
 }
 
-void BaseAtomSearcher::nextMatch(unsigned int id, Atom *templateAtom, map_term_term& currentAssignment, bool& find, bool &undef) {
+void BaseAtomSearcher::nextMatch(unsigned int id, Atom *templateAtom, map_term_term& currentAssignment, Atom* atomFound) {
 	GeneralIterator* currentMatch=resultMap.find(id)->second;
 	currentMatch->next();
-	computeMatch(currentMatch,templateAtom,currentAssignment);
+	computeMatch(currentMatch,templateAtom,currentAssignment,atomFound);
 
 	///Return the next matching atom retrieved from the integer identifier assigned by the firstMatch method
 	if(currentMatch->isDone()){
 		delete currentMatch;
 		resultMap.erase(id);
-		find=false;
 		return;
 	}
-	undef=!currentMatch->currentItem()->isFact();
-	find=true;
 }
 
 Atom* BaseAtomSearcher::findAtom(Atom *atom){
@@ -145,14 +142,8 @@ Atom* BaseAtomSearcher::findAtom(Atom *atom){
 	return nullptr;
 }
 
-void BaseAtomSearcher::findIfExist(Atom *templateAtom, bool& find, bool& isUndef) {
-	Atom* genericAtom=findAtom(templateAtom);
-	if(genericAtom!=nullptr){
-		isUndef=!genericAtom->isFact();
-		find=true;
-		return;
-	}
-	find=false;
+void BaseAtomSearcher::findIfExist(Atom *templateAtom, Atom* atomFound) {
+	atomFound=findAtom(templateAtom);
 }
 
 /****************************************************** SINGLE TERM ATOM SEARCH ***************************************************/

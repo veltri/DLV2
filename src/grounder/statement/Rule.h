@@ -27,8 +27,16 @@ namespace grounder{
 
 class Rule : public Indexable {
 public:
-	///Default constructor
-	Rule():Indexable(){};
+	Rule():Indexable(), ground(false) {};
+	Rule(bool g):Indexable(), ground(g) {};
+	Rule(bool g, unsigned sizeHead, unsigned sizeBody) : Indexable(), ground(g) {
+		head.reserve(sizeHead);
+		for(unsigned i=0;i<sizeHead;i++)
+			head.push_back(nullptr);
+		body.reserve(sizeBody);
+		for(unsigned i=0;i<sizeBody;i++)
+			body.push_back(nullptr);
+	};
 
 	///Getter method for body atoms
 	const vector<Atom*>& getBody() const {return body;}
@@ -84,6 +92,8 @@ public:
 
 	///Return the specific atom in the body
 	Atom* getAtomInBody(unsigned i) {return body[i];};
+	///Set the specific atom in the body
+	void setAtomInBody(unsigned i,Atom* atom) {body[i]=atom;};
 
 	///This method remove all the atoms in the body and in the head
 	void clear(){head.clear();body.clear();};
@@ -100,11 +110,17 @@ public:
 
 	///Destructor
 	~Rule(){
-		for(auto atom:head)
-			delete atom;
-		for(auto atom:body)
-			delete atom;
+		//The delete policy differs when the rule is not ground
+		if(!ground){
+			for(auto atom:head)
+				delete atom;
+			for(auto atom:body)
+				delete atom;
+		}
 	}
+
+	bool isGround() const;
+	void setGround(bool ground);
 
 private:
 
@@ -120,6 +136,8 @@ private:
 	vector<Atom*> head;
 	///Vector of the atoms in body
 	vector<Atom*> body;
+	//Boolean to set whether the rule is ground
+	bool ground;
 };
 
 

@@ -18,8 +18,12 @@ namespace grounder {
  */
 class BackTrackingGrounder : public ProgramGrounder {
 public:
-	BackTrackingGrounder():ProgramGrounder(),currentRule(0),index_current_atom(0),callFoundAssignment(0){};
-	virtual ~BackTrackingGrounder() { for(auto atom:templateSetAtom) delete atom; for(auto atom:ground_atom_body) {delete atom;atom=nullptr;}};
+	BackTrackingGrounder():ProgramGrounder(),currentRule(0),index_current_atom(0),callFoundAssignment(0),ground_rule(0) {};
+	virtual ~BackTrackingGrounder() {
+		for(auto atom:templateSetAtom) delete atom;
+		for(auto it=ground_rule->getBeginBody();it!=ground_rule->getEndBody();it++)
+			deleteGroundAtom(*it);
+	};
 
 protected:
 
@@ -46,6 +50,11 @@ protected:
 	/// Print the current assignment
 	void printAssignment();
 
+	//Delete the given atom if is a false negative atom or is an aggregate (atoms not present in PredicateExtension)
+	void deleteGroundAtom(Atom* atom) {if(atom->isNegative() || atom->getAggregateElementsSize()>0) delete atom;}
+	//Delete the atom at the given position and substitute it with the given atom at that position
+	void substiteInGroundRule(unsigned position, Atom* new_atom) {deleteGroundAtom(ground_rule->getAtomInBody(position)); ground_rule->setAtomInBody(position,new_atom);}
+
 protected:
 	/// Current assignment for grounding rule
 	/// The map of the assignment, map each variables to its assigned value
@@ -64,14 +73,11 @@ protected:
 	vector<Atom*>::iterator current_atom_it;
 	/// Current atom index for grounding rule
 	int index_current_atom;
-	//vector index atom and if is undefined
-	vector<bool> atom_undef_inbody;
 	//vector of bool if the atom is ground
 	vector<bool> is_ground_atom;
-	//vector of ground atom in body
-	vector<Atom*> ground_atom_body;
-
+	//Partially ground rule built
 	bool callFoundAssignment;
+	Rule* ground_rule;
 
 	/// Set of current templateAtom
 	vector<Atom*> templateSetAtom;

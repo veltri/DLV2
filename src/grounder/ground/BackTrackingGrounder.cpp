@@ -111,16 +111,22 @@ bool BackTrackingGrounder::firstMatch(){
 		//Initialize false for negative atom
 		bool undef=false;
 
-		unsigned id = searcher->firstMatch(templateAtom,current_var_assign,find,undef);
-		atom_undef_inbody[index_current_atom]=undef;
+		Atom* atomFound=nullptr;
+		unsigned id = searcher->firstMatch(templateAtom,current_var_assign,atomFound);
+		find=(atomFound!=nullptr);
+		undef=!atomFound->isFact();
+
 		if(templateAtom->isNegative() && find) find=!undef;
 
+		if(templateAtom->isNegative() && !find)
+			substiteInGroundRule(index_current_atom,atomFound);
 
 		if(find){
 
-			if(!isGroundCurrentAtom())
+			if(!isGroundCurrentAtom()){
+				substiteInGroundRule(index_current_atom,atomFound);
 				current_id_match[index_current_atom][current_table].second = id;
-			else{
+			}else{
 				current_id_match[index_current_atom][current_table].second = NO_MATCH;
 				current_id_match_iterator[index_current_atom]=0;
 			}
@@ -154,16 +160,17 @@ bool BackTrackingGrounder::nextMatch(){
 		unsigned tableToSearch = current_id_match[index_current_atom][current_table].first;
 		int current_id = current_id_match[index_current_atom][current_table].second;
 		AtomSearcher *searcher=predicateExtTable->getPredicateExt(templateAtom->getPredicate())->getAtomSearcher(tableToSearch);
-		bool undef = false;
+		Atom* atomFound=nullptr;
 
 		if(current_id != NO_MATCH)
-			searcher->nextMatch(current_id,templateAtom,current_var_assign,find,undef);
+			searcher->nextMatch(current_id,templateAtom,current_var_assign,atomFound);
 		else
-			current_id = searcher->firstMatch(templateAtom,current_var_assign,find,undef);
+			current_id = searcher->firstMatch(templateAtom,current_var_assign,atomFound);
 
-		atom_undef_inbody[index_current_atom]=undef;
+		find=(atomFound!=nullptr);
 
 		if(find){
+			substiteInGroundRule(index_current_atom,atomFound);
 			current_id_match[index_current_atom][current_table].second = current_id;
 #ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("N-Match "+boost::lexical_cast<string>(index_current_atom));
@@ -213,32 +220,32 @@ bool BackTrackingGrounder::foundAssignment() {
 #endif
 
 	callFoundAssignment=true;
-	Rule* groundRule=new Rule;
+//	Rule* groundRule=new Rule;
 	bool head_true= (currentRule->getSizeHead() <= 1 );
-	unsigned index_body_atom=0;
-	for(auto atom=currentRule->getBeginBody();atom!=currentRule->getEndBody();++atom,++index_body_atom){
-
-		if(!atom_undef_inbody[index_body_atom])
-			if((*atom)->getAggregateElementsSize()>0 || !( (*atom)->isNegative() && StatementDependency::getInstance()->isPredicateNegativeStratified((*atom)->getPredicate()->getIndex())))
-				continue;
-
-
-		if((*atom)->isBuiltIn())continue;
-		Atom *bodyGroundAtom=nullptr;
-
-		if((*atom)->getAggregateElementsSize()>0)
-			bodyGroundAtom=ground_atom_body[index_body_atom]->clone();
-		else
-			(*atom)->ground(current_var_assign,bodyGroundAtom);
-
-		groundRule->addInBody(bodyGroundAtom);
-
-	}
+//	unsigned index_body_atom=0;
+//	for(auto atom=currentRule->getBeginBody();atom!=currentRule->getEndBody();++atom,++index_body_atom){
+//
+//		if(!groundRule->getAtomInBody(index_body_atom)->isFact()) //if(!atom_undef_inbody[index_body_atom])
+//			if((*atom)->getAggregateElementsSize()>0 || !( (*atom)->isNegative() && StatementDependency::getInstance()->isPredicateNegativeStratified((*atom)->getPredicate()->getIndex())))
+//				continue;
+//
+//
+//		if((*atom)->isBuiltIn())continue;
+//		Atom *bodyGroundAtom=nullptr;
+//
+////		if((*atom)->getAggregateElementsSize()>0)
+////			bodyGroundAtom=ground_atom_body[index_body_atom]->clone();
+////		else
+////			(*atom)->ground(current_var_assign,bodyGroundAtom);
+//
+//		groundRule->addInBody(bodyGroundAtom);
+//
+//	}
 #ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("Body");
 		Timer::getInstance()->start("Head");
 #endif
-	head_true=head_true && groundRule->getSizeBody() <=0;
+	head_true=head_true && ground_rule->getSizeBody() <=0; // groundRule->getSizeBody() <=0;
 	bool ground_new_atom=false;
 	unsigned atom_counter=0;
 	Atom *searchAtom=0;
@@ -251,7 +258,7 @@ bool BackTrackingGrounder::foundAssignment() {
 
 		if(searchAtom==nullptr){
 			ground_new_atom = true;
-			groundRule->addInHead(headGroundAtom);
+			ground_rule->addInHead(headGroundAtom);
 
 			Atom *genericGroundAtom=new ClassicalLiteral(headGroundAtom->getPredicate(), false, false);
 			genericGroundAtom->setTerms(headGroundAtom->getTerms());
@@ -263,7 +270,7 @@ bool BackTrackingGrounder::foundAssignment() {
 			if(head_true)
 				searchAtom->setFact(true);
 
-			groundRule->addInHead(headGroundAtom);
+			ground_rule->addInHead(headGroundAtom);
 
 		}
 
@@ -272,11 +279,8 @@ bool BackTrackingGrounder::foundAssignment() {
 		Timer::getInstance()->stop("Head");
 #endif
 
-	if(!(groundRule->getSizeBody()==0 && groundRule->getSizeHead()==0 && !groundRule->isAStrongConstraint()) && !(head_true && searchAtom!=nullptr))
-		groundRule->print();
-
-	delete groundRule;
-
+	if(!(ground_rule->getSizeBody()==0 && ground_rule->getSizeHead()==0 && !ground_rule->isAStrongConstraint()) && !(head_true && searchAtom!=nullptr))
+		ground_rule->print();
 
 	if(currentRule->getSizeBody() > 0)
 		removeBindValueInAssignment(current_variables_atoms[index_current_atom]);
@@ -333,18 +337,21 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 	for(auto atom:templateSetAtom) delete atom;
 	templateSetAtom.resize(rule->getSizeBody());
 	for(auto& atom:templateSetAtom) atom=nullptr;
-	atom_undef_inbody.reserve(rule->getSizeBody());
+//	atom_undef_inbody.reserve(rule->getSizeBody());
 	is_ground_atom.clear();
 	findBindVariablesRule();
 	findSearchTable();
-	ground_atom_body.resize(rule->getSizeBody());
-	for(auto& atom:ground_atom_body)atom=nullptr;
+//	ground_atom_body.resize(rule->getSizeBody());
+//	for(auto& atom:ground_atom_body)atom=nullptr;
 	if(rule->getSizeBody()>0)
 		generateTemplateAtom();
 #ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("Init");
 #endif
-
+	for(auto it=ground_rule->getBeginBody();it!=ground_rule->getEndBody();it++)
+		deleteGroundAtom(*it);
+	delete ground_rule;
+	ground_rule=new Rule(true, rule->getSizeHead(), rule->getSizeBody());
 }
 
 void BackTrackingGrounder::findBindVariablesRule() {
@@ -378,7 +385,6 @@ void BackTrackingGrounder::findBindVariablesRule() {
 		Timer::getInstance()->stop("Find Bind");
 #endif
 }
-
 
 void BackTrackingGrounder::findSearchTable() {
 #ifdef DEBUG_RULE_TIME
@@ -426,10 +432,10 @@ void BackTrackingGrounder::removeBindValueInAssignment(const set_term& bind_vari
 bool BackTrackingGrounder::groundAggregate() {
 	Atom *aggregateAtom=templateSetAtom[index_current_atom];
 	Atom *ground_aggregate;
-	if(aggregateAtom->isAnAssigment() && ground_atom_body[index_current_atom]!=nullptr){
+	if(aggregateAtom->isAnAssigment() && ground_rule->getAtomInBody(index_current_atom)!=nullptr){
 		//An assignment is in the lower guard
 		//The atom is already grounded, just change the guard
-		ground_aggregate=ground_atom_body[index_current_atom];
+		ground_aggregate=ground_rule->getAtomInBody(index_current_atom);
 
 		bool finish=0;
 		int val=ground_aggregate->generateNextCombination(finish);
