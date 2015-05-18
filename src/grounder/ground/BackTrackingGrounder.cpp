@@ -243,20 +243,16 @@ bool BackTrackingGrounder::foundAssignment() {
 		if(searchAtom==nullptr){
 			ground_new_atom = true;
 
-			Atom *genericGroundAtom=new ClassicalLiteral(headGroundAtom->getPredicate(), false, false);
-			genericGroundAtom->setTerms(headGroundAtom->getTerms());
-			genericGroundAtom->setFact(head_true);
+			headGroundAtom->setFact(head_true);
 			for(unsigned i=0;i<predicate_searchInsert_table[atom_counter].size();++i)
-				predicateExt->addAtom(predicate_searchInsert_table[atom_counter][i],genericGroundAtom);
-
-			ground_rule->setAtomInHead(atom_counter,genericGroundAtom);
-		}else{
-
-			if(head_true)
-				searchAtom->setFact(true);
+				predicateExt->addAtom(predicate_searchInsert_table[atom_counter][i],headGroundAtom);
 
 			ground_rule->setAtomInHead(atom_counter,headGroundAtom);
-
+		}else{
+			delete headGroundAtom;
+			if(head_true)
+				searchAtom->setFact(true);
+			ground_rule->setAtomInHead(atom_counter,searchAtom);
 		}
 
 	}
@@ -319,7 +315,7 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 	current_atom_it = currentRule->getBeginBody();
 	index_current_atom = 0;
 	callFoundAssignment = false;
-	for(auto atom:templateSetAtom) delete atom;
+	for(auto atom:templateSetAtom) {atom->deleteAtoms(); delete atom;}
 	templateSetAtom.resize(rule->getSizeBody());
 	for(auto& atom:templateSetAtom) atom=nullptr;
 	is_ground_atom.clear();
