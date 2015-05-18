@@ -123,7 +123,7 @@ public:
 	/// This method compute all possible orderings among components
 	void computeAllPossibleOrdering(vector<vector<unsigned int>>& componentsOrderings);
 
-	bool isPredicateNegativeStratified(index_object predicate);
+	bool isPredicateNotStratified(index_object predicate);
 
 	///Getter for the components mapping
 	const unordered_map<index_object, unsigned int>& getComponent() const {	return componentDependency;}
@@ -175,8 +175,8 @@ public:
 	/// the predicates in the head of the recursive rules of the ith component
 	void createComponentGraphAndComputeAnOrdering(vector<vector<Rule*>>& exitRules, vector<vector<Rule*>>& recursiveRules,vector<unordered_set<index_object>>& componentPredicateInHead);
 
-	/// Return true id the predicate isn't recursive with negation not stratified
-	bool isPredicateNegativeStratified(index_object predicate){return compGraph.isPredicateNegativeStratified(predicate);};
+	/// Return true if the predicate is recursive with negation not stratified
+	bool isPredicateNotStratified(index_object predicate){return compGraph.isPredicateNotStratified(predicate);};
 
 
 	/// This method returns the number of rules in the program

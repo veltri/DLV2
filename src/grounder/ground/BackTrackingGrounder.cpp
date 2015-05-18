@@ -117,12 +117,16 @@ bool BackTrackingGrounder::firstMatch(){
 		if(atomFound!=nullptr)
 			undef=!atomFound->isFact();
 
-		if(templateAtom->isNegative() && find) find=!undef;
+		if(templateAtom->isNegative() && find)
+			find=!undef;
 
 		if(templateAtom->isNegative() && !find){
 			atomFound=templateAtom->clone();
 			substiteInGroundRule(index_current_atom,atomFound);
-			ground_rule->setAtomToSimplifyInBody(index_current_atom,!undef);
+			if(StatementDependency::getInstance()->isPredicateNotStratified(atomFound->getPredicate()->getIndex()))
+				ground_rule->setAtomToSimplifyInBody(index_current_atom,false);
+			else
+				ground_rule->setAtomToSimplifyInBody(index_current_atom,!undef);
 		}
 
 		if(find){

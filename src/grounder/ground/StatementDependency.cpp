@@ -398,7 +398,7 @@ void ComponentGraph::createComponent(DependencyGraph &depGraph,
 
 }
 
-bool ComponentGraph::isPredicateNegativeStratified(index_object predicate){
+bool ComponentGraph::isPredicateNotStratified(index_object predicate){
 	return predicateUnstratified.count(predicate);
 }
 
