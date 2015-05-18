@@ -21,9 +21,14 @@ namespace grounder{
 	}
 
 	void AggregateElement::clearNafLiterals() {
+		for(auto atom:nafLiterals)
+			delete atom;
 		nafLiterals.clear();
 	}
-}
 
-}
+	void AggregateElement::deleteAtoms() {
+		for(auto atom:nafLiterals)
+			delete atom;
+	}
+}}
 

@@ -213,6 +213,9 @@ public:
 	virtual void ground(map_term_term& substritutionTerm,Atom*& templateAtom);
 	///Printer method
 	virtual void print() = 0;
+
+	virtual void deleteAtoms() {};
+
 	///Destructor
 	virtual ~Atom() {};
 

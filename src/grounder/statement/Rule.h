@@ -131,10 +131,12 @@ public:
 		if(!ground){
 			for(auto atom:head)
 				delete atom;
-			for(auto atom:body)
+			for(auto atom:body){
+				atom->deleteAtoms();
 				delete atom;
+			}
 		}
-		if(ground){
+		else{
 			delete[] simplifiedBody;
 			delete[] simplifiedHead;
 		}

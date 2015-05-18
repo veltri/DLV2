@@ -141,6 +141,8 @@ public:
 	///Printer method
 	void print();
 
+	virtual void deleteAtoms() {for(auto& aggregateElem:aggregateElements) aggregateElem->deleteAtoms();};
+
 	~AggregateAtom() {for(auto& aggregateElem:aggregateElements) delete aggregateElem;};
 
 private:

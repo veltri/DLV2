@@ -53,8 +53,10 @@ class AggregateElement {
 		/// Remove all terms
 		void clearTerms(){terms.clear();}
 
+		void deleteAtoms();
+
 		//Destructor
-		virtual ~AggregateElement() {};
+		~AggregateElement() {};
 
 	private:
 		///Vector of terms

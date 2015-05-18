@@ -20,9 +20,10 @@ class BackTrackingGrounder : public ProgramGrounder {
 public:
 	BackTrackingGrounder():ProgramGrounder(),currentRule(0),index_current_atom(0),callFoundAssignment(0),ground_rule(0) {};
 	virtual ~BackTrackingGrounder() {
-		for(auto atom:templateSetAtom) delete atom;
-//		for(auto it=ground_rule->getBeginBody();it!=ground_rule->getEndBody();it++)
-//			deleteGroundAtom(*it);
+		for(auto atom:templateSetAtom) {atom->deleteAtoms(); delete atom;}
+		for(auto it=ground_rule->getBeginBody();it!=ground_rule->getEndBody();it++)
+			deleteGroundAtom(*it);
+		delete ground_rule;
 	};
 
 protected:
@@ -51,7 +52,7 @@ protected:
 	void printAssignment();
 
 	//Delete the given atom if is a false negative atom or is an aggregate (atoms not present in PredicateExtension)
-	void deleteGroundAtom(Atom* atom) {if(atom!=nullptr && (atom->isNegative() || atom->getAggregateElementsSize()>0)) delete atom; }
+	void deleteGroundAtom(Atom* atom) {if(atom!=nullptr && (atom->isNegative() || atom->getAggregateElementsSize()>0)) {delete atom;} }
 	//Delete the atom at the given position and substitute it with the given atom at that position
 	void substiteInGroundRule(unsigned position, Atom* new_atom) {deleteGroundAtom(ground_rule->getAtomInBody(position)); ground_rule->setAtomInBody(position,new_atom); }
 
