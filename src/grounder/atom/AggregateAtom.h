@@ -143,6 +143,10 @@ public:
 
 	virtual void deleteAtoms() {for(auto& aggregateElem:aggregateElements) aggregateElem->deleteAtoms();};
 
+	virtual bool isAssignment(){return assignment;};
+
+	virtual void setAssignment(bool assigment){this->assigment=assigment;};
+
 	~AggregateAtom() {for(auto& aggregateElem:aggregateElements) delete aggregateElem;};
 
 private:

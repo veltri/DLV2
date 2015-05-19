@@ -132,6 +132,9 @@ public:
 	///This method evaluate the truth value of the built-in atom, if there is bind variable
 	/// and equal then assign that value for the bind variable
 	virtual bool evaluate(map_term_term& substitutionTerm){return false;};
+	///Return true if the built in assign value in term, else compare the variable like ==
+	virtual bool isAssignment(){return true;};
+	virtual void setAssignment(bool assigment){};
 	/*****************************************************/
 
 	/******** Methods useful for AggregateAtom ********/

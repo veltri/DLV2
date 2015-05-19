@@ -74,6 +74,10 @@ public:
 	/// Substitute the term and return a new Atom with term substituted
 	virtual void substitute(map_term_term& substritutionTerm,Atom*& templateAtom);
 
+	virtual bool isAssignment(){return assignment;};
+
+	virtual void setAssignment(bool assigment){this->assigment=assigment;};
+
 
 	///Destructor
 	~BuiltInAtom() {};
@@ -84,6 +88,9 @@ private:
 	///Negated with true negation
 	bool negative;
 	//For the vector of terms, notice that the vector contains the terms in the same order as they appear: the first term in position 0, the second in position 1.
+
+	//Is true if the built in assign value in term, else compare the variable like ==
+	bool assignment;
 };
 
 };

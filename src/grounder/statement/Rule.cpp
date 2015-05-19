@@ -49,6 +49,7 @@ static bool insertVariables(Atom* atom,set_term& variables,bool anonymusSafe)
 
 bool Rule::isSafe()
 {
+	//TODO CALCULATE Z VARIABLE AND SET ASSIGNMENT
 	set_term variableToCheck;
 	set_term variableInPositiveAtom;
 	for(auto atom:head)
