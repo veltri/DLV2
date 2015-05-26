@@ -62,7 +62,7 @@ class AggregateElement {
 		///Vector of terms
 		vector<Term*> terms;
 		///Vector of naf literals
-		// Notice that the atoms must be naf literals, so either classical literals or built-in atoms FIXME
+		// Notice that the atoms must be naf literals, so either classical literals or built-in atoms
 		vector<Atom*> nafLiterals;
 };
 

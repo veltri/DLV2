@@ -24,26 +24,30 @@ class BuiltInAtom: public Atom {
 public:
 
 	///Default constructor
-	BuiltInAtom(): binop(Binop::NONE_OP), negative(false) {};
+	BuiltInAtom(): binop(Binop::NONE_OP), negative(false), assignment(false) {}
 
 	/** Constructor
 	 * @param binop set the binary operation @see Binop
 	 * @param negative set whether the atom is negated with negation as failure
 	 * @param firstTerm set the first term
 	 * @param secondTerm set the second term
+	 * Notice that the vector of terms contains the terms in the same order as they appear: the first term in position 0, the second in position 1.
 	 */
-	BuiltInAtom(Binop binOperation, bool isNegative, Term* firstTerm, Term* secondTerm): binop(binOperation), negative(isNegative) { terms.push_back(firstTerm);terms.push_back(secondTerm);};
+	BuiltInAtom(Binop binOperation, bool isNegative, Term* firstTerm, Term* secondTerm): binop(binOperation), negative(isNegative), assignment(false) {
+		terms.push_back(firstTerm);
+		terms.push_back(secondTerm);
+	}
 
 	/** Constructor
 	 * @param binop set the binary operation @see Binop
 	 * @param negative set whether the atom is negated with negation as failure
 	 * @param termsVec set the terms
 	 */
-	BuiltInAtom(Binop binOperation, bool isNegative, vector<Term*>& termsVec): Atom(termsVec), binop(binOperation), negative(isNegative) {};
+	BuiltInAtom(Binop binOperation, bool isNegative, vector<Term*>& termsVec): Atom(termsVec), binop(binOperation), negative(isNegative), assignment(false) {}
 
-	BuiltInAtom(Binop binOperation, bool isNegative): Atom(), binop(binOperation), negative(isNegative) {};
+	BuiltInAtom(Binop binOperation, bool isNegative): Atom(), binop(binOperation), negative(isNegative), assignment(false) {}
 
-	Atom* clone() { Atom* atom = new BuiltInAtom(this->binop,this->negative); atom->setTerms(this->terms); return atom; };
+	Atom* clone() { Atom* atom = new BuiltInAtom(this->binop,this->negative); atom->setTerms(this->terms); atom->setAssignment(assignment); return atom; }
 
 	///Getter method for the binary operation
 	Binop getBinop() const {return binop;};
@@ -75,9 +79,7 @@ public:
 	virtual void substitute(map_term_term& substritutionTerm,Atom*& templateAtom);
 
 	virtual bool isAssignment(){return assignment;};
-
 	virtual void setAssignment(bool assignment){this->assignment=assignment;};
-
 
 	///Destructor
 	~BuiltInAtom() {};
@@ -87,9 +89,7 @@ private:
 	Binop binop;
 	///Negated with true negation
 	bool negative;
-	//For the vector of terms, notice that the vector contains the terms in the same order as they appear: the first term in position 0, the second in position 1.
-
-	//Is true if the built in assign value in term, else compare the variable like ==
+	//Is true if the built-in assigns value to a term, false if it is a comparison (like ==)
 	bool assignment;
 };
 

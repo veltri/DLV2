@@ -28,8 +28,7 @@ public:
 
 	///Default constructor
 	AggregateAtom(): firstBinop(Binop::NONE_OP), secondBinop(Binop::NONE_OP), aggregateFunction(AggregateFunction::NONE), negative(false),
-		partialEvaluation(0), undefAtomEvaluation(0), firstGuard(nullptr), secondGuard(nullptr){
-	};
+		partialEvaluation(0), undefAtomEvaluation(0), firstGuard(nullptr), secondGuard(nullptr), assignment(false){};
 
 	/** Constructor
 		 * @param f set the first term of comparison
@@ -41,17 +40,18 @@ public:
 		 * @param negative set whether the atom is negated with negation as failure
 		 */
 	AggregateAtom(Term* f, Binop fB, Term* s, Binop sB, AggregateFunction aF, vector<AggregateElement*> aE, bool n):
-		firstBinop(fB), secondBinop(sB), aggregateElements(move(aE)), negative(n), partialEvaluation(0), undefAtomEvaluation(0), firstGuard(f), secondGuard(s) {
+		firstBinop(fB), secondBinop(sB), aggregateElements(move(aE)), negative(n), partialEvaluation(0), undefAtomEvaluation(0), firstGuard(f), secondGuard(s), assignment(false) {
 		setAggregateFunction(aF);
 	}
 
 	AggregateAtom(Term* f, Binop fB, Term* s, Binop sB, AggregateFunction aF, bool n):
-		firstBinop(fB), secondBinop(sB), negative(n),partialEvaluation(0), undefAtomEvaluation(0), firstGuard(f), secondGuard(s) {
+		firstBinop(fB), secondBinop(sB), negative(n),partialEvaluation(0), undefAtomEvaluation(0), firstGuard(f), secondGuard(s), assignment(false) {
 		setAggregateFunction(aF);
 	}
 
 	Atom* clone() {
 		Atom* atom = new AggregateAtom(firstGuard,firstBinop,secondGuard,secondBinop,aggregateFunction,negative);
+		atom->setAssignment(assignment);
 		atom->setTerms(this->terms);
 		for(auto agg_element:aggregateElements)
 			atom->addAggregateElement(agg_element->clone());
@@ -144,7 +144,6 @@ public:
 	virtual void deleteAtoms() {for(auto& aggregateElem:aggregateElements) aggregateElem->deleteAtoms();};
 
 	virtual bool isAssignment(){return assignment;};
-
 	virtual void setAssignment(bool assignment){this->assignment=assignment;};
 
 	~AggregateAtom() {for(auto& aggregateElem:aggregateElements) delete aggregateElem;};
@@ -168,10 +167,11 @@ private:
 	Term* firstGuard;
 	///The second (or upper) guard)
 	Term* secondGuard;
+	//Is true if the aggregate atom assigns value to a term, false if it is a comparison (like ==)
+	bool assignment;
 
 	///Return the evaluation if the aggregate is not negated else invert the evaluation
 	ResultEvaluation returnEvaluation(ResultEvaluation evaluation);
-
 	///Partial evaluate the count aggregate
 	ResultEvaluation partialEvaluateCount();
 	///Partial evaluate the max aggregate
@@ -180,7 +180,6 @@ private:
 	ResultEvaluation partialEvaluateMin();
 	///Partial evaluate the sum aggregate
 	ResultEvaluation partialEvaluateSum();
-
 	///Final evaluate the count aggregate
 	ResultEvaluation finalEvaluateCount();
 	///Final evaluate the max aggregate
@@ -207,8 +206,6 @@ private:
 	///Get the sum of undef and true evaluation with sum and count, the maximum between undef and true with max,the minimun between undef and true with min
 	int getCheckValue();
 
-
-	bool assignment;
 };
 
 }}
