@@ -70,7 +70,119 @@ bool Rule::isSafe()
 	return true;
 }
 
+
+unordered_multimap<Term*,unsigned> Rule::findPossibleBind(){
+
+	unordered_multimap<Term*,unsigned> possible_bind;
+	int atom_counter=0;
+	//First add all variable in positive atom
+	for(auto atom=getBeginBody();atom!=getEndBody();++atom,++atom_counter){
+		Atom* current_atom=*atom;
+		if(!(current_atom->isBuiltIn() || current_atom->isNegative() || current_atom->getAggregateElementsSize()>0)) {
+
+			for (Term *variable:current_atom->getVariable())
+				possible_bind.insert({variable, atom_counter});
+		}
+
+	}
+
+	//Second find the not cyclic assignments in built-in and aggregate atoms
+	atom_counter=0;
+	unordered_set<unsigned> cyclic_assignment;
+	vector<unsigned> aggregates_positions;
+	for(auto atom=getBeginBody();atom!=getEndBody();++atom,++atom_counter){
+		Atom *current_atom = *atom;
+
+		if (current_atom->isBuiltIn() && current_atom->getBinop() == Binop::EQUAL) {
+			//If one term is ground or is in possible_bind
+			Term *firstGuard = current_atom->getTerm(0);
+			Term *secondGuard = current_atom->getTerm(1);
+
+
+			if ( ( firstGuard->isGround() && !secondGuard->isGround() ) ||
+					(possible_bind.count(firstGuard) && ! possible_bind.count(secondGuard))) {
+
+				possible_bind.insert({secondGuard,atom_counter});
+				current_atom->setAssignment(true);
+			}else if ( ( !firstGuard->isGround() && secondGuard->isGround() ) ||
+					(possible_bind.count(secondGuard) && ! possible_bind.count(firstGuard))) {
+
+				possible_bind.insert({firstGuard,atom_counter});
+				current_atom->setAssignment(true);
+
+			}//Cyclic dependency
+			else if(!possible_bind.count(secondGuard) && ! possible_bind.count(firstGuard))
+				cyclic_assignment.insert(atom_counter);
+		}//The aggregate assignment must be at the second
+		else if(current_atom->getAggregateElementsSize()>0 && current_atom->getFirstBinop()==Binop::EQUAL){
+			//If the guard is not in possible_bind
+			if(!possible_bind.count(current_atom->getFirstGuard())){
+
+				possible_bind.insert({current_atom->getFirstGuard(),atom_counter});
+				current_atom->setAssignment(true);
+				aggregates_positions.push_back(atom_counter);
+			}
+		}
+
+
+	}
+
+	//For cyclic dependencies, try to find the order of evaluation of cyclic built-in and remove
+	// at each iteration one built-in until cyclic_assignment is empty
+	while(cyclic_assignment.size()>0){
+		unordered_set<unsigned> deleted_builtin;
+		for(auto cyclic_builtin:cyclic_assignment){
+			Atom *current_atom = body[cyclic_builtin];
+			Term *firstGuard = current_atom->getTerm(0);
+			Term *secondGuard = current_atom->getTerm(1);
+			Term *bind_guard=nullptr;
+			if ( possible_bind.count(firstGuard) && ! possible_bind.count(secondGuard))
+				bind_guard=secondGuard;
+			else if ( possible_bind.count(secondGuard) && ! possible_bind.count(firstGuard))
+				bind_guard=firstGuard;
+			if(bind_guard!=nullptr){
+
+				possible_bind.insert({bind_guard,cyclic_builtin});
+				current_atom->setAssignment(true);
+				deleted_builtin.insert(cyclic_builtin);
+			}
+		}
+		for(auto element:deleted_builtin){cyclic_assignment.erase(element);}
+	}
+
+	//If an assignment aggregate have the guard in some built-in the aggregate is not an assignment
+	for(auto aggregate_position:aggregates_positions){
+		auto range_term_atom=possible_bind.equal_range(body[aggregate_position]->getFirstGuard());
+		for(auto it=range_term_atom.first;it!=range_term_atom.second;++it){
+			if(!body[it->second]->getAggregateElementsSize()>0){
+				body[aggregate_position]->setAssignment(false);
+				break;
+			}
+
+		}
+	}
+	return possible_bind;
+}
+
+void Rule::findAtomDependency(){
+}
+
+
 void Rule::basicSortBody(){
+
+	unordered_multimap<Term*,unsigned int> possible_bind=findPossibleBind();
+	for(auto term_atom:possible_bind)
+	{
+		term_atom.first->print();cout<<" "<<term_atom.second<<endl;
+	}
+	for(auto atom=getBeginBody();atom!=getEndBody();++atom) {
+		cout<<(*atom)->isAssignment()<<" ";
+	}
+	cout<<endl;
+
+}
+
+/*void Rule::basicSortBody(){
 	if(!this->getPositivePredicateIndexInBody().empty()){
 		unordered_map<unsigned,set_term> builtin_negative_variable;
 		//Find the variable for builtin and negative atom
@@ -124,10 +236,13 @@ void Rule::basicSortBody(){
 		setBody(body_ordered);
 	}
 
-}
+}*/
 
 
 void  Rule::print(){
+
+	//Print for debug
+	if(!ground){printNonGround();return;}
 	unsigned int i=0;
 	bool firstAtomPrinted=false;
 	for (auto atom:head) {
@@ -152,6 +267,27 @@ void  Rule::print(){
 				if(!firstAtomPrinted)
 					firstAtomPrinted=true;
 			}
+			i++;
+		}
+	}
+	cout<<"."<<endl;
+}
+
+void Rule::printNonGround(){
+	unsigned int i=0;
+	for (auto atom:head) {
+		atom->print();
+		if(i!=head.size()-1)
+			cout<<";";
+		i++;
+	}
+	if(body.size()>0 || isAStrongConstraint()){
+		cout<<":-";
+		unsigned int i=0;
+		for (auto atom:body) {
+			atom->print();
+			if(i!=body.size()-1)
+				cout<<";";
 			i++;
 		}
 	}

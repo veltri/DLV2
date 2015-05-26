@@ -133,7 +133,7 @@ public:
 	/// and equal then assign that value for the bind variable
 	virtual bool evaluate(map_term_term& substitutionTerm){return false;};
 	///Return true if the built in assign value in term, else compare the variable like ==
-	virtual bool isAssignment(){return true;};
+	virtual bool isAssignment(){return false;};
 	virtual void setAssignment(bool assigment){};
 	/*****************************************************/
 

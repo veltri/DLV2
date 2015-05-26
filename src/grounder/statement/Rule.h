@@ -168,6 +168,15 @@ private:
 	bool* simplifiedHead;
 	///An array containing true at a position in the body if that atom has to be simplified, false otherwise
 	bool* simplifiedBody;
+
+	///Find all possible bind in the rule and set a builtin ord aggregate if is assignment
+	/// Return for each atom in the body all the variable possible bind
+	/// A variable is possible bind if is in a positive atom or is an assignment of builtin or aggregate
+	unordered_multimap<Term*,unsigned> findPossibleBind();
+
+	void findAtomDependency();
+
+	void printNonGround();
 };
 
 
