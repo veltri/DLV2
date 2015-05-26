@@ -76,7 +76,7 @@ public:
 
 	virtual bool isAssignment(){return assignment;};
 
-	virtual void setAssignment(bool assigment){this->assigment=assigment;};
+	virtual void setAssignment(bool assignment){this->assignment=assignment;};
 
 
 	///Destructor
