@@ -174,9 +174,17 @@ private:
 	/// A variable is possible bind if is in a positive atom or is an assignment of builtin or aggregate
 	unordered_multimap<Term*,unsigned> findPossibleBind();
 
-	void findAtomDependency();
+	/// Find the dependency between positive atom and negative,built-in and aggregate (that are not assignment).
+	/// This dependency are used for establish the order of the negative,built-in and aggregate (that are not assignment)
+	/// And add for each negative,built-in and aggregate the variables that contain
+	unordered_multimap<unsigned int, unordered_multimap<unsigned int, Term *>> findAtomDependencyBoundVariables(const unordered_multimap<Term *, unsigned> &possible_bind, unordered_map<unsigned,set_term>& boundVariables);
 
 	void printNonGround();
+
+	///Delete the dependency of the current atom with the negative,built in and aggregate
+	void deleteDependencyAtom(unordered_map<unsigned int, set_term> &boundVariables,
+                              const unordered_multimap<unsigned int, unordered_multimap<unsigned int, Term *>> &atom_dep,
+                              vector<Atom *> &body_ordered, unsigned int atom_counter,list<unsigned>& atomToAddInBody) const;
 };
 
 

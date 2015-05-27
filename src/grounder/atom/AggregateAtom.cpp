@@ -44,15 +44,27 @@ static string getBinopToStrng(Binop binop){
 }
 
 set_term AggregateAtom::getVariable(){
-	set_term variables;
-	if(firstBinop!= NONE_OP && firstGuard->getType()==TermType::VARIABLE)
-		variables.insert(firstGuard);
-	if(secondBinop != NONE_OP && secondGuard->getType()==TermType::VARIABLE)
-		variables.insert(secondGuard);
+
+	set_term variables=getGuardVariable();
+
+	for(auto element:aggregateElements)
+		Atom::getVariables(element->getNafLiterals(),variables);
+
 
 	return variables;
+
+
 }
 
+set_term AggregateAtom::getGuardVariable(){
+		set_term variables;
+		if(firstBinop!= NONE_OP && firstGuard->getType()==TermType::VARIABLE)
+			variables.insert(firstGuard);
+		if(secondBinop != NONE_OP && secondGuard->getType()==TermType::VARIABLE)
+			variables.insert(secondGuard);
+
+		return variables;
+}
 
 size_t AggregateAtom::hash() {
 	return 0; //TODO

@@ -349,7 +349,13 @@ void BackTrackingGrounder::findBindVariablesRule() {
 	//For each atom determines the bound and the bind variables
 	for (auto current_atom_it = currentRule->getBeginBody(); current_atom_it != currentRule->getEndBody(); ++current_atom_it,++index_current_atom) {
 		Atom *current_atom = *current_atom_it;
-		set_term variablesInAtom = current_atom->getVariable();
+		set_term variablesInAtom ;
+
+		if(current_atom->getAggregateElementsSize()>0)
+			variablesInAtom=current_atom->getGuardVariable();
+		else
+			variablesInAtom=current_atom->getVariable();
+
 		current_variables_atoms.push_back(set_term());
 
 		for (auto variable : variablesInAtom) {

@@ -184,8 +184,11 @@ public:
 	virtual int getUndefEvaluation(){return 0;};
 
 
+	//Return the variable in the guard of an aggregate
+	virtual set_term getGuardVariable(){return set_term();};
 
-	///return true if one guard is an equal
+
+		///return true if one guard is an equal
 	virtual bool isAnAssigment(){return false;};
 
 	virtual int generateNextCombination(bool& finish) {return 0;};

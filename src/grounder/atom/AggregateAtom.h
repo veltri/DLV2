@@ -67,6 +67,8 @@ public:
 
 	virtual set_term getVariable();
 
+	virtual set_term getGuardVariable();
+
 	///Getter method for the aggregate elements
 	vector<AggregateElement*> getAggregateElements() {return aggregateElements;};
 	///Getter method for the i-th aggregate element
