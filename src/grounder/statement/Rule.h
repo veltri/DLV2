@@ -23,8 +23,6 @@ namespace grounder{
  * @brief This class represents a rule with its body and head atoms
  */
 
-
-
 class Rule : public Indexable {
 public:
 	Rule():Indexable(), ground(false), simplifiedHead(0), simplifiedBody(0)  {};

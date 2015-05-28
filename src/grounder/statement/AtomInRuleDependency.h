@@ -5,11 +5,9 @@
 #ifndef DLV2_ATOMINRULEDEPENDENCY_H
 #define DLV2_ATOMINRULEDEPENDENCY_H
 
-
 #include "Rule.h"
 
 using namespace std;
-
 
 namespace DLV2{
 namespace grounder {
@@ -26,12 +24,11 @@ public:
  private:
     Rule *rule;
     unordered_map <unsigned int, set_term> boundVariables;
-    const unordered_multimap <unsigned int, unordered_multimap<unsigned int, Term *>> atom_dependency;
+    unordered_multimap <unsigned int, unordered_multimap<unsigned int, Term *>> atom_dependency;
     unordered_multimap<Term *, unsigned> possible_bind;
 };
 
 
-}
-}
+}}
 
 #endif //DLV2_ATOMINRULEDEPENDENCY_H
