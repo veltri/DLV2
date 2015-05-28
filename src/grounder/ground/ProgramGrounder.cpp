@@ -47,7 +47,9 @@ void ProgramGrounder::ground() {
 
 		// Ground exit rules
 		for (Rule* r : exitRules[component]){
-			r->basicSortBody();
+			OrderRule orderRule(r);
+//			r->basicSortBody();
+			orderRule.order();
 			inizializeSearchInsertPredicate(r);
 			groundRule(r);
 #ifdef DEBUG_RULE_TIME

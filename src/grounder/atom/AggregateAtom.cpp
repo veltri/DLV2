@@ -449,6 +449,26 @@ void AggregateAtom::changeInStandardFormat() {
 	}
 }
 
+set_term AggregateAtom::getSharedVariable(Rule* rule) {
+	set_term sharedTerms;
+	set_term terms=getVariable();
+	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();++atom){
+		Atom* current_atom=*atom;
+		set_term variables;
+		if(current_atom!=this){
+			if(current_atom->getAggregateElementsSize()>0 && current_atom->getFirstBinop()==EQUAL)
+				variables=current_atom->getGuardVariable();
+			else if(!current_atom->isNegative() || (current_atom->isBuiltIn() && current_atom->getBinop()==EQUAL))
+				variables=current_atom->getVariable();
+			else
+				continue;
+			for(auto variable:variables)
+				if(terms.count(variable))
+					sharedTerms.insert(variable);
+		}
+	}
+	return sharedTerms;
+}
 
 int AggregateAtom::getCheckValue() {
 	int value = partialEvaluation + undefAtomEvaluation;

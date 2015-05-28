@@ -11,6 +11,8 @@
 #include <vector>
 #include "Atom.h"
 #include <limits.h>
+#include "../statement/Rule.h"
+
 
 using namespace std;
 
@@ -147,6 +149,8 @@ public:
 
 	virtual bool isAssignment(){return assignment;};
 	virtual void setAssignment(bool assignment){this->assignment=assignment;};
+
+	set_term getSharedVariable(Rule* rule);
 
 	~AggregateAtom() {for(auto& aggregateElem:aggregateElements) delete aggregateElem;};
 
