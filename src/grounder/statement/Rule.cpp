@@ -15,13 +15,13 @@ namespace grounder{
 
 set_predicate Rule::calculatePredicate(vector<Atom*>& atoms,bool checkNegative,bool negative){
 	set_predicate predicates;
-	for (auto atom:atoms) {
-		Predicate* predicate=atom->getPredicate();
-		if(predicate!=nullptr)
-			if(!checkNegative || (atom->isNegative() == negative))
-				predicates.insert(predicate);
+	for (auto atom:atoms)
+		if(!checkNegative || (atom->isNegative() == negative)){
+			atom->print();cout<<endl;
+			set_predicate atom_predicates=atom->getPredicates();
+			predicates.insert(atom_predicates.begin(),atom_predicates.end());
+		}
 
-	}
 	return predicates;
 }
 

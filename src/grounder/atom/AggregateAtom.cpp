@@ -56,6 +56,13 @@ set_term AggregateAtom::getVariable(){
 
 }
 
+set_predicate AggregateAtom::getPredicates() const{
+	set_predicate predicates;
+	for(auto element:aggregateElements)
+		element->getPredicates(predicates);
+	return predicates;
+}
+
 set_term AggregateAtom::getGuardVariable(){
 		set_term variables;
 		if(firstBinop!= NONE_OP && firstGuard->getType()==TermType::VARIABLE)
@@ -573,5 +580,7 @@ void AggregateAtom::applayAggregateOperator(int& n1, int n2){
 	}
 }
 
-}}
+}
+}
+
 

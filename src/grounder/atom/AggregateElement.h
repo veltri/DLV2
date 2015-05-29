@@ -13,6 +13,7 @@
 #include "Atom.h"
 #include "../../util/Constants.h"
 #include "../term/Term.h"
+#include "../atom/Predicate.h"
 
 
 using namespace std;
@@ -52,6 +53,8 @@ class AggregateElement {
 		void clearNafLiterals();
 		/// Remove all terms
 		void clearTerms(){terms.clear();}
+
+		void getPredicates(set_predicate& predicates)const;
 
 		void deleteAtoms();
 

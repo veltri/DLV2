@@ -99,6 +99,8 @@ public:
 	 * Getter method for the predicate
 	 */
 	virtual Predicate* getPredicate() const {return nullptr;};
+	virtual set_predicate getPredicates() const {return set_predicate();};
+
 	///Setter method for the predicate
 	virtual void setPredicate(Predicate* predicate) {};
 	///This method returns the size of the terms' vector

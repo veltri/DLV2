@@ -43,6 +43,8 @@ public:
 	/** Getter method for the predicat
 	 */
 	Predicate* getPredicate() const {return predicate;};
+	set_predicate getPredicates() const {return set_predicate({predicate});};
+
 	///Setter method for the predicate
 	void setPredicate(Predicate* predicate) {this->predicate=predicate;};
 	///Returns true if the atom is negated with true negation

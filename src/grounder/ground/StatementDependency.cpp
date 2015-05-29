@@ -28,6 +28,7 @@ StatementDependency* StatementDependency::statementDependency;
 void StatementAtomMapping::addRule(Rule* r) {
 	set_predicate head = r->getPredicateInHead();
 	set_predicate body = r->getPredicateInBody();
+
 	for (auto i : head) {
 		headMap.insert( { i->getIndex(), r });
 	}

@@ -50,6 +50,13 @@ namespace grounder{
 						unsafeVars.insert(variable);
 		return unsafeVars;
 	}
+
+	void AggregateElement::getPredicates(set_predicate& predicates)const{
+		for(auto atom:nafLiterals){
+			predicates.insert(atom->getPredicate());
+		}
+	}
+
 }
 }
 
