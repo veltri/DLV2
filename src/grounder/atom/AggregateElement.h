@@ -55,6 +55,10 @@ class AggregateElement {
 
 		void deleteAtoms();
 
+		set_term getSafeVariable();
+
+		set_term getUnsafeVariable();
+
 		//Destructor
 		~AggregateElement() {};
 

@@ -30,5 +30,28 @@ namespace grounder{
 		for(auto atom:nafLiterals)
 			delete atom;
 	}
-}}
+
+	set_term AggregateElement::getSafeVariable() {
+		set_term safeVars;
+		for(auto atom:nafLiterals)
+			if(!atom->isNegative())
+				for(auto variable:atom->getVariable())
+					safeVars.insert(variable);
+		return safeVars;
+	}
+
+	set_term AggregateElement::getUnsafeVariable() {
+		set_term safeVars=getSafeVariable();
+		set_term unsafeVars;
+		for(auto atom:nafLiterals)
+			if(atom->isNegative())
+				for(auto variable:atom->getVariable())
+					if(!safeVars.count(variable))
+						unsafeVars.insert(variable);
+		return unsafeVars;
+	}
+}
+}
+
+
 
