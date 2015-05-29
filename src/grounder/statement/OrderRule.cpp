@@ -40,7 +40,7 @@ void OrderRule::order() {
 
 	assert_msg(negativeAtoms.size()==0, "RULE IS UNSAFE");
 
-	// Second, solve the cyclic dependency
+	// Second, solve the cyclic dependencies
 	while(builtInAtoms.size()>0 || aggregatesAtoms.size()>0){
 		unsigned sizeBuiltIns=builtInAtoms.size();
 		unlockAtoms(builtInAtoms);

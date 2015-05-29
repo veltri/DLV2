@@ -30,7 +30,8 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited)
 			unsigned id=IdGenerator::getInstance()->getId();
 			unsigned counter=1;
 			for(unsigned i=0;i<aggElementsSize;++i){
-				vector<Term*> terms=(*it)->getAggregateElement(i)->getTerms();
+				AggregateElement* aggElem=(*it)->getAggregateElement(i);
+				vector<Term*> terms=aggElem->getTerms();
 
 				//For each variable in the aggregate element and in the rule add in head of auxiliary rule
 				set_term variablesAggElem=getVariablesInAggregateElem((*it)->getAggregateElement(i));
@@ -39,7 +40,10 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited)
 						terms.push_back(term);
 
 				Rule* rule=new Rule;
-				vector<Atom*> atoms=(*it)->getAggregateElement(i)->getNafLiterals();
+				vector<Atom*> atoms=aggElem->getNafLiterals();
+
+				set_term unsafeVars=aggElem->getUnsafeVariable();
+				chooseBestSaviorForAggregate(r,aggElem,unsafeVars,atoms);
 
 				rule->addInBody(atoms.begin(),atoms.end());
 				string predName=AUXILIARY+SEPARATOR+to_string(id)+SEPARATOR+to_string(counter);
@@ -53,16 +57,48 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited)
 				Atom* atomClone=auxiliaryAtom->clone();
 				vector<Atom*> newAggElem;
 				newAggElem.push_back(atomClone);
-				(*it)->getAggregateElement(i)->setNafLiterals(newAggElem);
-
-				rule->print();
-
+				aggElem->setNafLiterals(newAggElem);
 			}
 		}
 	}
 
 
 	ruleRewrited.push_back(r);
+}
+
+void BaseInputRewriter::chooseBestSaviorForAggregate(Rule* rule, AggregateElement* aggregateElement, set_term& unsafeVars, vector<Atom*>& atomToAdd) {
+	unsigned int index_atom=0;
+	list<Atom*> possibleAtomsBinding;
+	for(auto var:unsafeVars){
+		for(auto it=rule->getBeginBody();it!=rule->getEndBody();++it,++index_atom){
+			Atom* atom=*it;
+			set_term variables; //TODO togliere dal for o fare cache
+			if (atom->getAggregateElementsSize()>0){
+				if(atom->getFirstBinop()==Binop::EQUAL){
+					AggregateAtom* aggregate=dynamic_cast<AggregateAtom*>(atom);
+					variables=aggregate->getGuardVariable();
+				}
+			}
+			else if (atom->isBuiltIn()){
+				if (atom->getBinop()==Binop::EQUAL)
+					variables=atom->getVariable();
+			}
+			else if (!atom->isNegative())
+				variables=atom->getVariable();
+			if(variables.count(var) && saviourChoosingPolicy->choose(atom, possibleAtomsBinding,atomToAdd,(it==rule->getEndBody()-1)))
+				break;
+		}
+	}
+}
+
+bool FirstSaviorChoosingPolicy::choose(Atom* atom,list<Atom*>& possibleAtomsBinding, vector<Atom*>& atomToAdd, bool end) {
+	atomToAdd.push_back(atom->clone());
+	return true;
+
+	//TODO anche per i dipendenti il clone
+
+	possibleAtomsBinding.push_back(atom);
+	return false;
 }
 
 set_term BaseInputRewriter::getVariablesInAggregateElem(AggregateElement* aggregateElem){
@@ -74,3 +110,5 @@ set_term BaseInputRewriter::getVariablesInAggregateElem(AggregateElement* aggreg
 
 } /* namespace grounder */
 } /* namespace DLV2 */
+
+
