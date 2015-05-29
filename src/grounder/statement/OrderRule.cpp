@@ -23,7 +23,6 @@ OrderRule::OrderRule(Rule* r):rule(r){
 		 else if(current_atom->getAggregateElementsSize()>0)
 			 aggregatesAtoms.push_back(atom_counter);
 	}
-
 }
 
 void OrderRule::order() {
@@ -32,36 +31,32 @@ void OrderRule::order() {
 	unsigned atom_counter=0;
 	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();++atom,++atom_counter){
 		Atom* current_atom=*atom;
-		cout<<"Atom "; current_atom->print(); cout<<endl;
 		if(!(current_atom->isNegative()) && !(current_atom->isBuiltIn()) && current_atom->getAggregateElementsSize()==0) {
 			addSafeVariablesInAtom(current_atom, atom_counter);
 			unlockAtoms(negativeAtoms);
 			unlockAtoms(builtInAtoms);
-//			unlockAtoms(aggregatesAtoms);
 		}
 	}
-
 	if(negativeAtoms.size()>0)
 		assert_msg(true, "RULE IS UNSAFE");
-
-	// Finally, solve the cyclic dependency
+	// Second, solve the cyclic dependency
 	while(builtInAtoms.size()>0 || aggregatesAtoms.size()>0){
 		unsigned sizeBuiltIns=builtInAtoms.size();
 		unlockAtoms(builtInAtoms);
 		if(builtInAtoms.size()==sizeBuiltIns){
 			unsigned sizeAggregates=aggregatesAtoms.size();
 			unlockAtoms(aggregatesAtoms);
-//			cout<<"AGGR SIZE: "<<aggregatesAtoms.size()<<endl;
 			if(aggregatesAtoms.size()==sizeAggregates)
 				assert_msg(true, "RULE IS UNSAFE");
 		}
 	}
-
-	cout<<"----------- BODY ORDERED ---------------"<<endl;
-	for(auto atom: orderedBody){
-		atom->print();cout<<" ";
-	}
-	cout<<endl<<"----------------------------------------"<<endl;
+	// Finally, set the ordered body as the body of the rule
+	rule->setBody(orderedBody);
+//	cout<<"----------- BODY ORDERED ---------------"<<endl;
+//	for(auto atom: orderedBody){
+//		atom->print();cout<<" ";
+//	}
+//	cout<<endl<<"----------------------------------------"<<endl;
 }
 
 void OrderRule::addSafeVariablesInAtom(Atom* atom, unsigned pos) {
@@ -77,7 +72,6 @@ void OrderRule::unlockAtoms(list<unsigned>& atoms) {
 	for(auto it=atoms.begin();it!=atoms.end();++it,++atom_counter){
 		Atom* atom=rule->getAtomInBody(*it);
 		set_term variables=mapAtomsVariables[*it];
-
 		// If the atom is negative or is not an assignment
 		// then if every variable is safe, the atom is safe
 		// and thus it can be added to the new body
@@ -104,14 +98,9 @@ void OrderRule::unlockAtoms(list<unsigned>& atoms) {
 				atom->setAssignment(true);
 			}
 		}
-		if(atom->getAggregateElementsSize()>0 && atom->getFirstBinop()==EQUAL){
-			cout<<(atom->getFirstBinop()==EQUAL)<<"  "<<(!safeVariables.count(atom->getFirstGuard()))<<endl;
-//			lookForVariablesUnsafe(variables, atom, it, atomsUnlocked);
-			if(atom->getFirstBinop()==EQUAL && !safeVariables.count(atom->getFirstGuard())){
-				cout<<"SAFE: ";atom->getFirstGuard()->print();cout<<endl;
-				safeVariables.insert(atom->getFirstGuard());
-				atom->setAssignment(true);
-			}
+		if(atom->getAggregateElementsSize()>0 && atom->getFirstBinop()==EQUAL && !safeVariables.count(atom->getFirstGuard())){
+			safeVariables.insert(atom->getFirstGuard());
+			atom->setAssignment(true);
 		}
 	}
 	for(auto iterator: atomsUnlocked)

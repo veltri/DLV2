@@ -16,7 +16,6 @@
 #include "../table/TermTable.h"
 #include "StatementDependency.h"
 #include "../statement/GroundRule.h"
-#include "../statement/OrderRule.h"
 
 using namespace std;
 

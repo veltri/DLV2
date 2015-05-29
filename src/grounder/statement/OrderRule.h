@@ -25,16 +25,15 @@ private:
 	vector<Atom*> orderedBody;
 
 	//Utility methods
-	void checkBuiltInSafety(bool& firstSafe, Term* firstTerm,Term*& bindVariable);
+	void computeAtomsVariables();
+ 	void addSafeVariablesInAtom(Atom* atom, unsigned pos);
+	void unlockAtoms(list<unsigned>& atoms);
 	void lookForVariablesUnsafe(set_term& variables,Atom* atom, list<unsigned>::iterator it, vector<list<unsigned>::iterator>& atomsUnlocked);
+	void checkBuiltInSafety(bool& firstSafe, Term* firstTerm,Term*& bindVariable);
 
 public:
 	OrderRule(Rule* r);
 	void order();
-	void addSafeVariablesInAtom(Atom* atom, unsigned pos);
-	void unlockAtoms(list<unsigned>& atoms);
-	//TODO method for cyclic dependency
-	void computeAtomsVariables();
 };
 
 } /* namespace grounder */
