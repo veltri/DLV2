@@ -7,6 +7,7 @@
 
 #include "OrderRule.h"
 #include "../../util/Assert.h"
+#include "../../util/Options.h"
 
 namespace DLV2 {
 namespace grounder {
@@ -53,11 +54,8 @@ void OrderRule::order() {
 	// Finally, set the ordered body as the body of the rule
 	rule->setBody(orderedBody);
 
-	cout<<"----------- BODY ORDERED ---------------"<<endl;
-	for(auto atom: orderedBody){
-		atom->print();cout<<" ";
-	}
-	cout<<endl<<"----------------------------------------"<<endl;
+	if(Options::globalOptions()->isPrintRewritedProgram())
+		rule->print();
 }
 
 void OrderRule::addSafeVariablesInAtom(Atom* atom, unsigned pos) {

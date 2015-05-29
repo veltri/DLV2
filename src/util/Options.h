@@ -91,7 +91,16 @@ namespace DLV2
 
         void setNofacts(bool nofacts) {this->nofacts = nofacts;}
 
+		bool isPrintRewritedProgram() const {
+			return printRewritedProgram;
+		}
+
+		void setPrintRewritedProgram(bool printRewritedProgram) {
+			this->printRewritedProgram = printRewritedProgram;
+		}
+
         ~Options() { /*if (instance != NULL) delete instance;*/ }
+
 
     private:
 
@@ -121,6 +130,8 @@ namespace DLV2
         
         bool printStatistics;
         
+        bool printRewritedProgram;
+
         INPUT_BUILDER_POLICY inputPolicy;
         
         OUTPUT_POLICY outputPolicy;

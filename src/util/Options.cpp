@@ -61,6 +61,10 @@ namespace DLV2
 #define OPTIONID_predIndexTerm ('z' + 35)
 #define OPTIONID_predIndexType ('z' + 36)
 #define OPTIONID_nofacts ('z' + 37)
+#define OPTIONID_printRewrite ('z' + 38)
+
+
+
 
 
 };
@@ -103,7 +107,8 @@ Options::Options():
 		indexType(DEFAULT),
 		predicatesIndexTerm(""),
 		predicatesIndexType(""),
-		nofacts(false)
+		nofacts(false),
+		printRewritedProgram(false)
 {
 
 }
@@ -120,7 +125,9 @@ Options::Options(
 		indexType(o.indexType),
 		predicatesIndexTerm(o.predicatesIndexTerm),
 		predicatesIndexType(o.predicatesIndexTerm),
-		nofacts(o.nofacts)
+		nofacts(o.nofacts),
+		printRewritedProgram(false)
+
 {
 
 }
@@ -166,6 +173,7 @@ Options::init(
 		{"predindexterm",required_argument, NULL, OPTIONID_predIndexTerm},
 		{"predindextype",required_argument, NULL, OPTIONID_predIndexType},
 		{"nofacts",no_argument, NULL, OPTIONID_nofacts},
+		{"printRewrite",no_argument, NULL, OPTIONID_printRewrite},
 
         // Required at end of array. 
         { NULL, 0, NULL, 0 }
@@ -267,7 +275,9 @@ Options::init(
             case OPTIONID_nofacts:
             	nofacts=true;
 				break;
-
+            case OPTIONID_printRewrite:
+				printRewritedProgram=true;
+            	break;
             default:
                 ErrorMessage::errorGeneric( "This option is not supported." );
                 break;
