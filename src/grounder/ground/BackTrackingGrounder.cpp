@@ -315,7 +315,7 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 	current_atom_it = currentRule->getBeginBody();
 	index_current_atom = 0;
 	callFoundAssignment = false;
-	for(auto atom:templateSetAtom) {atom->deleteAtoms(); delete atom;}
+	for(auto atom:templateSetAtom) {if(atom!=nullptr) atom->deleteAtoms(); delete atom;}
 	templateSetAtom.resize(rule->getSizeBody());
 	for(auto& atom:templateSetAtom) atom=nullptr;
 	is_ground_atom.clear();

@@ -18,14 +18,14 @@ const string SEPARATOR="_";
 
 void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited) {
 
-	set_term variablesRule=getVariablesInClassicalLit(r);
-
 	/// First, auxiliary rules for aggregates elements are generated
 	vector<unsigned int> aggregateAtoms;
 	unsigned int index_atom=0;
 	for(auto it=r->getBeginBody();it!=r->getEndBody();it++,index_atom++){
 		unsigned aggElementsSize=(*it)->getAggregateElementsSize();
 		if(aggElementsSize>0){
+			AggregateAtom* aggregate=dynamic_cast<AggregateAtom*>(*it);
+			set_term variablesRule=aggregate->getSharedVariable(r);
 			aggregateAtoms.push_back(index_atom);
 			unsigned id=IdGenerator::getInstance()->getId();
 			unsigned counter=1;
@@ -34,13 +34,12 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited)
 
 				//For each variable in the aggregate element and in the rule add in head of auxiliary rule
 				set_term variablesAggElem=getVariablesInAggregateElem((*it)->getAggregateElement(i));
-				for(auto term:variablesAggElem)if(variablesRule.count(term))terms.push_back(term);
-
+				for(auto term:variablesAggElem)
+					if(variablesRule.count(term))
+						terms.push_back(term);
 
 				Rule* rule=new Rule;
 				vector<Atom*> atoms=(*it)->getAggregateElement(i)->getNafLiterals();
-
-
 
 				rule->addInBody(atoms.begin(),atoms.end());
 				string predName=AUXILIARY+SEPARATOR+to_string(id)+SEPARATOR+to_string(counter);
@@ -56,27 +55,16 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited)
 				newAggElem.push_back(atomClone);
 				(*it)->getAggregateElement(i)->setNafLiterals(newAggElem);
 
+				rule->print();
+
 			}
 		}
 	}
 
-	//Move aggregate at the end of rule
-	for(auto aggregateIndex:aggregateAtoms){
-		r->addInBody(r->getAtomInBody(aggregateIndex));
-		r->removeInBody(aggregateIndex);
-	}
 
 	ruleRewrited.push_back(r);
 }
 
-set_term BaseInputRewriter::getVariablesInClassicalLit(Rule* rule){
-	set_term variables;
-	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();++atom){
-		if((*atom)->getAggregateElementsSize()==0)
-			Atom::getVariables(*atom,variables);
-	}
-	return variables;
-}
 set_term BaseInputRewriter::getVariablesInAggregateElem(AggregateElement* aggregateElem){
 	set_term variables;
 	Atom::getVariables(aggregateElem->getNafLiterals(),variables);
@@ -86,4 +74,3 @@ set_term BaseInputRewriter::getVariablesInAggregateElem(AggregateElement* aggreg
 
 } /* namespace grounder */
 } /* namespace DLV2 */
-

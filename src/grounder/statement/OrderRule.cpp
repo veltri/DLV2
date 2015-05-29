@@ -37,8 +37,9 @@ void OrderRule::order() {
 			unlockAtoms(builtInAtoms);
 		}
 	}
-	if(negativeAtoms.size()>0)
-		assert_msg(true, "RULE IS UNSAFE");
+
+	assert_msg(negativeAtoms.size()==0, "RULE IS UNSAFE");
+
 	// Second, solve the cyclic dependency
 	while(builtInAtoms.size()>0 || aggregatesAtoms.size()>0){
 		unsigned sizeBuiltIns=builtInAtoms.size();
@@ -46,17 +47,17 @@ void OrderRule::order() {
 		if(builtInAtoms.size()==sizeBuiltIns){
 			unsigned sizeAggregates=aggregatesAtoms.size();
 			unlockAtoms(aggregatesAtoms);
-			if(aggregatesAtoms.size()==sizeAggregates)
-				assert_msg(true, "RULE IS UNSAFE");
+			assert_msg(aggregatesAtoms.size()!=sizeAggregates, "RULE IS UNSAFE");
 		}
 	}
 	// Finally, set the ordered body as the body of the rule
 	rule->setBody(orderedBody);
-//	cout<<"----------- BODY ORDERED ---------------"<<endl;
-//	for(auto atom: orderedBody){
-//		atom->print();cout<<" ";
-//	}
-//	cout<<endl<<"----------------------------------------"<<endl;
+
+	cout<<"----------- BODY ORDERED ---------------"<<endl;
+	for(auto atom: orderedBody){
+		atom->print();cout<<" ";
+	}
+	cout<<endl<<"----------------------------------------"<<endl;
 }
 
 void OrderRule::addSafeVariablesInAtom(Atom* atom, unsigned pos) {

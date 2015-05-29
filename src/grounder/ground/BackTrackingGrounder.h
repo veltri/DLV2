@@ -21,8 +21,10 @@ public:
 	BackTrackingGrounder():ProgramGrounder(),currentRule(0),index_current_atom(0),callFoundAssignment(0),ground_rule(0) {};
 	virtual ~BackTrackingGrounder() {
 		for(auto atom:templateSetAtom) {if(atom==nullptr)continue;atom->deleteAtoms(); delete atom;}
-		for(auto it=ground_rule->getBeginBody();it!=ground_rule->getEndBody();it++)
-			deleteGroundAtom(*it);
+		if(ground_rule!=0){
+			for(auto it=ground_rule->getBeginBody();it!=ground_rule->getEndBody();it++)
+				deleteGroundAtom(*it);
+		}
 		delete ground_rule;
 	};
 
