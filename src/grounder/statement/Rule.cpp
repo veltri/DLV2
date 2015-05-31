@@ -17,7 +17,6 @@ set_predicate Rule::calculatePredicate(vector<Atom*>& atoms,bool checkNegative,b
 	set_predicate predicates;
 	for (auto atom:atoms)
 		if(!checkNegative || (atom->isNegative() == negative)){
-			atom->print();cout<<endl;
 			set_predicate atom_predicates=atom->getPredicates();
 			predicates.insert(atom_predicates.begin(),atom_predicates.end());
 		}
