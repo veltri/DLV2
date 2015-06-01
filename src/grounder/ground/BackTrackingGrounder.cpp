@@ -252,6 +252,7 @@ bool BackTrackingGrounder::foundAssignment() {
 			delete headGroundAtom;
 			if(head_true)
 				searchAtom->setFact(true);
+			//Check if previus is false now is true ground_new atom i have put true
 			ground_rule->setAtomInHead(atom_counter,searchAtom);
 		}
 
@@ -260,7 +261,7 @@ bool BackTrackingGrounder::foundAssignment() {
 		Timer::getInstance()->stop("Head");
 #endif
 
-	if(!(ground_rule->getSizeBody()==0 && ground_rule->getSizeHead()==0 && !ground_rule->isAStrongConstraint()) && !(head_true && searchAtom!=nullptr))
+	if(!(ground_rule->getSizeBody()==0 && ground_rule->getSizeHead()==0 && !ground_rule->isAStrongConstraint()) && ( ground_new_atom || ground_rule->isAStrongConstraint()))
 		ground_rule->print();
 
 	if(currentRule->getSizeBody() > 0)
