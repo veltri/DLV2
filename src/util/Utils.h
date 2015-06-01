@@ -39,6 +39,81 @@ namespace DLV2
          * @return true if the check was ok
          */
         static bool isNumeric( const char* value, int baseN );
+
+        /*
+         * Check if set1 is conteined in set2
+         * @param set1 unordered_set
+         * @param set2 unordered_set
+         */
+        template<class T>
+        bool isContained(T& set1,T& set2){
+        	for(auto element:set1)
+        		if(!set2.count(element))
+        			return false;
+        	return true;
+        }
+
+        /*
+         * Check if set1 is disjoint with set2
+         * @param set1 unordered_set
+         * @param set2 unordered_set
+         */
+        template<class T>
+        bool isDisjoint(T& set1,T& set2){
+        	for(auto element:set1)
+        		if(set2.count(element))
+        			return false;
+        	return true;
+        }
+
+        /*
+         * Do the union of set1 and set2 and put the result set in union
+         * @param set1 unordered_set
+         * @param set2 unordered_set
+         * @param union_set unordered_set
+         */
+        template<class T>
+        void unionSet(T& set1,T& set2,T& union_set){
+        	union_set.insert(set1.begin(),set2.begin());
+        }
+
+        /*
+         * Do the intersection of set1 and set2 and put the result set in intersection_set
+         * @param set1 unordered_set
+         * @param set2 unordered_set
+         * @param intersection_set unordered_set
+         */
+        template<class T>
+        void intersectionSet(T& set1,T& set2,T& intersection_set){
+        	if(set1.size()<set2.size()){
+            	for(auto element:set1)
+            		if(set2.count(element))
+            			intersection_set.insert(element);
+        	}else {
+            	for(auto element:set2)
+            		if(set1.count(element))
+            			intersection_set.insert(element);
+        	}
+        }
+
+        /*
+         * Do the difference of set1 and set2 and put the result set in difference
+         * @param set1 unordered_set
+         * @param set2 unordered_set
+         * @param difference_set unordered_set
+         */
+        template<class T>
+        void differenceSet(T& set1,T& set2,T& difference_set){
+        	if(set1.size()<set2.size()){
+            	for(auto element:set1)
+            		if(!set2.count(element))
+            			difference_set.insert(element);
+        	}else {
+            	for(auto element:set2)
+            		if(!set1.count(element))
+            			difference_set.insert(element);
+        	}
+        }
     };
     
 };
