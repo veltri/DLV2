@@ -231,6 +231,7 @@ bool BackTrackingGrounder::foundAssignment() {
 	callFoundAssignment=true;
 	bool head_true=(currentRule->getSizeHead() <= 1) && (!ground_rule->areThereUndefinedAtomInBody());
 	bool ground_new_atom=false;
+	bool find_new_true_atom=false;
 	unsigned atom_counter=0;
 	Atom *searchAtom=0;
 	for(auto atom=currentRule->getBeginHead();atom!=currentRule->getEndHead();++atom,++atom_counter){
@@ -250,8 +251,14 @@ bool BackTrackingGrounder::foundAssignment() {
 			ground_rule->setAtomInHead(atom_counter,headGroundAtom);
 		}else{
 			delete headGroundAtom;
-			if(head_true)
+
+			//TODO If searchAtom is true ??? {a|b. a.} o {a :- b(X,Y).b(1).b(1,2)|d.}
+
+			//Previus atom is undef and now is true
+			if(head_true && !searchAtom->isFact()){
 				searchAtom->setFact(true);
+				find_new_true_atom=true;
+			}
 			//Check if previus is false now is true ground_new atom i have put true
 			ground_rule->setAtomInHead(atom_counter,searchAtom);
 		}
@@ -261,7 +268,8 @@ bool BackTrackingGrounder::foundAssignment() {
 		Timer::getInstance()->stop("Head");
 #endif
 
-	if(!(ground_rule->getSizeBody()==0 && ground_rule->getSizeHead()==0 && !ground_rule->isAStrongConstraint()) && ( ground_new_atom || ground_rule->isAStrongConstraint()))
+	//Print if ground new atom, an atom changed from undef to true, the rule is a strong constraint, there are some undefined atom in body
+	if( ground_new_atom || (find_new_true_atom && head_true) || ground_rule->isAStrongConstraint() || ground_rule->areThereUndefinedAtomInBody())
 		ground_rule->print();
 
 	if(currentRule->getSizeBody() > 0)
