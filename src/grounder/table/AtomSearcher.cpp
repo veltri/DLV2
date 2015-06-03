@@ -440,6 +440,7 @@ void DoubleTermMapAtomSearcher::remove(Atom* atom) {
 }
 
 Atom* DoubleTermMapAtomSearcher::findAtom(Atom *atom){
+	cout<<"aaa  "; atom->print();cout<<endl;
 	int tableToSearch=manageIndex(atom);
 	assert_msg(tableToSearch>-1, "Invalid index");
 
@@ -448,8 +449,13 @@ Atom* DoubleTermMapAtomSearcher::findAtom(Atom *atom){
 	Multimap_Atom::iterator end;
 
 	if(unsigned(tableToSearch) < predicate->getArity()-1){
+//		cout<<tableToSearch<<" "<<(predicate->getArity()-1)<<endl;
 		index_object nextTerm=atom->getTerm(tableToSearch+1)->getIndex();
+		cout<<atom->getTerm(tableToSearch)->getName()<<" "<<term<<endl;
+		cout<<atom->getTerm(tableToSearch+1)->getName()<<" "<<nextTerm<<endl;
 		auto pair=searchingTables[tableToSearch][term].equal_range(nextTerm);
+		(*(searchingTables[tableToSearch][term].begin())).second->print();cout<<endl;
+		cout<<(*(searchingTables[tableToSearch][term].begin())).first<<endl;
 		start=pair.first;
 		end=pair.second;
 	}
@@ -561,7 +567,7 @@ void DoubleTermMapAtomSearcher::initializeIndexMaps(unsigned int indexingTerm){
 	createdSearchingTables[indexingTerm]=true;
 	for (Atom* a : *table) {
 		index_object termIndex=a->getTerm(indexingTerm)->getIndex();
-		index_object nextTermIndex=-1;
+		int nextTermIndex=-1;
 		if(indexingTerm<(predicate->getArity()-1))
 			nextTermIndex=a->getTerm(indexingTerm+1)->getIndex();
 		if(searchingTables[indexingTerm].count(termIndex)){
