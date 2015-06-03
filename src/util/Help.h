@@ -52,10 +52,10 @@ namespace DLV2
             std::cout << separator << std::endl;
 
             std::cout << "Grounder options                         " << std::endl << std::endl;
-            std::cout << "--hashtype                               - Set the hash type of objects. Possible value=\n \t STL_HASH=0\n \t BOOST_HASH=1\n \t JAVA_HASH=2\n \t MUR_HASH=3\n \t PERL_DJ=4\n \t PERL_B=5." << std::endl;
-            std::cout << "--indextype                         	   - Set the index table of object. Possible value=\n \t DEFAULT=0\n \t MULTIMAP=1\n \t MAP=2 \t HASHSET=3 \t DOUBLEMAP=4\n." << std::endl;
-            std::cout << "--predindexterm                          - Set on which term predicates have to be indexed. \n \tExample: -i p=2,a=3." << std::endl;
-            std::cout << "--predindextype                          - Set the index type for the given predicates. \n \tExample: --predindextype=p=1,a=2." << std::endl;
+            std::cout << "--hashtype                               - Set the hash type of objects. Possible values: STL_HASH=0, BOOST_HASH=1, JAVA_HASH=2, MUR_HASH=3, PERL_DJ=4, PERL_B=5." << std::endl;
+            std::cout << "--indextype                              - Set the index table of object. Possible values: DEFAULT=0, MAP=1, MULTIMAP=2, HASHSET=3, DOUBLEMAP=4." << std::endl;
+            std::cout << "--predindexterm                          - Set on which term predicates have to be indexed. Example: -i p=2,a=3" << std::endl;
+            std::cout << "--predindextype                          - Set the index type for the given predicates. Example: --predindextype=p=1,a=2" << std::endl;
             std::cout << "--printRewrite                           - Print the rewrite program." << std::endl;
             std::cout << separator << std::endl;
 

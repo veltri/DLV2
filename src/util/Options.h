@@ -130,8 +130,6 @@ namespace DLV2
         
         bool printStatistics;
         
-        bool printRewritedProgram;
-
         INPUT_BUILDER_POLICY inputPolicy;
         
         OUTPUT_POLICY outputPolicy;
@@ -159,6 +157,8 @@ namespace DLV2
     	std::unordered_map<std::string, unsigned int> predicatesIndexTypeMap;
 
     	bool nofacts;
+
+    	bool printRewritedProgram;
     };
     
 };
