@@ -14,8 +14,10 @@ namespace grounder {
 
 OrderRule::OrderRule(Rule* r):rule(r){
 	unsigned atom_counter=0;
+	bindAtomsDependency.reserve(r->getSizeBody());
 	computeAtomsVariables();
 	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();++atom,++atom_counter){
+		bindAtomsDependency.push_back(unordered_set<unsigned>());
 		Atom* current_atom=*atom;
 		if(current_atom->isNegative())
 			 negativeAtoms.push_back(atom_counter);
@@ -26,7 +28,7 @@ OrderRule::OrderRule(Rule* r):rule(r){
 	}
 }
 
-void OrderRule::order() {
+bool OrderRule::order() {
 	// A first attempt to order the body ignoring cyclic dependencies
 	// by iterating the atoms in the body and resolving their dependencies when are not cyclic
 	unsigned atom_counter=0;
@@ -39,7 +41,16 @@ void OrderRule::order() {
 		}
 	}
 
-	assert_msg(negativeAtoms.size()==0, "RULE IS UNSAFE");
+	cout<<"NEG: "<<negativeAtoms.size()<<endl;
+	rule->print();
+	for(auto it:mapVariablesAtoms){
+		cout<<"VAR: ";it.first->print();cout<<" ";
+		cout<<"ATOM: ";orderedBody[it.second]->print();cout<<endl;
+	}
+	cout<<"----------"<<endl;
+
+	if(negativeAtoms.size()>0)
+		return false;
 
 	// Second, solve the cyclic dependencies
 	while(builtInAtoms.size()>0 || aggregatesAtoms.size()>0){
@@ -48,34 +59,69 @@ void OrderRule::order() {
 		if(builtInAtoms.size()==sizeBuiltIns){
 			unsigned sizeAggregates=aggregatesAtoms.size();
 			unlockAtoms(aggregatesAtoms);
-			assert_msg(aggregatesAtoms.size()!=sizeAggregates, "RULE IS UNSAFE");
+			if(aggregatesAtoms.size()==sizeAggregates)
+				return false;
 		}
 	}
 	// Finally, set the ordered body as the body of the rule
 	rule->setBody(orderedBody);
 
+	atom_counter=0;
+	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();++atom,++atom_counter){
+		cout<<atom_counter<<" ";
+		for(auto it:bindAtomsDependency[atom_counter]){
+			orderedBody[it]->print();
+			cout<<" ";
+		}
+		cout<<endl;
+	}
+	cout<<"*************"<<endl;
+
 	if(Options::globalOptions()->isPrintRewritedProgram())
 		rule->print();
+
+	return true;
 }
 
 void OrderRule::addSafeVariablesInAtom(Atom* atom, unsigned pos) {
 	set_term variables=mapAtomsVariables[pos];
-	for(auto variable: variables)
-		safeVariables.insert(variable);
 	orderedBody.push_back(atom);
+	for(auto variable: variables){
+		if(!mapVariablesAtoms.count(variable))
+			mapVariablesAtoms.insert({variable,orderedBody.size()-1});
+		safeVariables.insert(variable);
+	}
+}
+
+void OrderRule::foundAnAssigment(Atom* atom, Term* bindVariable, unsigned pos) {
+	atom->setAssignment(true);
+	safeVariables.insert(bindVariable);
+	if (!mapVariablesAtoms.count(bindVariable))
+		mapVariablesAtoms.insert( { bindVariable, orderedBody.size()-1 });
+	set_term variables=mapAtomsVariables[pos];
+	for(auto var: variables){
+		if(var->getIndex()!=bindVariable->getIndex()){
+			bindAtomsDependency[orderedBody.size()-1].insert(mapVariablesAtoms.find(var)->second);
+		}
+	}
 }
 
 void OrderRule::unlockAtoms(list<unsigned>& atoms) {
 	vector<list<unsigned>::iterator> atomsUnlocked;
-	unsigned atom_counter=0;
-	for(auto it=atoms.begin();it!=atoms.end();++it,++atom_counter){
+	for(auto it=atoms.begin();it!=atoms.end();++it){
 		Atom* atom=rule->getAtomInBody(*it);
 		set_term variables=mapAtomsVariables[*it];
-		// If the atom is negative or is not an assignment
+		// If the atom is negative or is not an assignment or is an aggregate
 		// then if every variable is safe, the atom is safe
 		// and thus it can be added to the new body
-		if(atom->isNegative() || (atom->isBuiltIn() && atom->getBinop()!=Binop::EQUAL) || (atom->getAggregateElementsSize()>0))
+		if(atom->isNegative() || (atom->isBuiltIn() && atom->getBinop()!=Binop::EQUAL) || (atom->getAggregateElementsSize()>0)){
 			lookForVariablesUnsafe(variables, atom, it, atomsUnlocked);
+		}
+		//Moreover if it is an assignment aggregate the bind variable must be inserted into the safeVariables
+		if(atom->getAggregateElementsSize()>0 && atom->getFirstBinop()==EQUAL && !safeVariables.count(atom->getFirstGuard())){
+			Term* bindVariable=atom->getFirstGuard();
+			foundAnAssigment(atom, bindVariable,*it);
+		}
 		if(atom->isBuiltIn() && atom->getBinop()==Binop::EQUAL){
 			Term* firstTerm=atom->getTerm(0);
 			Term* secondTerm=atom->getTerm(1);
@@ -91,15 +137,10 @@ void OrderRule::unlockAtoms(list<unsigned>& atoms) {
 				atomsUnlocked.push_back(it);
 			}
 			if((firstSafe && bindVariable==secondTerm) || (secondSafe && bindVariable==firstTerm)){
-				orderedBody.push_back(atom);
 				atomsUnlocked.push_back(it);
-				safeVariables.insert(bindVariable);
-				atom->setAssignment(true);
+				orderedBody.push_back(atom);
+				foundAnAssigment(atom, bindVariable,*it);
 			}
-		}
-		if(atom->getAggregateElementsSize()>0 && atom->getFirstBinop()==EQUAL && !safeVariables.count(atom->getFirstGuard())){
-			safeVariables.insert(atom->getFirstGuard());
-			atom->setAssignment(true);
 		}
 	}
 	for(auto iterator: atomsUnlocked)
@@ -148,6 +189,14 @@ void OrderRule::lookForVariablesUnsafe(set_term& variables,Atom* atom, list<unsi
 		orderedBody.push_back(atom);
 		atomsUnlocked.push_back(it);
 	}
+}
+
+vector<Atom*> OrderRule::getAtomsFromWhichDepends(unsigned atom_position) const {
+	vector<Atom*> atoms;
+	atoms.reserve(orderedBody.size());
+	for(auto atom_pos: bindAtomsDependency[atom_position])
+		atoms.push_back(orderedBody[atom_pos]);
+	return atoms;
 }
 
 } /* namespace grounder */

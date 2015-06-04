@@ -23,6 +23,8 @@ private:
 	list<unsigned> aggregatesAtoms;
 	unordered_map<unsigned,set_term> mapAtomsVariables;
 	vector<Atom*> orderedBody;
+	unordered_map<Term*,unsigned,IndexForTable<Term>,IndexForTable<Term>> mapVariablesAtoms;
+	vector<unordered_set<unsigned>> bindAtomsDependency;
 
 	//Utility methods
 	void computeAtomsVariables();
@@ -30,10 +32,12 @@ private:
 	void unlockAtoms(list<unsigned>& atoms);
 	void lookForVariablesUnsafe(set_term& variables,Atom* atom, list<unsigned>::iterator it, vector<list<unsigned>::iterator>& atomsUnlocked);
 	void checkBuiltInSafety(bool& firstSafe, Term* firstTerm,Term*& bindVariable);
+	void foundAnAssigment(Atom* atom, Term* bindVariable, unsigned pos);
 
 public:
 	OrderRule(Rule* r);
-	void order();
+	bool order();
+	vector<Atom*> getAtomsFromWhichDepends(unsigned atom_position) const;
 };
 
 } /* namespace grounder */

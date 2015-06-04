@@ -32,7 +32,6 @@ void ProgramGrounder::ground() {
 	vector<vector<Rule*>> recursiveRules;
 	vector<unordered_set<index_object>> componentPredicateInHead;
 	statementDependency->createComponentGraphAndComputeAnOrdering(exitRules, recursiveRules, componentPredicateInHead);
-//	printFact();
 
 	// Ground each module according to the ordering:
 	// For each component, each rule is either recursive or exit,
@@ -47,7 +46,6 @@ void ProgramGrounder::ground() {
 
 		// Ground exit rules
 		for (Rule* r : exitRules[component]){
-			r->basicSortBody();
 			inizializeSearchInsertPredicate(r);
 			groundRule(r);
 #ifdef DEBUG_RULE_TIME
@@ -63,7 +61,6 @@ void ProgramGrounder::ground() {
 			// First iteration
 			for (unsigned int i = 0; i < n_rules; i++) {
 				Rule *rule=recursiveRules[component][i];
-				rule->basicSortBody();
 				inizializeSearchInsertPredicate(rule,componentPredicateInHead[component]);
 				if(groundRule(rule))
 					found_something=true;
@@ -104,7 +101,6 @@ void ProgramGrounder::ground() {
 	for (unsigned int i = 0; i < statementDependency->getConstraintSize(); i++)
 		if (statementDependency->getConstraint(i)->getSizeBody() > 0){
 			Rule *rule=statementDependency->getConstraint(i);
-			rule->basicSortBody();
 			inizializeSearchInsertPredicate(rule);
 			groundRule(rule);
 		}

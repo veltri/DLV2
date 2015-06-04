@@ -94,9 +94,6 @@ public:
 	///This method returns an iterator that points to the last atom in the head
 	vector<Atom*>::const_iterator getEndHead()const{return head.end();};
 
-	///Order builtin and negative atom in the rule
-	void basicSortBody();
-
 	///Return the specific atom in the body
 	Atom* getAtomInBody(unsigned i) {return body[i];};
 	///Set the specific atom in the body

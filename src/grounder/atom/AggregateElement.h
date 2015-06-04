@@ -62,6 +62,8 @@ class AggregateElement {
 
 		set_term getUnsafeVariable();
 
+		unsigned getNafLiteralsSize() const {return nafLiterals.size();}
+
 		//Destructor
 		~AggregateElement() {};
 

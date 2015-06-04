@@ -16,14 +16,14 @@ const string AUXILIARY="aux";
 
 const string SEPARATOR="_";
 
-void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited) {
+void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited, const OrderRule& orderRule) {
 
 	/// First, auxiliary rules for aggregates elements are generated
 	vector<unsigned int> aggregateAtoms;
 	unsigned int index_atom=0;
 	for(auto it=r->getBeginBody();it!=r->getEndBody();it++,index_atom++){
 		unsigned aggElementsSize=(*it)->getAggregateElementsSize();
-		if(aggElementsSize>1){
+		if(aggElementsSize>0){
 			AggregateAtom* aggregate=dynamic_cast<AggregateAtom*>(*it);
 			set_term variablesRule=aggregate->getSharedVariable(r);
 			aggregateAtoms.push_back(index_atom);
@@ -31,6 +31,8 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited)
 			unsigned counter=1;
 			for(unsigned i=0;i<aggElementsSize;++i){
 				AggregateElement* aggElem=(*it)->getAggregateElement(i);
+				if(aggElem->getNafLiteralsSize()<2) continue;
+
 				vector<Term*> terms=aggElem->getTerms();
 
 				//For each variable in the aggregate element and in the rule add in head of auxiliary rule
@@ -43,7 +45,7 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited)
 				vector<Atom*> atoms=aggElem->getNafLiterals();
 
 				set_term unsafeVars=aggElem->getUnsafeVariable();
-				chooseBestSaviorForAggregate(r,aggElem,unsafeVars,atoms);
+				chooseBestSaviorForAggregate(r,aggElem,unsafeVars,atoms,orderRule);
 
 				rule->addInBody(atoms.begin(),atoms.end());
 				string predName=AUXILIARY+SEPARATOR+to_string(id)+SEPARATOR+to_string(counter);
@@ -62,11 +64,9 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited)
 		}
 	}
 
-
-	ruleRewrited.push_back(r);
 }
 
-void BaseInputRewriter::chooseBestSaviorForAggregate(Rule* rule, AggregateElement* aggregateElement, set_term& unsafeVars, vector<Atom*>& atomToAdd) {
+void BaseInputRewriter::chooseBestSaviorForAggregate(Rule* rule, AggregateElement* aggregateElement, set_term& unsafeVars, vector<Atom*>& atomToAdd, const OrderRule& orderRule) {
 	unsigned int index_atom=0;
 	list<Atom*> possibleAtomsBinding;
 	for(auto var:unsafeVars){
@@ -85,17 +85,24 @@ void BaseInputRewriter::chooseBestSaviorForAggregate(Rule* rule, AggregateElemen
 			}
 			else if (!atom->isNegative())
 				variables=atom->getVariable();
-			if(variables.count(var) && saviourChoosingPolicy->choose(atom, possibleAtomsBinding,atomToAdd,(it==rule->getEndBody()-1)))
+			if(variables.count(var) && saviourChoosingPolicy->choose(atom,index_atom,possibleAtomsBinding,atomToAdd,(it==rule->getEndBody()-1), orderRule))
 				break;
 		}
 	}
 }
 
-bool FirstSaviorChoosingPolicy::choose(Atom* atom,list<Atom*>& possibleAtomsBinding, vector<Atom*>& atomToAdd, bool end) {
-	atomToAdd.push_back(atom->clone());
-	return true;
+void FirstSaviorChoosingPolicy::getRecursiveDependencies(const OrderRule& orderRule, unsigned savior_pos, vector<Atom*>& atomToAdd) {
+	vector<Atom*> atomDependencies = orderRule.getAtomsFromWhichDepends(savior_pos);
+	for (unsigned int i=0;i<atomDependencies.size();i++) {
+		atomToAdd.push_back(atomDependencies[i]->clone());
+		getRecursiveDependencies(orderRule,i,atomToAdd);
+	}
+}
 
-	//TODO anche per i dipendenti il clone
+bool FirstSaviorChoosingPolicy::choose(Atom* atom,unsigned savior_pos,list<Atom*>& possibleAtomsBinding, vector<Atom*>& atomToAdd, bool end, const OrderRule& orderRule) {
+	atomToAdd.push_back(atom->clone());
+	getRecursiveDependencies(orderRule, savior_pos, atomToAdd);
+	return true;
 
 	possibleAtomsBinding.push_back(atom);
 	return false;

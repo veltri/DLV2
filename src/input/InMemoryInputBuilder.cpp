@@ -44,8 +44,6 @@ void InMemoryInputBuilder::onDirective(char* directiveName,
 }
 
 void InMemoryInputBuilder::onRule() {
-	if(!currentRule->isSafe())currentRule->print();
-	assert_action(currentRule->isSafe(),"Rule is not safe");
 	if(currentRule->isAFact()){
 		Atom *fact=*currentRule->getBeginHead();
 		if(fact->containsRangeTerms()){
@@ -271,7 +269,6 @@ void InMemoryInputBuilder::onTermRange(char* lowerBound, char* upperBound) {
 		Term* rangeTerm=new RangeTerm(atoi(lowerBound),atoi(upperBound));
 		terms_parsered.push_back(rangeTerm);
 	}
-//	else Error
 }
 
 void InMemoryInputBuilder::onArithmeticOperation(char arithOperator) {
@@ -386,19 +383,24 @@ void InMemoryInputBuilder::onAggregate(bool naf) {
 }
 
 void InMemoryInputBuilder::addRule(Rule* rule) {
+	OrderRule orderRule(rule);
+	assert_action(orderRule.order(), "RULE IS UNSAFE");
 	if (foundAnAggregateInCurrentRule) {
 		vector<Rule*> rules;
-		inputRewriter->translateAggregate(rule, rules);
-		for (auto r : rules)
+		inputRewriter->translateAggregate(rule, rules, orderRule);
+		for (auto r : rules){
+			OrderRule orderR(rule);
+			assert_action(orderR.order(), "RULE IS UNSAFE");
 			statementDependency->addRuleMapping(r);
-	} else
-		statementDependency->addRuleMapping(rule);
+		}
+	}
+	statementDependency->addRuleMapping(rule);
 }
 
 void InMemoryInputBuilder::createRule(vector<Atom*>* head, vector<Atom*>* body) {
 	Rule* rule=new Rule;
 	if(head!=0) rule->setHead(*head);
-	if(body!=0)rule->setBody(*body);
+	if(body!=0) rule->setBody(*body);
 	addRule(rule);
 }
 

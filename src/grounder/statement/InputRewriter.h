@@ -12,6 +12,7 @@
 #include "../atom/ClassicalLiteral.h"
 #include "../table/PredicateExtension.h"
 #include "../table/PredicateTable.h"
+#include "OrderRule.h"
 
 namespace DLV2 {
 namespace grounder {
@@ -19,15 +20,19 @@ namespace grounder {
 /// Abstract class that defines a choosing policy for saviors atoms
 class SaviorChoosingPolicy{
 public:
-	virtual bool choose(Atom* atom, list<Atom*>& possibleAtomsBinding, vector<Atom*>& atomToAdd, bool end) = 0;
+	virtual bool choose(Atom* atom, unsigned savior_pos, list<Atom*>& possibleAtomsBinding, vector<Atom*>& atomToAdd, bool end, const OrderRule& orderRule) = 0;
 	virtual ~SaviorChoosingPolicy() {};
 };
 
-/// A concrete implementation of SaviorChoosingPolicy class that just choose the first saviour
+/// A concrete implementation of SaviorChoosingPolicy class that just choose the first savior
 class FirstSaviorChoosingPolicy : public SaviorChoosingPolicy{
 public:
-	virtual bool choose(Atom* atom, list<Atom*>& possibleAtomsBinding, vector<Atom*>& atomToAdd, bool end);
+	virtual bool choose(Atom* atom, unsigned savior_pos, list<Atom*>& possibleAtomsBinding, vector<Atom*>& atomToAdd, bool end, const OrderRule& orderRule);
 	virtual ~FirstSaviorChoosingPolicy() {};
+
+private:
+	void getRecursiveDependencies(const OrderRule& orderRule,
+			unsigned savior_pos, vector<Atom*>& atomToAdd);
 };
 
 
@@ -35,8 +40,8 @@ public:
 class InputRewriter {
 public:
 	InputRewriter():predicateExtTable(PredicateExtTable::getInstance()), predicateTable(PredicateTable::getInstance()) {};
-	virtual void translateAggregate(Rule* rule, vector<Rule*>& ruleRewrited) = 0;
-	virtual void  chooseBestSaviorForAggregate(Rule* rule, AggregateElement* aggregateElement, set_term& unsafeVars, vector<Atom*>& atomToAdd) = 0;
+	virtual void translateAggregate(Rule* rule, vector<Rule*>& ruleRewrited, const OrderRule& orderRule) = 0;
+	virtual void  chooseBestSaviorForAggregate(Rule* rule, AggregateElement* aggregateElement, set_term& unsafeVars, vector<Atom*>& atomToAdd, const OrderRule& orderRule) = 0;
 	virtual ~InputRewriter(){};
 protected:
 	PredicateExtTable* predicateExtTable;
@@ -57,13 +62,13 @@ public:
 	 *			- the atoms needed to save any atom in the aggregate element.
 	 * The choose of the savior(s) is delegated to the method chooseBestSaviorForAggregate
 	 */
-	virtual void translateAggregate(Rule* rule, vector<Rule*>& ruleRewrited);
+	virtual void translateAggregate(Rule* rule, vector<Rule*>& ruleRewrited, const OrderRule& orderRule);
 	/**
 	 * This template method searches for possible saviors of the negative atoms in the given aggregateElement.
 	 * Each possible savior found is passed to the saviorChoosingPolicy object that will independently select
 	 * a savior among the saviors found.
 	 */
-	virtual void  chooseBestSaviorForAggregate(Rule* rule, AggregateElement* aggregateElement, set_term& unsafeVars, vector<Atom*>& atomToAdd);
+	virtual void  chooseBestSaviorForAggregate(Rule* rule, AggregateElement* aggregateElement, set_term& unsafeVars, vector<Atom*>& atomToAdd, const OrderRule& orderRule);
 	virtual ~BaseInputRewriter() {delete saviourChoosingPolicy;};
 private:
 	/// The savior choosing policy adopted

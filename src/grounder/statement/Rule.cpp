@@ -69,12 +69,6 @@ bool Rule::isSafe()
 	return true;
 }
 
-void Rule::basicSortBody(){
-	OrderRule r(this);
-	r.order();
-}
-
-
 void  Rule::print(){
 
 	//Print for debug
