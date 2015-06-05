@@ -194,6 +194,8 @@ public:
 	virtual bool isAnAssigment(){return false;};
 
 	virtual int generateNextCombination(bool& finish) {return 0;};
+
+	virtual bool isUndefAssignment() {return false;}
 	/*****************************************************/
 
 	/******** Methods useful for Choice ********/

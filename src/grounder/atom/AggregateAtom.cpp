@@ -537,7 +537,7 @@ void AggregateAtom::findUndefAtoms(){
 	current_number.push_back(false);
 	for(unsigned i=0;i<this->aggregateElements.size();i++){
 		Atom* aggElementAtom=this->aggregateElements[i]->getNafLiteral(0);
-		if(!PredicateExtTable::getInstance()->getPredicateExt(aggElementAtom->getPredicate())->getAtom(aggElementAtom)->isFact()){
+		if(!aggElementAtom->isFact()){
 			map_undefAtom_position.insert({map_undefAtom_position.size()+1,i});
 			current_number.push_back(false);
 		}

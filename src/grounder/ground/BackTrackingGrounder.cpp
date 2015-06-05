@@ -439,6 +439,7 @@ bool BackTrackingGrounder::groundAggregate() {
 		int val=ground_aggregate->generateNextCombination(finish);
 		if(finish){
 			substiteInGroundRule(index_current_atom,nullptr);
+
 			return false;
 		}
 
@@ -506,6 +507,9 @@ bool BackTrackingGrounder::groundAggregate() {
 		termsMap->addTerm(term_value);
 		current_var_assign.insert({ground_aggregate->getFirstGuard(),term_value});
 		ground_aggregate->setFirstGuard(term_value);
+
+		if(!ground_aggregate->isUndefAssignment())
+			ground_rule->setAtomToSimplifyInBody(index_current_atom);
 	}
 
 	substiteInGroundRule(index_current_atom,nullptr);

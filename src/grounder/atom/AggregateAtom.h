@@ -204,6 +204,9 @@ private:
 	void applayAggregateOperator(int& n1, int n2);
 	void computeNextCombination();
 
+	///Return true if the aggregate is an undefined assignment
+	virtual bool isUndefAssignment(){if( map_undefAtom_position.size()>0)return true;return false;};
+
 	///Utility method: change the guards according to the standard format
 	Term* changeInStandardFormatGuard(Term* guard);
 
