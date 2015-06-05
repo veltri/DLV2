@@ -101,6 +101,10 @@ void InMemoryInputBuilder::onQuery() {
 
 void InMemoryInputBuilder::onHeadAtom() {
 	currentRule->addInHead(currentAtom);
+	if(currentAtom->containsAnonymous()){
+		currentAtom->print();cout<<" ";
+		assert_msg(false, "ATOM IS UNSAFE");
+	}
 	currentAtom= nullptr;
 }
 
@@ -118,6 +122,10 @@ void InMemoryInputBuilder::onBody() {
 
 void InMemoryInputBuilder::onNafLiteral(bool naf) {
 	currentAtom->setNegative(naf);
+	if(naf && currentAtom->containsAnonymous()){
+		currentAtom->print();cout<<" ";
+		assert_msg(false, "ATOM IS UNSAFE");
+	}
 }
 
 void InMemoryInputBuilder::onAtom(bool isStrongNeg) {
@@ -317,21 +325,35 @@ void InMemoryInputBuilder::onChoiceAtom() {
 
 void InMemoryInputBuilder::onBuiltinAtom() {
 	currentAtom = new BuiltInAtom(currentBinop,false,terms_parsered);
+	if(currentAtom->containsAnonymous()){
+		currentAtom->print();cout<<" ";
+		assert_msg(false, "ATOM IS UNSAFE");
+	}
 }
 
 void InMemoryInputBuilder::onAggregateLowerGuard() {
 	if(currentAggregate==nullptr)
 		currentAggregate = new AggregateAtom;
-	currentAggregate->setFirstGuard(terms_parsered.back());
+	Term* firstGuard=terms_parsered.back();
+	currentAggregate->setFirstGuard(firstGuard);
 	currentAggregate->setFirstBinop(currentBinop);
+	if(firstGuard->contain(TermType::ANONYMOUS)){
+		currentAggregate->print();cout<<" ";
+		assert_msg(false, "ATOM IS UNSAFE");
+	}
 	terms_parsered.pop_back();
 }
 
 void InMemoryInputBuilder::onAggregateUpperGuard() {
 	if(currentAggregate==nullptr)
 		currentAggregate = new AggregateAtom;
-	currentAggregate->setSecondGuard(terms_parsered.back());
+	Term* secondGuard=terms_parsered.back();
+	currentAggregate->setSecondGuard(secondGuard);
 	currentAggregate->setSecondBinop(currentBinop);
+	if(secondGuard->contain(TermType::ANONYMOUS)){
+		currentAggregate->print();cout<<" ";
+		assert_msg(false, "ATOM IS UNSAFE");
+	}
 	terms_parsered.pop_back();
 }
 
@@ -362,6 +384,8 @@ void InMemoryInputBuilder::onAggregateVariableTerm(char* value) {
 }
 
 void InMemoryInputBuilder::onAggregateUnknownVariable() {
+	currentAggregate->print();cout<<" ";
+	assert_msg(false, "ATOM IS UNSAFE");
 }
 
 void InMemoryInputBuilder::onAggregateNafLiteral() {
@@ -371,6 +395,11 @@ void InMemoryInputBuilder::onAggregateNafLiteral() {
 
 void InMemoryInputBuilder::onAggregateElement() {
 	currentAggregate->addAggregateElement(currentAggregateElement);
+	if(!currentAggregateElement->areAggregationTermsSafe())
+	{
+		currentAggregate->print();cout<<" ";
+		assert_msg(false, "ATOM IS UNSAFE");
+	}
 	currentAggregateElement=new AggregateElement;
 }
 

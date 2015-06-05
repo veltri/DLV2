@@ -36,40 +36,7 @@ unordered_set<index_object> Rule::calculatePredicateIndex(vector<Atom*>& atoms,b
 	return predicates;
 }
 
-static bool insertVariables(Atom* atom,set_term& variables,bool anonymusSafe)
-{
-	if(!anonymusSafe)
-		if(atom->containsAnonymous())
-			return false;
-	set_term tempVariables=atom->getVariable();
-	variables.insert(tempVariables.begin(),tempVariables.end());
-	return true;
-
-}
-
-bool Rule::isSafe()
-{
-	set_term variableToCheck;
-	set_term variableInPositiveAtom;
-	for(auto atom:head)
-		if(!insertVariables(atom,variableToCheck,false))
-			return false;
-	for(auto atom:body)
-		if(atom->isNegative()){
-			if(!insertVariables(atom,variableToCheck,false))
-				return false;
-		}
-		else
-			insertVariables(atom,variableInPositiveAtom,true);
-	if(variableInPositiveAtom.size()<variableToCheck.size())
-		return false;
-	for(auto variable:variableToCheck)
-		if(variableInPositiveAtom.count(variable)!=1)
-			return false;
-	return true;
-}
-
-void  Rule::print(){
+void Rule::print(){
 
 	//Print for debug
 	if(!ground){printNonGround();return;}

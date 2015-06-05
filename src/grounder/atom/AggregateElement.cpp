@@ -57,8 +57,22 @@ namespace grounder{
 		}
 	}
 
-}
-}
+	bool AggregateElement::areAggregationTermsSafe() const {
+		for(auto term: terms){
+			bool ok=false;
+			for(auto atom:nafLiterals){
+				set_term variables=atom->getVariable();
+				if(variables.count(term)){
+					ok=true;
+				}
+			}
+			if(!ok)
+				return false;
+		}
+		return true;
+	}
 
+}
+}
 
 

@@ -67,6 +67,8 @@ class AggregateElement {
 		//Destructor
 		~AggregateElement() {};
 
+		bool areAggregationTermsSafe()const;
+
 	private:
 		///Vector of terms
 		vector<Term*> terms;

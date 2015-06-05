@@ -33,6 +33,7 @@ private:
 	bool lookForVariablesUnsafe(set_term& variables,Atom* atom, list<unsigned>::iterator it, vector<list<unsigned>::iterator>& atomsUnlocked);
 	void checkBuiltInSafety(bool& firstSafe, Term* firstTerm,Term*& bindVariable);
 	void foundAnAssigment(Atom* atom, Term* bindVariable, unsigned pos);
+	bool checkHeadSafety();
 
 public:
 	OrderRule(Rule* r);

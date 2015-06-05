@@ -41,14 +41,6 @@ bool OrderRule::order() {
 		}
 	}
 
-//	cout<<"NEG: "<<negativeAtoms.size()<<endl;
-//	rule->print();
-//	for(auto it:mapVariablesAtoms){
-//		cout<<"VAR: ";it.first->print();cout<<" ";
-//		cout<<"ATOM: ";orderedBody[it.second]->print();cout<<endl;
-//	}
-//	cout<<"----------"<<endl;
-
 	// Second, solve the cyclic dependencies
 	while(builtInAtoms.size()>0 || negativeAtoms.size()>0|| aggregatesAtoms.size()>0){
 		unsigned sizeBuiltIns=builtInAtoms.size();
@@ -66,17 +58,22 @@ bool OrderRule::order() {
 	// Finally, set the ordered body as the body of the rule
 	rule->setBody(orderedBody);
 
-//	atom_counter=0;
-//	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();++atom,++atom_counter){
-//		cout<<atom_counter<<" ";
-//		for(auto it:bindAtomsDependency[atom_counter]){
-//			orderedBody[it]->print();
-//			cout<<" ";
-//		}
-//		cout<<endl;
-//	}
-//	cout<<"*************"<<endl;
+	// Check head safety once that the safe variables are known
+	return checkHeadSafety();
 
+}
+
+bool OrderRule::checkHeadSafety(){
+	set_term variableToCheck;
+	for(auto atom=rule->getBeginHead();atom!=rule->getEndHead();++atom){
+		set_term tempVariables=(*atom)->getVariable();
+		variableToCheck.insert(tempVariables.begin(),tempVariables.end());
+	}
+	if(safeVariables.size()<variableToCheck.size())
+		return false;
+	for(auto variable:variableToCheck)
+		if(!safeVariables.count(variable))
+			return false;
 	return true;
 }
 
