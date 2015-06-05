@@ -30,7 +30,7 @@ private:
 	void computeAtomsVariables();
  	void addSafeVariablesInAtom(Atom* atom, unsigned pos);
 	void unlockAtoms(list<unsigned>& atoms);
-	void lookForVariablesUnsafe(set_term& variables,Atom* atom, list<unsigned>::iterator it, vector<list<unsigned>::iterator>& atomsUnlocked);
+	bool lookForVariablesUnsafe(set_term& variables,Atom* atom, list<unsigned>::iterator it, vector<list<unsigned>::iterator>& atomsUnlocked);
 	void checkBuiltInSafety(bool& firstSafe, Term* firstTerm,Term*& bindVariable);
 	void foundAnAssigment(Atom* atom, Term* bindVariable, unsigned pos);
 

@@ -384,14 +384,21 @@ void InMemoryInputBuilder::onAggregate(bool naf) {
 
 void InMemoryInputBuilder::addRule(Rule* rule) {
 	OrderRule orderRule(rule);
-	assert_action(orderRule.order(), "RULE IS UNSAFE");
+	bool isSafe=orderRule.order();
+	assert_action(isSafe, "RULE IS UNSAFE");
 	if (foundAnAggregateInCurrentRule) {
 		vector<Rule*> rules;
 		inputRewriter->translateAggregate(rule, rules, orderRule);
+		if(Options::globalOptions()->isPrintRewritedProgram())
+			rule->print();
 		for (auto r : rules){
-			OrderRule orderR(rule);
-			assert_action(orderR.order(), "RULE IS UNSAFE");
+			OrderRule orderR(r);
+			isSafe=orderR.order();
+			if(!isSafe)r->print();
+			assert_action(isSafe, "RULE IS UNSAFE");
 			statementDependency->addRuleMapping(r);
+			if(Options::globalOptions()->isPrintRewritedProgram())
+				r->print();
 		}
 	}
 	statementDependency->addRuleMapping(rule);

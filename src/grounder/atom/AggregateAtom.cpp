@@ -463,9 +463,10 @@ set_term AggregateAtom::getSharedVariable(Rule* rule) {
 		Atom* current_atom=*atom;
 		set_term variables;
 		if(current_atom!=this){
-			if(current_atom->getAggregateElementsSize()>0 && current_atom->getFirstBinop()==EQUAL)
-				variables=current_atom->getGuardVariable();
-			else if(!current_atom->isNegative() || (current_atom->isBuiltIn() && current_atom->getBinop()==EQUAL))
+			if(current_atom->getAggregateElementsSize()>0){
+				if(current_atom->getFirstBinop()==EQUAL)
+					variables=current_atom->getGuardVariable();
+			}else if(!current_atom->isNegative() || (current_atom->isBuiltIn() && current_atom->getBinop()==EQUAL))
 				variables=current_atom->getVariable();
 			else
 				continue;

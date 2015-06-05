@@ -41,44 +41,41 @@ bool OrderRule::order() {
 		}
 	}
 
-	cout<<"NEG: "<<negativeAtoms.size()<<endl;
-	rule->print();
-	for(auto it:mapVariablesAtoms){
-		cout<<"VAR: ";it.first->print();cout<<" ";
-		cout<<"ATOM: ";orderedBody[it.second]->print();cout<<endl;
-	}
-	cout<<"----------"<<endl;
-
-	if(negativeAtoms.size()>0)
-		return false;
+//	cout<<"NEG: "<<negativeAtoms.size()<<endl;
+//	rule->print();
+//	for(auto it:mapVariablesAtoms){
+//		cout<<"VAR: ";it.first->print();cout<<" ";
+//		cout<<"ATOM: ";orderedBody[it.second]->print();cout<<endl;
+//	}
+//	cout<<"----------"<<endl;
 
 	// Second, solve the cyclic dependencies
-	while(builtInAtoms.size()>0 || aggregatesAtoms.size()>0){
+	while(builtInAtoms.size()>0 || negativeAtoms.size()>0|| aggregatesAtoms.size()>0){
 		unsigned sizeBuiltIns=builtInAtoms.size();
+		unsigned sizeNegatives=negativeAtoms.size();
+		unlockAtoms(negativeAtoms);
 		unlockAtoms(builtInAtoms);
-		if(builtInAtoms.size()==sizeBuiltIns){
+		if(builtInAtoms.size()==sizeBuiltIns && sizeNegatives==negativeAtoms.size()){
 			unsigned sizeAggregates=aggregatesAtoms.size();
 			unlockAtoms(aggregatesAtoms);
 			if(aggregatesAtoms.size()==sizeAggregates)
 				return false;
 		}
 	}
+
 	// Finally, set the ordered body as the body of the rule
 	rule->setBody(orderedBody);
 
-	atom_counter=0;
-	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();++atom,++atom_counter){
-		cout<<atom_counter<<" ";
-		for(auto it:bindAtomsDependency[atom_counter]){
-			orderedBody[it]->print();
-			cout<<" ";
-		}
-		cout<<endl;
-	}
-	cout<<"*************"<<endl;
-
-	if(Options::globalOptions()->isPrintRewritedProgram())
-		rule->print();
+//	atom_counter=0;
+//	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();++atom,++atom_counter){
+//		cout<<atom_counter<<" ";
+//		for(auto it:bindAtomsDependency[atom_counter]){
+//			orderedBody[it]->print();
+//			cout<<" ";
+//		}
+//		cout<<endl;
+//	}
+//	cout<<"*************"<<endl;
 
 	return true;
 }
@@ -96,8 +93,9 @@ void OrderRule::addSafeVariablesInAtom(Atom* atom, unsigned pos) {
 void OrderRule::foundAnAssigment(Atom* atom, Term* bindVariable, unsigned pos) {
 	atom->setAssignment(true);
 	safeVariables.insert(bindVariable);
-	if (!mapVariablesAtoms.count(bindVariable))
+	if (!mapVariablesAtoms.count(bindVariable)){
 		mapVariablesAtoms.insert( { bindVariable, orderedBody.size()-1 });
+	}
 	set_term variables=mapAtomsVariables[pos];
 	for(auto var: variables){
 		if(var->getIndex()!=bindVariable->getIndex()){
@@ -115,12 +113,12 @@ void OrderRule::unlockAtoms(list<unsigned>& atoms) {
 		// then if every variable is safe, the atom is safe
 		// and thus it can be added to the new body
 		if(atom->isNegative() || (atom->isBuiltIn() && atom->getBinop()!=Binop::EQUAL) || (atom->getAggregateElementsSize()>0)){
-			lookForVariablesUnsafe(variables, atom, it, atomsUnlocked);
-		}
-		//Moreover if it is an assignment aggregate the bind variable must be inserted into the safeVariables
-		if(atom->getAggregateElementsSize()>0 && atom->getFirstBinop()==EQUAL && !safeVariables.count(atom->getFirstGuard())){
-			Term* bindVariable=atom->getFirstGuard();
-			foundAnAssigment(atom, bindVariable,*it);
+			bool containsUnsef=lookForVariablesUnsafe(variables, atom, it, atomsUnlocked);
+			//Moreover if it is an assignment aggregate the bind variable must be inserted into the safeVariables
+			if(!containsUnsef && atom->getAggregateElementsSize()>0 && atom->getFirstBinop()==EQUAL && !safeVariables.count(atom->getFirstGuard())){
+				Term* bindVariable=atom->getFirstGuard();
+				foundAnAssigment(atom, bindVariable,*it);
+			}
 		}
 		if(atom->isBuiltIn() && atom->getBinop()==Binop::EQUAL){
 			Term* firstTerm=atom->getTerm(0);
@@ -177,7 +175,7 @@ void OrderRule::checkBuiltInSafety(bool& safe, Term* term, Term*& bindVariable) 
 	}
 }
 
-void OrderRule::lookForVariablesUnsafe(set_term& variables,Atom* atom, list<unsigned>::iterator it, vector<list<unsigned>::iterator>& atomsUnlocked){
+bool OrderRule::lookForVariablesUnsafe(set_term& variables,Atom* atom, list<unsigned>::iterator it, vector<list<unsigned>::iterator>& atomsUnlocked){
 	bool foundAnUnsafeVar=false;
 	for(auto variable: variables){
 		if(!safeVariables.count(variable)){
@@ -189,6 +187,8 @@ void OrderRule::lookForVariablesUnsafe(set_term& variables,Atom* atom, list<unsi
 		orderedBody.push_back(atom);
 		atomsUnlocked.push_back(it);
 	}
+
+	return foundAnUnsafeVar;
 }
 
 vector<Atom*> OrderRule::getAtomsFromWhichDepends(unsigned atom_position) const {
