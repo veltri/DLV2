@@ -8,6 +8,7 @@
 #include "PredicateExtension.h"
 #include "../ground/StatementDependency.h"
 //#include "../utility/Timer.h"
+#include <climits>
 
 namespace DLV2{
 
@@ -72,6 +73,7 @@ PredicateExtension::~PredicateExtension() {
 	for(unsigned int i=0;i<atomSearchers.size();++i){
 		delete atomSearchers[i];
 	}
+	delete predicateInformation;
 }
 
 void PredicateExtension::swapTables(unsigned tableFrom,unsigned tableTo){
@@ -101,6 +103,61 @@ void PredicateExtension::swapTables(unsigned tableFrom,unsigned tableTo){
 
 PredicateExtTable *PredicateExtTable::predicateExtTable_;
 
-};
+/****************************************************** PREDICATE INFORMATION ***************************************************/
 
-};
+PredicateInformation::PredicateInformation(unsigned arity) : min(arity,INT_MAX), max(arity,INT_MIN) {
+	min.reserve(arity);
+	max.reserve(arity);
+}
+
+bool PredicateInformation::isOnlyPositive(unsigned index) const {
+	if(min[index]>=0)
+		return true;
+	return false;
+}
+
+bool PredicateInformation::isOnlyNegative(unsigned index) const {
+	if(max[index]<=0)
+		return true;
+	return false;
+}
+
+bool PredicateInformation::isOnlyPositive() const {
+	for(auto n:min){
+		if(n<0)
+			return false;
+	}
+	return true;
+}
+
+bool PredicateInformation::isOnlyNegative() const {
+	for(auto n:max){
+		if(n>0)
+			return false;
+	}
+	return true;
+}
+
+void PredicateInformation::update(Atom* atom) {
+	for (unsigned i = 0; i < atom->getTermsSize(); ++i) {
+		Term* t=atom->getTerm(i);
+		if(t->getType()==TermType::NUMERIC_CONSTANT){
+			int val=t->getConstantValue();
+			if(t->getConstantValue()>max[i])
+				max[i]=val;
+			if(t->getConstantValue()<min[i])
+				min[i]=val;
+		}
+	}
+}
+
+int PredicateInformation::getMax(unsigned index) const {
+	return max[index];
+}
+
+int PredicateInformation::getMin(unsigned index) const {
+	return min[index];
+}
+
+}}
+

@@ -20,6 +20,22 @@ namespace DLV2{
 
 namespace grounder{
 
+class PredicateInformation{
+public:
+	PredicateInformation(unsigned arity);
+	bool isOnlyPositive(unsigned index) const;
+	bool isOnlyNegative(unsigned index) const;
+	bool isOnlyPositive() const;
+	bool isOnlyNegative() const;
+	void update(Atom* atom);
+	int getMax(unsigned index) const;
+	int getMin(unsigned index) const;
+
+private:
+	vector<int> min;
+	vector<int> max;
+};
+
 
 /**
  * This class represents the extension of each predicate (instances).
@@ -29,7 +45,7 @@ namespace grounder{
 class PredicateExtension {
 public:
 	///Constructors
-	PredicateExtension(Predicate* predicate, unsigned tableNumber = 2): predicate(predicate){
+	PredicateExtension(Predicate* predicate, unsigned tableNumber = 2): predicate(predicate), predicateInformation(new PredicateInformation(predicate->getArity())){
 		if(MAX_TABLE_NUMBER){
 			tables.reserve(MAX_TABLE_NUMBER);
 			atomSearchers.reserve(MAX_TABLE_NUMBER);
@@ -67,6 +83,7 @@ public:
 			atomSearcher->add(genericAtom);
 		}
 		tables[table]->push_back(genericAtom);
+		predicateInformation->update(genericAtom);
 		return true;
 	}
 
@@ -101,6 +118,8 @@ public:
 
 	static void setMaxTableNumber(unsigned int maxTableNumber) {MAX_TABLE_NUMBER = maxTableNumber;}
 
+	PredicateInformation* getPredicateInformation() const {return predicateInformation;}
+
 private:
 	///The predicate
 	Predicate* predicate;
@@ -112,6 +131,9 @@ private:
 	vector<AtomSearcher*> atomSearchers;
 
 	static unsigned int MAX_TABLE_NUMBER;
+
+	///A PredicateInformation object that stores the information about the max and the min values of each term in the instances of the predicate
+	PredicateInformation* predicateInformation;
 
 	///This method configures the searching strategy for each table
 	void setAtomSearchers();
