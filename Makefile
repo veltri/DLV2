@@ -4,7 +4,7 @@
 # to compile different binaries
 BUILD = debug
 cxxflags.debug = \
- -Wall -std=c++11 -DDEBUG_ATOM_SEARCHER -g
+ -Wall -std=c++11 -g -DDEBUG_ATOM_SEARCHER
 linkflags.debug = \
  -lm
 cxxflags.trace = \
@@ -12,7 +12,7 @@ cxxflags.trace = \
 linkflags.trace = \
  -lm
 cxxflags.release = \
- -Wall -std=c++11 -DNDEBUG -O3
+ -Wall -std=c++11 -O3
 linkflags.release = \
  -lm
 cxxflags.gprof = \

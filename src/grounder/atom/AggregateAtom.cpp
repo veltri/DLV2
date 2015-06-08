@@ -175,7 +175,7 @@ ResultEvaluation AggregateAtom::returnEvaluation(ResultEvaluation evaluation){
 ResultEvaluation AggregateAtom::partialEvaluateCount() {
 
 	Atom *lastAtom=aggregateElements.back()->getNafLiteral(0);
-	if(!PredicateExtTable::getInstance()->getPredicateExt(lastAtom->getPredicate())->getAtom(lastAtom)->isFact()){
+	if(!lastAtom->isFact()){
 		undefAtomEvaluation++;
 		return UNDEF;
 	}
@@ -195,7 +195,7 @@ ResultEvaluation AggregateAtom::partialEvaluateCount() {
 
 ResultEvaluation AggregateAtom::partialEvaluateMax() {
 	Atom *lastAtom=aggregateElements.back()->getNafLiteral(0);
-	if(!PredicateExtTable::getInstance()->getPredicateExt(lastAtom->getPredicate())->getAtom(lastAtom)->isFact()){
+	if(!lastAtom->isFact()){
 		int value=aggregateElements.back()->getTerms().front()->getConstantValue();
 		if(undefAtomEvaluation<value)
 			undefAtomEvaluation=value;
@@ -220,7 +220,7 @@ ResultEvaluation AggregateAtom::partialEvaluateMax() {
 
 ResultEvaluation AggregateAtom::partialEvaluateMin() {
 	Atom *lastAtom=aggregateElements.back()->getNafLiteral(0);
-	if(!PredicateExtTable::getInstance()->getPredicateExt(lastAtom->getPredicate())->getAtom(lastAtom)->isFact()){
+	if(!lastAtom->isFact()){
 		int value=aggregateElements.back()->getTerms().front()->getConstantValue();
 		if(undefAtomEvaluation>value)
 			undefAtomEvaluation=value;
@@ -244,12 +244,30 @@ ResultEvaluation AggregateAtom::partialEvaluateMin() {
 
 ResultEvaluation AggregateAtom::partialEvaluateSum() {
 	Atom *lastAtom=aggregateElements.back()->getNafLiteral(0);
-	if(!PredicateExtTable::getInstance()->getPredicateExt(lastAtom->getPredicate())->getAtom(lastAtom)->isFact()){
+	if(!lastAtom->isFact()){
 		undefAtomEvaluation+=aggregateElements.back()->getTerms().front()->getConstantValue();
 		return UNDEF;
 	}
 
 	partialEvaluation+=aggregateElements.back()->getTerms().front()->getConstantValue();
+
+	if(PredicateExtTable::getInstance()->getPredicateExt(lastAtom->getPredicate())->getPredicateInformation()->isOnlyPositive()){
+		if(checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER,false))
+			return SATISFY;
+		if(checkOperator(secondGuard,secondBinop,LESS,GREATER,false))
+			return UNSATISFY;
+		if(checkOperator(firstGuard,firstBinop,EQUAL,GREATER,false))
+			return UNSATISFY;
+	}
+
+	if(PredicateExtTable::getInstance()->getPredicateExt(lastAtom->getPredicate())->getPredicateInformation()->isOnlyNegative()){
+		if(checkOperator(firstGuard,firstBinop,LESS_OR_EQ,LESS,false))
+			return UNSATISFY;
+		if(checkOperator(secondGuard,secondBinop,LESS,LESS,false))
+			return SATISFY;
+		if(checkOperator(firstGuard,firstBinop,EQUAL,LESS,false))
+			return UNSATISFY;
+	}
 
 	return UNDEF;
 }

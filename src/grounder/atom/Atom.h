@@ -141,7 +141,7 @@ public:
 
 	/******** Methods useful for AggregateAtom ********/
 	///Getter method for the aggregate elements
-	virtual vector<AggregateElement*> getAggregateElements() {return vector<AggregateElement*>(0);};
+	virtual const vector<AggregateElement*>& getAggregateElements() const {return vector<AggregateElement*>(0);};
 	///Getter method for the i-th aggregate element
 	virtual AggregateElement* getAggregateElement(unsigned i) {return 0;}
 	///Setter method for the aggregate elements
