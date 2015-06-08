@@ -447,8 +447,10 @@ bool BackTrackingGrounder::groundAggregate() {
 		current_var_assign.insert({aggregateAtom->getFirstGuard(),term_value});
 		return true;
 	}
-	//Create a ground aggregate empty
+	//Create a ground aggregate empty and set the aggregate to not simplify
 	ground_aggregate=new AggregateAtom(aggregateAtom->getFirstGuard(),aggregateAtom->getFirstBinop(),aggregateAtom->getSecondGuard(),aggregateAtom->getSecondBinop(),aggregateAtom->getAggregateFunction(),aggregateAtom->isNegative());
+	ground_rule->setAtomToSimplifyInBody(index_current_atom,false);
+
 	ResultEvaluation result=UNDEF;
 	for(unsigned i=0;i<aggregateAtom->getAggregateElementsSize()&&result==UNDEF;i++){
 
@@ -508,8 +510,6 @@ bool BackTrackingGrounder::groundAggregate() {
 
 		if(!ground_aggregate->isUndefAssignment())
 			ground_rule->setAtomToSimplifyInBody(index_current_atom);
-		else
-			ground_rule->setAtomToSimplifyInBody(index_current_atom,false);
 	}
 
 	substiteInGroundRule(index_current_atom,nullptr);
@@ -520,10 +520,11 @@ bool BackTrackingGrounder::groundAggregate() {
 		ground_rule->setAtomToSimplifyInBody(index_current_atom);
 		if(result==UNSATISFY)
 			return false;
-		ground_rule->setAtomToSimplifyInBody(index_current_atom);
+
 		//Aggregate is satisfy
 		return true;
 	}
+
 	ground_rule->setAtomInBody(index_current_atom,ground_aggregate);
 	return true;
 }
