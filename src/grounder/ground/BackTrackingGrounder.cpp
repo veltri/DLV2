@@ -434,12 +434,10 @@ bool BackTrackingGrounder::groundAggregate() {
 		//An assignment is in the lower guard
 		//The atom is already grounded, just change the guard
 		ground_aggregate=ground_rule->getAtomInBody(index_current_atom);
-
 		bool finish=0;
 		int val=ground_aggregate->generateNextCombination(finish);
 		if(finish){
 			substiteInGroundRule(index_current_atom,nullptr);
-
 			return false;
 		}
 
@@ -510,6 +508,8 @@ bool BackTrackingGrounder::groundAggregate() {
 
 		if(!ground_aggregate->isUndefAssignment())
 			ground_rule->setAtomToSimplifyInBody(index_current_atom);
+		else
+			ground_rule->setAtomToSimplifyInBody(index_current_atom,false);
 	}
 
 	substiteInGroundRule(index_current_atom,nullptr);
