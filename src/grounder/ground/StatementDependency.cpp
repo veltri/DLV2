@@ -129,7 +129,7 @@ void DependencyGraph::addInDependency(Rule* r) {
 
 			// If the rule has no positive predicate in its body, is added a dummy edge in order to not lose this rule
 			// when the components graph is created
-			if(addPositiveEdge)
+			if(!addPositiveEdge)
 				addEdge(pred_head->getIndex(), pred_head->getIndex(),1);
 		}
 		//Set all predicate in the body as unvisited, and then continue with the next atom
