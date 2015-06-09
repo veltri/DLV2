@@ -366,18 +366,19 @@ void ComponentGraph::createComponent(DependencyGraph &depGraph,
 
 				bool isPositive = !(*body_it)->isNegative();
 
-				if((*body_it)->getPredicate()==nullptr)continue;
-				index_object pred_body = (*body_it)->getPredicate()->getIndex();
+				for(auto pred_body:(*body_it)->getPredicates()){
+					index_object index_pred_body = pred_body->getIndex();
+					// Check if the predicate appear in the head also
+					if (statementAtomMapping.isInHead(index_pred_body)) {
+						int weight = isPositive;
+						if (!isPositive)
+							weight = -1;
+						// FIXME if put negative edge check if exist positive edge
+						addEdge(index_pred_body, pred_head, weight);
 
-				// Check if the predicate appear in the head also
-				if (statementAtomMapping.isInHead(pred_body)) {
-					int weight = isPositive;
-					if (!isPositive)
-						weight = -1;
-					// FIXME if put negative edge check if exist positive edge
-					addEdge(pred_body, pred_head, weight);
-
+					}
 				}
+
 
 			}
 
