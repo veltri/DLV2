@@ -45,6 +45,8 @@ public:
 	Predicate* getPredicate() const {return predicate;};
 	set_predicate getPredicates() const {return set_predicate({predicate});};
 
+	virtual bool isClassicalLiteral(){return true;};
+
 	///Setter method for the predicate
 	void setPredicate(Predicate* predicate) {this->predicate=predicate;};
 	///Returns true if the atom is negated with true negation

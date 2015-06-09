@@ -70,10 +70,10 @@ bool BackTrackingGrounder::match() {
 		ground_rule->setAtomToSimplifyInBody(index_current_atom);
 		return templateSetAtom[index_current_atom] -> evaluate(current_var_assign);
 
-	}else if(templateSetAtom[index_current_atom]->getAggregateElementsSize()>0){
+	}else if(templateSetAtom[index_current_atom]->isAggregateAtom()){
 		return groundAggregate();
 
-	}else{
+	}else if(templateSetAtom[index_current_atom]->isClassicalLiteral()){
 
 		bool match;
 		unsigned current_table=current_id_match_iterator[index_current_atom];
@@ -89,6 +89,8 @@ bool BackTrackingGrounder::match() {
 #endif
 		return match;
 	}
+
+	return false;
 
 }
 
@@ -360,7 +362,7 @@ void BackTrackingGrounder::findBindVariablesRule() {
 		Atom *current_atom = *current_atom_it;
 		set_term variablesInAtom ;
 
-		if(current_atom->getAggregateElementsSize()>0)
+		if(current_atom->isAggregateAtom())
 			variablesInAtom=current_atom->getGuardVariable();
 		else
 			variablesInAtom=current_atom->getVariable();
@@ -376,7 +378,7 @@ void BackTrackingGrounder::findBindVariablesRule() {
 
 		///Set true if is ground
 		if(is_ground_atom.size()<=index_current_atom)
-				is_ground_atom.push_back((current_atom->isBuiltIn() || current_atom->isNegative() || current_variables_atoms[index_current_atom].size()==0));
+				is_ground_atom.push_back((current_atom->isBuiltIn() || (current_atom->isClassicalLiteral() && current_atom->isNegative()) || current_variables_atoms[index_current_atom].size()==0));
 
 	}
 #ifdef DEBUG_RULE_TIME

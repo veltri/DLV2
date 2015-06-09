@@ -87,6 +87,9 @@ public:
 	void setFirstGuard(Term* lower){firstGuard=lower;};
 	void setSecondGuard(Term* upper){secondGuard=upper;};
 
+	virtual bool isAggregateAtom(){return true;}
+
+
 	Term* getFirstGuard(){return firstGuard;};
 	Term* getSecondGuard(){return secondGuard;};
 

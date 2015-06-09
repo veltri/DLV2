@@ -101,6 +101,9 @@ public:
 	virtual Predicate* getPredicate() const {return nullptr;};
 	virtual set_predicate getPredicates() const {return set_predicate();};
 
+	///Return true if is a Classical Literal
+	virtual bool isClassicalLiteral(){return false;};
+
 	///Setter method for the predicate
 	virtual void setPredicate(Predicate* predicate) {};
 	///This method returns the size of the terms' vector
@@ -148,6 +151,8 @@ public:
 	virtual void setAggregateElements(const vector<AggregateElement*>& aggregateElements) {};
 	///Getter method for the aggregate elements size
 	virtual unsigned getAggregateElementsSize() {return 0;};
+	/// Return true if is an aggregate atom
+	virtual bool isAggregateAtom(){return false;}
 	///Setter method for the i-th aggregate element
 	virtual void setAggregateElement(unsigned i, const vector<Atom*>& nafLits, const vector<Term*>& terms) {}
 	///Setter method for the i-th aggregate element
@@ -203,6 +208,8 @@ public:
 	virtual const vector<ChoiceElement> getChoiceElements() const {return vector<ChoiceElement>(0);};
 	///Setter method for the choice elements
 	virtual void setChoiceElements(const vector<vector<index_object> >& choiceElements) {};
+	///Return true if is a choice atom
+	virtual bool isChoice(){return false;}
 	/*****************************************************/
 
 	/******** Methods useful for Generic Atom ********/

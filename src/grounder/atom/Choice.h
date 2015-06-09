@@ -44,6 +44,9 @@ public:
 	///Setter method for the choice elements
 	void setChoiceElements(const vector<ChoiceElement>& choiceElements) {this->choiceElements = choiceElements;};
 
+	virtual bool isChoice(){return true;}
+
+
 	///This method compute the resulting hash of a choice atom TODO
 	size_t getHash() const {return 0;};
 

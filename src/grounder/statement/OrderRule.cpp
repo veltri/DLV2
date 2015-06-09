@@ -19,11 +19,11 @@ OrderRule::OrderRule(Rule* r):rule(r){
 	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();++atom,++atom_counter){
 		bindAtomsDependency.push_back(unordered_set<unsigned>());
 		Atom* current_atom=*atom;
-		if(current_atom->isNegative())
+		if(current_atom->isClassicalLiteral() && current_atom->isNegative())
 			 negativeAtoms.push_back(atom_counter);
 		 else if(current_atom->isBuiltIn())
 			 builtInAtoms.push_back(atom_counter);
-		 else if(current_atom->getAggregateElementsSize()>0)
+		 else if(current_atom->isAggregateAtom())
 			 aggregatesAtoms.push_back(atom_counter);
 	}
 }
@@ -34,7 +34,7 @@ bool OrderRule::order() {
 	unsigned atom_counter=0;
 	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();++atom,++atom_counter){
 		Atom* current_atom=*atom;
-		if(!(current_atom->isNegative()) && !(current_atom->isBuiltIn()) && current_atom->getAggregateElementsSize()==0) {
+		if(current_atom->isClassicalLiteral() && !current_atom->isNegative()){
 			addSafeVariablesInAtom(current_atom, atom_counter);
 			unlockAtoms(negativeAtoms);
 			unlockAtoms(builtInAtoms);
@@ -109,10 +109,10 @@ void OrderRule::unlockAtoms(list<unsigned>& atoms) {
 		// If the atom is negative or is not an assignment or is an aggregate
 		// then if every variable is safe, the atom is safe
 		// and thus it can be added to the new body
-		if(atom->isNegative() || (atom->isBuiltIn() && atom->getBinop()!=Binop::EQUAL) || (atom->getAggregateElementsSize()>0)){
-			bool containsUnsef=lookForVariablesUnsafe(variables, atom, it, atomsUnlocked);
+		if(atom->isNegative() || (atom->isBuiltIn() && atom->getBinop()!=Binop::EQUAL) || (atom->isAggregateAtom())){
+			bool containsUnsafe=lookForVariablesUnsafe(variables, atom, it, atomsUnlocked);
 			//Moreover if it is an assignment aggregate the bind variable must be inserted into the safeVariables
-			if(!containsUnsef && atom->getAggregateElementsSize()>0 && atom->getFirstBinop()==EQUAL && !safeVariables.count(atom->getFirstGuard())){
+			if(!containsUnsafe && !atom->isNegative() && atom->isAggregateAtom() && atom->getFirstBinop()==EQUAL && !safeVariables.count(atom->getFirstGuard())){
 				Term* bindVariable=atom->getFirstGuard();
 				foundAnAssigment(atom, bindVariable,*it);
 			}
@@ -145,7 +145,7 @@ void OrderRule::unlockAtoms(list<unsigned>& atoms) {
 void OrderRule::computeAtomsVariables() {
 	for (unsigned i = 0; i < rule->getSizeBody(); ++i) {
 		Atom* atom = rule->getAtomInBody(i);
-		if (atom->getAggregateElementsSize() == 0)
+		if (!atom->isAggregateAtom())
 			mapAtomsVariables.insert( { i, atom->getVariable() });
 		else{
 			AggregateAtom* aggregate=dynamic_cast<AggregateAtom*>(atom);

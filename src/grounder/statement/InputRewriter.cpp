@@ -73,7 +73,7 @@ void BaseInputRewriter::chooseBestSaviorForAggregate(Rule* rule, AggregateElemen
 		for(auto it=rule->getBeginBody();it!=rule->getEndBody();++it,++index_atom){
 			Atom* atom=*it;
 			set_term variables; //TODO togliere dal for o fare cache
-			if (atom->getAggregateElementsSize()>0){
+			if (atom->isAggregateAtom()){
 				if(atom->getFirstBinop()==Binop::EQUAL){
 					AggregateAtom* aggregate=dynamic_cast<AggregateAtom*>(atom);
 					variables=aggregate->getGuardVariable();
@@ -83,7 +83,7 @@ void BaseInputRewriter::chooseBestSaviorForAggregate(Rule* rule, AggregateElemen
 				if (atom->getBinop()==Binop::EQUAL)
 					variables=atom->getVariable();
 			}
-			else if (!atom->isNegative())
+			else if (atom->isClassicalLiteral() && !atom->isNegative())
 				variables=atom->getVariable();
 			if(variables.count(var) && saviourChoosingPolicy->choose(atom,index_atom,possibleAtomsBinding,atomToAdd,(it==rule->getEndBody()-1), orderRule))
 				break;

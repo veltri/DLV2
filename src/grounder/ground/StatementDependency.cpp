@@ -86,56 +86,39 @@ void DependencyGraph::addInDependency(Rule* r) {
 			// Set this predicate as visited
 			head_predicateVisited.insert(pred_head->getIndex());
 
-			// If the rule has no positive predicate in its body, is added a dummy edge in order to not lose this rule
-			// when the components graph is created
-			if(r->getPositivePredicateInBody().size()==0)
-				addEdge(pred_head->getIndex(), pred_head->getIndex(),1);
+//			// If the rule has no positive predicate in its body, is added a dummy edge in order to not lose this rule
+//			// when the components graph is created
+//			if(r->getPositivePredicateInBody().size()==0)
+//				addEdge(pred_head->getIndex(), pred_head->getIndex(),1);
+
+			bool addPositiveEdge=false;
 
 			for (auto body_it = r->getBeginBody(); body_it != r->getEndBody(); body_it++) {
 				// Check if the predicate is positive, otherwise skip it
 				if (!(*body_it)->isNegative()) {
-					Predicate* pred_body = (*body_it)->getPredicate();
 
-					// Check if the predicate in the head has been visited
-					if (pred_body!=nullptr  && !body_predicateVisited.count(pred_body->getIndex())) {
-
-						// Set this predicate as visited
-						body_predicateVisited.insert(pred_body->getIndex());
-						addEdge(pred_body->getIndex(), pred_head->getIndex(),1);
-
-					}else if((*body_it)->getAggregateElementsSize()> 0){
-						//Is Aggregate Atom
-						for(unsigned i=0;i<(*body_it)->getAggregateElementsSize();i++){
-							//For each atom in aggregate element add in graph dep
-							for(auto& atom:(*body_it)->getAggregateElement(i)->getNafLiterals()){
-								pred_body=atom->getPredicate();
-								body_predicateVisited.insert(pred_body->getIndex());
-								addEdge(pred_body->getIndex(), pred_head->getIndex(),1);
-							}
+					for(auto pred_body:(*body_it)->getPredicates()){
+						// Check if the predicate in the head has been visited
+						if(!body_predicateVisited.count(pred_body->getIndex())){
+							body_predicateVisited.insert(pred_body->getIndex());
+							addEdge(pred_body->getIndex(), pred_head->getIndex(),1);
+							addPositiveEdge=true;
 						}
 					}
+
 				}
 				else{
 
-					Predicate* pred_body = (*body_it)->getPredicate();
-
-					// Check if the predicate in the head has been visited
-					if (pred_body!=nullptr  && !body_predicateVisited.count(pred_body->getIndex())) {
-
-						// Set this predicate as visited
-						body_predicateVisited.insert(pred_body->getIndex());
-						addEdge(pred_body->getIndex(), pred_head->getIndex(),-1);
-
-					}
-
-					if((*body_it)->getAggregateElementsSize()> 0){
-						//Is Aggregate Atom
-						for(unsigned i=0;i<(*body_it)->getAggregateElementsSize();i++){
-							//For each atom in aggregate element add in graph dep
-							for(auto& atom:(*body_it)->getAggregateElement(i)->getNafLiterals()){
-								pred_body=atom->getPredicate();
-								body_predicateVisited.insert(pred_body->getIndex());
+					for(auto pred_body:(*body_it)->getPredicates()){
+						// Check if the predicate in the head has been visited
+						if(!body_predicateVisited.count(pred_body->getIndex())){
+							body_predicateVisited.insert(pred_body->getIndex());
+							if(!(*body_it)->isAggregateAtom())
+								addEdge(pred_body->getIndex(), pred_head->getIndex(),-1);
+							else{
+								//TODO Add edge -1 with aggregate??????
 								addEdge(pred_body->getIndex(), pred_head->getIndex(),1);
+								addPositiveEdge=true;
 							}
 						}
 					}
@@ -143,6 +126,11 @@ void DependencyGraph::addInDependency(Rule* r) {
 				}
 
 			}
+
+			// If the rule has no positive predicate in its body, is added a dummy edge in order to not lose this rule
+			// when the components graph is created
+			if(addPositiveEdge)
+				addEdge(pred_head->getIndex(), pred_head->getIndex(),1);
 		}
 		//Set all predicate in the body as unvisited, and then continue with the next atom
 		body_predicateVisited.clear();
@@ -477,6 +465,7 @@ void ComponentGraph::computeAnOrdering(list<unsigned int>& componentsOrdering) {
 			components.insert(pair.second);
 		for(auto it:components)
 			componentsOrdering.push_back(it);
+
 		return;
 	}
 
@@ -488,7 +477,6 @@ void ComponentGraph::computeAnOrdering(list<unsigned int>& componentsOrdering) {
 		this->recursive_sort(componentsOrdering);
 	}
 
-//	printTheOrderingOfComponent(componentsOrdering);
 }
 
 void ComponentGraph::printTheOrderingOfComponent(list<unsigned int>& componentsOrdering){
