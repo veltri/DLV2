@@ -300,6 +300,9 @@ ResultEvaluation AggregateAtom::finalEvaluateMax() {
 	if(undefAtomEvaluation==INT_MIN && checkOperator(firstGuard,firstBinop,EQUAL,EQUAL,false))
 		return SATISFY;
 
+	if(undefAtomEvaluation==INT_MIN && checkOperator(firstGuard,firstBinop,EQUAL,LESS,false))
+		return SATISFY;
+
 	if(checkOperator(firstGuard,firstBinop,LESS_OR_EQ,LESS,true))
 		return UNSATISFY;
 
@@ -316,6 +319,9 @@ ResultEvaluation AggregateAtom::finalEvaluateMax() {
 ResultEvaluation AggregateAtom::finalEvaluateMin() {
 	if(undefAtomEvaluation == INT_MAX && checkOperator(firstGuard,firstBinop,EQUAL,EQUAL,false))
 		return SATISFY;
+
+	if(undefAtomEvaluation == INT_MAX && checkOperator(firstGuard,firstBinop,EQUAL,GREATER,false))
+		return UNSATISFY;
 
 	if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,true))
 		return SATISFY;
