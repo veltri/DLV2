@@ -252,8 +252,9 @@ ResultEvaluation AggregateAtom::partialEvaluateSum() {
 	partialEvaluation+=aggregateElements.back()->getTerms().front()->getConstantValue();
 
 	if(PredicateExtTable::getInstance()->getPredicateExt(lastAtom->getPredicate())->getPredicateInformation()->isOnlyPositive()){
-		if(checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER,false))
+		if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER,false)){
 			return SATISFY;
+		}
 		if(checkOperator(secondGuard,secondBinop,LESS,GREATER,false))
 			return UNSATISFY;
 		if(checkOperator(firstGuard,firstBinop,EQUAL,GREATER,false))
@@ -263,7 +264,7 @@ ResultEvaluation AggregateAtom::partialEvaluateSum() {
 	if(PredicateExtTable::getInstance()->getPredicateExt(lastAtom->getPredicate())->getPredicateInformation()->isOnlyNegative()){
 		if(checkOperator(firstGuard,firstBinop,LESS_OR_EQ,LESS,false))
 			return UNSATISFY;
-		if(checkOperator(secondGuard,secondBinop,LESS,LESS,false))
+		if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS,LESS,false))
 			return SATISFY;
 		if(checkOperator(firstGuard,firstBinop,EQUAL,LESS,false))
 			return UNSATISFY;
