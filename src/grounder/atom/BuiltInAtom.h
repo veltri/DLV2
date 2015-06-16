@@ -45,6 +45,9 @@ public:
 	 */
 	BuiltInAtom(Binop binOperation, bool isNegative, vector<Term*>& termsVec): Atom(termsVec), binop(binOperation), negative(isNegative), assignment(false) {}
 
+	BuiltInAtom(Binop binOperation, bool isNegative, vector<Term*>& termsVec,bool assignment): Atom(termsVec), binop(binOperation), negative(isNegative), assignment(assignment) {}
+
+
 	BuiltInAtom(Binop binOperation, bool isNegative): Atom(), binop(binOperation), negative(isNegative), assignment(false) {}
 
 	Atom* clone() { Atom* atom = new BuiltInAtom(this->binop,this->negative); atom->setTerms(this->terms); atom->setAssignment(assignment); return atom; }

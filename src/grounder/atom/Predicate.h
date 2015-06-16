@@ -57,7 +57,7 @@ public:
 
 	/// @brief Equal-to operator for predicates
 	/// @details Two predicates are equal if they have the same name and the same arity
-	bool operator==(Predicate &p)const{return p.getArity()==this->getArity() && strcmp(p.getName().c_str(),this->getName().c_str())==0;}
+	bool operator==(Predicate &p)const{return p.getArity()==this->getArity() && p.getName()==this->getName();}
 
 	size_t hash(){
 		vector<size_t> hash_vec(2);
@@ -78,7 +78,7 @@ private:
 };
 
 
-typedef unordered_set<Predicate*,IndexForTable<Predicate>,IndexForTable<Predicate>> set_predicate;
+typedef hashIndexSet<Predicate> set_predicate;
 
 };
 

@@ -146,6 +146,13 @@ public:
 	unsigned int index_counter;
 };
 
+template<class T>
+using hashSet = unordered_set<T*,HashForTable<T>,HashForTable<T>>;
+
+template<class T>
+using hashIndexSet = unordered_set<T*,IndexForTable<T>,IndexForTable<T>>;
+
+
 };
 
 };

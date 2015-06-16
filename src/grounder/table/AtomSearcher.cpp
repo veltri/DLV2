@@ -133,9 +133,8 @@ void BaseAtomSearcher::nextMatch(unsigned int id, Atom *templateAtom, map_term_t
 }
 
 Atom* BaseAtomSearcher::findAtom(Atom *atom){
-	AtomTableComparator comparator;
 	for(auto genericAtom:(*table)){
-		if(comparator(genericAtom,atom)){
+		if(*genericAtom==*atom){
 			return genericAtom;
 		}
 	}
@@ -312,11 +311,10 @@ void SingleTermMultiMapAtomSearcher::add(Atom* atom) {
 void SingleTermMultiMapAtomSearcher::remove(Atom* atom) {
 	for (unsigned int i = 0; i < predicate->getArity(); ++i) {
 		if(createdSearchingTables[i]){
-			AtomTableComparator comparator;
 			index_object termIndex=atom->getTerm(i)->getIndex();
 			auto pair=searchingTables[i].equal_range(termIndex);
 			for(auto it=pair.first;it!=pair.second;++it){
-				if(comparator(it->second,atom))
+				if(*(it->second)==*atom)
 					searchingTables[i].erase(it);
 			}
 		}
@@ -331,11 +329,10 @@ Atom* SingleTermMultiMapAtomSearcher::findAtom(Atom *atom){
 	assert_msg(indexingTerm>-1, "Invalid index");
 
 	index_object term = atom->getTerm(indexingTerm)->getIndex();
-	AtomTableComparator comparator;
 	auto pair=searchingTables[indexingTerm].equal_range(term);
 
 	for(auto it=pair.first;it!=pair.second;++it){
-		if(comparator(it->second,atom))
+		if(*(it->second)==*atom)
 			return it->second;
 	}
 #ifdef DEBUG_RULE_TIME
@@ -458,9 +455,8 @@ Atom* DoubleTermMapAtomSearcher::findAtom(Atom *atom){
 		end=searchingTables[tableToSearch][term].end();
 	}
 
-	AtomTableComparator comparator;
 	for(auto it=start;it!=end;++it){
-		if(comparator(it->second,atom))
+		if(*(it->second)==*atom)
 			return it->second;
 	}
 	return nullptr;

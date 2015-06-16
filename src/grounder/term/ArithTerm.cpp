@@ -80,7 +80,7 @@ Operator ArithTerm::getOperatorName(char op) {
 	return Operator::DIV;
 }
 
- bool ArithTerm::operator==(const Term& term){
+ bool ArithTerm::operator==(const Term& term)const{
 	if(getType()!=term.getType())return false;
 	if(operators.size()!=term.getSizeOperator())return false;
 	if(terms.size()!=term.getTermsSize())return false;

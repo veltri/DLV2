@@ -56,6 +56,27 @@ public:
 		cout<<name;
 	}
 
+
+	virtual bool operator>(const Term& term)const{
+		if(getType()!=term.getType())return false;
+		return getName()>getName();
+	};
+
+	virtual bool operator>=(const Term& term)const{
+		if(getType()!=term.getType())return false;
+		return getName()>=getName();
+	}
+
+	virtual bool operator<(const Term& term)const {
+		if(getType()!=term.getType())return false;
+		return getName()<getName();
+	};
+	virtual bool operator<=(const Term& term)const{
+		if(getType()!=term.getType())return false;
+		return getName()<=getName();
+	};
+
+
 private:
 	void setAnonymous(){
 		if(name.compare("_")==0)

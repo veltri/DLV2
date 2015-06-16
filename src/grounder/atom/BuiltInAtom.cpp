@@ -22,7 +22,7 @@ bool BuiltInAtom::evaluate(map_term_term& substitutionTerm){
 	Term* secondTerm=terms[1];
 
 	// If there is equal and variable assign that value
-	if(binop==Binop::EQUAL &&( firstTerm->getType()==TermType::VARIABLE || secondTerm->getType()==TermType::VARIABLE )){
+	if(assignment){
 		if(firstTerm->getType()==TermType::VARIABLE || secondTerm->getType()!=TermType::VARIABLE ){
 			substitutionTerm.insert({firstTerm,secondTerm->calculate()});
 			return true;
@@ -32,22 +32,19 @@ bool BuiltInAtom::evaluate(map_term_term& substitutionTerm){
 	    }
 	}
 
-	// Take the value of firstBinop and SecondBinop
-	string value1= firstTerm->getName();
-	string value2= secondTerm->getName();
 
 	if(binop==Binop::EQUAL)
-		return firstTerm==secondTerm;
+		return firstTerm->getIndex()==secondTerm->getIndex();
 	if(binop==Binop::UNEQUAL)
-		return firstTerm!=secondTerm;
+		return firstTerm->getIndex()!=secondTerm->getIndex();
 	if(binop==Binop::LESS)
-		return strverscmp(value1.c_str(),value2.c_str())<0;
+		return *firstTerm<*secondTerm;
 	if(binop==Binop::LESS_OR_EQ)
-		return strverscmp(value1.c_str(),value2.c_str())<=0;
+		return *firstTerm<=*secondTerm;
 	if(binop==Binop::GREATER)
-		return strverscmp(value1.c_str(),value2.c_str())>0;
+		return *firstTerm>*secondTerm;
 	if(binop==Binop::GREATER_OR_EQ)
-		return strverscmp(value1.c_str(),value2.c_str())>=0;
+		return *firstTerm>=*secondTerm;
 
 	return false;
 }
@@ -92,7 +89,7 @@ void BuiltInAtom::substitute(map_term_term& substitutionTerm,Atom*& templateAtom
 		for(unsigned int i=0;i<terms.size();i++){
 			terms_substitute[i]=terms[i]->substitute(substitutionTerm) ;
 		}
-		templateAtom=new BuiltInAtom(binop,negative,terms_substitute);
+		templateAtom=new BuiltInAtom(binop,negative,terms_substitute,assignment);
 	}
 	else
 		for(unsigned int i=0;i<terms.size();i++)

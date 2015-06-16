@@ -68,6 +68,7 @@ public:
 	virtual Atom* clone() = 0;
 
 	///Equal-to operator for atoms
+	/// Not check the predicate of the atoms
 	virtual bool operator==(const Atom& a)=0;
 
 	///Return the term of variable present in the Atom
@@ -242,6 +243,8 @@ public:
 protected:
 	vector<Term*> terms;
 };
+
+using AtomTable = hashSet<Atom> ;
 
 };
 

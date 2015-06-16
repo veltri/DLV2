@@ -20,29 +20,11 @@ namespace DLV2{
 
 namespace grounder{
 
-/** This struct compares and hashes atoms just by their terms.
- *	It is used for the AtomTable definition (@See AtomTable)
- *	In this way, given two atom (every kind of atom) they can be compared in the same way.
- **/
-struct AtomTableComparator{
-	inline size_t operator()(Atom* atom) const{
-		return HashVecInt::getHashVecInt()->computeHashTerm(atom->getTerms());
-	}
-
-	inline bool operator()(Atom* atom1, Atom* atom2) const{
-//		if(atom1->getTerms().size()!=atom2->getTermsSize())
-//			return false;
-		for(unsigned i=0;i<atom1->getTermsSize();++i)
-			if(atom1->getTerm(i)->getIndex()!=atom2->getTerm(i)->getIndex())
-				return false;
-		return true;
-	}
-};
 
 ///Vector of Atom (GenericAtom)
 typedef vector<Atom*> AtomVector;
 ///An unordered set of Atom (GenericAtom)
-typedef unordered_set<Atom*,AtomTableComparator,AtomTableComparator> AtomTable;
+typedef unordered_set<Atom*,HashForTable<Atom>,HashForTable<Atom>> AtomTable;
 ///An unordered multimap of Atom (GenericAtom)
 typedef unordered_multimap<index_object, Atom*> Multimap_Atom;
 

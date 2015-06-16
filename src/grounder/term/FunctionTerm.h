@@ -62,7 +62,14 @@ public:
 	};
 
 
-	virtual bool operator==(const Term& term);
+	virtual bool operator==(const Term& term) const;
+
+	virtual bool operator>(const Term& term)const;
+	virtual bool operator>=(const Term& term)const;
+
+	virtual bool operator<(const Term& term)const;
+	virtual bool operator<=(const Term& term)const;
+
 
 
 	virtual Term* calculate();

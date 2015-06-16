@@ -50,8 +50,15 @@ public:
 
 	virtual Term* clone(){return new NumericConstantTerm(negative,numeric_constant);};
 
+	virtual bool operator==(const Term& term) const {return (TermType::NUMERIC_CONSTANT==term.getType() && this->numeric_constant==term.getConstantValue());}
+
+	virtual bool operator>(const Term& term)const;
+	virtual bool operator>=(const Term& term)const;
+
+	virtual bool operator<(const Term& term)const;
+	virtual bool operator<=(const Term& term)const;
+
 	virtual bool contain(TermType type) { return TermType::NUMERIC_CONSTANT==type;};
-	virtual bool operator==(const Term& term) {return (TermType::NUMERIC_CONSTANT==term.getType() && this->numeric_constant==term.getConstantValue());}
 	virtual size_t hash() {if(numeric_constant<0)return abs(numeric_constant); return numeric_constant;};
 	virtual int getConstantValue() const {return numeric_constant;};
 	virtual string getName() const {return boost::lexical_cast<string>(numeric_constant);}
@@ -66,9 +73,17 @@ class StringConstantTerm: public ConstantTerm{
 public:
 //	StringConstantTerm(bool negative,string& n): ConstantTerm(negative), string_constant(n){};
 	StringConstantTerm(bool negative,const string& n): ConstantTerm(negative), string_constant(n){};
-	virtual TermType getType() const {return TermType::STRING_CONSTANT;};
+
+	virtual bool operator>(const Term& term)const;
+	virtual bool operator>=(const Term& term)const;
+
+	virtual bool operator<(const Term& term)const;
+	virtual bool operator<=(const Term& term)const;
+
+	virtual bool operator==(const Term& term) const{return (TermType::STRING_CONSTANT==term.getType() && this->string_constant==term.getName());}
+
+	virtual TermType getType() const {if(string_constant[0]=='"')return STRING_CONSTANT; return SYMBOLIC_CONSTANT;};
 	virtual bool contain(TermType type) { return TermType::STRING_CONSTANT==type;};
-	virtual bool operator==(const Term& term) {return (TermType::STRING_CONSTANT==term.getType() && this->string_constant==term.getName());}
 	virtual size_t hash() {return HashString::getHashString()->computeHash(string_constant);};
 	virtual string getName()const {return string_constant;};
 	virtual void print() {cout<<string_constant;}

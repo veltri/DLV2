@@ -423,12 +423,6 @@ void BackTrackingGrounder::removeBindValueInAssignment(const set_term& bind_vari
 }
 
 
-
-
-
-
-
-
 bool BackTrackingGrounder::groundAggregate() {
 	Atom *aggregateAtom=templateSetAtom[index_current_atom];
 	Atom *ground_aggregate;

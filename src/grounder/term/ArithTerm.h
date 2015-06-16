@@ -69,7 +69,7 @@ public:
 		return true;
 	}
 
-	virtual bool operator==(const Term& term);
+	virtual bool operator==(const Term& term)const;
 
 	/// Return the string composed by the concatenation of terms and operators
 	virtual size_t hash();

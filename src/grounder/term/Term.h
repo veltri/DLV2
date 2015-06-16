@@ -32,13 +32,14 @@ enum Operator {
 };
 
 enum TermType{
-	NUMERIC_CONSTANT=0,STRING_CONSTANT,VARIABLE,ARITH,FUNCTION,ANONYMOUS
+	NUMERIC_CONSTANT=0,STRING_CONSTANT,SYMBOLIC_CONSTANT,VARIABLE,ARITH,FUNCTION,ANONYMOUS
 };
 
 class Term;
 
-typedef unordered_map<Term*, Term*,IndexForTable<Term>,IndexForTable<Term>> map_term_term;
-typedef unordered_set<Term*,IndexForTable<Term>,IndexForTable<Term>> set_term;
+using map_term_term = unordered_map<Term*, Term*,IndexForTable<Term>,IndexForTable<Term>>;
+using set_term = hashIndexSet<Term>;
+
 
 /**
  *  Term is an abstract class that represent one general Term.
@@ -48,6 +49,7 @@ typedef unordered_set<Term*,IndexForTable<Term>,IndexForTable<Term>> set_term;
  */
 class Term: public Indexable,public Hashable {
 public:
+
 	/// Empty constructor
 	Term():Indexable(),negative(0){};
 	//Constructor only if is negative, set id in second time
@@ -88,11 +90,22 @@ public:
 	///Return true if is ground
 	virtual bool isGround(){return false;}
 
-	virtual bool operator==(const Term& term){
+	///This method is used for indexing term
+	///TODO change the name to equal?
+	virtual bool operator==(const Term& term)const{
 		if(getType()!=term.getType())return false;
-		if(getName().compare(term.getName())!=0)return false;
+		if(getName()!=term.getName())return false;
 		return true;
-	}
+	};
+
+
+	virtual bool operator>(const Term& term)const{return false;};
+	virtual bool operator>=(const Term& term)const{return false;};
+
+	virtual bool operator<(const Term& term)const{return false;};
+	virtual bool operator<=(const Term& term)const{return false;};
+
+
 	///Add the index of a composite term
 	virtual void addTerm(Term* termIndex){};
 	///Remove last index of a term
@@ -116,6 +129,8 @@ protected:
 	 */
 	bool negative;
 };
+
+
 
 };
 

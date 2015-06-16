@@ -12,6 +12,78 @@ namespace DLV2{
 
 namespace grounder{
 
+ bool NumericConstantTerm::operator>(const Term& term)const{
+	if(TermType::NUMERIC_CONSTANT==term.getType())
+		return numeric_constant>term.getConstantValue();
+
+	return false;
+};
+ bool NumericConstantTerm::operator>=(const Term& term)const{
+	if(TermType::NUMERIC_CONSTANT==term.getType())
+		return numeric_constant>=term.getConstantValue();
+
+	return false;
+}
+
+ bool NumericConstantTerm::operator<(const Term& term)const {
+	if(TermType::NUMERIC_CONSTANT==term.getType())
+		return numeric_constant<term.getConstantValue();
+
+	return true;
+};
+ bool NumericConstantTerm::operator<=(const Term& term)const{
+	if(TermType::NUMERIC_CONSTANT==term.getType())
+		return numeric_constant<=term.getConstantValue();
+
+	return true;
+};
+
+ bool StringConstantTerm::operator>(const Term& term)const{
+	if(term.getType()==NUMERIC_CONSTANT)return true;
+
+	if(getType()==STRING_CONSTANT && term.getType()==SYMBOLIC_CONSTANT)
+		return true;
+
+	if(term.getType()==getType())
+		return string_constant>term.getName();
+
+	return false;
+};
+ bool StringConstantTerm::operator>=(const Term& term)const{
+	if(term.getType()==NUMERIC_CONSTANT)return true;
+
+	if(getType()==STRING_CONSTANT && term.getType()==SYMBOLIC_CONSTANT)
+		return true;
+
+	if(term.getType()==getType())
+		return string_constant>=term.getName();
+
+	return false;
+}
+
+ bool StringConstantTerm::operator<(const Term& term)const {
+	if(term.getType()==NUMERIC_CONSTANT)return false;
+
+	if(getType()==STRING_CONSTANT && term.getType()==SYMBOLIC_CONSTANT)
+		return false;
+
+	if(term.getType()==getType())
+		return string_constant<term.getName();
+
+	return true;
+};
+
+ bool StringConstantTerm::operator<=(const Term& term)const{
+	if(term.getType()==NUMERIC_CONSTANT)return false;
+
+	if(getType()==STRING_CONSTANT && term.getType()==SYMBOLIC_CONSTANT)
+		return false;
+
+	if(term.getType()==getType())
+		return string_constant<=term.getName();
+
+	return true;
+};
 
 };
 
