@@ -97,10 +97,10 @@ void BaseInputRewriter::chooseBestSaviorForAggregate(Rule* rule, AggregateElemen
 }
 
 void FirstSaviorChoosingPolicy::getRecursiveDependencies(const OrderRule& orderRule, unsigned savior_pos, vector<Atom*>& atomToAdd) {
-	vector<Atom*> atomDependencies = orderRule.getAtomsFromWhichDepends(savior_pos);
+	vector<pair<unsigned int, Atom*>> atomDependencies = orderRule.getAtomsFromWhichDepends(savior_pos);
 	for (unsigned int i=0;i<atomDependencies.size();i++) {
-		atomToAdd.push_back(atomDependencies[i]->clone());
-		getRecursiveDependencies(orderRule,i,atomToAdd);
+		atomToAdd.push_back(atomDependencies[i].second->clone());
+		getRecursiveDependencies(orderRule,atomDependencies[i].first,atomToAdd);
 	}
 }
 

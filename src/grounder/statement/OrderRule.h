@@ -38,7 +38,7 @@ private:
 public:
 	OrderRule(Rule* r);
 	bool order();
-	vector<Atom*> getAtomsFromWhichDepends(unsigned atom_position) const;
+	vector<pair<unsigned int, Atom*>> getAtomsFromWhichDepends(unsigned atom_position) const;
 };
 
 } /* namespace grounder */

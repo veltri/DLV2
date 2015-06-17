@@ -188,11 +188,11 @@ bool OrderRule::lookForVariablesUnsafe(set_term& variables,Atom* atom, list<unsi
 	return foundAnUnsafeVar;
 }
 
-vector<Atom*> OrderRule::getAtomsFromWhichDepends(unsigned atom_position) const {
-	vector<Atom*> atoms;
+vector<pair<unsigned int, Atom*>> OrderRule::getAtomsFromWhichDepends(unsigned atom_position) const {
+	vector<pair<unsigned int, Atom*>> atoms;
 	atoms.reserve(orderedBody.size());
 	for(auto atom_pos: bindAtomsDependency[atom_position])
-		atoms.push_back(orderedBody[atom_pos]);
+		atoms.push_back({atom_pos,orderedBody[atom_pos]});
 	return atoms;
 }
 
