@@ -23,8 +23,8 @@ bool AtomSearcher::checkMatch(Atom *genericAtom, Atom *templateAtom, map_term_te
 	map_term_term assignInTerm;
 
 	for(unsigned int i=0;i<genericAtom->getTermsSize();++i){
-			if(!matchTerm(genericAtom->getTerm(i),templateAtom->getTerm(i),assignInTerm))
-				return false;
+		if(!matchTerm(genericAtom->getTerm(i),templateAtom->getTerm(i),assignInTerm))
+			return false;
 	}
 
 
@@ -55,10 +55,11 @@ bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, map_term_term
 		termToMatch=new_term->calculate();
 	}
 
-	if((genericTerm->getType()==TermType::NUMERIC_CONSTANT || genericTerm->getType()==TermType::STRING_CONSTANT )){
+	if((genericTerm->getType()==TermType::NUMERIC_CONSTANT || genericTerm->getType()==TermType::STRING_CONSTANT
+			 || genericTerm->getType()==TermType::SYMBOLIC_CONSTANT)){
 
 		if (termToMatch->getType()==TermType::ANONYMOUS) return true;
-		if ((termToMatch->getType()==TermType::NUMERIC_CONSTANT || termToMatch->getType()==TermType::STRING_CONSTANT ) && termToMatch->getIndex() == genericTerm->getIndex()) return true;
+		if ((termToMatch->getType()==TermType::NUMERIC_CONSTANT || termToMatch->getType()==TermType::STRING_CONSTANT || termToMatch->getType()==TermType::SYMBOLIC_CONSTANT) && termToMatch->getIndex() == genericTerm->getIndex()) return true;
 
 	}else if(genericTerm->getType()==TermType::FUNCTION){
 
