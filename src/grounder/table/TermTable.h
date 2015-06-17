@@ -10,6 +10,7 @@
 
 
 #include "../term/Term.h"
+#include "../term/ConstantTerm.h"
 #include "../hash/Hashable.h"
 
 
@@ -42,11 +43,20 @@ public:
     // If termTable is null instance the table based on parameter in the configuration
 	static TermTable* getInstance();
 	virtual ~TermTable(){};
+
+	//please not modify me :(
+	Term* term_max;
+	Term* term_min;
+	Term* term_zero;
 protected:
 	// Instance of the singleton
 	static TermTable* termTable;
 private:
-	TermTable(){};
+	TermTable(): term_max(new StringConstantTerm(false,"#sup")), term_min(new StringConstantTerm(false,"#inf")), term_zero(new NumericConstantTerm(false,0)) {
+		addTerm(term_max);
+		addTerm(term_min);
+		addTerm(term_zero);
+	}
 	/*
 	 *  Flyweight Factory of terms
 	 */

@@ -13,7 +13,6 @@
 #include <limits.h>
 #include "../statement/Rule.h"
 
-
 using namespace std;
 
 namespace DLV2{
@@ -30,7 +29,7 @@ public:
 
 	///Default constructor
 	AggregateAtom(): firstBinop(Binop::NONE_OP), secondBinop(Binop::NONE_OP), aggregateFunction(AggregateFunction::NONE), negative(false),
-		partialEvaluation(0), undefAtomEvaluation(0), firstGuard(nullptr), secondGuard(nullptr), assignment(false){};
+		partialEvaluation(TermTable::getInstance()->term_zero), undefAtomEvaluation(TermTable::getInstance()->term_zero), firstGuard(nullptr), secondGuard(nullptr), assignment(false){};
 
 	/** Constructor
 		 * @param f set the first term of comparison
@@ -97,8 +96,8 @@ public:
 	AggregateFunction getAggregateFunction() const {return aggregateFunction;};
 	///Setter method for the aggregate function
 	void setAggregateFunction(AggregateFunction aggregateFunction) {
-		if(aggregateFunction==MIN){partialEvaluation=undefAtomEvaluation=INT_MAX;}
-		if(aggregateFunction==MAX){partialEvaluation=undefAtomEvaluation=INT_MIN;}
+		if(aggregateFunction==MIN){*partialEvaluation=*undefAtomEvaluation=TermTable::getInstance()->term_max;}
+		if(aggregateFunction==MAX){*partialEvaluation=*undefAtomEvaluation=TermTable::getInstance()->term_min;}
 		this->aggregateFunction = aggregateFunction;
 	};
 	///Getter method for the first binary operation
@@ -127,9 +126,9 @@ public:
 	 /// Call before partialEvaluate for update the partial evaluation
 	 ResultEvaluation finalEvaluate();
 
-	 int getPartialEvaluation(){return partialEvaluation;};
+	 Term* getPartialEvaluation(){return partialEvaluation;};
 
-	 int getUndefEvaluation(){return undefAtomEvaluation;}
+	 Term* getUndefEvaluation(){return undefAtomEvaluation;}
 
 	///return true if one guard is an equal
 	bool isAnAssigment(){return ((firstBinop==Binop::EQUAL && !firstGuard->isGround()) || (secondBinop==Binop::EQUAL && !secondGuard->isGround() ));}
@@ -145,7 +144,7 @@ public:
 	/// - else the first binop is LESS_EQUAL and the second LESS
 	void changeInStandardFormat();
 
-	virtual int generateNextCombination(bool& finish);
+	virtual Term* generateNextCombination(bool& finish);
 
 	///Printer method
 	void print();
@@ -171,9 +170,9 @@ private:
 	///Negated with negation as failure
 	bool negative;
 	///Evaluation of true atoms
-	int partialEvaluation;
+	Term* partialEvaluation;
 	///Evaluation of undef atoms
-	int undefAtomEvaluation;
+	Term* undefAtomEvaluation;
 	///The first (or lower) guard)
 	Term* firstGuard;
 	///The second (or upper) guard)
@@ -202,9 +201,9 @@ private:
 
 	unordered_map<unsigned, unsigned> map_undefAtom_position;
 	vector<bool> current_number;
-	unordered_set<int> possibleUndefValue;
+	set_term possibleUndefValue;
 	void findUndefAtoms();
-	void applayAggregateOperator(int& n1, int n2);
+	void applayAggregateOperator(Term*& n1, Term* n2);
 	void computeNextCombination();
 
 	///Return true if the aggregate is an undefined assignment
@@ -218,7 +217,7 @@ private:
 	bool checkOperator(Term* term,Binop binopGuard,Binop binop, Binop op, bool checkUndef);
 
 	///Get the sum of undef and true evaluation with sum and count, the maximum between undef and true with max,the minimun between undef and true with min
-	int getCheckValue();
+	Term* getCheckValue();
 
 };
 

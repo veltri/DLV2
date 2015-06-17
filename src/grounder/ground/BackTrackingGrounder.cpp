@@ -431,16 +431,16 @@ bool BackTrackingGrounder::groundAggregate() {
 		//The atom is already grounded, just change the guard
 		ground_aggregate=ground_rule->getAtomInBody(index_current_atom);
 		bool finish=0;
-		int val=ground_aggregate->generateNextCombination(finish);
+		Term* val=ground_aggregate->generateNextCombination(finish);
 		if(finish){
 			substiteInGroundRule(index_current_atom,nullptr);
 			return false;
 		}
 
-		Term *term_value=new NumericConstantTerm(false,val);
-		termsMap->addTerm(term_value);
-		ground_aggregate->setFirstGuard(term_value);
-		current_var_assign.insert({aggregateAtom->getFirstGuard(),term_value});
+//		Term *term_value=new NumericConstantTerm(false,val);
+		termsMap->addTerm(val);
+		ground_aggregate->setFirstGuard(val);
+		current_var_assign.insert({aggregateAtom->getFirstGuard(),val});
 		return true;
 	}
 	//Create a ground aggregate empty and set the aggregate to not simplify
@@ -493,17 +493,10 @@ bool BackTrackingGrounder::groundAggregate() {
 	//If is a first assignment set the initial value of the guard to the partial value
 	if(ground_aggregate->isAnAssigment()){
 		bool finish=0;
-		int val=ground_aggregate->generateNextCombination(finish);
-		Term* term_value;
-		if(val==INT_MAX)
-			term_value=new StringConstantTerm(false,"#sup");
-		else if(val==INT_MIN)
-			term_value=new StringConstantTerm(false,"#inf");
-		else
-			term_value=new NumericConstantTerm(false,val);
-		termsMap->addTerm(term_value);
-		current_var_assign.insert({ground_aggregate->getFirstGuard(),term_value});
-		ground_aggregate->setFirstGuard(term_value);
+		Term* val=ground_aggregate->generateNextCombination(finish);
+		termsMap->addTerm(val);
+		current_var_assign.insert({ground_aggregate->getFirstGuard(),val});
+		ground_aggregate->setFirstGuard(val);
 
 		if(!ground_aggregate->isUndefAssignment())
 			ground_rule->setAtomToSimplifyInBody(index_current_atom);

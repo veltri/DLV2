@@ -58,6 +58,9 @@ public:
 	virtual bool operator<(const Term& term)const;
 	virtual bool operator<=(const Term& term)const;
 
+	virtual Term* increment();
+	virtual Term* sum(Term* t);
+
 	virtual bool contain(TermType type) { return TermType::NUMERIC_CONSTANT==type;};
 	virtual size_t hash() {if(numeric_constant<0)return abs(numeric_constant); return numeric_constant;};
 	virtual int getConstantValue() const {return numeric_constant;};

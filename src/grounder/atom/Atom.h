@@ -189,19 +189,18 @@ public:
 	virtual ResultEvaluation finalEvaluate(){return ResultEvaluation::SATISFY;};
 
 	///Return the value of evaluation
-	virtual int getPartialEvaluation(){return 0;};
+	virtual Term* getPartialEvaluation(){return 0;};
 
-	virtual int getUndefEvaluation(){return 0;};
+	virtual Term* getUndefEvaluation(){return 0;};
 
 
 	//Return the variable in the guard of an aggregate
 	virtual set_term getGuardVariable(){return set_term();};
 
-
-		///return true if one guard is an equal
+	///return true if one guard is an equal
 	virtual bool isAnAssigment(){return false;};
 
-	virtual int generateNextCombination(bool& finish) {return 0;};
+	virtual Term* generateNextCombination(bool& finish) {return 0;};
 
 	virtual bool isUndefAssignment() {return false;}
 	/*****************************************************/

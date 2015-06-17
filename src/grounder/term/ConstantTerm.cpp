@@ -38,6 +38,21 @@ namespace grounder{
 	return true;
 };
 
+Term* NumericConstantTerm::sum(Term* t){
+	if(t->getType()==NUMERIC_CONSTANT){
+		Term* term=new NumericConstantTerm(false,t->getConstantValue()+numeric_constant);
+		TermTable::getInstance()->addTerm(term);
+		return term;
+	}
+	return 0;
+};
+
+Term* NumericConstantTerm::increment(){
+	Term* term=new NumericConstantTerm(false,numeric_constant+1);
+	TermTable::getInstance()->addTerm(term);
+	return term;
+};
+
  bool StringConstantTerm::operator>(const Term& term)const{
 	if(term.getType()==NUMERIC_CONSTANT)return true;
 

@@ -105,6 +105,8 @@ public:
 	virtual bool operator<(const Term& term)const{return false;};
 	virtual bool operator<=(const Term& term)const{return false;};
 
+	virtual Term* increment(){return 0;};
+	virtual Term* sum(Term* t1){return 0;};
 
 	///Add the index of a composite term
 	virtual void addTerm(Term* termIndex){};

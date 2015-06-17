@@ -196,13 +196,13 @@ ResultEvaluation AggregateAtom::partialEvaluateCount() {
 ResultEvaluation AggregateAtom::partialEvaluateMax() {
 	Atom *lastAtom=aggregateElements.back()->getNafLiteral(0);
 	if(!lastAtom->isFact()){
-		int value=aggregateElements.back()->getTerms().front()->getConstantValue();
-		if(undefAtomEvaluation<value)
+		Term* value=aggregateElements.back()->getTerms().front();
+		if(*undefAtomEvaluation<*value)
 			undefAtomEvaluation=value;
 		return UNDEF;
 	}
-	int value=aggregateElements.back()->getTerms().front()->getConstantValue();
-	if(partialEvaluation<value)
+	Term* value=aggregateElements.back()->getTerms().front();
+	if(*partialEvaluation<*value)
 		partialEvaluation=value;
 
 	if(checkOperator(firstGuard,firstBinop,EQUAL,GREATER,false))
@@ -221,13 +221,13 @@ ResultEvaluation AggregateAtom::partialEvaluateMax() {
 ResultEvaluation AggregateAtom::partialEvaluateMin() {
 	Atom *lastAtom=aggregateElements.back()->getNafLiteral(0);
 	if(!lastAtom->isFact()){
-		int value=aggregateElements.back()->getTerms().front()->getConstantValue();
-		if(undefAtomEvaluation>value)
+		Term* value=aggregateElements.back()->getTerms().front();
+		if(*undefAtomEvaluation>*value)
 			undefAtomEvaluation=value;
 		return UNDEF;
 	}
-	int value=aggregateElements.back()->getTerms().front()->getConstantValue();
-	if(partialEvaluation>value)
+	Term* value=aggregateElements.back()->getTerms().front();
+	if(*partialEvaluation>*value)
 		partialEvaluation=value;
 
 	if(checkOperator(firstGuard,firstBinop,EQUAL,LESS,false))
@@ -278,7 +278,7 @@ ResultEvaluation AggregateAtom::finalEvaluateCount() {
 	if(checkOperator(firstGuard,firstBinop,EQUAL,LESS,true))
 		return UNSATISFY;
 
-	if(undefAtomEvaluation==0 && checkOperator(firstGuard,firstBinop,EQUAL,EQUAL,false))
+	if(undefAtomEvaluation->getIndex()==TermTable::getInstance()->term_zero->getIndex() && checkOperator(firstGuard,firstBinop,EQUAL,EQUAL,false))
 		return SATISFY;
 
 	if(checkOperator(firstGuard,firstBinop,LESS_OR_EQ,LESS,true))
@@ -298,10 +298,10 @@ ResultEvaluation AggregateAtom::finalEvaluateMax() {
 	if(checkOperator(firstGuard,firstBinop,EQUAL,LESS,true))
 		return UNSATISFY;
 
-	if(undefAtomEvaluation==INT_MIN && checkOperator(firstGuard,firstBinop,EQUAL,EQUAL,false))
+	if(undefAtomEvaluation->getIndex()==TermTable::getInstance()->term_min->getIndex() && checkOperator(firstGuard,firstBinop,EQUAL,EQUAL,false))
 		return SATISFY;
 
-	if(undefAtomEvaluation==INT_MIN && checkOperator(firstGuard,firstBinop,EQUAL,LESS,false))
+	if(undefAtomEvaluation->getIndex()==(TermTable::getInstance()->term_min)->getIndex() && checkOperator(firstGuard,firstBinop,EQUAL,LESS,false))
 		return SATISFY;
 
 	if(checkOperator(firstGuard,firstBinop,LESS_OR_EQ,LESS,true))
@@ -318,10 +318,10 @@ ResultEvaluation AggregateAtom::finalEvaluateMax() {
 }
 
 ResultEvaluation AggregateAtom::finalEvaluateMin() {
-	if(undefAtomEvaluation == INT_MAX && checkOperator(firstGuard,firstBinop,EQUAL,EQUAL,false))
+	if(undefAtomEvaluation->getIndex() == TermTable::getInstance()->term_max->getIndex() && checkOperator(firstGuard,firstBinop,EQUAL,EQUAL,false))
 		return SATISFY;
 
-	if(undefAtomEvaluation == INT_MAX && checkOperator(firstGuard,firstBinop,EQUAL,GREATER,false))
+	if(undefAtomEvaluation->getIndex() == TermTable::getInstance()->term_max->getIndex() && checkOperator(firstGuard,firstBinop,EQUAL,GREATER,false))
 		return UNSATISFY;
 
 	if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,true))
@@ -341,7 +341,7 @@ ResultEvaluation AggregateAtom::finalEvaluateSum() {
 	if(checkOperator(firstGuard,firstBinop,EQUAL,LESS,true) || checkOperator(firstGuard,firstBinop,EQUAL,GREATER,false))
 		return UNSATISFY;
 
-	if(undefAtomEvaluation==0 && checkOperator(firstGuard,firstBinop,EQUAL,EQUAL,false))
+	if(undefAtomEvaluation->getIndex()==TermTable::getInstance()->term_zero->getIndex() && checkOperator(firstGuard,firstBinop,EQUAL,EQUAL,false))
 		return SATISFY;
 
 	if(checkOperator(firstGuard,firstBinop,LESS_OR_EQ,LESS,true))
@@ -503,16 +503,23 @@ set_term AggregateAtom::getSharedVariable(Rule* rule) {
 	return sharedTerms;
 }
 
-int AggregateAtom::getCheckValue() {
-	int value = partialEvaluation + undefAtomEvaluation;
+Term* AggregateAtom::getCheckValue() {
+	Term* value = 0;
 	switch (aggregateFunction) {
 	case MAX:
-		value = max(partialEvaluation, undefAtomEvaluation);
+		if(*partialEvaluation>*undefAtomEvaluation)
+			value=partialEvaluation;
+		else
+			value=undefAtomEvaluation;
 		break;
 	case MIN:
-		value = min(partialEvaluation, undefAtomEvaluation);
+		if(*partialEvaluation<*undefAtomEvaluation)
+			value=partialEvaluation;
+		else
+			value=undefAtomEvaluation;
 		break;
 	default:
+		value=partialEvaluation->sum(undefAtomEvaluation);
 		break;
 	}
 	return value;
@@ -522,23 +529,23 @@ int AggregateAtom::getCheckValue() {
 bool AggregateAtom::checkOperator(Term* term,Binop binopGuard,Binop binop, Binop op, bool checkUndef) {
 	if(binopGuard!=binop)return false;
 	if(binop==EQUAL && !term->isGround()) return false;
-	int value=partialEvaluation;
+	Term* value=partialEvaluation;
 	if(checkUndef)value=getCheckValue();
 	switch (op) {
 		case LESS:
-			if(value<term->getConstantValue())return true;
+			if(*value<*term)return true;
 			break;
 		case LESS_OR_EQ:
-			if(value<=term->getConstantValue())return true;
+			if(*value<=*term)return true;
 			break;
 		case GREATER:
-			if(value>term->getConstantValue())return true;
+			if(*value>*term)return true;
 			break;
 		case GREATER_OR_EQ:
-			if(value>=term->getConstantValue())return true;
+			if(*value>=*term)return true;
 			break;
 		case EQUAL:
-			if(value==term->getConstantValue())return true;
+			if(value->getIndex()==term->getIndex())return true;
 			break;
 		default:
 			return false;
@@ -572,16 +579,16 @@ void AggregateAtom::findUndefAtoms(){
 	}
 }
 
-int AggregateAtom::generateNextCombination(bool& finish){
+Term* AggregateAtom::generateNextCombination(bool& finish){
 	if(current_number.front()){
 		finish=true;
 		return 0;
 	}
 	finish=false;
-	int evaluation=partialEvaluation;
+	Term* evaluation=partialEvaluation;
 	for(unsigned j=0;j<current_number.size();j++){
 		if(current_number[j]){
-			int x=aggregateElements[map_undefAtom_position[j]]->getTerm(0)->getConstantValue();
+			Term* x=aggregateElements[map_undefAtom_position[j]]->getTerm(0);
 			applayAggregateOperator(evaluation, x);
 		}
 	}
@@ -592,7 +599,7 @@ int AggregateAtom::generateNextCombination(bool& finish){
 	return evaluation;
 }
 
-void AggregateAtom::applayAggregateOperator(int& n1, int n2){
+void AggregateAtom::applayAggregateOperator(Term*& n1, Term* n2){
 	switch (aggregateFunction) {
 		case MIN:
 			n1=min(n1,n2);
@@ -601,10 +608,10 @@ void AggregateAtom::applayAggregateOperator(int& n1, int n2){
 			n1=max(n1,n2);
 			break;
 		case COUNT:
-			n1+=1;
+			n1=n1->increment();
 			break;
 		default:
-			n1+=n2;
+			n1=n1->sum(n2);
 			break;
 	}
 }
