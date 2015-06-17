@@ -579,7 +579,6 @@ int AggregateAtom::generateNextCombination(bool& finish){
 	}
 	finish=false;
 	int evaluation=partialEvaluation;
-	cout<<current_number.size()<<endl;
 	for(unsigned j=0;j<current_number.size();j++){
 		if(current_number[j]){
 			int x=aggregateElements[map_undefAtom_position[j]]->getTerm(0)->getConstantValue();
