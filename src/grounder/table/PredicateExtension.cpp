@@ -33,6 +33,7 @@ void PredicateExtension::setAtomSearchers(){
 				indexType=Options::globalOptions()->getIndexType();
 		}
 
+
 		if(predicate->getArity()==0)
 			indexType=DEFAULT;
 

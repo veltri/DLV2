@@ -114,6 +114,8 @@ public:
 	 */
 	vector<Term*>& getTerms(){return terms;};
 	Term* getTerm(unsigned int i) const {return terms[i];};
+	Term* operator[](unsigned i) const {return terms[i];};
+
 	///Push the term in terms at position i
 	void setTerm(unsigned int i,Term* term) {terms[i]=term;};
 	/// TODO

@@ -130,6 +130,7 @@ void BaseAtomSearcher::nextMatch(unsigned int id, Atom *templateAtom, map_term_t
 		resultMap.erase(id);
 		return;
 	}
+
 }
 
 Atom* BaseAtomSearcher::findAtom(Atom *atom){

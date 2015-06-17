@@ -102,6 +102,7 @@ public:
 	///Set the specific atom in the body
 	void setAtomInHead(unsigned i,Atom* atom) {head[i]=atom;};
 
+
 	///Set the simplification of the atom in the given position in the head
 	void setAtomToSimplifyInHead(unsigned position, bool simplify = true){ simplifiedHead[position]=simplify;}
 	///Set the simplification of the atom in the given position in the body

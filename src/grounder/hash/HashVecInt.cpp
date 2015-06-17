@@ -19,7 +19,7 @@ HashVecInt* HashVecInt::getHashVecInt() {
 		if(Options::globalOptions()->getHashType()==JAVA_HASH)
 			hashInt = new JavaHashVecInt;
 		else
-			// Default select Java
+			// Default select Boost
 			hashInt = new BoostCombineHashVecInt;
 	}
 	return hashInt;

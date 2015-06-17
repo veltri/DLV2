@@ -31,15 +31,17 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited,
 			unsigned counter=1;
 			for(unsigned i=0;i<aggElementsSize;++i){
 				AggregateElement* aggElem=(*it)->getAggregateElement(i);
-				if(aggElem->getNafLiteralsSize()<2) continue;
+				//if(aggElem->getNafLiteralsSize()<2) continue;
 
-				vector<Term*> terms=aggElem->getTerms();
+				vector<Term*> terms;
 
 				//For each variable in the aggregate element and in the rule add in head of auxiliary rule
 				set_term variablesAggElem=getVariablesInAggregateElem((*it)->getAggregateElement(i));
 				for(auto term:variablesAggElem)
 					if(variablesRule.count(term))
 						terms.push_back(term);
+
+				terms.insert(terms.end(),aggElem->getTerms().begin(),aggElem->getTerms().end());
 
 				Rule* rule=new Rule;
 				vector<Atom*> atoms=aggElem->getNafLiterals();

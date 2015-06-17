@@ -22,11 +22,9 @@ namespace grounder{
 
 
 ///Vector of Atom (GenericAtom)
-typedef vector<Atom*> AtomVector;
-///An unordered set of Atom (GenericAtom)
-typedef unordered_set<Atom*,HashForTable<Atom>,HashForTable<Atom>> AtomTable;
+using AtomVector = vector<Atom*>;
 ///An unordered multimap of Atom (GenericAtom)
-typedef unordered_multimap<index_object, Atom*> Multimap_Atom;
+using Multimap_Atom = unordered_multimap<index_object, Atom*>;
 
 
 /** This class implements a general way to access to different atom containers.

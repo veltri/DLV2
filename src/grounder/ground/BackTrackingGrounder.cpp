@@ -459,6 +459,7 @@ bool BackTrackingGrounder::groundAggregate() {
 		Predicate *predicate_atom=atom->getPredicate();
 		vector<unsigned> tablesToSearch={FACT,NOFACT};
 
+		int counter=0;
 		for(unsigned j=0;j<tablesToSearch.size()&&result==UNDEF;j++){
 
 			unsigned table=tablesToSearch[j];
@@ -469,6 +470,7 @@ bool BackTrackingGrounder::groundAggregate() {
 			unsigned id = searcher->firstMatch(atom,copy_current_var_assign,atomFound);
 			find=(atomFound!=nullptr);
 			while(find){
+				counter++;
 
 				AggregateElement *ground_aggregateElement=new AggregateElement;
 				ground_aggregateElement->addNafLiterals(atomFound);
