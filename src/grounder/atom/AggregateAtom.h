@@ -41,12 +41,12 @@ public:
 		 * @param negative set whether the atom is negated with negation as failure
 		 */
 	AggregateAtom(Term* f, Binop fB, Term* s, Binop sB, AggregateFunction aF, vector<AggregateElement*> aE, bool n):
-		firstBinop(fB), secondBinop(sB), aggregateElements(move(aE)), negative(n), partialEvaluation(0), undefAtomEvaluation(0), firstGuard(f), secondGuard(s), assignment(false) {
+		firstBinop(fB), secondBinop(sB), aggregateElements(move(aE)), negative(n), partialEvaluation(TermTable::getInstance()->term_zero), undefAtomEvaluation(TermTable::getInstance()->term_zero), firstGuard(f), secondGuard(s), assignment(false) {
 		setAggregateFunction(aF);
 	}
 
 	AggregateAtom(Term* f, Binop fB, Term* s, Binop sB, AggregateFunction aF, bool n):
-		firstBinop(fB), secondBinop(sB), negative(n),partialEvaluation(0), undefAtomEvaluation(0), firstGuard(f), secondGuard(s), assignment(false) {
+		firstBinop(fB), secondBinop(sB), negative(n),partialEvaluation(TermTable::getInstance()->term_zero), undefAtomEvaluation(TermTable::getInstance()->term_zero), firstGuard(f), secondGuard(s), assignment(false) {
 		setAggregateFunction(aF);
 	}
 
