@@ -176,11 +176,11 @@ ResultEvaluation AggregateAtom::partialEvaluateCount() {
 
 	Atom *lastAtom=aggregateElements.back()->getNafLiteral(0);
 	if(!lastAtom->isFact()){
-		undefAtomEvaluation++;
+		undefAtomEvaluation=undefAtomEvaluation->increment();
 		return UNDEF;
 	}
 
-	partialEvaluation++;
+	partialEvaluation=partialEvaluation->increment();
 
 	if(checkOperator(firstGuard,firstBinop,EQUAL,GREATER,false))
 		return UNSATISFY;
@@ -245,11 +245,11 @@ ResultEvaluation AggregateAtom::partialEvaluateMin() {
 ResultEvaluation AggregateAtom::partialEvaluateSum() {
 	Atom *lastAtom=aggregateElements.back()->getNafLiteral(0);
 	if(!lastAtom->isFact()){
-		undefAtomEvaluation+=aggregateElements.back()->getTerms().front()->getConstantValue();
+		undefAtomEvaluation=undefAtomEvaluation->sum(aggregateElements.back()->getTerms().front());
 		return UNDEF;
 	}
 
-	partialEvaluation+=aggregateElements.back()->getTerms().front()->getConstantValue();
+	partialEvaluation=partialEvaluation->sum(aggregateElements.back()->getTerms().front());
 
 	if(PredicateExtTable::getInstance()->getPredicateExt(lastAtom->getPredicate())->getPredicateInformation()->isOnlyPositive()){
 		if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER,false)){
@@ -602,10 +602,12 @@ Term* AggregateAtom::generateNextCombination(bool& finish){
 void AggregateAtom::applayAggregateOperator(Term*& n1, Term* n2){
 	switch (aggregateFunction) {
 		case MIN:
-			n1=min(n1,n2);
+			if(*n1>*n2)
+				n1=n2;
 			break;
 		case MAX:
-			n1=max(n1,n2);
+			if(*n1<*n2)
+				n1=n2;
 			break;
 		case COUNT:
 			n1=n1->increment();
