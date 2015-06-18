@@ -438,7 +438,6 @@ bool BackTrackingGrounder::groundAggregate() {
 		}
 
 //		Term *term_value=new NumericConstantTerm(false,val);
-		termsMap->addTerm(val);
 		ground_aggregate->setFirstGuard(val);
 		current_var_assign.insert({aggregateAtom->getFirstGuard(),val});
 		return true;
@@ -480,6 +479,7 @@ bool BackTrackingGrounder::groundAggregate() {
 
 				ground_aggregate->addAggregateElement(ground_aggregateElement);
 				result=ground_aggregate->partialEvaluate();
+
 				if(result!=UNDEF || atom->isGround())break;
 				copy_current_var_assign=current_var_assign;
 				searcher->nextMatch(id,atom,copy_current_var_assign,atomFound);
@@ -490,11 +490,12 @@ bool BackTrackingGrounder::groundAggregate() {
 	if(result==UNDEF)
 		result=ground_aggregate->finalEvaluate();
 
+
 	//If is a first assignment set the initial value of the guard to the partial value
 	if(ground_aggregate->isAnAssigment()){
 		bool finish=0;
 		Term* val=ground_aggregate->generateNextCombination(finish);
-		termsMap->addTerm(val);
+
 		current_var_assign.insert({ground_aggregate->getFirstGuard(),val});
 		ground_aggregate->setFirstGuard(val);
 

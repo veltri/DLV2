@@ -96,8 +96,8 @@ public:
 	AggregateFunction getAggregateFunction() const {return aggregateFunction;};
 	///Setter method for the aggregate function
 	void setAggregateFunction(AggregateFunction aggregateFunction) {
-		if(aggregateFunction==MIN){*partialEvaluation=*undefAtomEvaluation=TermTable::getInstance()->term_max;}
-		if(aggregateFunction==MAX){*partialEvaluation=*undefAtomEvaluation=TermTable::getInstance()->term_min;}
+		if(aggregateFunction==MIN){partialEvaluation=undefAtomEvaluation=TermTable::getInstance()->term_max;}
+		if(aggregateFunction==MAX){partialEvaluation=undefAtomEvaluation=TermTable::getInstance()->term_min;}
 		this->aggregateFunction = aggregateFunction;
 	};
 	///Getter method for the first binary operation

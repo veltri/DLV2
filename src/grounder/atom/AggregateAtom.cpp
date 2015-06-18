@@ -197,12 +197,12 @@ ResultEvaluation AggregateAtom::partialEvaluateMax() {
 	Atom *lastAtom=aggregateElements.back()->getNafLiteral(0);
 	if(!lastAtom->isFact()){
 		Term* value=aggregateElements.back()->getTerms().front();
-		if(*undefAtomEvaluation<*value)
+		if(undefAtomEvaluation->getIndex()==TermTable::getInstance()->term_min->getIndex() || *undefAtomEvaluation<*value)
 			undefAtomEvaluation=value;
 		return UNDEF;
 	}
 	Term* value=aggregateElements.back()->getTerms().front();
-	if(*partialEvaluation<*value)
+	if(partialEvaluation->getIndex()==TermTable::getInstance()->term_min->getIndex() || *partialEvaluation<*value)
 		partialEvaluation=value;
 
 	if(checkOperator(firstGuard,firstBinop,EQUAL,GREATER,false))
@@ -222,12 +222,13 @@ ResultEvaluation AggregateAtom::partialEvaluateMin() {
 	Atom *lastAtom=aggregateElements.back()->getNafLiteral(0);
 	if(!lastAtom->isFact()){
 		Term* value=aggregateElements.back()->getTerms().front();
-		if(*undefAtomEvaluation>*value)
+		if(undefAtomEvaluation->getIndex()==TermTable::getInstance()->term_max->getIndex() || *undefAtomEvaluation>*value)
 			undefAtomEvaluation=value;
 		return UNDEF;
 	}
 	Term* value=aggregateElements.back()->getTerms().front();
-	if(*partialEvaluation>*value)
+
+	if(partialEvaluation->getIndex()==TermTable::getInstance()->term_max->getIndex() || *partialEvaluation>*value )
 		partialEvaluation=value;
 
 	if(checkOperator(firstGuard,firstBinop,EQUAL,LESS,false))
@@ -249,7 +250,10 @@ ResultEvaluation AggregateAtom::partialEvaluateSum() {
 		return UNDEF;
 	}
 
-	partialEvaluation=partialEvaluation->sum(aggregateElements.back()->getTerms().front());
+	if(partialEvaluation->getIndex()==TermTable::getInstance()->term_zero->getIndex())
+		partialEvaluation=aggregateElements.back()->getTerms().front();
+	else
+		partialEvaluation=partialEvaluation->sum(aggregateElements.back()->getTerms().front());
 
 	if(PredicateExtTable::getInstance()->getPredicateExt(lastAtom->getPredicate())->getPredicateInformation()->isOnlyPositive()){
 		if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER,false)){

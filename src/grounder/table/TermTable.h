@@ -52,6 +52,7 @@ protected:
 	// Instance of the singleton
 	static TermTable* termTable;
 private:
+//	TermTable(): term_max(new StringConstantTerm(false,"+∞")), term_min(new StringConstantTerm(false,"-∞")), term_zero(new NumericConstantTerm(false,0)) {
 	TermTable(): term_max(new StringConstantTerm(false,"#sup")), term_min(new StringConstantTerm(false,"#inf")), term_zero(new NumericConstantTerm(false,0)) {
 		addTerm(term_max);
 		addTerm(term_min);
