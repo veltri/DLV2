@@ -277,7 +277,6 @@ ResultEvaluation AggregateAtom::partialEvaluateSum() {
 }
 
 ResultEvaluation AggregateAtom::finalEvaluateCount() {
-
 	if(checkOperator(firstGuard,firstBinop,EQUAL,LESS,true))
 		return UNSATISFY;
 
@@ -304,32 +303,30 @@ ResultEvaluation AggregateAtom::finalEvaluateMax() {
 	if(undefAtomEvaluation->getIndex()==TermTable::getInstance()->term_min->getIndex()){
 		if(checkOperator(firstGuard,firstBinop,EQUAL,EQUAL,false))
 			return SATISFY;
-		return UNSATISFY;
+		if(checkOperator(firstGuard,firstBinop,EQUAL,LESS,false))
+			return UNSATISFY;
 	}
 
 	if(checkOperator(firstGuard,firstBinop,LESS_OR_EQ,LESS,true))
 		return UNSATISFY;
 
-	if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS,LESS,true)){
-		cout<<"AAAAAAAA 3"<<endl;
+	if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS,LESS,true))
 		return SATISFY;
-	}
 
-	if(checkOperator(secondGuard,secondBinop,LESS,LESS,true) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false)){
-		cout<<"AAAAAAAA 4"<<endl;
+	if(checkOperator(secondGuard,secondBinop,LESS,LESS,true) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
 		return SATISFY;
-	}
 
 	if(isAnAssigment()) findUndefAtoms();
 	return UNDEF;
 }
 
 ResultEvaluation AggregateAtom::finalEvaluateMin() {
-	if(undefAtomEvaluation->getIndex() == TermTable::getInstance()->term_max->getIndex() && checkOperator(firstGuard,firstBinop,EQUAL,EQUAL,false))
-		return SATISFY;
-
-	if(undefAtomEvaluation->getIndex() == TermTable::getInstance()->term_max->getIndex() && checkOperator(firstGuard,firstBinop,EQUAL,GREATER,false))
-		return UNSATISFY;
+	if(undefAtomEvaluation->getIndex() == TermTable::getInstance()->term_max->getIndex()){
+		if(checkOperator(firstGuard,firstBinop,EQUAL,EQUAL,false))
+			return SATISFY;
+		if(checkOperator(firstGuard,firstBinop,EQUAL,GREATER,false))
+			return UNSATISFY;
+	}
 
 	if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,true))
 		return SATISFY;
