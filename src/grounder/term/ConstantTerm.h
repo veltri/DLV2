@@ -85,8 +85,6 @@ public:
 
 	virtual bool operator==(const Term& term) const {return getType()==term.getType() && this->string_constant==term.getName();}
 
-	virtual Term* sum(Term* t);
-
 	virtual TermType getType() const {if(string_constant[0]=='"')return STRING_CONSTANT; return SYMBOLIC_CONSTANT; };
 	virtual bool contain(TermType type) { return TermType::STRING_CONSTANT==type;};
 	virtual size_t hash() {return HashString::getHashString()->computeHash(string_constant);};

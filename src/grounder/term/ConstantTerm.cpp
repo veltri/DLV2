@@ -100,16 +100,6 @@ Term* NumericConstantTerm::increment(){
 	return true;
 };
 
-Term* StringConstantTerm::sum(Term* t){
- 	if(t->getType()==STRING_CONSTANT){
- 		string concaString=string_constant.substr(0,string_constant.size()-1)+t->getName().substr(1,string_constant.size());
- 		Term* term=new StringConstantTerm(false, concaString);
- 		TermTable::getInstance()->addTerm(term);
- 		return term;
- 	}
- 	return 0;
- };
-
 };
 
 };

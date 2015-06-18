@@ -245,15 +245,14 @@ ResultEvaluation AggregateAtom::partialEvaluateMin() {
 
 ResultEvaluation AggregateAtom::partialEvaluateSum() {
 	Atom *lastAtom=aggregateElements.back()->getNafLiteral(0);
-	if(!lastAtom->isFact()){
-		undefAtomEvaluation=undefAtomEvaluation->sum(aggregateElements.back()->getTerms().front());
+	Term* term=aggregateElements.back()->getTerms().front();
+	if(!lastAtom->isFact() && term->getType()==NUMERIC_CONSTANT){
+		undefAtomEvaluation=undefAtomEvaluation->sum(term);
 		return UNDEF;
 	}
 
-	if(partialEvaluation->getIndex()==TermTable::getInstance()->term_zero->getIndex())
-		partialEvaluation=aggregateElements.back()->getTerms().front();
-	else
-		partialEvaluation=partialEvaluation->sum(aggregateElements.back()->getTerms().front());
+	if(term->getType()==NUMERIC_CONSTANT)
+		partialEvaluation=partialEvaluation->sum(term);
 
 	if(PredicateExtTable::getInstance()->getPredicateExt(lastAtom->getPredicate())->getPredicateInformation()->isOnlyPositive()){
 		if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER,false)){
@@ -549,7 +548,8 @@ bool AggregateAtom::checkOperator(Term* term,Binop binopGuard,Binop binop, Binop
 			if(*value>=*term)return true;
 			break;
 		case EQUAL:
-			if(value->getIndex()==term->getIndex())return true;
+			if(value->getIndex()==term->getIndex())
+				return true;
 			break;
 		default:
 			return false;
@@ -617,7 +617,8 @@ void AggregateAtom::applayAggregateOperator(Term*& n1, Term* n2){
 			n1=n1->increment();
 			break;
 		default:
-			n1=n1->sum(n2);
+			if(n1->getType()==NUMERIC_CONSTANT && n2->getType()==NUMERIC_CONSTANT)
+				n1=n1->sum(n2);
 			break;
 	}
 }

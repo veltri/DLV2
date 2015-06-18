@@ -18,19 +18,21 @@ namespace grounder{
 Term* ArithTerm::calculate() {
 	int result = terms[0]->getConstantValue();
 	for (unsigned int i = 1; i < terms.size(); i++) {
-		unsigned int value=terms[i]->getConstantValue();
-		if (operators[i-1] == Operator::PLUS)
-			result += value;
-		else if (operators[i-1] == Operator::MINUS)
-			result -= value;
-		else if (operators[i-1] == Operator::DIV){
-			//FIXME For not stop the program division by 0 is 0
-			if(value != 0)
-				result /= value;
-			else
-				result = 0;
-		}else if (operators[i-1] == Operator::TIMES)
-			result *= value;
+		if(terms[i]->getType()==NUMERIC_CONSTANT){
+			unsigned int value=terms[i]->getConstantValue();
+			if (operators[i-1] == Operator::PLUS)
+				result += value;
+			else if (operators[i-1] == Operator::MINUS)
+				result -= value;
+			else if (operators[i-1] == Operator::DIV){
+				//FIXME For not stop the program division by 0 is 0
+				if(value != 0)
+					result /= value;
+				else
+					result = 0;
+			}else if (operators[i-1] == Operator::TIMES)
+				result *= value;
+		}
 	}
 
 	Term *constantTerm=new NumericConstantTerm(result<0,result);
