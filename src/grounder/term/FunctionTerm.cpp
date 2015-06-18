@@ -25,6 +25,8 @@ size_t FunctionTerm::hash() {
 }
 
 bool FunctionTerm::operator>(const Term& term) const {
+	int checkMaxMin=checkMaxAndMinTerm(term,false);
+	if(checkMaxMin!=2) return checkMaxMin;
 	if(term.getType()==NUMERIC_CONSTANT || term.getType()==STRING_CONSTANT || term.getType()==SYMBOLIC_CONSTANT)
 		return true;
 
@@ -47,6 +49,8 @@ bool FunctionTerm::operator>(const Term& term) const {
 }
 
 bool FunctionTerm::operator>=(const Term& term) const {
+	int checkMaxMin=checkMaxAndMinTerm(term,true);
+	if(checkMaxMin!=2) return checkMaxMin;
 	if(term.getType()==NUMERIC_CONSTANT || term.getType()==STRING_CONSTANT || term.getType()==SYMBOLIC_CONSTANT)
 		return true;
 
@@ -65,6 +69,8 @@ bool FunctionTerm::operator>=(const Term& term) const {
 }
 
 bool FunctionTerm::operator<(const Term& term) const {
+	int checkMaxMin=checkMaxAndMinTerm(term,false);
+	if(checkMaxMin!=2) return !checkMaxMin;
 	if(term.getType()==NUMERIC_CONSTANT || term.getType()==STRING_CONSTANT || term.getType()==SYMBOLIC_CONSTANT)
 		return false;
 
@@ -86,6 +92,8 @@ bool FunctionTerm::operator<(const Term& term) const {
 }
 
 bool FunctionTerm::operator<=(const Term& term) const {
+	int checkMaxMin=checkMaxAndMinTerm(term,true);
+	if(checkMaxMin!=2) return !checkMaxMin;
 	if(term.getType()==NUMERIC_CONSTANT || term.getType()==STRING_CONSTANT || term.getType()==SYMBOLIC_CONSTANT)
 		return false;
 

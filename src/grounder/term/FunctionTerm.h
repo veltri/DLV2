@@ -70,8 +70,6 @@ public:
 	virtual bool operator<(const Term& term)const;
 	virtual bool operator<=(const Term& term)const;
 
-
-
 	virtual Term* calculate();
 	virtual Term* substitute(map_term_term& substritutionTerm);
 	/// Return the name of the function concatenated with '*' and the id of the composites term

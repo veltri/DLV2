@@ -108,6 +108,28 @@ public:
 	virtual Term* increment(){return 0;};
 	virtual Term* sum(Term* t1){return 0;};
 
+	bool isTermMax() const;
+	bool isTermMin() const;
+	bool isTermZero() const;
+
+	///Check if one or both terms are term max or term min and behaves as the operator >
+	///If checkEqual is true it behaves as the operator >=
+	///Returns 1 or 0 if one of the two terms is the max or the min (according to the comparison)
+	///Returns 2 otherwise
+	int checkMaxAndMinTerm(const Term& term, bool checkEqual) const{
+		if(isTermMax() && !term.isTermMax())
+			return 1;
+		if(term.isTermMax())
+			return checkEqual;
+		if(term.isTermMin() && isTermMin() && checkEqual)
+			return 1;
+		if(isTermMin() && !term.isTermMin())
+			return 0;
+		if(!isTermMin() && term.isTermMin())
+			return 1;
+		return 2;
+	}
+
 	///Add the index of a composite term
 	virtual void addTerm(Term* termIndex){};
 	///Remove last index of a term

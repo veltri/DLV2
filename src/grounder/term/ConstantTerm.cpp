@@ -12,13 +12,18 @@ namespace DLV2{
 
 namespace grounder{
 
- bool NumericConstantTerm::operator>(const Term& term)const{
+bool NumericConstantTerm::operator>(const Term& term)const{
+	int checkMaxMin=checkMaxAndMinTerm(term,false);
+	if(checkMaxMin!= 2) return checkMaxMin;
 	if(TermType::NUMERIC_CONSTANT==term.getType())
 		return numeric_constant>term.getConstantValue();
 
 	return false;
 };
- bool NumericConstantTerm::operator>=(const Term& term)const{
+
+bool NumericConstantTerm::operator>=(const Term& term)const{
+	int checkMaxMin=checkMaxAndMinTerm(term,true);
+	if(checkMaxMin!= 2) return checkMaxMin;
 	if(TermType::NUMERIC_CONSTANT==term.getType())
 		return numeric_constant>=term.getConstantValue();
 
@@ -26,12 +31,17 @@ namespace grounder{
 }
 
  bool NumericConstantTerm::operator<(const Term& term)const {
+	int checkMaxMin=checkMaxAndMinTerm(term,false);
+	if(checkMaxMin!= 2) return !checkMaxMin;
 	if(TermType::NUMERIC_CONSTANT==term.getType())
 		return numeric_constant<term.getConstantValue();
 
 	return true;
 };
- bool NumericConstantTerm::operator<=(const Term& term)const{
+
+bool NumericConstantTerm::operator<=(const Term& term)const{
+	int checkMaxMin=checkMaxAndMinTerm(term,true);
+	if(checkMaxMin!= 2) return !checkMaxMin;
 	if(TermType::NUMERIC_CONSTANT==term.getType())
 		return numeric_constant<=term.getConstantValue();
 
@@ -54,6 +64,8 @@ Term* NumericConstantTerm::increment(){
 };
 
  bool StringConstantTerm::operator>(const Term& term)const{
+	int checkMaxMin=checkMaxAndMinTerm(term,false);
+	if(checkMaxMin!=2) return checkMaxMin;
 	if(term.getType()==NUMERIC_CONSTANT)return true;
 
 	if(getType()==STRING_CONSTANT && term.getType()==SYMBOLIC_CONSTANT)
@@ -65,6 +77,8 @@ Term* NumericConstantTerm::increment(){
 	return false;
 };
  bool StringConstantTerm::operator>=(const Term& term)const{
+	int checkMaxMin=checkMaxAndMinTerm(term,true);
+	if(checkMaxMin!=2) return checkMaxMin;
 	if(term.getType()==NUMERIC_CONSTANT)return true;
 
 	if(getType()==STRING_CONSTANT && term.getType()==SYMBOLIC_CONSTANT)
@@ -77,6 +91,8 @@ Term* NumericConstantTerm::increment(){
 }
 
  bool StringConstantTerm::operator<(const Term& term)const {
+	int checkMaxMin=checkMaxAndMinTerm(term,false);
+	if(checkMaxMin!=2) return !checkMaxMin;
 	if(term.getType()==NUMERIC_CONSTANT)return false;
 
 	if(getType()==STRING_CONSTANT && term.getType()==SYMBOLIC_CONSTANT)
@@ -89,6 +105,8 @@ Term* NumericConstantTerm::increment(){
 };
 
  bool StringConstantTerm::operator<=(const Term& term)const{
+	int checkMaxMin=checkMaxAndMinTerm(term,true);
+	if(checkMaxMin!=2) return !checkMaxMin;
 	if(term.getType()==NUMERIC_CONSTANT)return false;
 
 	if(getType()==STRING_CONSTANT && term.getType()==SYMBOLIC_CONSTANT)

@@ -301,20 +301,24 @@ ResultEvaluation AggregateAtom::finalEvaluateMax() {
 	if(checkOperator(firstGuard,firstBinop,EQUAL,LESS,true))
 		return UNSATISFY;
 
-	if(undefAtomEvaluation->getIndex()==TermTable::getInstance()->term_min->getIndex() && checkOperator(firstGuard,firstBinop,EQUAL,EQUAL,false))
-		return SATISFY;
-
-	if(undefAtomEvaluation->getIndex()==(TermTable::getInstance()->term_min)->getIndex() && checkOperator(firstGuard,firstBinop,EQUAL,LESS,false))
-		return SATISFY;
+	if(undefAtomEvaluation->getIndex()==TermTable::getInstance()->term_min->getIndex()){
+		if(checkOperator(firstGuard,firstBinop,EQUAL,EQUAL,false))
+			return SATISFY;
+		return UNSATISFY;
+	}
 
 	if(checkOperator(firstGuard,firstBinop,LESS_OR_EQ,LESS,true))
 		return UNSATISFY;
 
-	if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS,LESS,true))
+	if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS,LESS,true)){
+		cout<<"AAAAAAAA 3"<<endl;
 		return SATISFY;
+	}
 
-	if(checkOperator(secondGuard,secondBinop,LESS,LESS,true) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
+	if(checkOperator(secondGuard,secondBinop,LESS,LESS,true) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false)){
+		cout<<"AAAAAAAA 4"<<endl;
 		return SATISFY;
+	}
 
 	if(isAnAssigment()) findUndefAtoms();
 	return UNDEF;
@@ -536,20 +540,20 @@ bool AggregateAtom::checkOperator(Term* term,Binop binopGuard,Binop binop, Binop
 	if(checkUndef)value=getCheckValue();
 	switch (op) {
 		case LESS:
-			if(*value<*term)return true;
+			if(*value<*term)
+				return true;
 			break;
 		case LESS_OR_EQ:
-			if(*value<=*term)return true;
+			if(*value<=*term) return true;
 			break;
 		case GREATER:
-			if(*value>*term)return true;
+			if(*value>*term) return true;
 			break;
 		case GREATER_OR_EQ:
-			if(*value>=*term)return true;
+			if(*value>=*term) return true;
 			break;
 		case EQUAL:
-			if(value->getIndex()==term->getIndex())
-				return true;
+			if(value->getIndex()==term->getIndex())	return true;
 			break;
 		default:
 			return false;
