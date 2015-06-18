@@ -184,10 +184,15 @@ ResultEvaluation AggregateAtom::partialEvaluateCount() {
 
 	if(checkOperator(firstGuard,firstBinop,EQUAL,GREATER,false))
 		return UNSATISFY;
+
 	if(checkOperator(secondGuard,secondBinop,LESS,GREATER_OR_EQ,false))
+		return UNSATISFY;
+	if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,GREATER,false))
 		return UNSATISFY;
 
 	if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
+		return SATISFY;
+	if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS,GREATER,false))
 		return SATISFY;
 
 	return UNDEF;
@@ -210,8 +215,12 @@ ResultEvaluation AggregateAtom::partialEvaluateMax() {
 
 	if(checkOperator(secondGuard,secondBinop,LESS,GREATER_OR_EQ,false))
 		return UNSATISFY;
+	if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,GREATER,false))
+		return UNSATISFY;
 
 	if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
+		return SATISFY;
+	if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS,GREATER,false))
 		return SATISFY;
 
 	return UNDEF;
@@ -236,8 +245,12 @@ ResultEvaluation AggregateAtom::partialEvaluateMin() {
 
 	if(checkOperator(firstGuard,firstBinop,LESS_OR_EQ,LESS,false))
 		return UNSATISFY;
+	if(checkOperator(firstGuard,firstBinop,LESS,LESS_OR_EQ,false))
+		return UNSATISFY;
 
 	if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS,LESS,false))
+		return SATISFY;
+	if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,false))
 		return SATISFY;
 
 	return UNDEF;
@@ -255,22 +268,33 @@ ResultEvaluation AggregateAtom::partialEvaluateSum() {
 		partialEvaluation=partialEvaluation->sum(term);
 
 	if(PredicateExtTable::getInstance()->getPredicateExt(lastAtom->getPredicate())->getPredicateInformation()->isOnlyPositive()){
-		if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER,false)){
-			return SATISFY;
-		}
-		if(checkOperator(secondGuard,secondBinop,LESS,GREATER,false))
-			return UNSATISFY;
 		if(checkOperator(firstGuard,firstBinop,EQUAL,GREATER,false))
+			return UNSATISFY;
+
+		if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER,false))
+			return SATISFY;
+		if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS,GREATER,false))
+			return SATISFY;
+
+		if(checkOperator(secondGuard,secondBinop,LESS,GREATER_OR_EQ,false))
+			return UNSATISFY;
+		if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,GREATER,false))
 			return UNSATISFY;
 	}
 
 	if(PredicateExtTable::getInstance()->getPredicateExt(lastAtom->getPredicate())->getPredicateInformation()->isOnlyNegative()){
-		if(checkOperator(firstGuard,firstBinop,LESS_OR_EQ,LESS,false))
-			return UNSATISFY;
-		if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS,LESS,false))
-			return SATISFY;
 		if(checkOperator(firstGuard,firstBinop,EQUAL,LESS,false))
 			return UNSATISFY;
+
+		if(checkOperator(firstGuard,firstBinop,LESS_OR_EQ,LESS,false))
+			return UNSATISFY;
+		if(checkOperator(firstGuard,firstBinop,LESS,LESS_OR_EQ,false))
+			return UNSATISFY;
+
+		if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS,LESS,false))
+			return SATISFY;
+		if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,false))
+			return SATISFY;
 	}
 
 	return UNDEF;
@@ -285,11 +309,21 @@ ResultEvaluation AggregateAtom::finalEvaluateCount() {
 
 	if(checkOperator(firstGuard,firstBinop,LESS_OR_EQ,LESS,true))
 		return UNSATISFY;
+	if(checkOperator(firstGuard,firstBinop,LESS,LESS_OR_EQ,true))
+		return UNSATISFY;
 
 	if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS,LESS,true))
 		return SATISFY;
+	if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,true))
+		return SATISFY;
 
 	if(checkOperator(secondGuard,secondBinop,LESS,LESS,true) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
+		return SATISFY;
+	if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,true) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
+		return SATISFY;
+	if(checkOperator(secondGuard,secondBinop,LESS,LESS,true) && checkOperator(firstGuard,firstBinop,LESS,GREATER,false))
+		return SATISFY;
+	if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,true) && checkOperator(firstGuard,firstBinop,LESS,GREATER,false))
 		return SATISFY;
 
 	findUndefAtoms();
@@ -309,11 +343,21 @@ ResultEvaluation AggregateAtom::finalEvaluateMax() {
 
 	if(checkOperator(firstGuard,firstBinop,LESS_OR_EQ,LESS,true))
 		return UNSATISFY;
+	if(checkOperator(firstGuard,firstBinop,LESS,LESS_OR_EQ,true))
+		return UNSATISFY;
 
 	if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS,LESS,true))
 		return SATISFY;
+	if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,true))
+		return SATISFY;
 
 	if(checkOperator(secondGuard,secondBinop,LESS,LESS,true) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
+		return SATISFY;
+	if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,true) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
+		return SATISFY;
+	if(checkOperator(secondGuard,secondBinop,LESS,LESS,true) && checkOperator(firstGuard,firstBinop,LESS,GREATER,false))
+		return SATISFY;
+	if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,true) && checkOperator(firstGuard,firstBinop,LESS,GREATER,false))
 		return SATISFY;
 
 	if(isAnAssigment()) findUndefAtoms();
@@ -330,11 +374,21 @@ ResultEvaluation AggregateAtom::finalEvaluateMin() {
 
 	if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,true))
 		return SATISFY;
+	if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS,GREATER,true))
+			return SATISFY;
 
 	if(checkOperator(secondGuard,secondBinop,LESS,GREATER_OR_EQ,true))
 		return UNSATISFY;
+	if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,GREATER,true))
+		return UNSATISFY;
 
 	if(checkOperator(secondGuard,secondBinop,LESS,LESS,false) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,true))
+		return SATISFY;
+	if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,false) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,true))
+		return SATISFY;
+	if(checkOperator(secondGuard,secondBinop,LESS,LESS,false) && checkOperator(firstGuard,firstBinop,LESS,GREATER,true))
+		return SATISFY;
+	if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,false) && checkOperator(firstGuard,firstBinop,LESS,GREATER,true))
 		return SATISFY;
 
 	if(isAnAssigment()) findUndefAtoms();
@@ -350,17 +404,31 @@ ResultEvaluation AggregateAtom::finalEvaluateSum() {
 
 	if(checkOperator(firstGuard,firstBinop,LESS_OR_EQ,LESS,true))
 		return UNSATISFY;
+	if(checkOperator(firstGuard,firstBinop,LESS,LESS_OR_EQ,true))
+		return UNSATISFY;
 
 	if(checkOperator(secondGuard,secondBinop,LESS,GREATER_OR_EQ,false))
+		return UNSATISFY;
+	if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,GREATER,false))
 		return UNSATISFY;
 
 	if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
 		return SATISFY;
+	if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS,GREATER,false))
+		return SATISFY;
 
 	if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS,LESS,true))
 		return SATISFY;
+	if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,true))
+		return SATISFY;
 
 	if(checkOperator(secondGuard,secondBinop,LESS,LESS,true) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
+		return SATISFY;
+	if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,true) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
+		return SATISFY;
+	if(checkOperator(secondGuard,secondBinop,LESS,LESS,true) && checkOperator(firstGuard,firstBinop,LESS,GREATER,false))
+		return SATISFY;
+	if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,true) && checkOperator(firstGuard,firstBinop,LESS,GREATER,false))
 		return SATISFY;
 
 	if(isAnAssigment()) findUndefAtoms();
@@ -472,17 +540,17 @@ void AggregateAtom::changeInStandardFormat() {
 			secondBinop=Binop::LESS_OR_EQ;
 	}
 
-	// Case: 1 < x
-	if(firstBinop==Binop::LESS && firstGuard!=0){
-		firstGuard=changeInStandardFormatGuard(firstGuard);
-		firstBinop=Binop::LESS_OR_EQ;
-	}
-
-	// Case: x >= 1
-	if(secondBinop==Binop::LESS_OR_EQ && secondGuard!=0){
-		secondGuard=changeInStandardFormatGuard(secondGuard);
-		secondBinop=Binop::LESS;
-	}
+//	// Case: 1 < x
+//	if(firstBinop==Binop::LESS && firstGuard!=0){
+//		firstGuard=changeInStandardFormatGuard(firstGuard);
+//		firstBinop=Binop::LESS_OR_EQ;
+//	}
+//
+//	// Case: x >= 1
+//	if(secondBinop==Binop::LESS_OR_EQ && secondGuard!=0){
+//		secondGuard=changeInStandardFormatGuard(secondGuard);
+//		secondBinop=Binop::LESS;
+//	}
 }
 
 set_term AggregateAtom::getSharedVariable(Rule* rule) {

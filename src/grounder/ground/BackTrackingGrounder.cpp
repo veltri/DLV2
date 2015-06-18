@@ -426,12 +426,17 @@ void BackTrackingGrounder::removeBindValueInAssignment(const set_term& bind_vari
 bool BackTrackingGrounder::groundAggregate() {
 	Atom *aggregateAtom=templateSetAtom[index_current_atom];
 	if(aggregateAtom->getAggregateFunction()==SUM || aggregateAtom->getAggregateFunction()==COUNT){
-		if((aggregateAtom->getFirstBinop()==LESS_OR_EQ || aggregateAtom->getFirstBinop()==EQUAL)
+			if((aggregateAtom->getFirstBinop()==LESS_OR_EQ || aggregateAtom->getFirstBinop()==EQUAL)
 			&& aggregateAtom->getFirstGuard()->getType()!=VARIABLE && aggregateAtom->getFirstGuard()->getType()!=NUMERIC_CONSTANT){
+				ground_rule->setAtomToSimplifyInBody(index_current_atom);
+				substiteInGroundRule(index_current_atom,nullptr);
 				return aggregateAtom->isNegative();
 		}
 		if(aggregateAtom->getSecondBinop()==LESS && aggregateAtom->getFirstBinop()==NONE_OP
 			&& aggregateAtom->getSecondGuard()->getType()!=VARIABLE && aggregateAtom->getSecondGuard()->getType()!=NUMERIC_CONSTANT){
+				cout<<"AAAAAAAAAAAAAa"<<endl;
+				ground_rule->setAtomToSimplifyInBody(index_current_atom);
+				substiteInGroundRule(index_current_atom,nullptr);
 				return !aggregateAtom->isNegative();
 		}
 	}
@@ -448,7 +453,6 @@ bool BackTrackingGrounder::groundAggregate() {
 			return false;
 		}
 
-//		Term *term_value=new NumericConstantTerm(false,val);
 		ground_aggregate->setFirstGuard(val);
 		current_var_assign.insert({aggregateAtom->getFirstGuard(),val});
 		return true;
