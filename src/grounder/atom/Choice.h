@@ -66,9 +66,10 @@ public:
 	virtual void print();
 
 	//TODO
-	virtual bool operator==(const Atom& a) {return false;};
-	virtual Atom* clone() {return 0;};
+	virtual bool operator==(const Atom& a){return false;};
 	virtual size_t hash(){return 0;};
+
+	virtual Atom* clone();
 
 	///Destructor
 	~Choice() {};

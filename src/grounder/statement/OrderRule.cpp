@@ -66,6 +66,8 @@ bool OrderRule::order() {
 bool OrderRule::checkHeadSafety(){
 	set_term variableToCheck;
 	for(auto atom=rule->getBeginHead();atom!=rule->getEndHead();++atom){
+		//TODO Add check safety to choice
+		if((*atom)->isChoice())continue;
 		set_term tempVariables=(*atom)->getVariable();
 		variableToCheck.insert(tempVariables.begin(),tempVariables.end());
 	}

@@ -339,12 +339,12 @@ void InMemoryInputBuilder::onChoiceElementAtom() {
 	if(currentChoice==nullptr)
 		currentChoice = new Choice;
 	currentChoiceElement->add(currentAtom);
-	currentAtom=0;
+	currentAtom=nullptr;
 }
 
 void InMemoryInputBuilder::onChoiceElementLiteral() {
 	currentChoiceElement->add(currentAtom);
-	currentAtom=0;
+	currentAtom=nullptr;
 }
 
 void InMemoryInputBuilder::onChoiceElement() {
@@ -355,8 +355,8 @@ void InMemoryInputBuilder::onChoiceElement() {
 void InMemoryInputBuilder::onChoiceAtom() {
 	currentAtom=currentChoice;
 	currentRule->addInHead(currentAtom);
-	currentChoice=0;
-	currentAtom=0;
+	currentChoice=nullptr;
+	currentAtom=nullptr;
 }
 
 void InMemoryInputBuilder::onBuiltinAtom() {

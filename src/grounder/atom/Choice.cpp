@@ -38,4 +38,17 @@ void Choice::print() {
 	}
 }
 
-}}
+Atom* Choice::clone() {
+	Atom* atom=new Choice;
+	atom->setFirstBinop(firstBinop);
+	atom->setSecondBinop(secondBinop);
+	atom->setTerms(terms);
+	atom->setChoiceElements(choiceElements);
+
+	return atom;
+}
+
+}
+}
+
+

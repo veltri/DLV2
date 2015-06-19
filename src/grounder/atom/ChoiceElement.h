@@ -11,6 +11,8 @@
 
 #include <vector>
 #include "Atom.h"
+#include "Predicate.h"
+
 using namespace std;
 
 namespace DLV2{
@@ -42,6 +44,9 @@ public:
 	Atom* getFirstAtom() const {return choiceElement[0];}
 	//Add an atom to the choice element
 	void add(Atom* atom){choiceElement.push_back(atom);}
+
+	set_predicate getPredicateInNaf();
+
 
 	///Destructor
 	virtual ~ChoiceElement(){};
