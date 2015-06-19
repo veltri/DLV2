@@ -71,6 +71,20 @@ public:
 
 	virtual Atom* clone();
 
+	///???
+	virtual set_predicate getPredicates(){};
+
+	///Return the predicate of classical literal (the first atom in choice elements) in choiche elements
+	virtual set_predicate getClassicalPredicates(){
+		set_predicate predicates;
+		for(auto& element:choiceElements){
+			auto predicates_in_atom=element->getFirstAtom()->getPredicates()
+			predicates.insert(predicates_in_atom.begin(),predicates_in_atom.end());
+		}
+
+		return predicates;
+	}
+
 	///Destructor
 	~Choice() {};
 

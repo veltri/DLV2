@@ -45,6 +45,7 @@ public:
 	//Add an atom to the choice element
 	void add(Atom* atom){choiceElement.push_back(atom);}
 
+	///Return the predicates of naf literal in choiche element
 	set_predicate getPredicateInNaf();
 
 
