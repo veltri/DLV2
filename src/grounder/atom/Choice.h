@@ -20,7 +20,7 @@ namespace grounder{
 class Choice: public Atom {
 public:
 	///Default constructor
-	Choice(): firstBinop(Binop::NONE_OP), secondBinop(Binop::NONE_OP) {};
+	Choice(): firstBinop(Binop::NONE_OP), secondBinop(Binop::NONE_OP){terms.push_back(0);terms.push_back(0);};
 
 	/** Constructor
 	 * @param fB set the first binary operation
@@ -28,8 +28,8 @@ public:
 	 * @param t set the terms vector
 	 * @param cE set the choice elements vectors
 	 */
-	Choice(Binop fB, Binop sB, vector<Term*> t, vector<ChoiceElement> cE)
-		: Atom(t), firstBinop(fB), secondBinop(sB), choiceElements(move(cE)) {};
+	Choice(Binop fB, Binop sB, vector<Term*> t, vector<ChoiceElement*> cE)
+		: Atom(t), firstBinop(fB), secondBinop(sB), choiceElements(cE) {};
 
 	///Getter method for the first binary operation
 	Binop getFirstBinop() const {return firstBinop;};
@@ -40,15 +40,35 @@ public:
 	///Setter method for the second binary operation
 	void setSecondBinop(Binop secondBinop) {this->secondBinop = secondBinop;};
 	///Getter method for the choice elements
-	const vector<ChoiceElement> getChoiceElements() const {return choiceElements;};
+	const vector<ChoiceElement*>& getChoiceElements() const {return choiceElements;};
 	///Setter method for the choice elements
-	void setChoiceElements(const vector<ChoiceElement>& choiceElements) {this->choiceElements = choiceElements;};
+	void setChoiceElements(const vector<ChoiceElement*>& choiceElements) {this->choiceElements = choiceElements;};
+	///Returns the choice elements size
+	unsigned getChoiceElementsSize() const {return choiceElements.size();}
+	///Returns the i-th choice element
+	ChoiceElement* getChoiceElement(unsigned i) const {return choiceElements[i];}
+	///Set first guard of the choice
+	virtual void setFirstGuard(Term* lower){terms[0]=lower;};
+	///Set second guard of the choice
+	virtual void setSecondGuard(Term* upper){if(terms.size()==0) terms[0]=0; terms[1]=upper;};
+	///Get lower guard of the choice
+	virtual Term* getFirstGuard(){return terms[0];};
+	///Get upper guard of the choice
+	virtual Term* getSecondGuard(){return terms[1];};
+	///Add a choice element
+	virtual void addChoiceElement(ChoiceElement* choiceElement){choiceElements.push_back(choiceElement);}
 
 	virtual bool isChoice(){return true;}
 
-
 	///This method compute the resulting hash of a choice atom TODO
 	size_t getHash() const {return 0;};
+
+	virtual void print();
+
+	//TODO
+	virtual bool operator==(const Atom& a) {return false;};
+	virtual Atom* clone() {return 0;};
+	virtual size_t hash(){return 0;};
 
 	///Destructor
 	~Choice() {};
@@ -59,7 +79,7 @@ private:
 	///Second binary operation
 	Binop secondBinop;
 	//Vector of choice elements
-	vector<ChoiceElement> choiceElements;
+	vector<ChoiceElement*> choiceElements;
 
 	/* For the vector of terms, it contains the first and the second term of comparison.
 	 * Notice that the vector contains the terms in the same order as they appear: the first term in position 0, the second in position 1.

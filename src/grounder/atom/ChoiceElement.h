@@ -32,12 +32,16 @@ public:
 	///Setter for choice element
 	void setChoiceElement(const vector<Atom*>& choiceElement) {this->choiceElement = choiceElement;}
 	///This method returns the size of the vector of atoms
-	const unsigned int getSize() const {return choiceElement.size();}
+	unsigned int getSize() const {return choiceElement.size();}
 	/** This method returns the atom in the position i
 	 * @retval a if the position i is valid, and a is the atom in that position
 	 * @retval null if the position i is not valid
 	 */
 	Atom* getAtom(unsigned int i) const {if(i<choiceElement.size()) return choiceElement[i]; return 0;};
+	///Get the classical atom
+	Atom* getFirstAtom() const {return choiceElement[0];}
+	//Add an atom to the choice element
+	void add(Atom* atom){choiceElement.push_back(atom);}
 
 	///Destructor
 	virtual ~ChoiceElement(){};

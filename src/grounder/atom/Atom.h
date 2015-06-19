@@ -207,17 +207,25 @@ public:
 
 	/******** Methods useful for Choice ********/
 	///Getter method for the choice elements
-	virtual const vector<ChoiceElement> getChoiceElements() const {return vector<ChoiceElement>(0);};
+	virtual const vector<ChoiceElement*>& getChoiceElements() const {return vector<ChoiceElement*>(0);};
 	///Setter method for the choice elements
-	virtual void setChoiceElements(const vector<vector<index_object> >& choiceElements) {};
+	virtual void setChoiceElements(const vector<ChoiceElement*>& choiceElements) {};
+	///Returns the choice elements size
+	virtual unsigned getChoiceElementsSize() const {return 0;}
+	///Returns the i-th choice element
+	virtual ChoiceElement* getChoiceElement(unsigned i) const {return 0;}
 	///Return true if is a choice atom
 	virtual bool isChoice(){return false;}
+	///Add a choice element
+	virtual void addChoiceElement(ChoiceElement* choiceElement){}
 	/*****************************************************/
 
 	/******** Methods useful for Generic Atom ********/
 	virtual bool isFact() const { return false; }
 	virtual void setFact(bool isFact) {  }
 	/*****************************************************/
+
+	static string getBinopToStrng(Binop binop);
 
 
 	/// Substitute the terms in the atom with the given terms and return the atom with terms sobstitute

@@ -17,32 +17,6 @@ using namespace std;
 namespace DLV2{
 namespace grounder{
 
-static string getBinopToStrng(Binop binop){
-	switch (binop) {
-		case EQUAL:
-			return "=";
-			break;
-		case UNEQUAL:
-			return "!=";
-			break;
-		case LESS:
-			return "<";
-			break;
-		case LESS_OR_EQ:
-			return "<=";
-			break;
-		case GREATER:
-			return ">";
-			break;
-		case GREATER_OR_EQ:
-			return ">=";
-			break;
-		default:
-			return "";
-			break;
-	}
-}
-
 set_term AggregateAtom::getVariable(){
 
 	set_term variables=getGuardVariable();

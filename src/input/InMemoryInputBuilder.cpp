@@ -10,6 +10,7 @@
 #include "../grounder/atom/BuiltInAtom.h"
 #include "../grounder/ground/ProgramGrounder.h"
 #include "../grounder/atom/AggregateAtom.h"
+#include "../grounder/atom/Choice.h"
 
 #include <string>
 #include "algorithm"
@@ -29,7 +30,9 @@ InMemoryInputBuilder::InMemoryInputBuilder() :
 	currentAtom(nullptr),
 	currentBinop(Binop::NONE_OP),
 	currentAggregate(nullptr),
-	currentAggregateElement(new AggregateElement)
+	currentAggregateElement(new AggregateElement),
+	currentChoice(nullptr),
+	currentChoiceElement(new ChoiceElement)
 {}
 
 InMemoryInputBuilder::~InMemoryInputBuilder() {
@@ -37,6 +40,7 @@ InMemoryInputBuilder::~InMemoryInputBuilder() {
 	delete currentAtom;
 	delete inputRewriter;
 	delete currentAggregateElement;
+	delete currentChoiceElement;
 }
 
 void InMemoryInputBuilder::onDirective(char* directiveName,
@@ -73,6 +77,7 @@ void InMemoryInputBuilder::onRule() {
 			currentRule = new Rule;
 		}
 	}
+
 	foundAnAggregateInCurrentRule=false;
 	foundARangeAtomInCurrentRule=false;
 }
@@ -109,7 +114,6 @@ void InMemoryInputBuilder::onHeadAtom() {
 }
 
 void InMemoryInputBuilder::onHead() {
-
 }
 
 void InMemoryInputBuilder::onBodyLiteral() {
@@ -306,21 +310,53 @@ void InMemoryInputBuilder::onWeightAtLevels(int nWeight, int nLevel,
 }
 
 void InMemoryInputBuilder::onChoiceLowerGuard() {
+	if(currentChoice==nullptr)
+		currentChoice = new Choice;
+	Term* firstGuard=terms_parsered.back();
+	currentChoice->setFirstGuard(firstGuard);
+	currentChoice->setFirstBinop(currentBinop);
+	if(firstGuard->contain(TermType::ANONYMOUS)){
+		currentChoice->print();cout<<" ";
+		assert_msg(false, "ATOM IS UNSAFE");
+	}
+	terms_parsered.pop_back();
 }
 
 void InMemoryInputBuilder::onChoiceUpperGuard() {
+	if(currentChoice==nullptr)
+		currentChoice = new Choice;
+	Term* secondGuard=terms_parsered.back();
+	currentChoice->setSecondGuard(secondGuard);
+	currentChoice->setSecondBinop(currentBinop);
+	if(secondGuard->contain(TermType::ANONYMOUS)){
+		currentChoice->print();cout<<" ";
+		assert_msg(false, "ATOM IS UNSAFE");
+	}
+	terms_parsered.pop_back();
 }
 
 void InMemoryInputBuilder::onChoiceElementAtom() {
+	if(currentChoice==nullptr)
+		currentChoice = new Choice;
+	currentChoiceElement->add(currentAtom);
+	currentAtom=0;
 }
 
 void InMemoryInputBuilder::onChoiceElementLiteral() {
+	currentChoiceElement->add(currentAtom);
+	currentAtom=0;
 }
 
 void InMemoryInputBuilder::onChoiceElement() {
+	currentChoice->addChoiceElement(currentChoiceElement);
+	currentChoiceElement=new ChoiceElement;
 }
 
 void InMemoryInputBuilder::onChoiceAtom() {
+	currentAtom=currentChoice;
+	currentRule->addInHead(currentAtom);
+	currentChoice=0;
+	currentAtom=0;
 }
 
 void InMemoryInputBuilder::onBuiltinAtom() {

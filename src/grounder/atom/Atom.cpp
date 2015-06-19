@@ -44,6 +44,32 @@ void Atom::getVariables(const vector<Atom*>& atoms,set_term& variables){
 		getVariables(atom,variables);
 }
 
+string Atom::getBinopToStrng(Binop binop){
+	switch (binop) {
+		case EQUAL:
+			return "=";
+			break;
+		case UNEQUAL:
+			return "!=";
+			break;
+		case LESS:
+			return "<";
+			break;
+		case LESS_OR_EQ:
+			return "<=";
+			break;
+		case GREATER:
+			return ">";
+			break;
+		case GREATER_OR_EQ:
+			return ">=";
+			break;
+		default:
+			return "";
+			break;
+	}
+}
+
 };
 
 };
