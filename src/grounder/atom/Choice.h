@@ -78,8 +78,8 @@ public:
 	virtual set_predicate getClassicalPredicates(){
 		set_predicate predicates;
 		for(auto& element:choiceElements){
-			auto predicates_in_atom=element->getFirstAtom()->getPredicates()
-			predicates.insert(predicates_in_atom.begin(),predicates_in_atom.end());
+			auto predicate_in_atom=element->getFirstAtom()->getPredicate();
+			predicates.insert(predicate_in_atom);
 		}
 
 		return predicates;
