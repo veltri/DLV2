@@ -203,6 +203,9 @@ public:
 	virtual Term* generateNextCombination(bool& finish) {return 0;};
 
 	virtual bool isUndefAssignment() {return false;}
+
+	//Copy the guard of the atom
+	virtual void copyGuard(Atom *atom){};
 	/*****************************************************/
 
 	/******** Methods useful for Choice ********/

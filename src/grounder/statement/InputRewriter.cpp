@@ -8,6 +8,7 @@
 #include "InputRewriter.h"
 #include "../table/IdGenerator.h"
 #include "../atom/AggregateAtom.h"
+#include "../../util/Utils.h"
 
 namespace DLV2 {
 namespace grounder {
@@ -15,6 +16,15 @@ namespace grounder {
 const string AUXILIARY="aux";
 
 const string SEPARATOR="_";
+
+Atom* InputRewriter::generateNewAuxiliaryAtom(string& predicate_name, vector<Term*>& terms) {
+	Predicate* predicate=new Predicate(predicate_name,terms.size());
+	predicateTable->getInstance()->insertPredicate(predicate);
+	predicateExtTable->addPredicateExt(predicate);
+	Atom* auxiliaryAtom=new ClassicalLiteral(predicate,terms,false,false);
+
+	return auxiliaryAtom;
+}
 
 void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited, const OrderRule& orderRule) {
 
@@ -53,11 +63,10 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited,
 				chooseBestSaviorForAggregate(r,aggElem,unsafeVars,atoms,orderRule);
 
 				rule->addInBody(atoms.begin(),atoms.end());
-				string predName=AUXILIARY+SEPARATOR+to_string(id)+SEPARATOR+to_string(counter);
-				Predicate* predicate=new Predicate(predName,terms.size());
-				predicateTable->getInstance()->insertPredicate(predicate);
-				predicateExtTable->addPredicateExt(predicate);
-				Atom* auxiliaryAtom=new ClassicalLiteral(predicate,terms,false,false);
+
+				string predicate_name=AUXILIARY+SEPARATOR+to_string(id)+SEPARATOR+to_string(counter);
+				Atom *auxiliaryAtom=generateNewAuxiliaryAtom(predicate_name,terms);
+
 				rule->addInHead(auxiliaryAtom);
 				counter++;
 				ruleRewrited.push_back(rule);
@@ -118,6 +127,106 @@ set_term BaseInputRewriter::getVariablesInAggregateElem(AggregateElement* aggreg
 	Atom::getVariables(aggregateElem->getNafLiterals(),variables);
 	for(auto term:aggregateElem->getTerms())variables.erase(term);
 	return variables;
+}
+
+void BaseInputRewriter::translateChoice(Rule* rule,vector<Rule*>& ruleRewrited) {
+
+	unsigned id=IdGenerator::getInstance()->getId();
+	unsigned counter=1;
+
+	//Create rule for instantiate the body only one time. Then find the variables shared with the
+	// choice and then put this variables in the aux head of the new rule
+
+	auto choice =rule->getAtomInHead(0);
+	set_term variables_in_choice=choice->getVariable();
+	set_term variables_in_body;
+
+	for(unsigned i=0;i<rule->getSizeBody();i++){
+		auto atom=rule->getAtomInBody(i);
+		if(atom->isNegative())continue;
+		set_term variables;
+		if(atom->isAggregateAtom())
+			variables=atom->getGuardVariable();
+		else
+			variables=atom->getVariable();
+		variables_in_body.insert(variables.begin(),variables.end());
+	}
+
+	set_term variables_intersection;
+	Utils::intersectionSet(variables_in_choice,variables_in_body,variables_intersection);
+
+	Rule * body_rule=new Rule;
+
+	body_rule->setBody(rule->getBody());
+
+	string predicate_name=AUXILIARY+SEPARATOR+to_string(id)+SEPARATOR+to_string(counter);
+	vector<Term*> terms(variables_intersection.begin(),variables_intersection.end());
+	Atom *auxiliaryAtomBody=generateNewAuxiliaryAtom(predicate_name,terms);
+	body_rule->addInHead(auxiliaryAtomBody);
+
+	ruleRewrited.push_back(body_rule);
+
+	counter++;
+
+	//For each choice element creates new rule with in the head the disjunction with new aux and the first atom in the
+	// choice element, and in the body the remaining atoms in the choice element and the body of the rule (the body rewritten)
+
+	vector<AggregateElement*> elements;
+
+	for(unsigned i=0;i<choice->getChoiceElementsSize();i++){
+
+		auto choiceElement=choice->getChoiceElement(i);
+
+		Rule * aux_rule=new Rule;
+
+		auto first_atom=choiceElement->getFirstAtom();
+
+		aux_rule->addInHead(first_atom);
+		string predicate_name=AUXILIARY+SEPARATOR+to_string(id)+SEPARATOR+to_string(counter);
+		vector<Term*> terms=first_atom->getTerms();
+		Atom *auxiliaryAtom=generateNewAuxiliaryAtom(predicate_name,terms);
+		aux_rule->addInHead(auxiliaryAtom);
+
+		vector<Atom*> naf_elements;
+		choiceElement->getNafAtoms(naf_elements);
+		aux_rule->addInBody(naf_elements);
+		aux_rule->addInBody(auxiliaryAtomBody->clone());
+
+
+		ruleRewrited.push_back(aux_rule);
+		counter++;
+
+		//For aggregate
+		AggregateElement * element=new AggregateElement(first_atom->clone(),first_atom->getTerms());
+		elements.push_back(element);
+	}
+
+
+
+
+	//Add new constraint with the body of the rule and a negated count aggregate with the same guard of choice and inside the
+	// first atom for each choice element
+
+
+	Rule * constraint_aux_rule=new Rule;
+
+	constraint_aux_rule->addInBody(auxiliaryAtomBody->clone());
+
+
+
+	Atom *aggregate_atom=new AggregateAtom;
+	aggregate_atom->copyGuard(choice);
+	aggregate_atom->setNegative(true);
+	aggregate_atom->setAggregateFunction(AggregateFunction::COUNT);
+	aggregate_atom->setAggregateElements(elements);
+
+	constraint_aux_rule->addInBody(aggregate_atom);
+
+	ruleRewrited.push_back(constraint_aux_rule);
+
+
+	//TODO add delete for rule
+
 }
 
 } /* namespace grounder */

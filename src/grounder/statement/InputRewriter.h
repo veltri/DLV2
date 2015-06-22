@@ -41,11 +41,14 @@ class InputRewriter {
 public:
 	InputRewriter():predicateExtTable(PredicateExtTable::getInstance()), predicateTable(PredicateTable::getInstance()) {};
 	virtual void translateAggregate(Rule* rule, vector<Rule*>& ruleRewrited, const OrderRule& orderRule) = 0;
+	virtual void translateChoice(Rule* rule, vector<Rule*>& ruleRewrited) = 0;
 	virtual void  chooseBestSaviorForAggregate(Rule* rule, AggregateElement* aggregateElement, set_term& unsafeVars, vector<Atom*>& atomToAdd, const OrderRule& orderRule) = 0;
 	virtual ~InputRewriter(){};
 protected:
 	PredicateExtTable* predicateExtTable;
 	PredicateTable* predicateTable;
+
+	Atom* generateNewAuxiliaryAtom(string& predicate_name,vector<Term*>& terms);
 };
 
 
@@ -63,6 +66,12 @@ public:
 	 * The choose of the savior(s) is delegated to the method chooseBestSaviorForAggregate
 	 */
 	virtual void translateAggregate(Rule* rule, vector<Rule*>& ruleRewrited, const OrderRule& orderRule);
+
+	/*
+	 * Translate the choice rule with disjunction and .....
+	 */
+	virtual void translateChoice(Rule* rule, vector<Rule*>& ruleRewrited);
+
 	/**
 	 * This template method searches for possible saviors of the negative atoms in the given aggregateElement.
 	 * Each possible savior found is passed to the saviorChoosingPolicy object that will independently select

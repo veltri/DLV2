@@ -42,11 +42,19 @@ public:
 	Atom* getAtom(unsigned int i) const {if(i<choiceElement.size()) return choiceElement[i]; return 0;};
 	///Get the classical atom
 	Atom* getFirstAtom() const {return choiceElement[0];}
+	///Get the naf atoms and insert in atoms
+	void getNafAtoms(vector<Atom*>& atoms){
+		if(choiceElement.size()<2) return ;
+		atoms.insert(atoms.end(),choiceElement.begin()+1,choiceElement.end());
+	}
 	//Add an atom to the choice element
 	void add(Atom* atom){choiceElement.push_back(atom);}
 
-	///Return the predicates of naf literal in choiche element
+	///Return the predicates of naf literal in choice element
 	set_predicate getPredicateInNaf();
+
+	///Return the positive predicates of naf literal in choice element
+	set_predicate getPredicatePositiveInNaf();
 
 
 	///Destructor

@@ -447,26 +447,39 @@ void InMemoryInputBuilder::onAggregate(bool naf) {
 	currentAggregate = nullptr;
 }
 
-void InMemoryInputBuilder::addRule(Rule* rule) {
+void InMemoryInputBuilder::rewriteAggregate(Rule* rule) {
 	OrderRule orderRule(rule);
-	bool isSafe=orderRule.order();
+	bool isSafe = orderRule.order();
 	assert_action(isSafe, "RULE IS UNSAFE");
 	if (foundAnAggregateInCurrentRule) {
 		vector<Rule*> rules;
 		inputRewriter->translateAggregate(rule, rules, orderRule);
-		if(Options::globalOptions()->isPrintRewritedProgram())
+		if (Options::globalOptions()->isPrintRewritedProgram())
 			rule->print();
-		for (auto r : rules){
+		for (auto r : rules) {
 			OrderRule orderR(r);
-			isSafe=orderR.order();
-			if(!isSafe)r->print();
+			isSafe = orderR.order();
+			if (!isSafe)
+				r->print();
 			assert_action(isSafe, "RULE IS UNSAFE");
 			statementDependency->addRuleMapping(r);
-			if(Options::globalOptions()->isPrintRewritedProgram())
+			if (Options::globalOptions()->isPrintRewritedProgram())
 				r->print();
 		}
 	}
 	statementDependency->addRuleMapping(rule);
+}
+
+void InMemoryInputBuilder::addRule(Rule* rule) {
+	if(rule->isChoice()){
+		vector<Rule*> rules;
+		inputRewriter->translateChoice(rule, rules);
+
+		for (auto r : rules){
+			rewriteAggregate(r);
+		}
+	}else
+		rewriteAggregate(rule);
 }
 
 void InMemoryInputBuilder::createRule(vector<Atom*>* head, vector<Atom*>* body) {

@@ -20,6 +20,15 @@ set_predicate ChoiceElement::getPredicateInNaf() {
 	return predicates;
 }
 
+set_predicate ChoiceElement::getPredicatePositiveInNaf() {
+	set_predicate predicates;
+	for(unsigned i=1;i<choiceElement.size();i++)
+		if(!choiceElement[i]->isNegative())
+			predicates.insert(choiceElement[i]->getPredicates().begin(),choiceElement[i]->getPredicates().end());
+
+	return predicates;
+}
+
 }
 
 }

@@ -14,6 +14,7 @@
 #include <boost/graph/graphviz.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/graph/topological_sort.hpp>
+#include "../../util/Utils.h"
 
 #include "../table/PredicateExtension.h"
 
@@ -77,63 +78,83 @@ void DependencyGraph::addInDependency(Rule* r) {
 	unordered_set<index_object> head_predicateVisited;
 	unordered_set<index_object> body_predicateVisited;
 
+
+
 	for (auto head_it = r->getBeginHead(); head_it != r->getEndHead(); head_it++) {
-		Predicate* pred_head = (*head_it)->getPredicate();
+		//Predicate* pred_head = (*head_it)->getPredicate();
+		set_predicate predicates_head=(*head_it)->getPredicates();
 
-		// Check if the predicate in the head has been visited
-		if (pred_head!=nullptr && !head_predicateVisited.count(pred_head->getIndex())) {
 
-			// Set this predicate as visited
-			head_predicateVisited.insert(pred_head->getIndex());
 
-//			// If the rule has no positive predicate in its body, is added a dummy edge in order to not lose this rule
-//			// when the components graph is created
-//			if(r->getPositivePredicateInBody().size()==0)
-//				addEdge(pred_head->getIndex(), pred_head->getIndex(),1);
+		for(auto pred_head:predicates_head){
 
-			bool addPositiveEdge=false;
+			// Check if the predicate in the head has been visited
+			if ( !head_predicateVisited.count(pred_head->getIndex())) {
 
-			for (auto body_it = r->getBeginBody(); body_it != r->getEndBody(); body_it++) {
-				// Check if the predicate is positive, otherwise skip it
-				if (!(*body_it)->isNegative()) {
+				// Set this predicate as visited
+				head_predicateVisited.insert(pred_head->getIndex());
 
-					for(auto pred_body:(*body_it)->getPredicates()){
-						// Check if the predicate in the head has been visited
-						if(!body_predicateVisited.count(pred_body->getIndex())){
-							body_predicateVisited.insert(pred_body->getIndex());
-							addEdge(pred_body->getIndex(), pred_head->getIndex(),1);
-							addPositiveEdge=true;
-						}
-					}
+	//			// If the rule has no positive predicate in its body, is added a dummy edge in order to not lose this rule
+	//			// when the components graph is created
+	//			if(r->getPositivePredicateInBody().size()==0)
+	//				addEdge(pred_head->getIndex(), pred_head->getIndex(),1);
 
-				}
-				else{
+				bool addPositiveEdge=false;
 
-					for(auto pred_body:(*body_it)->getPredicates()){
-						// Check if the predicate in the head has been visited
-						if(!body_predicateVisited.count(pred_body->getIndex())){
-							body_predicateVisited.insert(pred_body->getIndex());
-							if(!(*body_it)->isAggregateAtom())
-								addEdge(pred_body->getIndex(), pred_head->getIndex(),-1);
-							else{
-								//TODO Add edge -1 with aggregate??????
+				for (auto body_it = r->getBeginBody(); body_it != r->getEndBody(); body_it++) {
+					// Check if the predicate is positive, otherwise skip it
+					if (!(*body_it)->isNegative()) {
+
+						for(auto pred_body:(*body_it)->getPredicates()){
+							// Check if the predicate in the head has been visited
+							if(!body_predicateVisited.count(pred_body->getIndex())){
+								body_predicateVisited.insert(pred_body->getIndex());
 								addEdge(pred_body->getIndex(), pred_head->getIndex(),1);
 								addPositiveEdge=true;
 							}
 						}
+
+					}
+					else{
+
+						for(auto pred_body:(*body_it)->getPredicates()){
+							// Check if the predicate in the head has been visited
+							if(!body_predicateVisited.count(pred_body->getIndex())){
+								body_predicateVisited.insert(pred_body->getIndex());
+								if(!(*body_it)->isAggregateAtom())
+									addEdge(pred_body->getIndex(), pred_head->getIndex(),-1);
+								else{
+									//TODO Add edge -1 with aggregate??????
+									addEdge(pred_body->getIndex(), pred_head->getIndex(),1);
+									addPositiveEdge=true;
+								}
+							}
+						}
+
 					}
 
 				}
 
+				// If the rule has no positive predicate in its body, is added a dummy edge in order to not lose this rule
+				// when the components graph is created
+				if(!addPositiveEdge)
+					addEdge(pred_head->getIndex(), pred_head->getIndex(),1);
 			}
-
-			// If the rule has no positive predicate in its body, is added a dummy edge in order to not lose this rule
-			// when the components graph is created
-			if(!addPositiveEdge)
-				addEdge(pred_head->getIndex(), pred_head->getIndex(),1);
+			//Set all predicate in the body as unvisited, and then continue with the next atom
+			body_predicateVisited.clear();
 		}
-		//Set all predicate in the body as unvisited, and then continue with the next atom
-		body_predicateVisited.clear();
+	}
+
+	//Add for each choice element the dependency with the atom in the right of :
+	if(r->getSizeHead()>0){
+		auto head_atom=r->getAtomInHead(0);
+		if( head_atom->isChoice()){
+			for(unsigned i=0;i<head_atom->getChoiceElementsSize();i++){
+				for(auto pred_body:head_atom->getChoiceElement(i)->getPredicatePositiveInNaf()){
+					addEdge(pred_body->getIndex(), head_atom->getChoiceElement(i)->getFirstAtom()->getPredicate()->getIndex(),1);
+				}
+			}
+		}
 	}
 
 }

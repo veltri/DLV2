@@ -124,6 +124,7 @@ private:
 	void expandAtoms(const vector<vector<Atom*>>& atoms, vector<Atom*>& currentAtoms, vector<vector<Atom*>>& atomsExpanded, unsigned currentPosition);
 	void expandRulePart(vector<Atom*>::const_iterator start, vector<Atom*>::const_iterator end, vector<vector<Atom*> >& atomsExpanded);
 	void expandRangeAtom(Atom* fact, vector<Atom*>& atomExpanded);
+	void rewriteAggregate(Rule* rule);
 };
 
 } /* namespace grounder */

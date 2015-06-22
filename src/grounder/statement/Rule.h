@@ -64,6 +64,8 @@ public:
 	///This method adds an atom in the body
 	void addInBody(Atom* a){body.push_back(a);};
 	void addInBody(vector<Atom*>::iterator begin,vector<Atom*>::iterator end){body.insert(body.begin(),begin,end);};
+	void addInBody(vector<Atom*>& atoms){addInBody(atoms.begin(),atoms.end());};
+
 
 	///This method returns the set of predicate in the head
 	set_predicate getPredicateInHead(){return calculatePredicate(head,0,0);};
@@ -101,6 +103,8 @@ public:
 
 	///Set the specific atom in the body
 	void setAtomInHead(unsigned i,Atom* atom) {head[i]=atom;};
+	///Return the specific atom in the head
+	Atom* getAtomInHead(unsigned i) {return head[i];};
 
 
 	///Set the simplification of the atom in the given position in the head
@@ -118,6 +122,11 @@ public:
 	 *  @details Two rules are equal if they have the same atoms in the body and in the head regardless the order in which they appear
 	 */
 	bool operator==(const Rule & r);
+
+	///Return true if is a choice rule
+	bool isChoice() const{
+		return (head.size()>0 && head[0]->isChoice());
+	}
 
 	///Destructor
 	~Rule(){

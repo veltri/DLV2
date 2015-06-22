@@ -156,6 +156,9 @@ public:
 
 	set_term getSharedVariable(Rule* rule);
 
+	//Copy the guard of the atom
+	virtual void copyGuard(Atom *atom);
+
 	~AggregateAtom() {for(auto& aggregateElem:aggregateElements) delete aggregateElem;};
 
 private:

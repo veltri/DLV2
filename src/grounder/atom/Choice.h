@@ -31,6 +31,10 @@ public:
 	Choice(Binop fB, Binop sB, vector<Term*> t, vector<ChoiceElement*> cE)
 		: Atom(t), firstBinop(fB), secondBinop(sB), choiceElements(cE) {};
 
+
+	///Return the term of variable present in the Atom
+	virtual set_term getVariable();
+
 	///Getter method for the first binary operation
 	Binop getFirstBinop() const {return firstBinop;};
 	///Setter method for the first binary operation
@@ -71,11 +75,11 @@ public:
 
 	virtual Atom* clone();
 
-	///???
-	virtual set_predicate getPredicates(){};
+	///Return the predicate of classical literal (the first atom in choice elements) in choice elements
+	virtual set_predicate getPredicates() const{return getClassicalPredicates();};
 
-	///Return the predicate of classical literal (the first atom in choice elements) in choiche elements
-	virtual set_predicate getClassicalPredicates(){
+	///Return the predicate of classical literal (the first atom in choice elements) in choice elements
+	virtual set_predicate getClassicalPredicates()const{
 		set_predicate predicates;
 		for(auto& element:choiceElements){
 			auto predicate_in_atom=element->getFirstAtom()->getPredicate();

@@ -31,6 +31,9 @@ class AggregateElement {
 		//Default constructor
 		AggregateElement() {}
 
+		AggregateElement(Atom * atom,vector<Term*>& terms):terms(terms) {nafLiterals.push_back(atom);}
+
+
 		AggregateElement* clone();
 
 		///Getter for terms

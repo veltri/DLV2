@@ -666,6 +666,18 @@ void AggregateAtom::applayAggregateOperator(Term*& n1, Term* n2){
 	}
 }
 
+void AggregateAtom::copyGuard(Atom* atom) {
+	if( ! (atom->isAggregateAtom() || atom->isChoice()))return ;
+	if(atom->getFirstBinop()!=NONE_OP){
+		firstBinop=atom->getFirstBinop();
+		firstGuard=atom->getFirstGuard();
+	}
+	if(atom->getSecondBinop()!=NONE_OP){
+		secondBinop=atom->getSecondBinop();
+		secondGuard=atom->getSecondGuard();
+	}
+}
+
 }
 }
 

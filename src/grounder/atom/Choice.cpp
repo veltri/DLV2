@@ -48,6 +48,20 @@ Atom* Choice::clone() {
 	return atom;
 }
 
+set_term Choice::getVariable() {
+	set_term terms_variable;
+
+	for(auto choice_element:choiceElements){
+		for(unsigned i=0;i<choice_element->getSize();i++)
+		{
+			auto variables=choice_element->getAtom(i)->getVariable();
+			terms_variable.insert(variables.begin(),variables.end());
+		}
+	}
+
+	return terms_variable;
+}
+
 }
 }
 
