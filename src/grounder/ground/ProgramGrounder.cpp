@@ -19,6 +19,21 @@ namespace grounder{
 
 #define DEBUG 0
 
+void ProgramGrounder::printProgram(const vector<vector<Rule*> >& exitRules,	const vector<vector<Rule*> >& recursiveRules) {
+	for (unsigned int component = 0; component < exitRules.size();
+			component++) {
+		for (Rule* r : exitRules[component])
+			r->print();
+		for (unsigned int i = 0; i < recursiveRules[component].size(); i++)
+			recursiveRules[component][i]->print();
+	}
+	for (unsigned int i = 0; i < statementDependency->getConstraintSize(); i++)
+		if (statementDependency->getConstraint(i)->getSizeBody() > 0)
+			statementDependency->getConstraint(i)->print();
+
+
+}
+
 void ProgramGrounder::ground() {
 
 	//Create the dependency graph
@@ -32,6 +47,9 @@ void ProgramGrounder::ground() {
 	vector<vector<Rule*>> recursiveRules;
 	vector<unordered_set<index_object>> componentPredicateInHead;
 	statementDependency->createComponentGraphAndComputeAnOrdering(exitRules, recursiveRules, componentPredicateInHead);
+
+	if (Options::globalOptions()->isPrintRewritedProgram())
+		printProgram(exitRules, recursiveRules);
 
 	// Ground each module according to the ordering:
 	// For each component, each rule is either recursive or exit,
