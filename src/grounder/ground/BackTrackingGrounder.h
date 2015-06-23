@@ -21,11 +21,8 @@ public:
 	BackTrackingGrounder():ProgramGrounder(),currentRule(0),index_current_atom(0),callFoundAssignment(0),ground_rule(0) {};
 	virtual ~BackTrackingGrounder() {
 		for(auto atom:templateSetAtom) {if(atom==nullptr)continue;atom->deleteAtoms(); delete atom;}
-		if(ground_rule!=0){
-			for(auto it=ground_rule->getBeginBody();it!=ground_rule->getEndBody();it++)
-				deleteGroundAtom(*it);
-		}
-		delete ground_rule;
+		if(ground_rule!=0)
+			deleteGroundRule();
 	};
 
 protected:
@@ -53,10 +50,10 @@ protected:
 	/// Print the current assignment
 	void printAssignment();
 
-	//Delete the given atom if is a false negative atom or is an aggregate (atoms not present in PredicateExtension)
-	void deleteGroundAtom(Atom* atom) {if(atom!=nullptr && ( (atom->isClassicalLiteral() && atom->isNegative() ) || atom->isAggregateAtom())) {delete atom;} }
+	//Delete the ground rule
+	void deleteGroundRule();
 	//Delete the atom at the given position and substitute it with the given atom at that position
-	void substiteInGroundRule(unsigned position, Atom* new_atom) {deleteGroundAtom(ground_rule->getAtomInBody(position)); ground_rule->setAtomInBody(position,new_atom); }
+	void substiteInGroundRule(unsigned position, Atom* new_atom) {Atom* atom=(ground_rule->getAtomInBody(position)); if(atom!=nullptr && ( (atom->isClassicalLiteral() && atom->isNegative() ) || atom->isAggregateAtom())) {delete atom;ground_rule->setAtomInBody(position,new_atom);} }
 
 private:
 	/// Current assignment for grounding rule

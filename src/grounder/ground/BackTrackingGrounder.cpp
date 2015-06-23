@@ -341,11 +341,22 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 		ground_rule=new Rule(true, rule->getSizeHead(), rule->getSizeBody());
 	}
 	else{
-		for(auto it=ground_rule->getBeginBody();it!=ground_rule->getEndBody();it++)
-			deleteGroundAtom(*it);
-		delete ground_rule;
+		deleteGroundRule();
 		ground_rule=new Rule(true, rule->getSizeHead(), rule->getSizeBody());
 	}
+}
+
+void BackTrackingGrounder::deleteGroundRule(){
+	ground_rule->deleteBody([](Atom* atom){
+		//Delete the given atom if is a false negative atom or is an aggregate (atoms not present in PredicateExtension)
+		if(atom!=nullptr && ( (atom->isClassicalLiteral() && atom->isNegative() ) || atom->isAggregateAtom()))
+			return 1;
+		return 0;
+	});
+	ground_rule->deleteHead([](Atom* atom){
+		return 0;
+	});
+	delete ground_rule;
 }
 
 void BackTrackingGrounder::findBindVariablesRule() {

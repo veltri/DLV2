@@ -118,7 +118,31 @@ bool Rule::operator ==(const Rule& r) {
 
 }
 
+void Rule::deleteBody(function<int(Atom*)> f) {
+	for(auto atom:body){
+		int result=f(atom);
+			if(result==1)
+				delete atom;
+			if(result==2){
+				atom->deleteAtoms();
+				delete atom;
+			}
+	}
+}
 
-};
+void Rule::deleteHead(function<int(Atom*)> f) {
+	for(auto atom:head){
+		int result=f(atom);
+			if(result==1)
+				delete atom;
+			if(result==2){
+				atom->deleteAtoms();
+				delete atom;
+			}
+	}
+}
 
-};
+
+}}
+
+

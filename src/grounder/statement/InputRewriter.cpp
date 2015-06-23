@@ -210,7 +210,13 @@ void BaseInputRewriter::translateChoice(Rule* rule,vector<Rule*>& ruleRewrited) 
 
 	ruleRewrited.push_back(constraint_aux_rule);
 
-	//TODO add delete for rule
+	rule->deleteBody([](Atom* atom){
+		return 0;
+	});
+	rule->deleteHead([](Atom* atom){
+		return 1;
+	});
+	delete rule;
 }
 
 void FirstSaviorChoosingPolicy::getRecursiveDependencies(const OrderRule& orderRule, unsigned savior_pos, vector<Atom*>& atomToAdd) {

@@ -42,7 +42,6 @@ public:
 				body.push_back(nullptr);
 			}
 		}
-
 	};
 
 	///Getter method for body atoms
@@ -90,6 +89,7 @@ public:
 	vector<Atom*>::const_iterator getBeginBody()const{return body.begin();};
 	///This method returns an iterator that points to the last atom in the body
 	vector<Atom*>::const_iterator getEndBody()const{return body.end();};
+	vector<Atom*>::iterator getEndBody(){return body.end();};
 	///This method returns an iterator that points to the first atom in the head
 	vector<Atom*>::const_iterator getBeginHead()const{return head.begin();};
 	///This method returns an iterator that points to the last atom in the head
@@ -104,7 +104,6 @@ public:
 	void setAtomInHead(unsigned i,Atom* atom) {head[i]=atom;};
 	///Return the specific atom in the head
 	Atom* getAtomInHead(unsigned i) {return head[i];};
-
 
 	///Set the simplification of the atom in the given position in the head
 	void setAtomToSimplifyInHead(unsigned position, bool simplify = true){ simplifiedHead[position]=simplify;}
@@ -125,22 +124,27 @@ public:
 	///Destructor
 	~Rule(){
 		//The delete policy differs when the rule is not ground
-		if(!ground){
-			for(auto atom:head)
-				delete atom;
-			for(auto atom:body){
-				atom->deleteAtoms();
-				delete atom;
-			}
-		}
-		else{
+//		if(!ground){
+//			for(auto atom:head)
+//				delete atom;
+//			for(auto atom:body){
+//				atom->deleteAtoms();
+//				delete atom;
+//			}
+//		}
+//		else{
+//			delete[] simplifiedBody;
+//			delete[] simplifiedHead;
+//		}
+
+		if(ground){
 			delete[] simplifiedBody;
 			delete[] simplifiedHead;
 		}
 	}
 
-	bool isGround() const;
-	void setGround(bool ground);
+	bool isGround() const {return ground;}
+	void setGround(bool ground) {this->ground=ground;}
 
 	bool areThereUndefinedAtomInBody() const {for(unsigned i=0;i<body.size();i++) if(!simplifiedBody[i]) return true; return false;}
 
@@ -153,6 +157,10 @@ public:
 		return (head.size()>0 && head[0]->isChoice());
 	}
 
+	void deleteBody(function<int(Atom*)> f);
+
+	void deleteHead(function<int(Atom*)> f);
+
 private:
 
 	/// Return the predicate in atoms vector, if checkNegative is true compare the negative of atom with the parameter
@@ -161,7 +169,6 @@ private:
 	/// Return the predicate index in atoms vector, if checkNegative is true compare the negative of atom with the parameter
 	/// else insert the predicate
 	unordered_set<index_object> calculatePredicateIndex(vector<Atom*>& atoms,bool checkNegative,bool negative);
-
 
 	///Vector of the atoms in head
 	vector<Atom*> head;
@@ -175,22 +182,7 @@ private:
 	///An array containing true at a position in the body if that atom has to be simplified, false otherwise
 	bool* simplifiedBody;
 
-	///Find all possible bind in the rule and set a builtin or aggregate if is assignment
-	/// Return for each atom in the body all the variable possible bind
-	/// A variable is possible bind if is in a positive atom or is an assignment of builtin or aggregate
-	unordered_multimap<Term*,unsigned> findPossibleBind();
-
-	/// Find the dependency between positive atom and negative,built-in and aggregate (that are not assignment).
-	/// This dependency are used for establish the order of the negative,built-in and aggregate (that are not assignment)
-	/// And add for each negative,built-in and aggregate the variables that contain
-	unordered_multimap<unsigned int, unordered_multimap<unsigned int, Term *>> findAtomDependencyBoundVariables(const unordered_multimap<Term *, unsigned> &possible_bind, unordered_map<unsigned,set_term>& boundVariables);
-
 	void printNonGround();
-
-	///Delete the dependency of the current atom with the negative,built in and aggregate
-	void deleteDependencyAtom(unordered_map<unsigned int, set_term> &boundVariables,
-                              const unordered_multimap<unsigned int, unordered_multimap<unsigned int, Term *>> &atom_dep,
-                              vector<Atom *> &body_ordered, unsigned int atom_counter,list<unsigned>& atomToAddInBody) const;
 
 	bool mustBeRewritedForAggregates;
 };

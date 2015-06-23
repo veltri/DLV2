@@ -196,7 +196,23 @@ public:
 	///Printer method
 	void print();
 
-	virtual ~StatementDependency() { for(Rule* r:rules) delete r; for(Rule* r:constraints) delete r; }
+	virtual ~StatementDependency() {
+		for(Rule* r:rules){
+			r->deleteBody([](Atom* atom){
+				return 2;
+			});
+			r->deleteHead([](Atom* atom){
+				return 2;
+			});
+			delete r;
+		}
+		for(Rule* r:constraints){
+			r->deleteBody([](Atom* atom){
+				return 2;
+			});
+			delete r;
+		}
+	}
 
 	static StatementDependency* getInstance();
 
