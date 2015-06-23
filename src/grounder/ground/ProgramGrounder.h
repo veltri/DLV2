@@ -126,8 +126,9 @@ protected:
 	/// Previous atom in the rule, if not exist return false
 	virtual bool back() = 0;
 
-
-
+private:
+	///Print the program rule
+	void printProgram(const vector<vector<Rule*> >& exitRules,const vector<vector<Rule*> >& recursiveRules);
 };
 
 };
