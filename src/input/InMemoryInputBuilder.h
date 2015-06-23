@@ -96,7 +96,7 @@ private:
 
 	vector<Term*> terms_parsered;
 
-	bool foundAnAggregateInCurrentRule;
+//	bool foundAnAggregateInCurrentRule;
 
 	bool foundARangeAtomInCurrentRule;
 
@@ -125,6 +125,9 @@ private:
 	void expandRulePart(vector<Atom*>::const_iterator start, vector<Atom*>::const_iterator end, vector<vector<Atom*> >& atomsExpanded);
 	void expandRangeAtom(Atom* fact, vector<Atom*>& atomExpanded);
 	void rewriteAggregate(Rule* rule);
+
+	void rewriteChoice(Rule* rule);
+	void manageSimpleRule(Rule* rule);
 };
 
 } /* namespace grounder */

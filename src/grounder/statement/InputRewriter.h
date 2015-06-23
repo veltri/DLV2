@@ -31,8 +31,7 @@ public:
 	virtual ~FirstSaviorChoosingPolicy() {};
 
 private:
-	void getRecursiveDependencies(const OrderRule& orderRule,
-			unsigned savior_pos, vector<Atom*>& atomToAdd);
+	void getRecursiveDependencies(const OrderRule& orderRule, unsigned savior_pos, vector<Atom*>& atomToAdd);
 };
 
 

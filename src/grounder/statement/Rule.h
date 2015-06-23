@@ -123,11 +123,6 @@ public:
 	 */
 	bool operator==(const Rule & r);
 
-	///Return true if is a choice rule
-	bool isChoice() const{
-		return (head.size()>0 && head[0]->isChoice());
-	}
-
 	///Destructor
 	~Rule(){
 		//The delete policy differs when the rule is not ground
@@ -149,6 +144,15 @@ public:
 	void setGround(bool ground);
 
 	bool areThereUndefinedAtomInBody() const {for(unsigned i=0;i<body.size();i++) if(!simplifiedBody[i]) return true; return false;}
+
+	///Getter and Setter to determine whether the rule contains at least an aggregate
+	bool isMustBeRewritedForAggregates() const { return mustBeRewritedForAggregates; }
+	void setMustBeRewritedForAggregates(bool mustBeRewritedForAggregates) {	this->mustBeRewritedForAggregates = mustBeRewritedForAggregates;}
+	
+	///Return true if is a choice rule
+	bool isChoiceRule() const{
+		return (head.size()>0 && head[0]->isChoice());
+	}
 
 private:
 
@@ -172,7 +176,7 @@ private:
 	///An array containing true at a position in the body if that atom has to be simplified, false otherwise
 	bool* simplifiedBody;
 
-	///Find all possible bind in the rule and set a builtin ord aggregate if is assignment
+	///Find all possible bind in the rule and set a builtin or aggregate if is assignment
 	/// Return for each atom in the body all the variable possible bind
 	/// A variable is possible bind if is in a positive atom or is an assignment of builtin or aggregate
 	unordered_multimap<Term*,unsigned> findPossibleBind();
@@ -188,6 +192,8 @@ private:
 	void deleteDependencyAtom(unordered_map<unsigned int, set_term> &boundVariables,
                               const unordered_multimap<unsigned int, unordered_multimap<unsigned int, Term *>> &atom_dep,
                               vector<Atom *> &body_ordered, unsigned int atom_counter,list<unsigned>& atomToAddInBody) const;
+
+	bool mustBeRewritedForAggregates;
 };
 
 

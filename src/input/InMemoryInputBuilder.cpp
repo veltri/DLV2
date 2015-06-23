@@ -24,7 +24,6 @@ InMemoryInputBuilder::InMemoryInputBuilder() :
 	statementDependency(StatementDependency::getInstance()),
 	instancesTable(PredicateExtTable::getInstance()),
 	inputRewriter(new BaseInputRewriter()),
-	foundAnAggregateInCurrentRule(false),
 	foundARangeAtomInCurrentRule(false),
 	currentRule(new Rule()),
 	currentAtom(nullptr),
@@ -78,7 +77,6 @@ void InMemoryInputBuilder::onRule() {
 		}
 	}
 
-	foundAnAggregateInCurrentRule=false;
 	foundARangeAtomInCurrentRule=false;
 }
 
@@ -94,7 +92,6 @@ void InMemoryInputBuilder::onConstraint() {
 		addRule(currentRule);
 		currentRule = new Rule;
 	}
-	foundAnAggregateInCurrentRule=false;
 	foundARangeAtomInCurrentRule=false;
 }
 
@@ -394,7 +391,7 @@ void InMemoryInputBuilder::onAggregateUpperGuard() {
 }
 
 void InMemoryInputBuilder::onAggregateFunction(char* functionSymbol) {
-	foundAnAggregateInCurrentRule=true;
+	currentRule->setMustBeRewritedForAggregates(true);
 	if(currentAggregate==nullptr)
 		currentAggregate = new AggregateAtom;
 	if(strcmp(functionSymbol,"#count")==0){
@@ -448,34 +445,52 @@ void InMemoryInputBuilder::onAggregate(bool naf) {
 }
 
 void InMemoryInputBuilder::rewriteAggregate(Rule* rule) {
+	//Sort the rule and check for safety
 	OrderRule orderRule(rule);
 	bool isSafe = orderRule.order();
 	assert_action(isSafe, "RULE IS UNSAFE");
-	if (foundAnAggregateInCurrentRule) {
-		vector<Rule*> rules;
-		inputRewriter->translateAggregate(rule, rules, orderRule);
-		for (auto r : rules) {
-			OrderRule orderR(r);
-			isSafe = orderR.order();
-			if (!isSafe)
-				r->print();
-			assert_action(isSafe, "RULE IS UNSAFE");
-			statementDependency->addRuleMapping(r);
-		}
+
+	//Translate the rule
+	vector<Rule*> rules;
+	inputRewriter->translateAggregate(rule, rules, orderRule);
+
+	for (auto r : rules) {
+		OrderRule orderR(r);
+		isSafe = orderR.order();
+		if (!isSafe)
+			r->print();
+		assert_action(isSafe, "RULE IS UNSAFE");
+		statementDependency->addRuleMapping(r);
 	}
+
+	statementDependency->addRuleMapping(rule);
+}
+
+void InMemoryInputBuilder::rewriteChoice(Rule* rule) {
+	vector<Rule*> rules;
+	inputRewriter->translateChoice(rule, rules);
+	for (auto r : rules){
+		if(r->isMustBeRewritedForAggregates())
+			rewriteAggregate(r);
+		else
+			manageSimpleRule(r);
+	}
+}
+
+void InMemoryInputBuilder::manageSimpleRule(Rule* rule) {
+	OrderRule orderRule(rule);
+	bool isSafe = orderRule.order();
+	assert_action(isSafe, "RULE IS UNSAFE");
 	statementDependency->addRuleMapping(rule);
 }
 
 void InMemoryInputBuilder::addRule(Rule* rule) {
-	if(rule->isChoice()){
-		vector<Rule*> rules;
-		inputRewriter->translateChoice(rule, rules);
-
-		for (auto r : rules){
-			rewriteAggregate(r);
-		}
-	}else
+	if(rule->isChoiceRule())
+		rewriteChoice(rule);
+	else if(rule->isMustBeRewritedForAggregates())
 		rewriteAggregate(rule);
+	else
+		manageSimpleRule(rule);
 }
 
 void InMemoryInputBuilder::createRule(vector<Atom*>* head, vector<Atom*>* body) {

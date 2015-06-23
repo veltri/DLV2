@@ -31,7 +31,7 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited,
 	/// First, auxiliary rules for aggregates elements are generated
 	vector<unsigned int> aggregateAtoms;
 	unsigned int index_atom=0;
-	for(auto it=r->getBeginBody();it!=r->getEndBody();it++,index_atom++){
+	for(auto it=r->getBeginBody();it!=r->getEndBody();++it,++index_atom){
 		unsigned aggElementsSize=(*it)->getAggregateElementsSize();
 		if(aggElementsSize>0){
 			AggregateAtom* aggregate=dynamic_cast<AggregateAtom*>(*it);
@@ -52,7 +52,7 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited,
 
 				terms.insert(terms.end(),aggElem->getTerms().begin(),aggElem->getTerms().end());
 
-				// Avoid the rewrite if there is just one aggregate element and the rewritten atom will have have the same number of terms of the only atom
+				// Avoid the rewriting if there is just one aggregate element and the rewritten atom will have have the same number of terms of the only atom
 				// contained in the aggregate element
 				if(aggElem->getNafLiteralsSize()<2 && terms.size()==aggElem->getNafLiteral(0)->getTermsSize()) continue;
 
@@ -105,23 +105,6 @@ void BaseInputRewriter::chooseBestSaviorForAggregate(Rule* rule, AggregateElemen
 	}
 }
 
-void FirstSaviorChoosingPolicy::getRecursiveDependencies(const OrderRule& orderRule, unsigned savior_pos, vector<Atom*>& atomToAdd) {
-	vector<pair<unsigned int, Atom*>> atomDependencies = orderRule.getAtomsFromWhichDepends(savior_pos);
-	for (unsigned int i=0;i<atomDependencies.size();i++) {
-		atomToAdd.push_back(atomDependencies[i].second->clone());
-		getRecursiveDependencies(orderRule,atomDependencies[i].first,atomToAdd);
-	}
-}
-
-bool FirstSaviorChoosingPolicy::choose(Atom* atom,unsigned savior_pos,list<Atom*>& possibleAtomsBinding, vector<Atom*>& atomToAdd, bool end, const OrderRule& orderRule) {
-	atomToAdd.push_back(atom->clone());
-	getRecursiveDependencies(orderRule, savior_pos, atomToAdd);
-	return true;
-
-	possibleAtomsBinding.push_back(atom);
-	return false;
-}
-
 set_term BaseInputRewriter::getVariablesInAggregateElem(AggregateElement* aggregateElem){
 	set_term variables;
 	Atom::getVariables(aggregateElem->getNafLiterals(),variables);
@@ -143,7 +126,7 @@ void BaseInputRewriter::translateChoice(Rule* rule,vector<Rule*>& ruleRewrited) 
 	set_term variables_in_choice=choice->getVariable();
 	set_term variables_in_body;
 
-	for(unsigned i=0;i<rule->getSizeBody();i++){
+	for(unsigned i=0;i<rule->getSizeBody();++i){
 		auto atom=rule->getAtomInBody(i);
 		if(atom->isNegative())continue;
 		set_term variables;
@@ -158,6 +141,8 @@ void BaseInputRewriter::translateChoice(Rule* rule,vector<Rule*>& ruleRewrited) 
 	Utils::intersectionSet(variables_in_choice,variables_in_body,variables_intersection);
 
 	Rule * body_rule=new Rule;
+
+	if(rule->isMustBeRewritedForAggregates()) body_rule->setMustBeRewritedForAggregates(true);
 
 	//Body
 	body_rule->setBody(rule->getBody());
@@ -176,10 +161,10 @@ void BaseInputRewriter::translateChoice(Rule* rule,vector<Rule*>& ruleRewrited) 
 	// having the same terms of the first atom, while in the body it contains the remaining atoms of the choice element
 	// and the auxiliary atom previously created for the body.
 
-	// In the mean time the aggregate elements for the constraint rule are created (see below)
+	// Also, the aggregate elements for the constraint rule are created (see below)
 	vector<AggregateElement*> elements;
 
-	for(unsigned i=0;i<choice->getChoiceElementsSize();i++){
+	for(unsigned i=0;i<choice->getChoiceElementsSize();++i){
 
 		ChoiceElement* choiceElement=choice->getChoiceElement(i);
 
@@ -226,6 +211,23 @@ void BaseInputRewriter::translateChoice(Rule* rule,vector<Rule*>& ruleRewrited) 
 	ruleRewrited.push_back(constraint_aux_rule);
 
 	//TODO add delete for rule
+}
+
+void FirstSaviorChoosingPolicy::getRecursiveDependencies(const OrderRule& orderRule, unsigned savior_pos, vector<Atom*>& atomToAdd) {
+	vector<pair<unsigned int, Atom*>> atomDependencies = orderRule.getAtomsFromWhichDepends(savior_pos);
+	for (unsigned int i=0;i<atomDependencies.size();++i) {
+		atomToAdd.push_back(atomDependencies[i].second->clone());
+		getRecursiveDependencies(orderRule,atomDependencies[i].first,atomToAdd);
+	}
+}
+
+bool FirstSaviorChoosingPolicy::choose(Atom* atom,unsigned savior_pos,list<Atom*>& possibleAtomsBinding, vector<Atom*>& atomToAdd, bool end, const OrderRule& orderRule) {
+	atomToAdd.push_back(atom->clone());
+	getRecursiveDependencies(orderRule, savior_pos, atomToAdd);
+	return true;
+
+	possibleAtomsBinding.push_back(atom);
+	return false;
 }
 
 } /* namespace grounder */
