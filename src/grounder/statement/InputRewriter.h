@@ -67,8 +67,13 @@ public:
 	 */
 	virtual void translateAggregate(Rule* rule, vector<Rule*>& ruleRewrited, const OrderRule& orderRule);
 
-	/*
-	 * Translate the choice rule with disjunction and .....
+	/**
+	 * Given a choice rule it is rewritten by means of new auxiliary rules.
+	 * In particular, the rules created are:
+	 * 		- One rule to factorize the body of the choice rule
+	 * 		- One disjunctive rule for each choice element
+	 * 		- One constraint rule with a negated count aggregate
+	 *  More details are given in the method itself.
 	 */
 	virtual void translateChoice(Rule* rule, vector<Rule*>& ruleRewrited);
 
