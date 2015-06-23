@@ -25,9 +25,9 @@ namespace grounder{
 
 class Rule : public Indexable {
 public:
-	Rule():Indexable(), ground(false), simplifiedHead(0), simplifiedBody(0)  {};
-	Rule(bool g):Indexable(), ground(g), simplifiedHead(0), simplifiedBody(0)  {};
-	Rule(bool g, unsigned sizeHead, unsigned sizeBody) : Indexable(), ground(g), simplifiedHead(0), simplifiedBody(0) {
+	Rule():Indexable(), ground(false), simplifiedHead(0), simplifiedBody(0), mustBeRewritedForAggregates(false)  {};
+	Rule(bool g):Indexable(), ground(g), simplifiedHead(0), simplifiedBody(0), mustBeRewritedForAggregates(false) {};
+	Rule(bool g, unsigned sizeHead, unsigned sizeBody) : Indexable(), ground(g), simplifiedHead(0), simplifiedBody(0), mustBeRewritedForAggregates(false) {
 		if(ground){
 			simplifiedHead=new bool[sizeHead];
 			simplifiedBody=new bool[sizeBody];
@@ -63,9 +63,8 @@ public:
 	void addInHead(Atom* a){head.push_back(a);};
 	///This method adds an atom in the body
 	void addInBody(Atom* a){body.push_back(a);};
+	///This method adds a range of atoms in the body
 	void addInBody(vector<Atom*>::iterator begin,vector<Atom*>::iterator end){body.insert(body.begin(),begin,end);};
-	void addInBody(vector<Atom*>& atoms){addInBody(atoms.begin(),atoms.end());};
-
 
 	///This method returns the set of predicate in the head
 	set_predicate getPredicateInHead(){return calculatePredicate(head,0,0);};

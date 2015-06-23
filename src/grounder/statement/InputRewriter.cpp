@@ -181,7 +181,7 @@ void BaseInputRewriter::translateChoice(Rule* rule,vector<Rule*>& ruleRewrited) 
 		//Body
 		vector<Atom*> naf_elements;
 		choiceElement->getNafAtoms(naf_elements);
-		aux_rule->addInBody(naf_elements);
+		aux_rule->addInBody(naf_elements.begin(),naf_elements.end());
 		aux_rule->addInBody(auxiliaryAtomBody->clone());
 
 		ruleRewrited.push_back(aux_rule);
