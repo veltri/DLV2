@@ -96,8 +96,6 @@ private:
 
 	vector<Term*> terms_parsered;
 
-//	bool foundAnAggregateInCurrentRule;
-
 	bool foundARangeAtomInCurrentRule;
 
 	Rule *currentRule;
@@ -128,6 +126,8 @@ private:
 
 	void rewriteChoice(Rule* rule);
 	void manageSimpleRule(Rule* rule);
+
+	void safetyError(bool condition,string message);
 };
 
 } /* namespace grounder */

@@ -314,7 +314,7 @@ void InMemoryInputBuilder::onChoiceLowerGuard() {
 	currentChoice->setFirstBinop(currentBinop);
 	if(firstGuard->contain(TermType::ANONYMOUS)){
 		currentChoice->print();cout<<" ";
-		assert_msg(false, "ATOM IS UNSAFE");
+		safetyError(false,"ATOM IS UNSAFE");
 	}
 	terms_parsered.pop_back();
 }
@@ -327,7 +327,7 @@ void InMemoryInputBuilder::onChoiceUpperGuard() {
 	currentChoice->setSecondBinop(currentBinop);
 	if(secondGuard->contain(TermType::ANONYMOUS)){
 		currentChoice->print();cout<<" ";
-		assert_msg(false, "ATOM IS UNSAFE");
+		safetyError(false,"ATOM IS UNSAFE");
 	}
 	terms_parsered.pop_back();
 }
@@ -360,7 +360,7 @@ void InMemoryInputBuilder::onBuiltinAtom() {
 	currentAtom = new BuiltInAtom(currentBinop,false,terms_parsered);
 	if(currentAtom->containsAnonymous()){
 		currentAtom->print();cout<<" ";
-		assert_msg(false, "ATOM IS UNSAFE");
+		safetyError(false,"ATOM IS UNSAFE");
 	}
 }
 
@@ -372,7 +372,7 @@ void InMemoryInputBuilder::onAggregateLowerGuard() {
 	currentAggregate->setFirstBinop(currentBinop);
 	if(firstGuard->contain(TermType::ANONYMOUS)){
 		currentAggregate->print();cout<<" ";
-		assert_msg(false, "ATOM IS UNSAFE");
+		safetyError(false,"ATOM IS UNSAFE");
 	}
 	terms_parsered.pop_back();
 }
@@ -385,7 +385,7 @@ void InMemoryInputBuilder::onAggregateUpperGuard() {
 	currentAggregate->setSecondBinop(currentBinop);
 	if(secondGuard->contain(TermType::ANONYMOUS)){
 		currentAggregate->print();cout<<" ";
-		assert_msg(false, "ATOM IS UNSAFE");
+		safetyError(false,"ATOM IS UNSAFE");
 	}
 	terms_parsered.pop_back();
 }
@@ -418,7 +418,7 @@ void InMemoryInputBuilder::onAggregateVariableTerm(char* value) {
 
 void InMemoryInputBuilder::onAggregateUnknownVariable() {
 	currentAggregate->print();cout<<" ";
-	assert_msg(false, "ATOM IS UNSAFE");
+	safetyError(false,"ATOM IS UNSAFE");
 }
 
 void InMemoryInputBuilder::onAggregateNafLiteral() {
@@ -431,7 +431,7 @@ void InMemoryInputBuilder::onAggregateElement() {
 	if(!currentAggregateElement->areAggregationTermsSafe())
 	{
 		currentAggregate->print();cout<<" ";
-		assert_msg(false, "ATOM IS UNSAFE");
+		safetyError(false,"ATOM IS UNSAFE");
 	}
 	currentAggregateElement=new AggregateElement;
 }
@@ -448,7 +448,7 @@ void InMemoryInputBuilder::rewriteAggregate(Rule* rule) {
 	//Sort the rule and check for safety
 	OrderRule orderRule(rule);
 	bool isSafe = orderRule.order();
-	assert_action(isSafe, "RULE IS UNSAFE");
+	safetyError(isSafe,"RULE IS UNSAFE");
 
 	//Translate the rule
 	vector<Rule*> rules;
@@ -459,7 +459,7 @@ void InMemoryInputBuilder::rewriteAggregate(Rule* rule) {
 		isSafe = orderR.order();
 		if (!isSafe)
 			r->print();
-		assert_action(isSafe, "RULE IS UNSAFE");
+		safetyError(isSafe,"RULE IS UNSAFE");
 		statementDependency->addRuleMapping(r);
 	}
 
@@ -480,7 +480,7 @@ void InMemoryInputBuilder::rewriteChoice(Rule* rule) {
 void InMemoryInputBuilder::manageSimpleRule(Rule* rule) {
 	OrderRule orderRule(rule);
 	bool isSafe = orderRule.order();
-	assert_action(isSafe, "RULE IS UNSAFE");
+	safetyError(isSafe,"RULE IS UNSAFE");
 	statementDependency->addRuleMapping(rule);
 }
 
@@ -581,6 +581,10 @@ void InMemoryInputBuilder::expandRulePart(vector<Atom*>::const_iterator start, v
 	for(auto vectorAtom:atoms)
 		for(auto atom: vectorAtom)
 			delete atom;
+}
+
+void InMemoryInputBuilder::safetyError(bool condition, string message) {
+	assert_msg(condition, message);
 }
 
 } /* namespace grounder */
