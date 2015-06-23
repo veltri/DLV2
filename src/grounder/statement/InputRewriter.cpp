@@ -112,7 +112,7 @@ set_term BaseInputRewriter::getVariablesInAggregateElem(AggregateElement* aggreg
 	return variables;
 }
 
-void BaseInputRewriter::translateChoice(Rule* rule,vector<Rule*>& ruleRewrited) {
+void BaseInputRewriter::translateChoice(Rule*& rule,vector<Rule*>& ruleRewrited) {
 
 	unsigned id=IdGenerator::getInstance()->getId();
 	unsigned counter=1;
@@ -217,6 +217,7 @@ void BaseInputRewriter::translateChoice(Rule* rule,vector<Rule*>& ruleRewrited) 
 		return 1;
 	});
 	delete rule;
+	rule=0;
 }
 
 void FirstSaviorChoosingPolicy::getRecursiveDependencies(const OrderRule& orderRule, unsigned savior_pos, vector<Atom*>& atomToAdd) {

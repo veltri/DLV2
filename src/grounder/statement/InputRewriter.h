@@ -40,7 +40,7 @@ class InputRewriter {
 public:
 	InputRewriter():predicateExtTable(PredicateExtTable::getInstance()), predicateTable(PredicateTable::getInstance()) {};
 	virtual void translateAggregate(Rule* rule, vector<Rule*>& ruleRewrited, const OrderRule& orderRule) = 0;
-	virtual void translateChoice(Rule* rule, vector<Rule*>& ruleRewrited) = 0;
+	virtual void translateChoice(Rule*& rule, vector<Rule*>& ruleRewrited) = 0;
 	virtual void  chooseBestSaviorForAggregate(Rule* rule, AggregateElement* aggregateElement, set_term& unsafeVars, vector<Atom*>& atomToAdd, const OrderRule& orderRule) = 0;
 	virtual ~InputRewriter(){};
 protected:
@@ -74,7 +74,7 @@ public:
 	 * 		- One constraint rule with a negated count aggregate
 	 *  More details are given in the method itself.
 	 */
-	virtual void translateChoice(Rule* rule, vector<Rule*>& ruleRewrited);
+	virtual void translateChoice(Rule*& rule, vector<Rule*>& ruleRewrited);
 
 	/**
 	 * This template method searches for possible saviors of the negative atoms in the given aggregateElement.

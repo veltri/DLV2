@@ -14,8 +14,10 @@ namespace grounder{
 
 set_predicate ChoiceElement::getPredicateInNaf() {
 	set_predicate predicates;
-	for(unsigned i=1;i<choiceElement.size();i++)
-		predicates.insert(choiceElement[i]->getPredicates().begin(),choiceElement[i]->getPredicates().end());
+	for(unsigned i=1;i<choiceElement.size();i++){
+		Predicate* predicate=choiceElement[i]->getPredicate();
+		predicates.insert(predicate);
+	}
 
 	return predicates;
 }
@@ -23,8 +25,10 @@ set_predicate ChoiceElement::getPredicateInNaf() {
 set_predicate ChoiceElement::getPredicatePositiveInNaf() {
 	set_predicate predicates;
 	for(unsigned i=1;i<choiceElement.size();i++)
-		if(!choiceElement[i]->isNegative())
-			predicates.insert(choiceElement[i]->getPredicates().begin(),choiceElement[i]->getPredicates().end());
+		if(!choiceElement[i]->isNegative()){
+			Predicate* predicate=choiceElement[i]->getPredicate();
+			predicates.insert(predicate);
+		}
 
 	return predicates;
 }

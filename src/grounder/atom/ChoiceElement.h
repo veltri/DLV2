@@ -56,9 +56,8 @@ public:
 	///Return the positive predicates of naf literal in choice element
 	set_predicate getPredicatePositiveInNaf();
 
-
 	///Destructor
-	virtual ~ChoiceElement(){};
+	~ChoiceElement(){};
 
 private:
 

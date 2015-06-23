@@ -90,7 +90,7 @@ public:
 	}
 
 	///Destructor
-	~Choice() {};
+	virtual ~Choice() {for(auto& choiceElement:choiceElements) delete choiceElement;};
 
 private:
 	///First binary operation
