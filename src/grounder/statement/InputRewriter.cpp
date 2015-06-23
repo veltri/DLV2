@@ -52,8 +52,8 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited,
 
 				terms.insert(terms.end(),aggElem->getTerms().begin(),aggElem->getTerms().end());
 
-				//If there is one aggregate element and the rewrited atoms have the same number of terms
-				//avoid to rewrite
+				// Avoid the rewrite if there is just one aggregate element and the rewritten atom will have have the same number of terms of the only atom
+				// contained in the aggregate element
 				if(aggElem->getNafLiteralsSize()<2 && terms.size()==aggElem->getNafLiteral(0)->getTermsSize()) continue;
 
 				Rule* rule=new Rule;
@@ -134,10 +134,12 @@ void BaseInputRewriter::translateChoice(Rule* rule,vector<Rule*>& ruleRewrited) 
 	unsigned id=IdGenerator::getInstance()->getId();
 	unsigned counter=1;
 
-	//Create rule for instantiate the body only one time. Then find the variables shared with the
-	// choice and then put this variables in the aux head of the new rule
+	// Create an auxiliary rule in order to ground the body only once.
+	// First the variables shared between the atoms in the body
+	// and the choice atom are found, these variables will be
+	// the term of the auxiliary atom in the head of the auxiliary rule
 
-	auto choice =rule->getAtomInHead(0);
+	Atom* choice =rule->getAtomInHead(0);
 	set_term variables_in_choice=choice->getVariable();
 	set_term variables_in_body;
 
@@ -157,76 +159,73 @@ void BaseInputRewriter::translateChoice(Rule* rule,vector<Rule*>& ruleRewrited) 
 
 	Rule * body_rule=new Rule;
 
+	//Body
 	body_rule->setBody(rule->getBody());
 
+	//Head
 	string predicate_name=AUXILIARY+SEPARATOR+to_string(id)+SEPARATOR+to_string(counter);
 	vector<Term*> terms(variables_intersection.begin(),variables_intersection.end());
 	Atom *auxiliaryAtomBody=generateNewAuxiliaryAtom(predicate_name,terms);
 	body_rule->addInHead(auxiliaryAtomBody);
 
 	ruleRewrited.push_back(body_rule);
-
 	counter++;
 
-	//For each choice element creates new rule with in the head the disjunction with new aux and the first atom in the
-	// choice element, and in the body the remaining atoms in the choice element and the body of the rule (the body rewritten)
+	// For each choice element a new disjunctive auxiliary rule is created.
+	// Each rule has in the head a disjunction with a the first atom of the choice element and a new auxiliary atom
+	// having the same terms of the first atom, while in the body it contains the remaining atoms of the choice element
+	// and the auxiliary atom previously created for the body.
 
+	// In the mean time the aggregate elements for the constraint rule are created (see below)
 	vector<AggregateElement*> elements;
 
 	for(unsigned i=0;i<choice->getChoiceElementsSize();i++){
 
-		auto choiceElement=choice->getChoiceElement(i);
+		ChoiceElement* choiceElement=choice->getChoiceElement(i);
 
 		Rule * aux_rule=new Rule;
 
-		auto first_atom=choiceElement->getFirstAtom();
-
+		//Head
+		Atom* first_atom=choiceElement->getFirstAtom();
 		aux_rule->addInHead(first_atom);
 		string predicate_name=AUXILIARY+SEPARATOR+to_string(id)+SEPARATOR+to_string(counter);
 		vector<Term*> terms=first_atom->getTerms();
 		Atom *auxiliaryAtom=generateNewAuxiliaryAtom(predicate_name,terms);
 		aux_rule->addInHead(auxiliaryAtom);
 
+		//Body
 		vector<Atom*> naf_elements;
 		choiceElement->getNafAtoms(naf_elements);
 		aux_rule->addInBody(naf_elements);
 		aux_rule->addInBody(auxiliaryAtomBody->clone());
 
-
 		ruleRewrited.push_back(aux_rule);
 		counter++;
 
-		//For aggregate
+		// Create a new aggregate element
 		AggregateElement * element=new AggregateElement(first_atom->clone(),first_atom->getTerms());
 		elements.push_back(element);
 	}
 
-
-
-
-	//Add new constraint with the body of the rule and a negated count aggregate with the same guard of choice and inside the
-	// first atom for each choice element
-
+	// Finally a constraint rule is created.
+	// It has as body the auxiliary atom previously created for the body, and a negated count aggregate
+	// whose guard are the same of the choice atom and inside contains the first atom of each choice element
+	// and as aggregate terms all its terms
 
 	Rule * constraint_aux_rule=new Rule;
 
+	//Body
 	constraint_aux_rule->addInBody(auxiliaryAtomBody->clone());
-
-
-
 	Atom *aggregate_atom=new AggregateAtom;
 	aggregate_atom->copyGuard(choice);
 	aggregate_atom->setNegative(true);
 	aggregate_atom->setAggregateFunction(AggregateFunction::COUNT);
 	aggregate_atom->setAggregateElements(elements);
-
 	constraint_aux_rule->addInBody(aggregate_atom);
 
 	ruleRewrited.push_back(constraint_aux_rule);
 
-
 	//TODO add delete for rule
-
 }
 
 } /* namespace grounder */
