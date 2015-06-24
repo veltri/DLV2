@@ -70,6 +70,4 @@ string Atom::getBinopToStrng(Binop binop){
 	}
 }
 
-};
-
-};
+}}

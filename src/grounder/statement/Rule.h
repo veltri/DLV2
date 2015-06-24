@@ -56,7 +56,7 @@ public:
 	///This method returns true if it is a strong constrain
 	bool isAStrongConstraint(){return head.empty();}
 	///This method returns true if it is a fact
-	bool isAFact(){return body.empty() && head.size()==1;}
+	bool isAFact(){return body.empty() && head.size()==1 && head[0]->isClassicalLiteral();}
 
 	///This method adds an atom in the head
 	void addInHead(Atom* a){head.push_back(a);};

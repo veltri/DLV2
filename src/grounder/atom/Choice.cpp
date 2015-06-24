@@ -48,24 +48,45 @@ Atom* Choice::clone() {
 	return atom;
 }
 
+
+set_term Choice::getGuardVariable(){
+	set_term terms_variable;
+	if (firstBinop != NONE_OP && !getTerm(0)->isGround())
+			terms_variable.insert(getTerm(0));
+
+	if (secondBinop != NONE_OP && !getTerm(1)->isGround())
+		terms_variable.insert(getTerm(1));
+	return terms_variable;
+}
+
 set_term Choice::getVariable() {
 	set_term terms_variable;
 
 	for(auto choice_element:choiceElements){
-		for(unsigned i=0;i<choice_element->getSize();i++)
+		for(unsigned i=0;i<choice_element->getSize();++i)
 		{
 			auto variables=choice_element->getAtom(i)->getVariable();
 			terms_variable.insert(variables.begin(),variables.end());
 		}
 	}
+	set_term guardTerms=getGuardVariable();
+	terms_variable.insert(guardTerms.begin(), guardTerms.end());
+	return terms_variable;
+}
 
-	if(firstBinop!=NONE_OP && !getTerm(0)->isGround())
-		terms_variable.insert(getTerm(0));
-	if(secondBinop!=NONE_OP && !getTerm(1)->isGround())
-		terms_variable.insert(getTerm(1));
-
-
-
+set_term Choice::getVariableToSave(){
+	set_term terms_variable;
+	for(auto choice_element:choiceElements){
+		for(unsigned i=0;i<choice_element->getSize();++i)
+		{
+			if(i==0 || choice_element->getAtom(i)->isNegative()){
+				auto variables=choice_element->getAtom(i)->getVariable();
+				terms_variable.insert(variables.begin(),variables.end());
+			}
+		}
+	}
+	set_term guardTerms=getGuardVariable();
+	terms_variable.insert(guardTerms.begin(), guardTerms.end());
 	return terms_variable;
 }
 

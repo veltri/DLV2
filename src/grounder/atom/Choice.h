@@ -31,7 +31,6 @@ public:
 	Choice(Binop fB, Binop sB, vector<Term*> t, vector<ChoiceElement*> cE)
 		: Atom(t), firstBinop(fB), secondBinop(sB), choiceElements(cE) {};
 
-
 	///Return the term of variable present in the Atom
 	virtual set_term getVariable();
 
@@ -89,8 +88,23 @@ public:
 		return predicates;
 	}
 
+	/// Return the variable to safe:
+	///		- the variables of the first atom of each choice element
+	/// 	- the variables of each negative atoms in each choice element
+	///		- the variables in the guards
+	set_term getVariableToSave();
+
+	//Return the variable in the guard of an aggregate
+	virtual set_term getGuardVariable();
+
 	///Destructor
-	virtual ~Choice() {for(auto& choiceElement:choiceElements) delete choiceElement;};
+	virtual ~Choice() {
+		for (auto& choiceElement : choiceElements)
+			delete choiceElement;
+	}
+	void getGuardVaribale(set_term& terms_variable);
+
+	;
 
 private:
 	///First binary operation

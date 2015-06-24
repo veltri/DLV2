@@ -8,6 +8,7 @@
 #include "OrderRule.h"
 #include "../../util/Assert.h"
 #include "../../util/Options.h"
+#include "../atom/Choice.h"
 
 namespace DLV2 {
 namespace grounder {
@@ -66,10 +67,14 @@ bool OrderRule::order() {
 bool OrderRule::checkHeadSafety(){
 	set_term variableToCheck;
 	for(auto atom=rule->getBeginHead();atom!=rule->getEndHead();++atom){
-		//TODO Add check safety to choice
-		if((*atom)->isChoice())continue;
 		set_term tempVariables=(*atom)->getVariable();
 		variableToCheck.insert(tempVariables.begin(),tempVariables.end());
+	}
+	if(rule->isChoiceRule()){
+		Choice* choice=dynamic_cast<Choice*> (*rule->getBeginHead());
+		set_term variables=choice->getVariableToSave();
+		variableToCheck.insert(variables.begin(),variables.end());
+		cout<<"Choice: "<<variableToCheck.size();
 	}
 	if(safeVariables.size()<variableToCheck.size())
 		return false;

@@ -193,7 +193,6 @@ public:
 
 	virtual Term* getUndefEvaluation(){return 0;};
 
-
 	//Return the variable in the guard of an aggregate
 	virtual set_term getGuardVariable(){return set_term();};
 
