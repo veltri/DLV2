@@ -406,6 +406,9 @@ void InMemoryInputBuilder::onAggregateFunction(char* functionSymbol) {
 }
 
 void InMemoryInputBuilder::onAggregateGroundTerm(char* value, bool dash) {
+	newTerm(value);
+	currentAggregateElement->addTerm(terms_parsered.back());
+	terms_parsered.pop_back();
 }
 
 void InMemoryInputBuilder::onAggregateVariableTerm(char* value) {

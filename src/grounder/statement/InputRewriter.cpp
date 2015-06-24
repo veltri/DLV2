@@ -44,17 +44,24 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited,
 
 				vector<Term*> terms;
 
+
 				//For each variable in the aggregate element and in the rule add in head of auxiliary rule
 				set_term variablesAggElem=getVariablesInAggregateElem((*it)->getAggregateElement(i));
 				for(auto term:variablesAggElem)
 					if(variablesRule.count(term))
 						terms.push_back(term);
 
-				terms.insert(terms.end(),aggElem->getTerms().begin(),aggElem->getTerms().end());
+				unsigned countGroundTermInAggElem=0;
+				for(auto term:aggElem->getTerms()){
+					if(term->isGround())countGroundTermInAggElem++;
+					terms.push_back(term);
+				}
+
+				//terms.insert(terms.end(),aggElem->getTerms().begin(),aggElem->getTerms().end());
 
 				// Avoid the rewriting if there is just one aggregate element and the rewritten atom will have have the same number of terms of the only atom
 				// contained in the aggregate element
-				if(aggElem->getNafLiteralsSize()<2 && terms.size()==aggElem->getNafLiteral(0)->getTermsSize()) continue;
+				if(aggElem->getNafLiteralsSize()<2 && terms.size()==aggElem->getNafLiteral(0)->getTermsSize() && countGroundTermInAggElem==0) continue;
 
 				Rule* rule=new Rule;
 				vector<Atom*> atoms=aggElem->getNafLiterals();

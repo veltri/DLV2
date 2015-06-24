@@ -59,6 +59,7 @@ namespace grounder{
 
 	bool AggregateElement::areAggregationTermsSafe() const {
 		for(auto term: terms){
+			if(term->isGround())continue;
 			bool ok=false;
 			for(auto atom:nafLiterals){
 				set_term variables=atom->getVariable();
