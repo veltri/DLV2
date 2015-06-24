@@ -59,6 +59,13 @@ set_term Choice::getVariable() {
 		}
 	}
 
+	if(firstBinop!=NONE_OP && !getTerm(0)->isGround())
+		terms_variable.insert(getTerm(0));
+	if(secondBinop!=NONE_OP && !getTerm(1)->isGround())
+		terms_variable.insert(getTerm(1));
+
+
+
 	return terms_variable;
 }
 

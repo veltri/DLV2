@@ -498,9 +498,15 @@ bool BackTrackingGrounder::groundAggregate() {
 
 				AggregateElement *ground_aggregateElement=new AggregateElement;
 				ground_aggregateElement->addNafLiterals(atomFound);
+
 				//Add the id ground term in the ground aggregate element
-				for(auto term_aggregateElement:aggregateAtom->getAggregateElement(i)->getTerms())
-					ground_aggregateElement->addTerm(copy_current_var_assign[term_aggregateElement]);
+				for(auto term_aggregateElement:aggregateAtom->getAggregateElement(i)->getTerms()){
+					if(term_aggregateElement->getType()==VARIABLE)
+						ground_aggregateElement->addTerm(copy_current_var_assign[term_aggregateElement]);
+					else if(term_aggregateElement->getType()==FUNCTION){
+						ground_aggregateElement->addTerm(term_aggregateElement->substitute(copy_current_var_assign));
+					}
+				}
 
 				ground_aggregate->addAggregateElement(ground_aggregateElement);
 				result=ground_aggregate->partialEvaluate();
