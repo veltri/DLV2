@@ -20,7 +20,7 @@ class BackTrackingGrounder : public ProgramGrounder {
 public:
 	BackTrackingGrounder():ProgramGrounder(),currentRule(0),index_current_atom(0),callFoundAssignment(0),ground_rule(0) {};
 	virtual ~BackTrackingGrounder() {
-		for(auto atom:templateSetAtom) {if(atom==nullptr)continue;atom->deleteAtoms(); delete atom;}
+		for(auto atom:templateSetAtom) {if(atom!=nullptr){atom->deleteAtoms(); delete atom;}}
 		if(ground_rule!=0)
 			deleteGroundRule();
 	};
@@ -53,7 +53,7 @@ protected:
 	//Delete the ground rule
 	void deleteGroundRule();
 	//Delete the atom at the given position and substitute it with the given atom at that position
-	void substiteInGroundRule(unsigned position, Atom* new_atom) {Atom* atom=(ground_rule->getAtomInBody(position)); if(atom!=nullptr && ( (atom->isClassicalLiteral() && atom->isNegative() ) || atom->isAggregateAtom())) {delete atom;ground_rule->setAtomInBody(position,new_atom);} }
+	void substiteInGroundRule(unsigned position, Atom* new_atom) {Atom* atom=(ground_rule->getAtomInBody(position)); if(atom!=nullptr && ( (atom->isClassicalLiteral() && atom->isNegative() ) || atom->isAggregateAtom())) delete atom; ground_rule->setAtomInBody(position,new_atom); }
 
 private:
 	/// Current assignment for grounding rule

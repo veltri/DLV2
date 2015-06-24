@@ -445,7 +445,6 @@ bool BackTrackingGrounder::groundAggregate() {
 		}
 		if(aggregateAtom->getSecondBinop()==LESS && aggregateAtom->getFirstBinop()==NONE_OP
 			&& aggregateAtom->getSecondGuard()->getType()!=VARIABLE && aggregateAtom->getSecondGuard()->getType()!=NUMERIC_CONSTANT){
-				cout<<"AAAAAAAAAAAAAa"<<endl;
 				ground_rule->setAtomToSimplifyInBody(index_current_atom);
 				substiteInGroundRule(index_current_atom,nullptr);
 				return !aggregateAtom->isNegative();
