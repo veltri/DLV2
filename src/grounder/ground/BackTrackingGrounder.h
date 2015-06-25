@@ -47,6 +47,9 @@ protected:
 	///Ground an aggregate atom and return true if math false otherwise
 	virtual bool groundAggregate();
 
+	///Ground a choice in the head of the rule
+	virtual void groundChoice(bool& find_new_true_atom,bool& ground_new_atom);
+
 	/// Print the current assignment
 	void printAssignment();
 

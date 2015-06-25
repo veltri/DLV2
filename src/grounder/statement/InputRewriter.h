@@ -83,11 +83,20 @@ public:
 	 */
 	virtual void  chooseBestSaviorForAggregate(Rule* rule, AggregateElement* aggregateElement, set_term& unsafeVars, vector<Atom*>& atomToAdd, const OrderRule& orderRule);
 	virtual ~BaseInputRewriter() {delete saviourChoosingPolicy;};
-private:
+protected:
 	/// The savior choosing policy adopted
 	SaviorChoosingPolicy* saviourChoosingPolicy;
+
 	/// Utility method: returns the variables in the given aggregate element without the aggregation variables
 	set_term getVariablesInAggregateElem(AggregateElement* aggregateElem);
+
+	///Create an auxiliary rule for each  choice element
+	virtual vector<AggregateElement*> rewriteChoiceElements(unsigned id,unsigned counter, Atom* choice, Atom* auxiliaryAtomBody,	vector<Rule*>& ruleRewrited);
+};
+
+class ChoiceBaseInputRewriter : public BaseInputRewriter{
+public:
+	virtual vector<AggregateElement*> rewriteChoiceElements(unsigned id,unsigned counter, Atom* choice, Atom* auxiliaryAtomBody,	vector<Rule*>& ruleRewrited);
 };
 
 

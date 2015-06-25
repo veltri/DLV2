@@ -20,7 +20,7 @@ namespace grounder{
 class Choice: public Atom {
 public:
 	///Default constructor
-	Choice(): firstBinop(Binop::NONE_OP), secondBinop(Binop::NONE_OP){terms.push_back(0);terms.push_back(0);};
+	Choice(): firstBinop(Binop::NONE_OP), secondBinop(Binop::NONE_OP){terms.push_back(nullptr);terms.push_back(nullptr);};
 
 	/** Constructor
 	 * @param fB set the first binary operation
@@ -60,6 +60,12 @@ public:
 	virtual Term* getSecondGuard(){return terms[1];};
 	///Add a choice element
 	virtual void addChoiceElement(ChoiceElement* choiceElement){choiceElements.push_back(choiceElement);}
+	///Add a choice element composed with the atom
+	virtual void addSingleChoiceElement(Atom* atom){
+		ChoiceElement *element=new ChoiceElement;
+		element->add(atom);
+		choiceElements.push_back(element);
+	}
 
 	virtual bool isChoice(){return true;}
 

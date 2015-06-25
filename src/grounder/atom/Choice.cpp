@@ -26,7 +26,7 @@ void Choice::print() {
 			if(!second)cout<<",";
 			naf->print();
 			if(!first && second) second=false;
-			if(first) {cout<<":";first=false;}
+			if(first && element->getSize()>1) {cout<<":";first=false;}
 		}
 		first=true;
 		second=true;

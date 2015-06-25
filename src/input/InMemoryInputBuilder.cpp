@@ -23,7 +23,7 @@ InMemoryInputBuilder::InMemoryInputBuilder() :
 	predicateTable(PredicateTable::getInstance()),
 	statementDependency(StatementDependency::getInstance()),
 	instancesTable(PredicateExtTable::getInstance()),
-	inputRewriter(new BaseInputRewriter()),
+	inputRewriter(new ChoiceBaseInputRewriter()),
 	foundARangeAtomInCurrentRule(false),
 	currentRule(new Rule()),
 	currentAtom(nullptr),

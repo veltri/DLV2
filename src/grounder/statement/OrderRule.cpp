@@ -74,7 +74,6 @@ bool OrderRule::checkHeadSafety(){
 		Choice* choice=dynamic_cast<Choice*> (*rule->getBeginHead());
 		set_term variables=choice->getVariableToSave();
 		variableToCheck.insert(variables.begin(),variables.end());
-		cout<<"Choice: "<<variableToCheck.size();
 	}
 	if(safeVariables.size()<variableToCheck.size())
 		return false;

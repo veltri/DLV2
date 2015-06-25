@@ -10,6 +10,7 @@
 #include <boost/lexical_cast.hpp>
 #include "../atom/AggregateAtom.h"
 #include "../term/ConstantTerm.h"
+#include "../atom/Choice.h"
 
 
 namespace DLV2 {
@@ -229,14 +230,20 @@ bool BackTrackingGrounder::next() {
 	return true;
 }
 
+
 bool BackTrackingGrounder::foundAssignment() {
 	callFoundAssignment=true;
-	bool head_true=(currentRule->getSizeHead() <= 1) && (!ground_rule->areThereUndefinedAtomInBody());
+	bool isAChoiceRule=currentRule->isChoiceRule();
+	bool head_true=(currentRule->getSizeHead() <= 1 || !isAChoiceRule) && (!ground_rule->areThereUndefinedAtomInBody());
 	bool ground_new_atom=false;
 	bool find_new_true_atom=false;
 	unsigned atom_counter=0;
-	Atom *searchAtom=0;
-	for(auto atom=currentRule->getBeginHead();atom!=currentRule->getEndHead();++atom,++atom_counter){
+	Atom *searchAtom=nullptr;
+	if(isAChoiceRule)
+		groundChoice(find_new_true_atom,ground_new_atom);
+
+	for(auto atom=currentRule->getBeginHead();atom!=currentRule->getEndHead()&&!isAChoiceRule;++atom,++atom_counter){
+
 		Atom *headGroundAtom=nullptr;
 		(*atom)->ground(current_var_assign,headGroundAtom);
 
@@ -518,6 +525,7 @@ bool BackTrackingGrounder::groundAggregate() {
 			}
 		}
 	}
+
 	if(result==UNDEF)
 		result=ground_aggregate->finalEvaluate();
 
@@ -549,6 +557,41 @@ bool BackTrackingGrounder::groundAggregate() {
 	ground_rule->setAtomInBody(index_current_atom,ground_aggregate);
 	return true;
 }
+
+void BackTrackingGrounder::groundChoice(bool& find_new_true_atom,bool& ground_new_atom){
+
+	Atom *headGroundAtom=nullptr,*searchAtom=nullptr;
+	Atom* ground_choice=new Choice;
+	Atom *choice=currentRule->getAtomInHead(0);
+
+
+	for(unsigned i=0;i<choice->getChoiceElementsSize();i++){
+
+		Atom *atom_in_choice=choice->getChoiceElement(i)->getFirstAtom();
+
+		atom_in_choice->ground(current_var_assign,headGroundAtom);
+		PredicateExtension* predicateExt=predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
+		searchAtom=predicateExt->getAtom(headGroundAtom);
+
+		if(searchAtom==nullptr){
+			ground_new_atom = true;
+
+			headGroundAtom->setFact(false);
+			for(unsigned i=0;i<predicate_searchInsert_table[0].size();++i)
+				predicateExt->addAtom(predicate_searchInsert_table[0][i],headGroundAtom);
+
+			ground_choice->addSingleChoiceElement(headGroundAtom);
+		}else{
+			delete headGroundAtom;
+
+			//Check if previus is false now is true ground_new atom i have put true
+			ground_choice->addSingleChoiceElement(searchAtom);
+		}
+		ground_rule->setAtomInHead(0,ground_choice);
+
+	}
+}
+
 
 } /* namespace grounder */
 } /* namespace DLV2 */

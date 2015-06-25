@@ -220,6 +220,7 @@ public:
 	virtual bool isChoice(){return false;}
 	///Add a choice element
 	virtual void addChoiceElement(ChoiceElement* choiceElement){}
+	virtual void addSingleChoiceElement(Atom* atom){}
 	/*****************************************************/
 
 	/******** Methods useful for Generic Atom ********/
