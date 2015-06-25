@@ -49,7 +49,7 @@ void ProgramGrounder::ground() {
 	vector<unordered_set<index_object>> componentPredicateInHead;
 	statementDependency->createComponentGraphAndComputeAnOrdering(exitRules, recursiveRules, componentPredicateInHead);
 
-	if (Options::globalOptions()->isPrintRewritedProgram())
+	if (Options::globalOptions()->isPrintRewrittenProgram())
 		printProgram(exitRules, recursiveRules);
 
 	// Ground each module according to the ordering:

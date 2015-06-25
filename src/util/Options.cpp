@@ -62,6 +62,7 @@ namespace DLV2
 #define OPTIONID_predIndexType ('z' + 36)
 #define OPTIONID_nofacts ('z' + 37)
 #define OPTIONID_printRewrite ('z' + 38)
+#define OPTIONID_rewritingType ('z' + 39)
 
 
 
@@ -108,7 +109,8 @@ Options::Options():
 		predicatesIndexTerm(""),
 		predicatesIndexType(""),
 		nofacts(false),
-		printRewritedProgram(false)
+		printRewrittenProgram(false),
+		rewritingType(NATIVE_CHOICE)
 {
 
 }
@@ -126,7 +128,8 @@ Options::Options(
 		predicatesIndexTerm(o.predicatesIndexTerm),
 		predicatesIndexType(o.predicatesIndexTerm),
 		nofacts(o.nofacts),
-		printRewritedProgram(false)
+		printRewrittenProgram(o.printRewrittenProgram),
+		rewritingType(o.rewritingType)
 
 {
 
@@ -174,6 +177,7 @@ Options::init(
 		{"predindextype",required_argument, NULL, OPTIONID_predIndexType},
 		{"nofacts",no_argument, NULL, OPTIONID_nofacts},
 		{"printRewrite",no_argument, NULL, OPTIONID_printRewrite},
+		{"rewritingtype",required_argument, NULL, OPTIONID_rewritingType},
 
         // Required at end of array. 
         { NULL, 0, NULL, 0 }
@@ -275,9 +279,15 @@ Options::init(
             case OPTIONID_nofacts:
             	nofacts=true;
 				break;
+
             case OPTIONID_printRewrite:
-				printRewritedProgram=true;
+				printRewrittenProgram=true;
             	break;
+
+            case OPTIONID_rewritingType:
+            	rewritingType= atoi(optarg);
+            	break;
+
             default:
                 ErrorMessage::errorGeneric( "This option is not supported." );
                 break;
