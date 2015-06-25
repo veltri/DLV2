@@ -36,7 +36,7 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited,
 		unsigned aggElementsSize=(*it)->getAggregateElementsSize();
 		if(aggElementsSize>0){
 			AggregateAtom* aggregate=dynamic_cast<AggregateAtom*>(*it);
-			set_term variablesRule=aggregate->getSharedVariable(r);
+			set_term variablesRule=aggregate->getSharedVariable(r,false);
 			aggregateAtoms.push_back(index_atom);
 			unsigned id=IdGenerator::getInstance()->getId();
 			unsigned counter=1;
@@ -44,7 +44,6 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited,
 				AggregateElement* aggElem=(*it)->getAggregateElement(i);
 
 				vector<Term*> terms;
-
 
 				//For each variable in the aggregate element and in the rule add in head of auxiliary rule
 				set_term variablesAggElem=getVariablesInAggregateElem((*it)->getAggregateElement(i));

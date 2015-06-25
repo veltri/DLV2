@@ -154,7 +154,7 @@ public:
 	virtual bool isAssignment(){return assignment;};
 	virtual void setAssignment(bool assignment){this->assignment=assignment;};
 
-	set_term getSharedVariable(Rule* rule);
+	set_term getSharedVariable(Rule* rule,bool alsoGuards);
 
 	//Copy the guard of the atom
 	virtual void copyGuard(Atom *atom);

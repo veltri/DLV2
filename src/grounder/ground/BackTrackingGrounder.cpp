@@ -559,16 +559,15 @@ bool BackTrackingGrounder::groundAggregate() {
 }
 
 void BackTrackingGrounder::groundChoice(bool& find_new_true_atom,bool& ground_new_atom){
-
-	Atom *headGroundAtom=nullptr,*searchAtom=nullptr;
+	Atom* searchAtom=nullptr;
 	Atom* ground_choice=new Choice;
 	Atom *choice=currentRule->getAtomInHead(0);
-
 
 	for(unsigned i=0;i<choice->getChoiceElementsSize();i++){
 
 		Atom *atom_in_choice=choice->getChoiceElement(i)->getFirstAtom();
 
+		Atom *headGroundAtom=nullptr;
 		atom_in_choice->ground(current_var_assign,headGroundAtom);
 		PredicateExtension* predicateExt=predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
 		searchAtom=predicateExt->getAtom(headGroundAtom);

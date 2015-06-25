@@ -94,7 +94,7 @@ protected:
 
 	/// Vector that stores the combination of searching table with the predicates of current rule
 	vector<bool> predicate_combination;
-	///For each predicate in the current rule this vector stores the table of insert for the atom in head and
+	/// For each predicate in the current rule this vector stores the table of insert for the atom in head and
 	/// searching table for the predicate in the body
 	vector<vector<unsigned>> predicate_searchInsert_table;
 

@@ -680,7 +680,6 @@ void StatementDependency::createComponentGraphAndComputeAnOrdering(vector<vector
 			stable_sort(recursiveRules[i].begin(),recursiveRules[i].end(),sortRules);
 	}
 
-
 }
 
 

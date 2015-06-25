@@ -27,11 +27,10 @@ set_predicate Rule::calculatePredicate(vector<Atom*>& atoms,bool checkNegative,b
 unordered_set<index_object> Rule::calculatePredicateIndex(vector<Atom*>& atoms,bool checkNegative,bool negative){
 	unordered_set<index_object> predicates;
 	for (auto atom:atoms) {
-		Predicate* predicate=atom->getPredicate();
-		if(predicate!=nullptr)
+		set_predicate atom_predicates=atom->getPredicates();
+		for(auto predicate: atom_predicates)
 			if(!checkNegative || (atom->isNegative() == negative))
 				predicates.insert(predicate->getIndex());
-
 	}
 	return predicates;
 }

@@ -38,13 +38,13 @@ set_predicate AggregateAtom::getPredicates() const{
 }
 
 set_term AggregateAtom::getGuardVariable(){
-		set_term variables;
-		if(firstBinop!= NONE_OP && firstGuard->getType()==TermType::VARIABLE)
-			variables.insert(firstGuard);
-		if(secondBinop != NONE_OP && secondGuard->getType()==TermType::VARIABLE)
-			variables.insert(secondGuard);
+	set_term variables;
+	if(firstBinop!= NONE_OP && firstGuard->getType()==TermType::VARIABLE)
+		variables.insert(firstGuard);
+	if(secondBinop != NONE_OP && secondGuard->getType()==TermType::VARIABLE)
+		variables.insert(secondGuard);
 
-		return variables;
+	return variables;
 }
 
 size_t AggregateAtom::hash() {
@@ -527,8 +527,10 @@ void AggregateAtom::changeInStandardFormat() {
 //	}
 }
 
-set_term AggregateAtom::getSharedVariable(Rule* rule) {
+set_term AggregateAtom::getSharedVariable(Rule* rule,bool alsoGuards) {
 	set_term sharedTerms;
+	if(alsoGuards && (negative || firstBinop!=EQUAL))
+		sharedTerms=getGuardVariable();
 	set_term terms=getVariable();
 	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();++atom){
 		Atom* current_atom=*atom;
@@ -546,6 +548,7 @@ set_term AggregateAtom::getSharedVariable(Rule* rule) {
 					sharedTerms.insert(variable);
 		}
 	}
+
 	return sharedTerms;
 }
 
