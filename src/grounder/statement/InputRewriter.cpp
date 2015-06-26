@@ -221,20 +221,24 @@ void BaseInputRewriter::translateChoice(Rule*& rule,vector<Rule*>& ruleRewrited)
 	// whose guard are the same of the choice atom and inside contains the first atom of each choice element
 	// and as aggregate terms all its terms
 
-	Rule * constraint_aux_rule=new Rule;
+	if(!choice->isDefaultGuard()){
 
-	//Body
-	if(auxiliaryAtomBody!=nullptr)
-		constraint_aux_rule->addInBody(auxiliaryAtomBody->clone());
-	AggregateAtom *aggregate_atom=new AggregateAtom;
-	aggregate_atom->copyGuard(choice);
-	aggregate_atom->setNegative(true);
-	aggregate_atom->setAggregateFunction(AggregateFunction::COUNT);
-	aggregate_atom->setAggregateElements(elements);
-	aggregate_atom->changeInStandardFormat();
-	constraint_aux_rule->addInBody(aggregate_atom);
+		Rule * constraint_aux_rule=new Rule;
 
-	ruleRewrited.push_back(constraint_aux_rule);
+		//Body
+		if(auxiliaryAtomBody!=nullptr)
+			constraint_aux_rule->addInBody(auxiliaryAtomBody->clone());
+		AggregateAtom *aggregate_atom=new AggregateAtom;
+		aggregate_atom->copyGuard(choice);
+		aggregate_atom->setNegative(true);
+		aggregate_atom->setAggregateFunction(AggregateFunction::COUNT);
+		aggregate_atom->setAggregateElements(elements);
+		aggregate_atom->changeInStandardFormat();
+		constraint_aux_rule->addInBody(aggregate_atom);
+
+		ruleRewrited.push_back(constraint_aux_rule);
+
+	}
 
 	rule->deleteBody([](Atom* atom){
 		return 0;

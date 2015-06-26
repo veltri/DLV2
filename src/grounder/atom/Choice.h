@@ -117,6 +117,12 @@ public:
 	}
 	void getGuardVaribale(set_term& terms_variable);
 
+	virtual bool isDefaultGuard(){
+		if(firstBinop==NONE_OP && secondBinop==GREATER_OR_EQ && terms[1]->getIndex()==TermTable::getInstance()->term_zero->getIndex())
+			return true;
+		return false;
+	}
+
 	;
 
 private:

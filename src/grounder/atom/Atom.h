@@ -222,6 +222,8 @@ public:
 	///Add a choice element
 	virtual void addChoiceElement(ChoiceElement* choiceElement){}
 	virtual void addSingleChoiceElement(Atom* atom){}
+	///Return true if the choice atom have the default guard ({}>=0)
+	virtual bool isDefaultGuard(){return false;}
 	/*****************************************************/
 
 	/******** Methods useful for Generic Atom ********/
