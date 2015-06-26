@@ -234,7 +234,7 @@ bool BackTrackingGrounder::next() {
 bool BackTrackingGrounder::foundAssignment() {
 	callFoundAssignment=true;
 	bool isAChoiceRule=currentRule->isChoiceRule();
-	bool head_true=(currentRule->getSizeHead() <= 1 || !isAChoiceRule) && (!ground_rule->areThereUndefinedAtomInBody());
+	bool head_true=(currentRule->getSizeHead() <= 1  && !isAChoiceRule) && (!ground_rule->areThereUndefinedAtomInBody());
 	bool ground_new_atom=false;
 	bool find_new_true_atom=false;
 	unsigned atom_counter=0;
