@@ -33,6 +33,11 @@ set_predicate ChoiceElement::getPredicatePositiveInNaf() {
 	return predicates;
 }
 
+void ChoiceElement::deleteAtoms() {
+	for(auto& atom:choiceElement)
+		delete atom;
+}
+
 }
 
 }
