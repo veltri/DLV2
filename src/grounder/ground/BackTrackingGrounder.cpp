@@ -586,12 +586,15 @@ void BackTrackingGrounder::groundChoice(bool& find_new_true_atom,bool& ground_ne
 		}else{
 			delete headGroundAtom;
 
-			//Check if previus is false now is true ground_new atom i have put true
+			//Check if previous is false now is true ground_new atom i have put true
 			ground_choice->addSingleChoiceElement(searchAtom);
 		}
-		ground_rule->setAtomInHead(0,ground_choice);
 
 	}
+	Atom* currentGroundChoice=ground_rule->getAtomInHead(0);
+	if(currentGroundChoice!=0)
+		delete currentGroundChoice;
+	ground_rule->setAtomInHead(0,ground_choice);
 }
 
 
