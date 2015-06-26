@@ -54,3 +54,22 @@ XBody::isGround() const
             return false;
     return true;
 }
+
+bool
+XBody::operator==(
+    const XBody& body ) const
+{
+    if( size() != body.size() )
+        return false;
+    for( unsigned i=0; i<literals.size(); i++ )
+        if( literals[i] != body.literals[i] )
+            return false;
+    return true;
+}
+
+bool
+XBody::operator!=(
+    const XBody& body ) const
+{
+    return !(*this == body);
+}

@@ -53,7 +53,7 @@ StickyJoinCheckingStrategy::TGDExpansion(
 {
     // First of all, add each rule of the input program to the
     // expanded rule set as an expanded rule labeled by the /emptyset.
-    for( XRule::const_iterator it=program.beginRules(); it!=program.endRules(); it++ )
+    for( XProgram::const_iterator it=program.beginRules(); it!=program.endRules(); it++ )
     {
         const XRule& rule = *it;
         XStickyExpandedRule* expandedRule = program.createStickyExpandedRule(rule);
@@ -66,7 +66,7 @@ StickyJoinCheckingStrategy::TGDExpansion(
     index_t deltaStart = 0;
     while( currMax > deltaStart )
     {
-        for( XRule::const_iterator rIt=program.beginRules(); rIt!=program.endRules(); rIt++ )
+        for( XProgram::const_iterator rIt=program.beginRules(); rIt!=program.endRules(); rIt++ )
         {
             for( index_t j=deltaStart; j<currMax; j++ )
             {
@@ -410,7 +410,7 @@ StickyJoinCheckingStrategy::SJMarking(
                         pair< typename unordered_set< XTerm >::const_iterator, bool > firstOccurrence = vars.insert(term);
                         if( firstOccurrence.second && !rule.isExistential(term) )
                         {
-                            const vector< XStickyCoordinates >& headPositions = expandedRules[i].getHeadPositions(term);
+                            const vector< XCoordinates >& headPositions = expandedRules[i].getHeadPositions(term);
                             bool hasToBeMarked = true;
                             // Each occurrence of 'term' in the body of the current rule must be marked if,
                             // given the set of its head positions 'S', a marked variable occurs at each position

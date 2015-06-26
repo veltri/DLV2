@@ -18,34 +18,34 @@
  */
 
 /* 
- * File:   XStickyTermMetadata.cpp
+ * File:   XTermMetadata.cpp
  * Author: pierfrancesco
  *
  * Created on 05 novembre 2014, 15.40
  */
 
-#include "XStickyTermMetadata.h"
+#include "XTermMetadata.h"
 
 using namespace std;
 using namespace DLV2::REWRITERS;
 
-XStickyTermMetadata::XStickyTermMetadata(
-    const XStickyTermMetadata& meta ):
+XTermMetadata::XTermMetadata(
+    const XTermMetadata& meta ):
         term(meta.term),
         nHeadOccurrences(meta.nHeadOccurrences),
         nBodyOccurrences(meta.nBodyOccurrences),
-        marked(meta.marked),
+        stickyMarked(meta.stickyMarked),
         headPositions(meta.headPositions),
         bodyPositions(meta.bodyPositions)
 {
 }
 
-XStickyTermMetadata::XStickyTermMetadata(
+XTermMetadata::XTermMetadata(
     const XTerm& t ):
         term(t),
         nHeadOccurrences(0),
         nBodyOccurrences(0),
-        marked(false),
+        stickyMarked(false),
         headPositions(),
         bodyPositions()
 {

@@ -78,12 +78,19 @@ namespace DB{
 
 namespace REWRITERS{
 
+    // Rewriters constants
+    #define QUERY_ANS "QUERY_ANS"
+    #define QUERY_PRED "QUERY_PRED"
+    #define BUFFER_MAX_LENGTH  1024
+    #define TARGET_PRED  "ansISO"
+
     // New types
     typedef size_t index_t;
-    struct XStickyCoordinates {
+    struct XCoordinates {
         unsigned atomPos;
         unsigned termPos;
     };
+    enum XTermType { Constant, ExistentialVariable, FrontierVariable, Variable };
 };
 
 };

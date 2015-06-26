@@ -25,8 +25,14 @@
  */
 
 #include "IsomorphismCheckByWasp.h"
+
 #include "../../util/Assert.h"
 #include "../../util/ErrorMessage.h"
+#include "../../util/Utils.h"
+#include "../../util/Constants.h"
+#include "../../util/Trace.h"
+#include "../../util/Options.h"
+
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -36,21 +42,6 @@
 #include <sstream>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <cstring>
-#include "../../util/Utils.h"
-
-namespace DLV2 { namespace REWRITERS{
-
-#define READ_FD   0
-#define WRITE_FD  1
-
-#define TO_CHILD_PIPE    0
-#define FROM_CHILD_PIPE  1
-
-#define BUFFER_MAX_LENGTH  1024
-
-#define TARGET_PRED  "ansISO"
-
-};};
 
 using namespace DLV2::REWRITERS;
 using namespace std;
@@ -219,27 +210,64 @@ IsomorphismCheckByWasp::areIsomorphic(
 }
 
 
-//std::pair< XMapping*, bool >
-//IsomorphismCheckByWasp::isHomomorphicTo(
-//    const vector< XAtom >& atoms1,
-//    const vector< XAtom >& atoms2 )
-//{
+std::pair< XMapping*, bool >
+IsomorphismCheckByWasp::isHomomorphicTo(
+    const vector< XAtom >& atomsLeftSide,
+    const vector< XAtom >& atomsRightSide )
+{
+    // If the atom sets do not have the same structure they are not homomorphic.
+    if( atomsLeftSide.size() != atomsRightSide.size() )
+    {
+        return pair< XMapping*, bool >(NULL,false);
+    }
+    for( unsigned i=0; i<atomsLeftSide.size(); i++ )
+    {
+        if( atomsLeftSide[i].getPredIndex() != atomsRightSide[i].getPredIndex()
+                || atomsLeftSide[i].getArity() != atomsRightSide[i].getArity() )
+        {
+            return pair< XMapping*, bool >(NULL,false);
+        }
+
+        const XAtomType& atomType1 = atomsLeftSide[i].getType();
+        const XAtomType& atomType2 = atomsRightSide[i].getType();
+        // If the current pair of atoms have two different constants in the same position
+        // they can't be homomorphic.
+        for( unsigned j=0; j<atomType1.getConstantPositions().size(); j++ )
+        {
+            if( atomsRightSide[i].getTerms().at(atomType1.getConstantPositions().at(j)).isConst() &&
+                    ( atomsLeftSide[i].getTerms().at(atomType1.getConstantPositions().at(j)) !=
+                    atomsRightSide[i].getTerms().at(atomType1.getConstantPositions().at(j)) ) )
+            {
+                return pair< XMapping*, bool >(NULL,false);
+            }
+        }
+
+        for( unsigned j=0; j<atomType2.getConstantPositions().size(); j++ )
+        {
+            if( atomsLeftSide[i].getTerms().at(atomType2.getConstantPositions().at(j)).isConst() &&
+                    ( atomsLeftSide[i].getTerms().at(atomType2.getConstantPositions().at(j)) !=
+                    atomsRightSide[i].getTerms().at(atomType2.getConstantPositions().at(j)) ) )
+            {
+                return pair< XMapping*, bool >(NULL,false);
+            }
+        }
+    }
 //    vector< XAtom > renamedAtoms1;
 //    vector< XAtom > renamedAtoms2;
 //    XMapping* inverseRenaming = renameInput(atoms1,renamedAtoms1,atoms2,renamedAtoms2);
-//
-//    // We are looking for an homomorphism. If there are more than one, the first one will be ok.
-//    bool onlyFirst = true;
-//    vector< XMapping* > homomorphisms = computeHomomorphisms(atoms1,atoms2,onlyFirst);
-//    assert_msg( homomorphisms.size() == 0 || homomorphisms.size() == 1, "Something went wrong" );
-//    if( homomorphisms.size() == 0 )
-//        return pair< XMapping*, bool >(NULL,false);
-//
+
+    // We are looking for an homomorphism. If there are more than one, the first one will be ok.
+    bool onlyFirst = true;
+    vector< XMapping* > homomorphisms = computeHomomorphisms(atomsLeftSide,atomsRightSide,onlyFirst);
+    assert_msg( homomorphisms.size() == 0 || homomorphisms.size() == 1, "Something went wrong" );
+    if( homomorphisms.size() == 0 )
+        return pair< XMapping*, bool >(NULL,false);
+
 //    XMapping* outputMapping = unrenameOutput(homomorphisms[0],inverseRenaming);
 //    delete homomorphisms[0];
 //    delete inverseRenaming;
-//    return pair< XMapping*, bool >(outputMapping,true);
-//}
+    return pair< XMapping*, bool >(homomorphisms[0],true);
+}
 
 pair< const XMapping*, bool >
 IsomorphismCheckByWasp::areUnifiable(
@@ -397,7 +425,10 @@ IsomorphismCheckByWasp::computeHomomorphisms(
     stringstream programToBeChecked;
     for( unsigned i=0; i<atoms1.size(); i++ )
     {
-        programToBeChecked << atoms1[i].getPredicateName() << "(";
+        assert_msg( atoms1[i].getPredicateName().size() > 0, "Empty predicate name." );
+        // Gringo does not accept predicate names starting with a capital letter.
+        programToBeChecked << (char)tolower(atoms1[i].getPredicateName().front())
+                << atoms1[i].getPredicateName().substr(1,string::npos) << "(";
         for( unsigned j=0; j<atoms1[i].getTerms().size(); j++ )
         {
             XMapping::iterator it = tetaDatabase.find(atoms1[i].getTerms().at(j));
@@ -432,7 +463,9 @@ IsomorphismCheckByWasp::computeHomomorphisms(
     vector< XTerm > queryTerms;
     for( unsigned i=0; i<atoms2.size(); i++ )
     {
-        queryBody << atoms2[i].getPredicateName() << "(";
+        assert_msg( atoms2[i].getPredicateName().size() > 0, "Empty predicate name." );
+        queryBody << (char)tolower(atoms2[i].getPredicateName().front())
+                << atoms2[i].getPredicateName().substr(1,string::npos) << "(";
         for( unsigned j=0; j<atoms2[i].getTerms().size(); j++ )
         {
             if( atoms2[i].getTerms().at(j).isConst() )
@@ -475,13 +508,12 @@ IsomorphismCheckByWasp::computeHomomorphisms(
     }
     programToBeChecked << ") :- " << queryBody.str();
 
-//    cout << "Input: " << endl << programToBeChecked.str() << endl;
-
+    trace_msg( rewriting, 4, "Homomorphism check - the input program is: " << programToBeChecked.str() );
     char outputBuffer[BUFFER_MAX_LENGTH];
     // Gringo is used to get a ground version of the input program.
-    executeExternalProgram("./wasp/gringo",programToBeChecked.str(),outputBuffer,BUFFER_MAX_LENGTH);
+    Utils::systemCallTo("./executables/gringo",programToBeChecked.str(),outputBuffer,BUFFER_MAX_LENGTH);
     // The output of gringo is sent to wasp.
-    executeExternalProgram("./wasp/wasp",string(outputBuffer),outputBuffer,BUFFER_MAX_LENGTH);
+    Utils::systemCallTo("./executables/wasp",string(outputBuffer),outputBuffer,BUFFER_MAX_LENGTH);
 
     // If the model returned by wasp contains at least an occurrence of TARGET_PRED,
     // then there exists an homomorphism between atom1 and atom2.
@@ -532,98 +564,6 @@ IsomorphismCheckByWasp::computeHomomorphisms(
         hList.push_back(h);
     }
     return hList;
-}
-
-void
-IsomorphismCheckByWasp::executeExternalProgram(
-    const char* executable,
-    const string& input,
-    char outputBuffer[],
-    size_t outputBufferSize ) const
-{
-    // The main process has to be split in order to execute the external program.
-
-    // Create 2 pipes between the two processes:
-    // - the former will be exploited to send the input program to wasp,
-    // - the latter to read the result from wasp.
-    int pipesEnds[2][2];
-    if ( pipe(pipesEnds[TO_CHILD_PIPE]) == -1
-            || pipe (pipesEnds[FROM_CHILD_PIPE]) == -1 )
-    {
-        perror("pipe failed");
-        ErrorMessage::errorGeneric("An error has occurred");
-    }
-
-    pid_t pid = fork();
-
-    if( pid < 0 )
-    {
-        perror("fork failed");
-        ErrorMessage::errorGeneric("An error has occurred");
-    }
-    else if ( pid == 0 )
-    {
-        // This is the code the child runs
-
-        // Close the useless pipes' ends
-        close(pipesEnds[TO_CHILD_PIPE][WRITE_FD]);
-        close(pipesEnds[FROM_CHILD_PIPE][READ_FD]);
-
-        close(STDIN_FILENO);
-        dup2(pipesEnds[TO_CHILD_PIPE][READ_FD], STDIN_FILENO);
-        close(pipesEnds[TO_CHILD_PIPE][READ_FD]);
-
-        close(STDOUT_FILENO);
-        dup2(pipesEnds[FROM_CHILD_PIPE][WRITE_FD], STDOUT_FILENO);
-        close(pipesEnds[FROM_CHILD_PIPE][WRITE_FD]);
-
-        execl(executable,executable,(char*)0);
-
-        // The call to function execv should substitute the child process
-        // by the program argv[0], thus if the following code were executed
-        // an error would have occurred.
-        perror(executable);
-        ErrorMessage::errorGeneric("An error has occurred");
-    }
-    else
-    {
-        // This is the code the parent runs
-
-        // Close the useless pipes' ends
-        close(pipesEnds[TO_CHILD_PIPE][READ_FD]);
-        close(pipesEnds[FROM_CHILD_PIPE][WRITE_FD]);
-
-        // Write to child’s stdin
-        ssize_t code = write(pipesEnds[TO_CHILD_PIPE][WRITE_FD],input.c_str(),input.length());
-        if( code < 0 )
-        {
-            perror(executable);
-            ErrorMessage::errorGeneric("An error has occurred while sending child a message");
-        }
-        // The child process needs EOF to complete its work.
-        close(pipesEnds[TO_CHILD_PIPE][WRITE_FD]);
-        // The parent process needs the child process to compute the result before reading the answer.
-        int status;
-        wait(&status);
-
-        if( status == 0 )
-        {
-            // Now read from the pipe
-            int count = read(pipesEnds[FROM_CHILD_PIPE][READ_FD], outputBuffer, outputBufferSize);
-            if (count >= 0)
-            {
-                outputBuffer[count] = '\0';
-//                cout << outputBuffer;
-            }
-            else
-                ErrorMessage::errorGeneric("IO Error");
-        }
-        else
-            ErrorMessage::errorGeneric("IO Error");
-
-        // Close the remaining end
-        close(pipesEnds[FROM_CHILD_PIPE][READ_FD]);
-    }
 }
 
 vector< XMapping* >

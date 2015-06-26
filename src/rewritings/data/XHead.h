@@ -53,6 +53,9 @@ namespace DLV2{ namespace REWRITERS{
         virtual bool isDisjunctive() const = 0;
         virtual bool isConjunctive() const = 0;
 
+        bool operator==( const XHead& head ) const;
+        bool operator!=( const XHead& head ) const;
+
     protected:
         friend class XProgram;
 

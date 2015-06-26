@@ -29,7 +29,7 @@ namespace DLV2{ namespace REWRITERS{
     private:
         friend class XAtom;
 
-        XAtomType() { }
+        XAtomType(): schema(), constantPositions(), variablePositions(), nullPositions() { }
 
         void addToSchema( const XTerm::Type& type ){ schema.push_back(type); }
         void addToConstantPositions( unsigned pos ) { constantPositions.push_back(pos); }

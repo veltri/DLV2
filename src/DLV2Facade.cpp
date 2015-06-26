@@ -18,6 +18,7 @@
  */
 
 #include "DLV2Facade.h"
+
 #include "util/Assert.h"
 #include "util/ErrorMessage.h"
 #include "util/DBConnection.h"
@@ -30,7 +31,8 @@
 #include "dlvdb_src/DLVDBFacade.h"
 #include "rewritings/input/ParserConstraintDatalogPM.h"
 #include "rewritings/input/XRewriteInputBuilder.h"
-#include "rewritings/DLVXFacade.h"
+#include "rewritings/algorithms/XRewrite.h"
+#include "rewritings/output/IRISOutputBuilder.h"
 
 //extern Buffer theBuffer;
 
@@ -111,9 +113,10 @@ DLV2Facade::readInput()
             "Null input-builder, cannot start the parsing process.");
     director.configureBuilder(builder);
            
-    clock_t start = clock();
+    auto stime = std::chrono::high_resolution_clock::now();
     int error = director.parse(getOptions().getInputFiles());
-    parserDuration = ( clock() - start ) / (double) CLOCKS_PER_SEC;
+    auto etime = std::chrono::high_resolution_clock::now();
+    parserDuration = ( etime - stime );
     
     return error;
 }
@@ -167,11 +170,21 @@ DLV2Facade::solve()
             if( simpleBuilder->getQuery() )
                 cout << *(simpleBuilder->getQuery()) << "?" << endl;
         }
+        else if( getOptions().getInputBuilderPolicy() == BUILDER_DATALOGPM )
+        {
+            XRewriteInputBuilder* xInputBuilder = static_cast<XRewriteInputBuilder*>(builder);
+            XProgram* program = xInputBuilder->getProgram();
+            assert_msg( program != NULL, "Null input program" );
+
+            IRISOutputBuilder outputBuilder(*program);
+            cout << outputBuilder.toString();
+            delete program;
+        }
         else
             ErrorMessage::errorGeneric( "Not valid solver to print the input program! Bye" );
     }
         
-    if( getOptions().getPrintDepGraph() )
+    else if( getOptions().getPrintDepGraph() )
     {
         if( getOptions().getInputBuilderPolicy() == BUILDER_DEPGRAPH )
         {
@@ -184,7 +197,7 @@ DLV2Facade::solve()
             ErrorMessage::errorGeneric( "Not valid solver to print the dependency graph! Bye" );
     }
     
-    if( getOptions().getInputBuilderPolicy() == BUILDER_DLV_DB )
+    else if( getOptions().getInputBuilderPolicy() == BUILDER_DLV_DB )
     {
         DBInputBuilder* dbInputBuilder = static_cast<DBInputBuilder*>(builder);
         DBProgram* program = dbInputBuilder->getProgram();
@@ -203,23 +216,63 @@ DLV2Facade::solve()
             delete program;
     }
     
-    if( getOptions().getInputBuilderPolicy() == BUILDER_DATALOGPM )
+    else if( getOptions().getInputBuilderPolicy() == BUILDER_DATALOGPM )
     {
         XRewriteInputBuilder* xInputBuilder = static_cast<XRewriteInputBuilder*>(builder);
         XProgram* program = xInputBuilder->getProgram();
         assert_msg( program != NULL, "Null input program" );
+        if( program->getQuery() == NULL )
+            ErrorMessage::errorGeneric("No query supplied. Cannot continue.");
 
-        DLVXFacade dlvxFacade(*program);
+        trace_action( rewriting, 1,
+                trace_tag( cerr, rewriting, 1 );
+                cerr << "The input program is: " << endl << *program << endl;
+                if( program->getQuery() != NULL )
+                {
+                    trace_tag( cerr, rewriting, 1 );
+                    cerr << "The input query is: " << endl;
+                    trace_tag( cerr, rewriting, 1 );
+                    cerr << "\t" << *program->getQuery() << "?" << endl;
+                }
+                if( program->beginQueryRules() != program->endQueryRules() )
+                {
+                    trace_tag( cerr, rewriting, 1 );
+                    cerr << "Query rules are: " << endl;
+                    for( XProgram::const_iterator it = program->beginQueryRules(); it != program->endQueryRules(); it++ )
+                    {
+                        trace_tag( cerr, rewriting, 1 );
+                        cerr << "\t" << *it << endl;
+                    }
+                }
+            );
 
-        dlvxFacade.solve();
 
+        RewritingAlgorithm* rewritingAlgorithm = new XRewrite(*program);
+        vector< XRule* > rewriting = rewritingAlgorithm->rewrite();
+
+        trace_action( rewriting, 1,
+                trace_tag( cerr, rewriting, 1 );
+                cerr << "The final rewriting is: " << endl;
+                for( index_t i=0; i<rewriting.size(); i++ )
+                {
+                    trace_tag( cerr, rewriting, 1 );
+                    cerr << "\t" << *rewriting[i] << endl;
+                }
+            );
+
+        if( getOptions().getPrintStatistics() )
+            rewritingAlgorithm->printStatistics();
+
+        for( index_t i =0; i<rewriting.size(); i++ )
+            delete rewriting[i];
+        delete rewritingAlgorithm;
         delete program;
     }
 
     if( getOptions().getPrintStatistics() )
     {
         cerr << endl << "***FINAL STATISTICS***" << endl;
-        cerr << "Parsing time: " << parserDuration << "s" << endl;
+        cerr << "Parsing time: " << parserDuration.count()/1000 << "s" << endl;
     }
     
 }

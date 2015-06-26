@@ -77,3 +77,37 @@ XLiteral::operator!=(
 {
     return !(*this == literal);
 }
+
+bool
+XLiteral::operator<(
+    const XLiteral& literal ) const
+{
+    if( (isNegative && literal.isNegative) ||
+            (!isNegative && !literal.isNegative) )
+        return atom < literal.atom;
+    if( isNegative )
+        return false;
+    else
+        return true;
+}
+
+bool
+XLiteral::operator<=(
+    const XLiteral& literal ) const
+{
+    return ( *this < literal || *this == literal );
+}
+
+bool
+XLiteral::operator>(
+    const XLiteral& literal ) const
+{
+    return !( *this <= literal );
+}
+
+bool
+XLiteral::operator>=(
+    const XLiteral& literal ) const
+{
+    return !( *this < literal );
+}

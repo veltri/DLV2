@@ -26,6 +26,8 @@
 
 #include "XTerm.h"
 
+#include <sstream>
+
 using namespace std;
 using namespace DLV2::REWRITERS;
 
@@ -77,4 +79,54 @@ XTerm::operator=(
     text = term.text;
     type = term.type;
     return *this;
+}
+
+bool
+XTerm::operator<(
+    const XTerm& term ) const
+{
+    stringstream t1;
+    stringstream t2;
+    if( getType() == Integer )
+        t1 << value;
+    else
+        t1 << text;
+    if( term.getType() == Integer )
+        t2 << term.value;
+    else
+        t2 << term.text;
+
+    return t1.str() < t2.str();
+}
+
+bool
+XTerm::operator<=(
+    const XTerm& term ) const
+{
+    stringstream t1;
+    stringstream t2;
+    if( getType() == Integer )
+        t1 << value;
+    else
+        t1 << text;
+    if( term.getType() == Integer )
+        t2 << term.value;
+    else
+        t2 << term.text;
+
+    return t1.str() <= t2.str();
+}
+
+bool
+XTerm::operator >(
+    const XTerm& term ) const
+{
+    return !( *this <= term );
+}
+
+bool
+XTerm::operator>=(
+    const XTerm& term ) const
+{
+    return !( *this < term );
 }

@@ -53,9 +53,9 @@ namespace DLV2{ namespace REWRITERS{
          * such that atomsLeftSide = h(atomsRightSide).
          * @return whether such a condition holds and the eventual homomorphism computed
          */
-//        virtual std::pair< XMapping*, bool > isHomomorphicTo(
-//                const std::vector< XAtom >& atomsLeftSide,
-//                const std::vector< XAtom >& atomsRightSide );
+        virtual std::pair< XMapping*, bool > isHomomorphicTo(
+                const std::vector< XAtom >& atomsLeftSide,
+                const std::vector< XAtom >& atomsRightSide );
         /** Check whether these two sets of atoms are unifiable. Notice that 'atoms1' is
          * assumed to be part of 'rule1'. The same holds for 'atoms1' and 'rule2'.
          * @return Whether such a condition holds and the eventual MGU computed.
@@ -90,17 +90,6 @@ namespace DLV2{ namespace REWRITERS{
                 const std::vector< XAtom >& atomsLeftSide,
                 const std::vector< XAtom >& atomsRightSide,
                 bool onlyFirst ) const;
-        /** Execute an external program between Gringo and Wasp by means of a system call.
-         * @param executable The name of the program to be executed
-         * @param input The input to the program to be executed
-         * @param outputBuffer The output buffer for such an execution
-         * @param outputBufferSize The size of such a buffer
-         */
-        void executeExternalProgram(
-                const char* executable,
-                const std::string& input,
-                char outputBuffer[],
-                size_t outputBufferSize ) const;
         /** Parse the model returned by wasp in order to extract the homomorphisms
          * given by eventual atoms of the query predicate which belong to the model.
          * @param termsMapped the term set containing variables to be mapped
@@ -153,8 +142,7 @@ namespace DLV2{ namespace REWRITERS{
          * @param renamedAtoms1 the first atom set is renamed and returned as output
          * @param inputAtoms2 the second atom set to be renamed
          * @param renamedAtoms2 the second atom set is renamed and returned as output
-         * @return a mapping to invert the renaming, the caller has to take care of
-         * destroying such a mapping;
+         * @return a mapping to invert the renaming;
          */
         std::pair< const XMapping&, const XRule& > renameInput(
                 const XRule& rule );

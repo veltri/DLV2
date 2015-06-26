@@ -26,18 +26,34 @@
 
 #include "DLVXFacade.h"
 
+#include "algorithms/XRewrite.h"
+
 using namespace std;
 using namespace DLV2::REWRITERS;
 
 void
 DLVXFacade::solve()
 {
-    // TODO
-    cout << program << endl;
+    //    if( inputClassChecker->check() )
+    //        cout << "Sticky join" << endl;
+    //    else
+    //        cout << "Not Sticky join" << endl;
+    cout << "The input program is: " << endl << program << endl;
     if( program.getQuery() != NULL )
-        cout << *program.getQuery() << endl;
-    if( inputClassChecker->check() )
-        cout << "Sticky join" << endl;
-    else
-        cout << "Not Sticky join" << endl;
+        cout << "The input query is: " << *program.getQuery() << "?" << endl << endl;
+    if( program.beginQueryRules() != program.endQueryRules() )
+    {
+        cout << "The computed query rules are: " << endl;
+        for( XProgram::const_iterator it = program.beginQueryRules(); it != program.endQueryRules(); it++ )
+            cout << *it << endl;
+    }
+    cout << endl;
+    XRewrite rewriteAlgorithm(program);
+    vector< XRule* > rewriting = rewriteAlgorithm.rewrite();
+    cout << "The final rewriting is: " << endl;
+    for( index_t i=0; i<rewriting.size(); i++ )
+        cout << *rewriting[i] << endl;
+
+    for( index_t i =0; i<rewriting.size(); i++ )
+        delete rewriting[i];
 }

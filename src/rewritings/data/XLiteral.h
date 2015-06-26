@@ -38,9 +38,13 @@ namespace DLV2{ namespace REWRITERS{
         ~XLiteral();
 
         const XAtom& getAtom() const { return atom; }
+        index_t getPredIndex() const { return getAtom().getPredIndex(); }
+        const std::string& getPredicateName() const { return getAtom().getPredicateName(); }
+        unsigned getArity() const { return getAtom().getArity(); }
+        const std::vector< XTerm >& getTerms() const { return getAtom().getTerms(); }
+        bool isGround() const { return getAtom().isPropositional(); }
+        bool isPropositional() const { return getAtom().isPropositional(); }
         bool isNaf() const { return isNegative; }
-        bool isPropositional() const { return atom.isPropositional(); }
-        bool isGround() const { return atom.isGround(); }
         /** Determines if this XLiteral can save others.
          * No, this is not the beginning of a religion.
          * @return true whether this can provide safety.
@@ -48,6 +52,10 @@ namespace DLV2{ namespace REWRITERS{
         bool isSaviour() const;
         bool operator==( const XLiteral& literal ) const;
         bool operator!=( const XLiteral& literal ) const;
+        bool operator<( const XLiteral& literal ) const;
+        bool operator<=( const XLiteral& literal ) const;
+        bool operator>( const XLiteral& literal ) const;
+        bool operator>=( const XLiteral& literal ) const;
 
     private:
         friend inline std::ostream& operator<< ( std::ostream&, const XLiteral& );

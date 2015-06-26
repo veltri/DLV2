@@ -37,7 +37,16 @@ namespace DLV2
             std::cout << "usage: " << exec << " {OPTIONS} [filename [filename [...]]]" << std::endl;
             std::cout << separator << std::endl;
 
-            std::cout << "Input options                         " << std::endl << std::endl;
+            #ifdef TRACE_ON
+            std::cout << "Trace options                          " << std::endl << std::endl;
+            std::cout << "--trace-parser=<verbosity>             - Trace parser." << std::endl;
+            std::cout << "--trace-sticky-join-check=<verbosity>  - Trace the check of sticky-joiness on the input." << std::endl;
+            std::cout << "--trace-rewriting=<verbosity>          - Trace rewriting." << std::endl;
+            std::cout << separator << std::endl;
+            #endif
+
+
+            std::cout << "Input options                          " << std::endl << std::endl;
             std::cout << "--aspcore2strict                       - Enable \"strict\" AspCore2 format as input." << std::endl;
             std::cout << "--inmemory                             - Enable the input builder for the in-memory version. (default choice)" << std::endl;
             std::cout << "--dlv-db                               - Enable the input builder for the DB-based version." << std::endl;
@@ -58,7 +67,7 @@ namespace DLV2
             std::cout << "--db-pwd=[db_password]                 - Set the password to have access to the database." << std::endl;
             std::cout << separator << std::endl;
             
-            std::cout << "General options                     " << std::endl << std::endl;
+            std::cout << "General options                        " << std::endl << std::endl;
             std::cout << "--help                                 - Print this guide and exit." << std::endl;
             std::cout << "--stdin                                - Read input from standard input." << std::endl;
         }

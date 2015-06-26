@@ -76,3 +76,23 @@ XHead::isGround() const
             return false;
     return true;
 }
+
+bool
+XHead::operator==(
+    const XHead& head ) const
+{
+    if( size() != head.size() )
+        return false;
+    for( unsigned i=0; i<atoms.size(); i++ )
+        if( atoms[i] != head.atoms[i] )
+            return false;
+    return true;
+}
+
+bool
+XHead::operator!=(
+    const XHead& head ) const
+{
+    return !(*this == head);
+}
+

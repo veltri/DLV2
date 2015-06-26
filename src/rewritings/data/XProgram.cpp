@@ -25,12 +25,17 @@
  */
 
 #include "XProgram.h"
+
 #include "XAtomicHead.h"
 #include "XDisjunctiveHead.h"
 #include "XConjunctiveHead.h"
 #include "XStickyLabel.h"
 #include "XStickyExpandedRule.h"
+#include "XPartition.h"
+#include "XPieceUnifier.h"
 #include "../../util/ErrorMessage.h"
+#include "../../util/Trace.h"
+#include "../../util/Options.h"
 
 using namespace std;
 using namespace DLV2::REWRITERS;
@@ -44,7 +49,9 @@ XProgram::XProgram():
         predicateToRulesMapping(),
         varsCounter(0),
         query(NULL),
-        queryRules()
+        queryRules(),
+        propagationGraph(),
+        nonTemporaryRulesSize(-1)
 {
 }
 
@@ -57,7 +64,9 @@ XProgram::XProgram(
         hasConjunction(program.hasConjunction),
         predicateToRulesMapping(program.predicateToRulesMapping),
         varsCounter(program.varsCounter),
-        queryRules(program.queryRules)
+        queryRules(program.queryRules),
+        propagationGraph(program.propagationGraph),
+        nonTemporaryRulesSize(program.nonTemporaryRulesSize)
 {
     if( program.query != NULL )
     {
@@ -194,6 +203,13 @@ XProgram::createStickyLabel(
     return new XStickyLabel(expRuleIndex,atom);
 }
 
+XTermMetadata*
+XProgram::createStickyTermMetadata(
+    const XTerm& term ) const
+{
+    return new XTermMetadata(term);
+}
+
 XStickyExpandedRule*
 XProgram::createStickyExpandedRule(
     const XRule& rule ) const
@@ -208,6 +224,30 @@ XProgram::createStickyUnifier(
     const XMapping& subst ) const
 {
     return new XStickyUnifier(headAt,bodyAt,subst);
+}
+
+XEquivalenceClass*
+XProgram::createEquivalenceClass()
+{
+    return new XEquivalenceClass(*this);
+}
+
+XPartition*
+XProgram::createPartition()
+{
+    return new XPartition(*this);
+}
+
+XPieceUnifier*
+XProgram::createPieceUnifier(
+    const std::vector< XAtom >& q,
+    const std::vector< XAtom >& h,
+    XPartition* p,
+    const XRule& query,
+    const XRule& rule,
+    const std::unordered_set< unsigned >& subQueryAtomPos ) const
+{
+    return new XPieceUnifier(q,h,p,query,rule,subQueryAtomPos);
 }
 
 void
@@ -230,7 +270,7 @@ XProgram::addRule(
     }
     else
     {
-        XRule::iterator rIt = rules.insert(rules.end(),r);
+        iterator rIt = rules.insert(rules.end(),r);
 
         // Add the current rule to the ruleSets of its head predicates
         const XHead* head = r.getHead();
@@ -243,6 +283,47 @@ XProgram::addRule(
             hasDisjunction = true;
         else if( r.hasConjunctiveHead() )
             hasConjunction = true;
+    }
+}
+
+XProgram::const_iterator
+XProgram::addTemporaryRule(
+    const XRule& r )
+{
+    trace_msg( rewriting, 3, "Adding temporary rule: " << r );
+    if( nonTemporaryRulesSize == -1 )
+    {
+        trace_msg( rewriting, 3, "Old rules size was " << rules.size() );
+        nonTemporaryRulesSize = rules.size();
+    }
+
+    // First of all, check its safety!!!
+    try
+    {
+        checkSafety(r);
+    }
+    catch( XSafetyException& exc )
+    {
+        ErrorMessage::errorDuringParsing(exc.what());
+    }
+    assert_msg( !(r.hasAtomicHead() && r.getBody() == NULL && r.isGround()), "Temporary facts not allowed" );
+    const_iterator rIt = rules.insert(rules.end(),r);
+    trace_msg( rewriting, 3, "New rules size is: " << rules.size() );
+    return rIt;
+}
+
+void
+XProgram::eraseTemporaryRules()
+{
+    // How many rules are to be erased?
+    if( nonTemporaryRulesSize != -1 )
+    {
+        unsigned rulesToBeErased = rules.size()-nonTemporaryRulesSize;
+        trace_msg( rewriting, 3, "Erasing temporary rules, rules size = " << rules.size()
+                << ", rulesToBeErased = " << rulesToBeErased );
+        for( unsigned i=0; i<rulesToBeErased; i++ )
+            rules.pop_back();
+        nonTemporaryRulesSize = -1;
     }
 }
 
@@ -264,7 +345,7 @@ XProgram::addPredicate(
     unsigned arity,
     bool internal )
 {
-    assert_msg( arity > 0, "Propositional atoms are not allowed" );
+//    assert_msg( arity > 0, "Propositional atoms are not allowed" );
     pair< index_t, bool > res = predicates.add(name,arity,internal);
     return res;
 }
@@ -272,14 +353,14 @@ XProgram::addPredicate(
 void
 XProgram::computeQueryRules()
 {
-    if( query != NULL )
+    if( query != NULL && queryRulesSize() == 0 )
     {
         // Look up rules with the query predicate in their atomic head.
         // Every of these should be considered as query rule, so they
         // are not part of the input program.
         bool ok = true;
-        vector< XRule::iterator > rulesToBeMoved;
-        for( XRule::iterator it=rules.begin(); it!=rules.end() && ok; it++ )
+        vector< iterator > rulesToBeMoved;
+        for( iterator it=rules.begin(); it!=rules.end() && ok; it++ )
         {
             assert_msg( it->getHead() != NULL, "Null head" );
             if( it->hasAtomicHead() )
@@ -316,7 +397,7 @@ XProgram::computeQueryRules()
             // Move rules to 'queryRules'.
             for( unsigned i=0; i<rulesToBeMoved.size(); i++ )
             {
-                XRule::iterator qIt = queryRules.insert(queryRules.end(),*rulesToBeMoved[i]);
+                iterator qIt = queryRules.insert(queryRules.end(),*rulesToBeMoved[i]);
                 rules.erase(rulesToBeMoved[i]);
                 addToPredicateRuleSet(query->getPredIndex(),qIt);
             }
@@ -325,6 +406,7 @@ XProgram::computeQueryRules()
             cout << "Warning: added an atomic query whose predicate appears either "
                     "in the non-atomic head or in the body of a rule" << endl;
     }
+    computePropagationGraph();
 }
 
 const string&
@@ -341,7 +423,7 @@ XProgram::getPredicateArity(
     return predicates.getArity(predIndex);
 }
 
-const XRulePointersCollection&
+const XProgram::XRulePointers&
 XProgram::getPredicateRulePointers(
     index_t predIndex ) const
 {
@@ -353,21 +435,21 @@ XProgram::getPredicateRulePointers(
 bool
 XProgram::addToPredicateRuleSet(
     index_t predIndex,
-    XRule::const_iterator ruleIt )
+    const_iterator ruleIt )
 {
     XPredicateToXRulesetMap::iterator it = predicateToRulesMapping.find(predIndex);
     if( it == predicateToRulesMapping.end() )
     {
-        XRulePointersCollection rulePointers;
-        rulePointers.pushRulePointer(ruleIt);
-        pair< index_t, const XRulePointersCollection& > newMapping(predIndex,rulePointers);
+        XRulePointers rulePointers;
+        rulePointers.pushItem(ruleIt);
+        pair< index_t, const XRulePointers& > newMapping(predIndex,rulePointers);
         pair< XPredicateToXRulesetMap::const_iterator, bool > insResult =
                 predicateToRulesMapping.insert(newMapping);
         return insResult.second;
     }
     else
     {
-        return it->second.pushRulePointer(ruleIt);
+        return it->second.pushItem(ruleIt);
     }
 }
 
@@ -417,4 +499,48 @@ XProgram::checkSafety(
             }
         }
     }
+}
+
+void
+XProgram::updatePropagationGraph(
+    const_iterator ruleIt,
+    index_t ruleIndex )
+{
+    const XHead* head = ruleIt->getHead();
+    assert_msg( head != NULL, "Null head" );
+    const XBody* body = ruleIt->getBody();
+    if( body != NULL )
+    {
+        for( unsigned i=0; i<head->size(); i++ )
+        {
+            const XAtom& currAtom = head->at(i);
+            for( unsigned j=0; j<currAtom.getTerms().size(); j++ )
+            {
+                const XTerm& currTerm = currAtom.getTerms().at(j);
+                stringstream sDest;
+                sDest << currAtom.getPredicateName() << "_" << j;
+                const vector< XCoordinates >& bodyPositions = ruleIt->getBodyPositions(currTerm);
+                for( unsigned k=0; k<bodyPositions.size(); k++ )
+                {
+                    unsigned atomCoord = bodyPositions[k].atomPos;
+                    unsigned termCoord = bodyPositions[k].termPos;
+                    assert_msg( atomCoord < body->size(), "Index out of range" );
+                    assert_msg( termCoord < body->at(atomCoord).getAtom().getTerms().size(), "Index out of range" );
+                    stringstream sSrc;
+                    sSrc << body->at(atomCoord).getAtom().getPredicateName() << "_" << termCoord;
+                    propagationGraph.addEdge(sSrc.str(),sDest.str(),ruleIndex);
+                }
+            }
+        }
+    }
+}
+
+void
+XProgram::computePropagationGraph()
+{
+    index_t ruleIdx = 0;
+    for( const_iterator rIt = beginRules(); rIt != endRules(); rIt++ )
+        updatePropagationGraph(rIt,ruleIdx++);
+//    // Add a noose with the same label to each vertex. Notice that such a label does not match any rule index.
+//    propagationGraph.addNooses(ruleIdx);
 }

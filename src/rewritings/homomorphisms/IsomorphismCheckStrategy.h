@@ -40,9 +40,9 @@ namespace DLV2{ namespace REWRITERS{
         virtual std::pair< XMapping*, bool > areIsomorphic(
                 const XRule& rule1,
                 const XRule& rule2 ) = 0;
-//        virtual std::pair< XMapping*, bool > isHomomorphicTo(
-//                const std::vector< XAtom >& atomsLeftSide,
-//                const std::vector< XAtom >& atomsRightSide ) = 0;
+        virtual std::pair< XMapping*, bool > isHomomorphicTo(
+                const std::vector< XAtom >& atomsLeftSide,
+                const std::vector< XAtom >& atomsRightSide ) = 0;
         virtual std::pair< const XMapping*, bool > areUnifiable(
                 const std::vector< XAtom >& atoms1,
                 const XRule& rule1,

@@ -29,44 +29,62 @@
 
 #include "XHead.h"
 #include "XBody.h"
-#include <list>
+#include <unordered_map>
+#include "XTermMetadata.h"
 
 namespace DLV2{ namespace REWRITERS{
 
     class XRule {
     public:
-        typedef std::list< XRule >::iterator iterator;
-        typedef std::list< XRule >::const_iterator const_iterator;
-
         XRule( const XRule& rule );
         ~XRule();
 
         const XHead* getHead() const { return head; }
         const XBody* getBody() const { return body; }
-        bool isExistential( const XTerm& var ) const;
+//        XHead* getHeadForModification() const { return head; }
+//        XBody* getBodyForModification() const { return body; }
         bool hasNegation();
         bool hasAtomicHead() const;
         bool hasDisjunctiveHead() const;
         bool hasConjunctiveHead() const;
-        bool hasExistentialVariables() const { return existVars.size() > 0; }
+        bool hasExistentialVariables() const { return hasExistentialVars; }
+        bool hasFrontierVariables() const { return hasFrontierVars; }
         bool isRecursive() const;
         bool isGround() const;
 
+        bool isExistential( const XTerm& var ) const;
+        bool isFrontier( const XTerm& var ) const;
+        const std::vector< XCoordinates >& getHeadPositions( const XTerm& term ) const;
+        const std::vector< XCoordinates >& getBodyPositions( const XTerm& term ) const;
+        unsigned getHeadOccurrences( const XTerm& term ) const;
+        unsigned getBodyOccurrences( const XTerm& term ) const;
+        bool isMarked( const XTerm& term ) const;
+        void markVariable( const XTerm& term );
+
+        bool operator==( const XRule& rule ) const;
+        bool operator!=( const XRule& rule ) const;
+
     private:
+        typedef std::unordered_map< XTerm, XTermMetadata > XTermMetadataMap;
+
         friend inline std::ostream& operator<< ( std::ostream&, const XRule& );
         friend class XProgram;
 
-        XRule(): head(NULL), body(NULL), existVars(), naf(false), recursive(false) { assert(0); }
+        XRule();
         XRule( XHead* head, XBody* body );
         // The recursive flag could be set after that the dependency graph
         // has been computed, hence after the creation of the rule itself.
         void setRecursive( bool rec ) { recursive = rec; }
+        // The existential variables are located only after the safety check is carried out.
+        void setExistential( bool ex ) { hasExistentialVars = ex; }
 
         XHead* head;
         XBody* body;
-        std::unordered_set< XTerm > existVars;
+        XTermMetadataMap termsMetadata;
         int naf;
         int recursive;
+        bool hasExistentialVars;
+        bool hasFrontierVars;
 
     };
 
@@ -138,17 +156,6 @@ namespace std {
             return h;
         }
     };
-
-    template <>
-    struct hash< DLV2::REWRITERS::XRule::const_iterator >
-    {
-        size_t operator()( const DLV2::REWRITERS::XRule::const_iterator& it ) const
-        {
-            std::hash< DLV2::REWRITERS::XRule > ruleHasher;
-            return ruleHasher(*it);
-        }
-    };
 };
-
 
 #endif /* XRULE_H */

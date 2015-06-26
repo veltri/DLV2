@@ -31,37 +31,33 @@
 #include "XRandomAccessSet.h"
 #include "XRule.h"
 #include "XStickyLabel.h"
-#include "XStickyTermMetadata.h"
-#include <unordered_map>
 
 namespace DLV2{ namespace REWRITERS{
 
     class XStickyExpandedRule {
     public:
-        XStickyExpandedRule( const XStickyExpandedRule& expRule );
+        XStickyExpandedRule( const XStickyExpandedRule& expRule ): rule(expRule.rule), labels(expRule.labels) { }
         ~XStickyExpandedRule() { }
 
         const XRule& getRule() const { return rule; }
         const XRandomAccessSet< XStickyLabel >& getLabels() const { return labels; }
         void addLabel( const XStickyLabel& label ) { labels.pushItem(label); }
 
-        const std::vector< XStickyCoordinates >& getHeadPositions( const XTerm& term ) const;
-        const std::vector< XStickyCoordinates >& getBodyPositions( const XTerm& term ) const;
-        unsigned getHeadOccurrences( const XTerm& term ) const;
-        unsigned getBodyOccurrences( const XTerm& term ) const;
-        bool isMarked( const XTerm& term ) const;
-        void markVariable( const XTerm& term );
+        const std::vector< XCoordinates >& getHeadPositions( const XTerm& term ) const { return rule.getHeadPositions(term); }
+        const std::vector< XCoordinates >& getBodyPositions( const XTerm& term ) const { return rule.getBodyPositions(term); }
+        unsigned getHeadOccurrences( const XTerm& term ) const { return rule.getHeadOccurrences(term); }
+        unsigned getBodyOccurrences( const XTerm& term ) const { return rule.getBodyOccurrences(term); }
+        bool isMarked( const XTerm& term ) const { return rule.isMarked(term); }
+        void markVariable( const XTerm& term ) { rule.markVariable(term); }
 
     private:
-        typedef std::unordered_map< XTerm, XStickyTermMetadata > XStickyTermMetadataMap;
         friend inline std::ostream& operator<< ( std::ostream&, const XStickyExpandedRule& );
         friend class XProgram;
 
-        XStickyExpandedRule( const XRule& rul );
+        XStickyExpandedRule( const XRule& rul ): rule(rul), labels() { }
 
         XRule rule;
         XRandomAccessSet< XStickyLabel > labels;
-        XStickyTermMetadataMap termsMetadata;
 
     };
 

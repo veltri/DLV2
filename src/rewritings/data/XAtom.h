@@ -52,6 +52,10 @@ namespace DLV2{ namespace REWRITERS{
         bool isPropositional() const { return terms.size() == 0; }
         bool operator==( const XAtom& atom ) const;
         bool operator!=( const XAtom& atom ) const;
+        bool operator<( const XAtom& atom ) const;
+        bool operator<=( const XAtom& atom ) const;
+        bool operator>( const XAtom& atom ) const;
+        bool operator>=( const XAtom& atom ) const;
 
     private:
         friend inline std::ostream& operator<< ( std::ostream&, const XAtom& );

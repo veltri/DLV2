@@ -34,6 +34,9 @@ namespace DLV2{ namespace REWRITERS{
 
     class XBody {
     public:
+        typedef typename XRandomAccessSet< XLiteral >::iterator iterator;
+        typedef typename XRandomAccessSet< XLiteral >::const_iterator const_iterator;
+
         XBody( const XBody& body ): literals(body.literals) { }
         virtual ~XBody() { }
 
@@ -47,6 +50,8 @@ namespace DLV2{ namespace REWRITERS{
         bool removeLiteral( unsigned position ) { return literals.removeItem(position); }
         bool findLiteral( const XLiteral& literal ) { return literals.find(literal); }
         void clear() { literals.clear(); }
+        bool operator==( const XBody& body ) const;
+        bool operator!=( const XBody& body ) const;
 
     protected:
         XRandomAccessSet< XLiteral > literals;

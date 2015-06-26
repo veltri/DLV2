@@ -30,6 +30,7 @@
 #include <vector>
 #include <string>
 #include "Constants.h"
+#include "Trace.h"
 
 namespace DLV2
 {
@@ -68,6 +69,10 @@ namespace DLV2
         const std::string& getDBPassword() const { return dbPassword; }
 
         ~Options() { /*if (instance != NULL) delete instance;*/ }
+
+        #ifdef TRACE_ON
+        static TraceLevels traceLevels;
+        #endif
 
     private:
 

@@ -454,14 +454,14 @@ DLV2::DependencyGraph< ControlStrategy >::computeLabeledEdges()
 
     // Scan for negated edges
     // if components of the connected nodes are equal, not stratified
-    EdgeIterator i, iEnd;
-    for( tie(i,iEnd) = boost::edges(graph); i != iEnd; ++i )
+    std::pair< EdgeIterator, EdgeIterator > edgesIt = boost::edges(graph);
+    for( ; edgesIt.first != edgesIt.second; edgesIt.first++ )
     {
-        unsigned label = boost::get(boost::edge_name,graph,*i);
+        unsigned label = boost::get(boost::edge_name,graph,*edgesIt.first);
         if( label == NEGATIVE_EDGE )
         {
-            Vertex src = source(*i,graph);
-            Vertex trgt = target(*i,graph);
+            Vertex src = source(*edgesIt.first,graph);
+            Vertex trgt = target(*edgesIt.first,graph);
             assert_msg( (src < vertexComponents.size() &&  
                     trgt < vertexComponents.size()),
                     "Vertex id out of range" );

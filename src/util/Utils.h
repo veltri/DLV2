@@ -46,6 +46,18 @@ namespace DLV2
          * be deallocated by the caller.
          */
         static const char* getNegativeName( const std::string& name );
+        /** Return the result of a system call to the program
+         * whose executable name is given as input.
+         * @param exeuctable The name of the program to be executed
+         * @param input The input to be piped
+         * @param outputBuffer This is the output parameter which stores the result of the system call
+         * @param outputBufferSize The length of the returned output
+         */
+        static void systemCallTo(
+                const char* executable,
+                const std::string& input,
+                char outputBuffer[],
+                size_t outputBufferSize );
     };
     
 };

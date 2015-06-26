@@ -32,17 +32,35 @@
 #include "XRule.h"
 #include "XSafetyException.h"
 #include "../../util/Constants.h"
-#include "XRulePointersCollection.h"
 #include "XStickyUnifier.h"
+#include "XPropagationGraph.h"
+
+namespace std {
+    template <>
+    struct hash< list< DLV2::REWRITERS::XRule >::const_iterator >
+    {
+        size_t operator()( const list< DLV2::REWRITERS::XRule >::const_iterator& it ) const
+        {
+            std::hash< DLV2::REWRITERS::XRule > ruleHasher;
+            return ruleHasher(*it);
+        }
+    };
+};
 
 namespace DLV2{ namespace REWRITERS{
 
     class XStickyLabel;
     class XStickyExpandedRule;
+    class XEquivalenceClass;
+    class XPartition;
+    class XPieceUnifier;
 
     class XProgram {
     public:
-        typedef typename std::unordered_map< index_t, XRulePointersCollection > XPredicateToXRulesetMap;
+        typedef std::list< XRule >::iterator iterator;
+        typedef std::list< XRule >::const_iterator const_iterator;
+        typedef XRandomAccessSet< const_iterator > XRulePointers;
+        typedef typename std::unordered_map< index_t, XRulePointers > XPredicateToXRulesetMap;
 
         XProgram();
         XProgram( const XProgram& program );
@@ -66,10 +84,23 @@ namespace DLV2{ namespace REWRITERS{
         XRule* createRule( XHead* head, XBody* body ) const;
         // The following methods create objects for the algorithm which checks the {sticky-join}-ness.
         XStickyLabel* createStickyLabel( index_t expRuleIndex, const XAtom& atom ) const;
+        XTermMetadata* createStickyTermMetadata( const XTerm& term ) const;
         XStickyExpandedRule* createStickyExpandedRule( const XRule& rule ) const;
         XStickyUnifier* createStickyUnifier( const XAtom& headAt, const XAtom& bodyAt, const XMapping& subst ) const;
+        // The following methods create objects for the main algorithm.
+        XEquivalenceClass* createEquivalenceClass();
+        XPartition* createPartition();
+        XPieceUnifier* createPieceUnifier(
+                const std::vector< XAtom >& q,
+                const std::vector< XAtom >& h,
+                XPartition* p,
+                const XRule& query,
+                const XRule& rule,
+                const std::unordered_set< unsigned >& subQueryAtomPos ) const;
 
         void addRule( const XRule& r );
+        const_iterator addTemporaryRule( const XRule& r );
+        void eraseTemporaryRules();
         void addQuery( const XAtom& q );
         std::pair< index_t, bool > addPredicate( const std::string& name, unsigned arity, bool internal = false );
         unsigned incrementVariablesCounter() { return varsCounter++; }
@@ -79,26 +110,30 @@ namespace DLV2{ namespace REWRITERS{
         const XPredicateNames& getPredicateNamesTable() const { return predicates; }
         const std::string& getPredicateName( index_t predIndex ) const;
         unsigned getPredicateArity( index_t predIndex ) const;
-        XRule::const_iterator beginRules() const { return rules.begin(); }
-        XRule::const_iterator endRules() const { return rules.end(); }
+        const_iterator beginRules() const { return rules.begin(); }
+        const_iterator endRules() const { return rules.end(); }
         size_t rulesSize() const { return rules.size(); }
-        XRule::const_iterator beginFacts() const { return facts.begin(); }
-        XRule::const_iterator endFacts() const { return facts.end(); }
+        const_iterator beginFacts() const { return facts.begin(); }
+        const_iterator endFacts() const { return facts.end(); }
         size_t factsSize() const { return facts.size(); }
         bool isDisjunctive() const { return hasDisjunction; }
         bool isConjunctive() const { return hasConjunction; }
-        const XRulePointersCollection& getPredicateRulePointers( index_t predIndex ) const;
+        const XRulePointers& getPredicateRulePointers( index_t predIndex ) const;
         const XAtom* getQuery() const { return query; }
-        XRule::const_iterator beginQueryRules() const { return queryRules.begin(); }
-        XRule::const_iterator endQueryRules() const { return queryRules.end(); }
+        const_iterator beginQueryRules() const { return queryRules.begin(); }
+        const_iterator endQueryRules() const { return queryRules.end(); }
         size_t queryRulesSize() const { return queryRules.size(); }
+        const XPropagationGraph& getPropagationGraph() const { return propagationGraph; }
+        const std::string& getPropagationGraphAsString() { return propagationGraph.toString(); }
 
     private:
         friend inline std::ostream& operator<< ( std::ostream&, const XProgram& );
 
-        bool addToPredicateRuleSet( index_t predIndex, XRule::const_iterator ruleIt );
+        bool addToPredicateRuleSet( index_t predIndex, const_iterator ruleIt );
         // Check whether rule is safe, throw an exception if it's not.
         void checkSafety( const XRule& rule ) const throw (XSafetyException);
+        void updatePropagationGraph( const_iterator ruleIt, index_t ruleIndex );
+        void computePropagationGraph();
 
         XPredicateNames predicates;
         std::list< XRule > rules;
@@ -109,7 +144,8 @@ namespace DLV2{ namespace REWRITERS{
         unsigned varsCounter;
         XAtom* query;
         std::list< XRule > queryRules;
-
+        XPropagationGraph propagationGraph;
+        int nonTemporaryRulesSize;
     };
 
     inline
@@ -121,14 +157,14 @@ namespace DLV2{ namespace REWRITERS{
         if( p.rules.size() > 0 )
             out << "RULES (ruleIndex --> rule):" << std::endl;
         unsigned counter = 0;
-        for( XRule::const_iterator it=p.rules.begin(); it!=p.rules.end(); it++ )
+        for( XProgram::const_iterator it=p.rules.begin(); it!=p.rules.end(); it++ )
         {
             out << counter++ << "  -->  " << *it << std::endl;
         }
         if( p.facts.size() > 0 )
             out << "FACTS (factIndex --> fact):" << std::endl;
         counter = 0;
-        for( XRule::const_iterator it=p.facts.begin(); it!=p.facts.end(); it++ )
+        for( XProgram::const_iterator it=p.facts.begin(); it!=p.facts.end(); it++ )
         {
             out << counter << "  -->  " << *it << std::endl;
         }
@@ -143,12 +179,11 @@ namespace DLV2{ namespace REWRITERS{
                 << "): {" << std::endl;
             for( index_t i=0; i<it->second.size(); i++ )
                 out << *(it->second[i]) << std::endl;
-            out << "}" << std::endl << std::endl;
+            out << "}" << std::endl;
         }
         return out;
     }
 
 };};
-
 
 #endif /* XPROGRAM_H */

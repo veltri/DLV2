@@ -9,23 +9,20 @@
 #define REWRITINGALGORITHM_H
 
 #include "../data/XProgram.h"
-
-using DLV2::REWRITERS::XProgram;
+#include <vector>
 
 namespace DLV2{ namespace REWRITERS{
 
-    class IsomorphismCheckStrategy;
-
     class RewritingAlgorithm {
     public:
-        RewritingAlgorithm( IsomorphismCheckStrategy* isoCheck ): isomorphismCheckStrategy(isoCheck) { }
+        RewritingAlgorithm( XProgram& input ): inputProgram(input) { }
         virtual ~RewritingAlgorithm() { }
 
-        XProgram* rewrite( const XProgram& input ) = 0;
+        virtual std::vector< XRule* > rewrite() = 0;
+        virtual void printStatistics() const = 0;
 
-    private:
-        IsomorphismCheckStrategy* isomorphismCheckStrategy;
-
+    protected:
+        XProgram& inputProgram;
     };
 
 };};

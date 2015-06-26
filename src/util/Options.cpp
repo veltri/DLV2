@@ -44,6 +44,7 @@ namespace DLV2
 #define OPTIONID_selector ( 'z' + 12 )
 #define OPTIONID_printdepgraph ( 'z' + 13 )
 #define OPTIONID_printstatistics ( 'z' + 14 )
+#define OPTIONID_printirisoutput ( 'z' + 15 )
 
 /* GENERIC OPTIONS */
 #define OPTIONID_stdin ( 'z' + 20 )
@@ -52,6 +53,12 @@ namespace DLV2
 #define OPTIONID_datasource ('z' + 30 )
 #define OPTIONID_username ('z' + 31 )
 #define OPTIONID_password ('z' + 32 )
+
+/* TRACE OPTIONS */
+#define OPTIONID_trace_parser ('z' + 40 )
+#define OPTIONID_trace_sticky_join_check ('z' + 41 )
+#define OPTIONID_trace_rewriting ('z' + 42 )
+
 };
 
 using namespace std; 
@@ -59,6 +66,10 @@ using namespace DLV2;
     
 // Initialize singleton
 Options* Options::instance = NULL;
+
+#ifdef TRACE_ON
+TraceLevels Options::traceLevels;
+#endif
 
 Options* 
 Options::globalOptions() 
@@ -133,6 +144,7 @@ Options::init(
         { "selector", required_argument, NULL, OPTIONID_selector },
         { "printdepgraph", no_argument, NULL, OPTIONID_printdepgraph },
         { "stats", no_argument, NULL, OPTIONID_printstatistics },
+        { "printprogram-iris-output", no_argument, NULL, OPTIONID_printirisoutput },
 
         /* GENERIC OPTIONS */
         { "help", no_argument, NULL, OPTIONID_help },
@@ -142,6 +154,11 @@ Options::init(
         { "db-source", required_argument, NULL, OPTIONID_datasource },
         { "db-user", required_argument, NULL, OPTIONID_username },
         { "db-pwd", required_argument, NULL, OPTIONID_password },
+
+        /* TRACE OPTIONS */
+        { "trace-parser", required_argument, NULL, OPTIONID_trace_parser },
+        { "trace-sticky-join-check", required_argument, NULL, OPTIONID_trace_sticky_join_check },
+        { "trace-rewriting", required_argument, NULL, OPTIONID_trace_rewriting },
 
         // Required at end of array. 
         { NULL, 0, NULL, 0 }
@@ -222,6 +239,13 @@ Options::init(
                 printStatistics = true;
                 break;
                 
+            case OPTIONID_printirisoutput:
+                if( inputPolicy != -1 )
+                    ErrorMessage::errorGeneric( "Options about input policy must be set at most once" );
+                inputPolicy = BUILDER_DATALOGPM;
+                printProgram = true;
+                break;
+
             case OPTIONID_help:
                 Help::printHelp(argv[0]);
                 exit(0);
@@ -243,6 +267,18 @@ Options::init(
                 dbPassword.append(optarg);
                 break;
                 
+            case OPTIONID_trace_parser:
+                setTraceLevel( parser, atoi(optarg) );
+                break;
+
+            case OPTIONID_trace_sticky_join_check:
+                setTraceLevel( stickyJoinCheck, atoi(optarg) );
+                break;
+
+            case OPTIONID_trace_rewriting:
+                setTraceLevel( rewriting, atoi(optarg) );
+                break;
+
             default:
                 ErrorMessage::errorGeneric( "This option is not supported." );
                 break;

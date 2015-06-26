@@ -53,6 +53,10 @@ namespace DLV2{ namespace REWRITERS{
         bool operator==( const XTerm& term ) const;
         bool operator!=( const XTerm& term ) const;
         XTerm& operator=( const XTerm& term );
+        bool operator<( const XTerm& term ) const;
+        bool operator<=( const XTerm& term ) const;
+        bool operator>( const XTerm& term ) const;
+        bool operator>=( const XTerm& term ) const;
 
     private:
         friend inline std::ostream& operator<< ( std::ostream&, const XTerm& );

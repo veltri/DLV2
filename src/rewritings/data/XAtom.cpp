@@ -106,3 +106,58 @@ XAtom::operator!=(
 {
     return !(*this == atom);
 }
+
+bool
+XAtom::operator<(
+    const XAtom& atom ) const
+{
+    if( getPredicateName() != atom.getPredicateName() )
+        return getPredicateName() < atom.getPredicateName();
+    else if( isPropositional() && atom.isPropositional() ) // They are the same.
+        return false;
+    else if( isPropositional() ) // "*this" is shorter than "atom".
+        return true;
+    else if( atom.isPropositional() ) // "atom" is shorter than "*this".
+        return false;
+    else // They've got some variables.
+    {
+        unsigned i=0;
+        unsigned j=0;
+        while( i < getTerms().size() && j < atom.getTerms().size() )
+        {
+            if( getTerms().at(i) < atom.getTerms().at(j) )
+                return true;
+            else if( getTerms().at(i) > atom.getTerms().at(j) )
+                return false;
+            i++;
+            j++;
+        }
+        // If the computation is arrived here, their processed variables are all the same one another.
+        // Thus, the shorter atom is lower than the other one.
+        if( getArity() == atom.getArity() )
+            return false;
+        else
+            return getArity() < atom.getArity();
+    }
+}
+
+bool
+XAtom::operator<=(
+    const XAtom& atom ) const
+{
+    return ( *this < atom || *this == atom );
+}
+
+bool
+XAtom::operator>(
+    const XAtom& atom ) const
+{
+    return !( *this <= atom );
+}
+
+bool
+XAtom::operator>=(
+    const XAtom& atom ) const
+{
+    return !( *this < atom );
+}

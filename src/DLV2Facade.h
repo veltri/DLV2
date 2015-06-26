@@ -30,13 +30,15 @@
 #include "util/Options.h"
 #include "input/InputDirector.h"
 
+#include <chrono>
+
 namespace DLV2
 {
     // TODO: discuss the issue of options and facade methods
 
     class DLV2Facade {
     public:
-        DLV2Facade() : options(*Options::globalOptions()), builder(NULL) { }
+        DLV2Facade() : options(*Options::globalOptions()), director(), builder(NULL), parserDuration(-1) { }
         ~DLV2Facade();
 
         void parseOptions( int, char* const* );
@@ -53,7 +55,7 @@ namespace DLV2
         InputDirector director;
         InputBuilder* builder;
         
-        double parserDuration;
+        std::chrono::duration< double, std::milli > parserDuration;
 
     }; 
     
