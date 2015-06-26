@@ -81,7 +81,14 @@ public:
 	virtual Atom* clone();
 
 	///Return the predicate of classical literal (the first atom in choice elements) in choice elements
-	virtual set_predicate getPredicates() const{return getClassicalPredicates();};
+	virtual set_predicate getPredicates() const {return getClassicalPredicates();};
+	virtual unordered_set<index_object> getPredicatesIndices() const {
+		set_predicate predicates=getClassicalPredicates();
+		unordered_set<index_object> indices;
+		for(auto p:predicates)
+			indices.insert(p->getIndex());
+		return indices;
+	}
 
 	///Return the predicate of classical literal (the first atom in choice elements) in choice elements
 	virtual set_predicate getClassicalPredicates()const{

@@ -90,6 +90,9 @@ namespace grounder{
 	#define HASHSET 3
 	#define DOUBLEMAP 4
 
+	#define NATIVE_CHOICE 0
+	#define DISJUNCTION 1
+
 	typedef unsigned index_object;
 
 };

@@ -44,6 +44,7 @@ public:
 	 */
 	Predicate* getPredicate() const {return predicate;};
 	set_predicate getPredicates() const {return set_predicate({predicate});};
+	virtual unordered_set<index_object> getPredicatesIndices() const {return unordered_set<index_object>({predicate->getIndex()});};
 
 	virtual bool isClassicalLiteral(){return true;};
 

@@ -89,18 +89,11 @@ namespace DLV2
 
         bool isNofacts() const {return nofacts;}
 
-        void setNofacts(bool nofacts) {this->nofacts = nofacts;}
+		bool isPrintRewrittenProgram() const {return printRewrittenProgram;}
 
-		bool isPrintRewritedProgram() const {
-			return printRewritedProgram;
-		}
-
-		void setPrintRewritedProgram(bool printRewritedProgram) {
-			this->printRewritedProgram = printRewritedProgram;
-		}
+		unsigned getRewritingType() const {	return rewritingType;}
 
         ~Options() { /*if (instance != NULL) delete instance;*/ }
-
 
     private:
 
@@ -158,7 +151,9 @@ namespace DLV2
 
     	bool nofacts;
 
-    	bool printRewritedProgram;
+    	bool printRewrittenProgram;
+
+    	unsigned rewritingType;
     };
     
 };

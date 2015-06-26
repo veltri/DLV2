@@ -12,6 +12,7 @@
 #include "ProgramGrounder.h"
 #include "../atom/ClassicalLiteral.h"
 #include "../../util/Timer.h"
+#include "../../util/Utils.h"
 
 namespace DLV2{
 
@@ -48,7 +49,7 @@ void ProgramGrounder::ground() {
 	vector<unordered_set<index_object>> componentPredicateInHead;
 	statementDependency->createComponentGraphAndComputeAnOrdering(exitRules, recursiveRules, componentPredicateInHead);
 
-	if (Options::globalOptions()->isPrintRewritedProgram())
+	if (Options::globalOptions()->isPrintRewrittenProgram())
 		printProgram(exitRules, recursiveRules);
 
 	// Ground each module according to the ordering:
@@ -151,7 +152,8 @@ void ProgramGrounder::computeRecursiveCombinationPredicate(){
 void ProgramGrounder::inizializeSearchInsertPredicate(Rule* rule,unordered_set<index_object>& componentPredicateInHead) {
 	predicate_searchInsert_table.clear();
 	for(auto atom=rule->getBeginHead();atom!=rule->getEndHead();atom++){
-		if(componentPredicateInHead.count((*atom)->getPredicate()->getIndex())){
+		unordered_set<index_object> indicesPredicates=(*atom)->getPredicatesIndices();
+		if(!Utils::isDisjoint(componentPredicateInHead,indicesPredicates)){
 			vector<unsigned> tableToInsert(1,DELTA);
 			predicate_searchInsert_table.push_back(tableToInsert);
 		}else{
@@ -161,12 +163,12 @@ void ProgramGrounder::inizializeSearchInsertPredicate(Rule* rule,unordered_set<i
 	}
 
 	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();atom++){
-			vector<unsigned> tableToInsert;
-			if((*atom)->getPredicate()!=nullptr && (*atom)->getPredicate()->isEdb())
-				{tableToInsert.push_back(FACT);}
-			else
-				{tableToInsert.push_back(FACT);tableToInsert.push_back(NOFACT);}
-			predicate_searchInsert_table.push_back(tableToInsert);
+		vector<unsigned> tableToInsert;
+		if((*atom)->getPredicate()!=nullptr && (*atom)->getPredicate()->isEdb())
+			{tableToInsert.push_back(FACT);}
+		else
+			{tableToInsert.push_back(FACT);tableToInsert.push_back(NOFACT);}
+		predicate_searchInsert_table.push_back(tableToInsert);
 	}
 }
 
@@ -191,7 +193,8 @@ void ProgramGrounder::inizializeSearchInsertPredicate(Rule* rule) {
 void ProgramGrounder::nextSearchInsertPredicate(Rule* rule,unordered_set<index_object>& componentPredicateInHead) {
 	predicate_searchInsert_table.clear();
 	for(auto atom=rule->getBeginHead();atom!=rule->getEndHead();atom++){
-		if(componentPredicateInHead.count((*atom)->getPredicate()->getIndex())){
+		unordered_set<index_object> indicesPredicates=(*atom)->getPredicatesIndices();
+		if(!Utils::isDisjoint(componentPredicateInHead,indicesPredicates)){
 			vector<unsigned> tableToInsert(1,NEXTDELTA);
 			predicate_searchInsert_table.push_back(tableToInsert);
 		}else{
@@ -223,13 +226,15 @@ void ProgramGrounder::nextSearchInsertPredicate(Rule* rule,unordered_set<index_o
 
 void ProgramGrounder::swapInDelta(Rule *rule){
 	for (auto it = rule->getBeginHead(); it != rule->getEndHead(); it++) {
-		PredicateExtension* predicateExt = predicateExtTable->getPredicateExt((*it)->getPredicate());
-		if (predicateExt != nullptr){
-			predicateExt->swapTables(DELTA,NOFACT);
-			predicateExt->swapTables(NEXTDELTA,DELTA);
+		set_predicate predicates=(*it)->getPredicates();
+		for(auto predicate:predicates){
+			PredicateExtension* predicateExt = predicateExtTable->getPredicateExt(predicate);
+			if (predicateExt != nullptr){
+				predicateExt->swapTables(DELTA,NOFACT);
+				predicateExt->swapTables(NEXTDELTA,DELTA);
+			}
 		}
 	}
-
 }
 
 bool ProgramGrounder::groundRule(Rule* rule) {

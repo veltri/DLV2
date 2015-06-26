@@ -23,7 +23,6 @@ InMemoryInputBuilder::InMemoryInputBuilder() :
 	predicateTable(PredicateTable::getInstance()),
 	statementDependency(StatementDependency::getInstance()),
 	instancesTable(PredicateExtTable::getInstance()),
-	inputRewriter(new ChoiceBaseInputRewriter()),
 	foundARangeAtomInCurrentRule(false),
 	currentRule(new Rule()),
 	currentAtom(nullptr),
@@ -32,7 +31,17 @@ InMemoryInputBuilder::InMemoryInputBuilder() :
 	currentAggregateElement(new AggregateElement),
 	currentChoice(nullptr),
 	currentChoiceElement(new ChoiceElement)
-{}
+{
+	switch (Options::globalOptions()->getRewritingType()) {
+		case DISJUNCTION:
+			inputRewriter=new BaseInputRewriter();
+			break;
+		default:
+			inputRewriter=new ChoiceBaseInputRewriter();
+			break;
+	}
+
+}
 
 InMemoryInputBuilder::~InMemoryInputBuilder() {
 	delete currentRule;

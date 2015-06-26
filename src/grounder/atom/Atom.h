@@ -101,6 +101,7 @@ public:
 	 */
 	virtual Predicate* getPredicate() const {return nullptr;};
 	virtual set_predicate getPredicates() const {return set_predicate();};
+	virtual unordered_set<index_object> getPredicatesIndices() const {return unordered_set<index_object>();};
 
 	///Return true if is a Classical Literal
 	virtual bool isClassicalLiteral(){return false;};
