@@ -209,7 +209,11 @@ void BaseInputRewriter::translateChoice(Rule*& rule,vector<Rule*>& ruleRewrited)
 			auxiliaryAtomBody=rule->getAtomInBody(0);
 	}
 
-
+	// For each choice element a new disjunctive auxiliary rule is created.
+	// Each rule has in the head a disjunction with a the first atom of the choice element and a new auxiliary atom
+	// having the same terms of the first atom, while in the body it contains the remaining atoms of the choice element
+	// and the auxiliary atom previously created for the body.
+	// Also, the aggregate elements for the constraint rule are created (see below)
 	vector<AggregateElement*> elements = rewriteChoiceElements(id, counter,choice, auxiliaryAtomBody, ruleRewrited);
 
 
@@ -276,18 +280,12 @@ vector<AggregateElement*> ChoiceBaseInputRewriter::rewriteChoiceElements(
 			atoms_single_choice.push_back(first_atom);
 		}else{
 
-			Rule* aux_rule = new Rule;
-			//Head
-			Atom *choice_atom=new Choice;
-			choice_atom->addSingleChoiceElement(first_atom);
-			aux_rule->addInHead(choice_atom);
-
-			//Body
 			vector<Atom*> naf_elements;
 			choiceElement->getNafAtoms(naf_elements);
-			aux_rule->addInBody(naf_elements.begin(), naf_elements.end());
 			if (auxiliaryAtomBody != nullptr)
-				aux_rule->addInBody(auxiliaryAtomBody->clone());
+				naf_elements.push_back(auxiliaryAtomBody->clone());
+
+			Rule* aux_rule=createAuxChoiceRule(first_atom,naf_elements);
 
 			ruleRewrited.push_back(aux_rule);
 			counter++;
@@ -301,17 +299,9 @@ vector<AggregateElement*> ChoiceBaseInputRewriter::rewriteChoiceElements(
 	}
 
 	if(atoms_single_choice.size()>0){
-		Rule* aux_rule = new Rule;
-		Atom *choice_atom=new Choice;
-		for(auto atom:atoms_single_choice){
-			choice_atom->addSingleChoiceElement(atom);
-		}
-		aux_rule->addInHead(choice_atom);
 
-		//Body
-		vector<Atom*> naf_elements;
-		if (auxiliaryAtomBody != nullptr)
-			aux_rule->addInBody(auxiliaryAtomBody->clone());
+
+		Rule* aux_rule = createAuxChoiceRule(atoms_single_choice,auxiliaryAtomBody->clone());
 
 		ruleRewrited.push_back(aux_rule);
 		counter++;
@@ -319,6 +309,23 @@ vector<AggregateElement*> ChoiceBaseInputRewriter::rewriteChoiceElements(
 
 	return elements;
 
+}
+
+Rule* ChoiceBaseInputRewriter::createAuxChoiceRule(const vector<Atom*>& head,const vector<Atom*>& body){
+	Rule* aux_rule = new Rule;
+	Atom *choice_atom=new Choice;
+	choice_atom->setSecondBinop(GREATER_OR_EQ);
+	choice_atom->setSecondGuard(TermTable::getInstance()->term_zero);
+	for(auto atom:head)
+		choice_atom->addSingleChoiceElement(atom);
+
+	aux_rule->addInHead(choice_atom);
+
+	//Body
+	for(auto atom:body)
+		aux_rule->addInBody(atom);
+
+	return aux_rule;
 }
 
 } /* namespace grounder */

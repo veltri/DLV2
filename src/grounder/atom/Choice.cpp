@@ -32,6 +32,10 @@ void Choice::print() {
 		second=true;
 	}
 	cout<<"}";
+
+	//Avoid print >=0, because is the default guard
+	if(terms[0]==nullptr && secondBinop==GREATER_OR_EQ && terms[1]->getIndex()==TermTable::getInstance()->term_zero->getIndex())return;
+
 	if(terms[1]!=nullptr){
 		cout<<getBinopToStrng(secondBinop);
 		terms[1]->print();

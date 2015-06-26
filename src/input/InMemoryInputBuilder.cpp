@@ -350,6 +350,10 @@ void InMemoryInputBuilder::onChoiceElement() {
 }
 
 void InMemoryInputBuilder::onChoiceAtom() {
+	if(currentChoice->getFirstBinop()==NONE_OP && currentChoice->getSecondBinop()==NONE_OP){
+		currentChoice->setSecondBinop(GREATER_OR_EQ);
+		currentChoice->setSecondGuard(termTable->term_zero);
+	}
 	currentAtom=currentChoice;
 	currentRule->addInHead(currentAtom);
 	currentChoice=nullptr;

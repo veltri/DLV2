@@ -97,6 +97,11 @@ protected:
 class ChoiceBaseInputRewriter : public BaseInputRewriter{
 public:
 	virtual vector<AggregateElement*> rewriteChoiceElements(unsigned id,unsigned counter, Atom* choice, Atom* auxiliaryAtomBody,	vector<Rule*>& ruleRewrited);
+private:
+	Rule* createAuxChoiceRule(const vector<Atom*>& head,const vector<Atom*>& body);
+	Rule* createAuxChoiceRule(Atom* head,const vector<Atom*>& body){return createAuxChoiceRule(vector<Atom*>({head}),body);}
+	Rule* createAuxChoiceRule(const vector<Atom*>& head,Atom* body){return createAuxChoiceRule(head,vector<Atom*>({body}));}
+
 };
 
 
