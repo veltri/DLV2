@@ -285,7 +285,11 @@ vector<AggregateElement*> ChoiceBaseInputRewriter::rewriteChoiceElements(unsigne
 	if(atoms_single_choice.size()>0){
 
 
-		Rule* aux_rule = createAuxChoiceRule(atoms_single_choice,auxiliaryAtomBody->clone());
+		Rule* aux_rule;
+		if(auxiliaryAtomBody!=nullptr)
+			aux_rule= createAuxChoiceRule(atoms_single_choice,auxiliaryAtomBody->clone());
+		else
+			aux_rule= createAuxChoiceRule(atoms_single_choice);
 
 		ruleRewrited.push_back(aux_rule);
 		counter++;
