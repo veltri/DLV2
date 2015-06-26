@@ -241,37 +241,38 @@ bool BackTrackingGrounder::foundAssignment() {
 	Atom *searchAtom=nullptr;
 	if(isAChoiceRule)
 		groundChoice(find_new_true_atom,ground_new_atom);
+	else{
 
-	for(auto atom=currentRule->getBeginHead();atom!=currentRule->getEndHead()&&!isAChoiceRule;++atom,++atom_counter){
+		for(auto atom=currentRule->getBeginHead();atom!=currentRule->getEndHead();++atom,++atom_counter){
 
-		Atom *headGroundAtom=nullptr;
-		(*atom)->ground(current_var_assign,headGroundAtom);
+			Atom *headGroundAtom=nullptr;
+			(*atom)->ground(current_var_assign,headGroundAtom);
 
-		PredicateExtension* predicateExt=predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
-		searchAtom=predicateExt->getAtom(headGroundAtom);
+			PredicateExtension* predicateExt=predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
+			searchAtom=predicateExt->getAtom(headGroundAtom);
 
-		if(searchAtom==nullptr){
-			ground_new_atom = true;
+			if(searchAtom==nullptr){
+				ground_new_atom = true;
 
-			headGroundAtom->setFact(head_true);
-			for(unsigned i=0;i<predicate_searchInsert_table[atom_counter].size();++i)
-				predicateExt->addAtom(predicate_searchInsert_table[atom_counter][i],headGroundAtom);
+				headGroundAtom->setFact(head_true);
+				for(unsigned i=0;i<predicate_searchInsert_table[atom_counter].size();++i)
+					predicateExt->addAtom(predicate_searchInsert_table[atom_counter][i],headGroundAtom);
 
-			ground_rule->setAtomInHead(atom_counter,headGroundAtom);
-		}else{
-			delete headGroundAtom;
+				ground_rule->setAtomInHead(atom_counter,headGroundAtom);
+			}else{
+				delete headGroundAtom;
 
-			//TODO If searchAtom is true ??? {a|b. a.} o {a :- b(X,Y).b(1).b(1,2)|d.}
+				//TODO If searchAtom is true ??? {a|b. a.} o {a :- b(X,Y).b(1).b(1,2)|d.}
 
-			//Previus atom is undef and now is true
-			if(head_true && !searchAtom->isFact()){
-				searchAtom->setFact(true);
-				find_new_true_atom=true;
+				//Previus atom is undef and now is true
+				if(head_true && !searchAtom->isFact()){
+					searchAtom->setFact(true);
+					find_new_true_atom=true;
+				}
+				//Check if previus is false now is true ground_new atom i have put true
+				ground_rule->setAtomInHead(atom_counter,searchAtom);
 			}
-			//Check if previus is false now is true ground_new atom i have put true
-			ground_rule->setAtomInHead(atom_counter,searchAtom);
 		}
-
 	}
 #ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("Head");
@@ -361,6 +362,8 @@ void BackTrackingGrounder::deleteGroundRule(){
 		return 0;
 	});
 	ground_rule->deleteHead([](Atom* atom){
+		if(atom!=0 && atom->isChoice())
+			return 1;
 		return 0;
 	});
 	delete ground_rule;

@@ -56,6 +56,11 @@ public:
 	///Return the positive predicates of naf literal in choice element
 	set_predicate getPredicatePositiveInNaf();
 
+	void deleteAtoms() {
+		for(auto atom:choiceElement)
+			delete atom;
+	}
+
 	///Destructor
 	~ChoiceElement(){};
 

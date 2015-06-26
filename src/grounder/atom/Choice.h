@@ -115,15 +115,16 @@ public:
 		for (auto& choiceElement : choiceElements)
 			delete choiceElement;
 	}
+
 	void getGuardVaribale(set_term& terms_variable);
+
+	virtual void deleteAtoms() {for(auto& choiceElem:choiceElements) choiceElem->deleteAtoms();}
 
 	virtual bool isDefaultGuard(){
 		if(firstBinop==NONE_OP && secondBinop==GREATER_OR_EQ && terms[1]->getIndex()==TermTable::getInstance()->term_zero->getIndex())
 			return true;
 		return false;
 	}
-
-	;
 
 private:
 	///First binary operation

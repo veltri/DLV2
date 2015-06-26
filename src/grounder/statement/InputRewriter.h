@@ -82,7 +82,10 @@ public:
 	 * a savior among the saviors found.
 	 */
 	virtual void  chooseBestSaviorForAggregate(Rule* rule, AggregateElement* aggregateElement, set_term& unsafeVars, vector<Atom*>& atomToAdd, const OrderRule& orderRule);
-	virtual ~BaseInputRewriter() {delete saviourChoosingPolicy;};
+
+	virtual ~BaseInputRewriter() {delete saviourChoosingPolicy;}
+
+
 protected:
 	/// The savior choosing policy adopted
 	SaviorChoosingPolicy* saviourChoosingPolicy;
@@ -92,11 +95,14 @@ protected:
 
 	///Create an auxiliary rule for each  choice element
 	virtual vector<AggregateElement*> rewriteChoiceElements(unsigned id,unsigned counter, Atom* choice, Atom* auxiliaryAtomBody,	vector<Rule*>& ruleRewrited);
+
+	virtual void rewriteChoiceConstraint(const vector<AggregateElement*>& elements, Atom* auxiliaryAtomBody, Atom* choice, vector<Rule*>& ruleRewrited);
 };
 
 class ChoiceBaseInputRewriter : public BaseInputRewriter{
 public:
 	virtual vector<AggregateElement*> rewriteChoiceElements(unsigned id,unsigned counter, Atom* choice, Atom* auxiliaryAtomBody,	vector<Rule*>& ruleRewrited);
+	virtual void rewriteChoiceConstraint(const vector<AggregateElement*>& elements, Atom* auxiliaryAtomBody, Atom* choice, vector<Rule*>& ruleRewrited);
 private:
 	Rule* createAuxChoiceRule(const vector<Atom*>& head,const vector<Atom*>& body);
 	Rule* createAuxChoiceRule(Atom* head,const vector<Atom*>& body){return createAuxChoiceRule(vector<Atom*>({head}),body);}
