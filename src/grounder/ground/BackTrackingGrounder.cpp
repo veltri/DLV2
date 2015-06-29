@@ -278,7 +278,7 @@ bool BackTrackingGrounder::foundAssignment() {
 #endif
 
 	//Print if ground new atom, an atom changed from undef to true, the rule is a strong constraint, there are some undefined atom in body
-	if( ground_new_atom || (find_new_true_atom && head_true) || ground_rule->isAStrongConstraint() || ground_rule->areThereUndefinedAtomInBody())
+	if( ground_new_atom || (!ground_new_atom && !head_true) || (find_new_true_atom && head_true) || ground_rule->isAStrongConstraint() || ground_rule->areThereUndefinedAtomInBody())
 		ground_rule->print();
 
 	if(currentRule->getSizeBody() > 0)
