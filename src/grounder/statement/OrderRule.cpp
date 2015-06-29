@@ -43,7 +43,7 @@ bool OrderRule::order() {
 	}
 
 	// Second, solve the cyclic dependencies
-	while(builtInAtoms.size()>0 || negativeAtoms.size()>0|| aggregatesAtoms.size()>0){
+	while(builtInAtoms.size()>0 || negativeAtoms.size()>0 || aggregatesAtoms.size()>0){
 		unsigned sizeBuiltIns=builtInAtoms.size();
 		unsigned sizeNegatives=negativeAtoms.size();
 		unlockAtoms(negativeAtoms);
@@ -51,8 +51,13 @@ bool OrderRule::order() {
 		if(builtInAtoms.size()==sizeBuiltIns && sizeNegatives==negativeAtoms.size()){
 			unsigned sizeAggregates=aggregatesAtoms.size();
 			unlockAtoms(aggregatesAtoms);
-			if(aggregatesAtoms.size()==sizeAggregates)
+			if(aggregatesAtoms.size()==sizeAggregates){
+				for(auto b:orderedBody){
+					b->print();
+					cout<<endl;
+				}
 				return false;
+			}
 		}
 	}
 
@@ -180,8 +185,11 @@ void OrderRule::checkBuiltInSafety(bool& safe, Term* term, Term*& bindVariable) 
 
 bool OrderRule::lookForVariablesUnsafe(set_term& variables,Atom* atom, list<unsigned>::iterator it, vector<list<unsigned>::iterator>& atomsUnlocked){
 	bool foundAnUnsafeVar=false;
+	bool checkIfPossibleAssigment=!atom->isNegative() && atom->isAggregateAtom() && atom->getFirstBinop()==EQUAL;
 	for(auto variable: variables){
 		if(!safeVariables.count(variable)){
+			if(checkIfPossibleAssigment && variable->getIndex()==atom->getFirstGuard()->getIndex())
+				continue;
 			foundAnUnsafeVar=true;
 			break;
 		}
