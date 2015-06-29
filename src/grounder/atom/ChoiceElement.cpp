@@ -33,6 +33,15 @@ set_predicate ChoiceElement::getPredicatePositiveInNaf() {
 	return predicates;
 }
 
+set_term ChoiceElement::getVariableInNaf() {
+	set_term terms;
+	for(unsigned i=1;i<choiceElement.size();i++){
+		set_term terms_in_atom=choiceElement[i]->getVariable();
+		terms.insert(terms_in_atom.begin(),terms_in_atom.end());
+	}
+	return terms;
+}
+
 void ChoiceElement::deleteAtoms() {
 	for(auto& atom:choiceElement)
 		delete atom;

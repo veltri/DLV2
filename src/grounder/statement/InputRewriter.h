@@ -108,6 +108,9 @@ private:
 	Rule* createAuxChoiceRule(Atom* head,const vector<Atom*>& body){return createAuxChoiceRule(vector<Atom*>({head}),body);}
 	Rule* createAuxChoiceRule(const vector<Atom*>& head,Atom* body){return createAuxChoiceRule(head,vector<Atom*>({body}));}
 	Rule* createAuxChoiceRule(const vector<Atom*>& head){return createAuxChoiceRule(head,vector<Atom*>());}
+	Rule* createAuxChoiceRule(Atom* head,Atom* body){return createAuxChoiceRule(vector<Atom*>({head}),vector<Atom*>({body}));}
+
+
 
 };
 

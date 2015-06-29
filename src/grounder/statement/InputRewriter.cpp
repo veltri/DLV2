@@ -141,7 +141,7 @@ void BaseInputRewriter::translateChoice(Rule*& rule,vector<Rule*>& ruleRewrited)
 			auto atom=rule->getAtomInBody(i);
 			if(atom->isNegative())continue;
 			set_term variables;
-			if(atom->isAggregateAtom())
+			if(atom->isAggregateAtom() && atom->getFirstBinop()==EQUAL)
 				variables=atom->getGuardVariable();
 			else
 				variables=atom->getVariable();
@@ -255,13 +255,24 @@ vector<AggregateElement*> ChoiceBaseInputRewriter::rewriteChoiceElements(unsigne
 	vector<AggregateElement*> elements;
 	vector<Atom*> atoms_single_choice;
 
+	set_term terms_in_body;
+	if(auxiliaryAtomBody!=nullptr){
+		terms_in_body.insert(auxiliaryAtomBody->getTerms().begin(),auxiliaryAtomBody->getTerms().end());
+		if(choice->getFirstBinop()!=NONE_OP && !choice->getFirstGuard()->isGround())
+			terms_in_body.erase(choice->getFirstGuard());
+		if(choice->getSecondBinop()!=NONE_OP && !choice->getSecondGuard()->isGround())
+			terms_in_body.erase(choice->getSecondGuard());
+	}
+
 	for (unsigned i = 0; i < choice->getChoiceElementsSize(); ++i) {
 		ChoiceElement* choiceElement = choice->getChoiceElement(i);
 		Atom* first_atom = choiceElement->getFirstAtom();
+		AggregateElement* element=nullptr;
 
 		//Put the choice element with one atom in an unique choice rule
 		if(choiceElement->getSize()==1){
 			atoms_single_choice.push_back(first_atom);
+			element = new AggregateElement(first_atom->clone(),	first_atom->getTerms());
 		}else{
 
 			vector<Atom*> naf_elements;
@@ -269,16 +280,44 @@ vector<AggregateElement*> ChoiceBaseInputRewriter::rewriteChoiceElements(unsigne
 			if (auxiliaryAtomBody != nullptr)
 				naf_elements.push_back(auxiliaryAtomBody->clone());
 
-			Rule* aux_rule=createAuxChoiceRule(first_atom,naf_elements);
+			set_term terms_in_choice_elem=choiceElement->getFirstAtom()->getVariable();
+			set_term terms_in_choice_naf=choiceElement->getVariableInNaf();
+			set_term terms_missed_in_first,terms_in_auxiliary;
+			Utils::differenceSet(terms_in_body,terms_in_choice_elem,terms_missed_in_first);
+			Utils::intersectionSet(terms_missed_in_first,terms_in_choice_naf,terms_in_auxiliary);
+
+
+			Rule* aux_rule;
+
+
+			if(terms_in_auxiliary.size()==0 || choice->isDefaultGuard()){
+				aux_rule=createAuxChoiceRule(first_atom,naf_elements);
+				element = new AggregateElement(first_atom->clone(),	first_atom->getTerms());
+			}else{
+				//Terms in body are not contained on the first atom in choice then
+				// we have to add the variable in the head and add new auxiliary
+				string predicate_name=AUXILIARY+SEPARATOR+to_string(id)+SEPARATOR+to_string(counter);
+				vector<Term*> terms_to_add=choiceElement->getFirstAtom()->getTerms();
+				terms_to_add.insert(terms_to_add.end(),terms_in_auxiliary.begin(),terms_in_auxiliary.end());
+				Atom* new_aux=generateNewAuxiliaryAtom(predicate_name,terms_to_add);
+				aux_rule=createAuxChoiceRule(new_aux,naf_elements);
+
+				Rule *projection_rule=new Rule;
+				projection_rule->addInBody(new_aux->clone());
+				projection_rule->addInHead(choiceElement->getFirstAtom());
+
+				ruleRewrited.push_back(projection_rule);
+
+				element = new AggregateElement(new_aux->clone(),new_aux->getTerms());
+			}
+
 
 			ruleRewrited.push_back(aux_rule);
 			counter++;
 
 		}
-
+		if(element!=nullptr)
 		// Create a new aggregate element
-		AggregateElement* element = new AggregateElement(first_atom->clone(),
-				first_atom->getTerms());
 		elements.push_back(element);
 	}
 

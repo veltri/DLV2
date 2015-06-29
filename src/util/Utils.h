@@ -104,15 +104,9 @@ namespace DLV2
          */
         template<class T>
         static void differenceSet(T& set1,T& set2,T& difference_set){
-        	if(set1.size()<set2.size()){
-            	for(auto element:set1)
-            		if(!set2.count(element))
-            			difference_set.insert(element);
-        	}else {
-            	for(auto element:set2)
-            		if(!set1.count(element))
-            			difference_set.insert(element);
-        	}
+			for(auto element:set1)
+				if(!set2.count(element))
+					difference_set.insert(element);
         }
     };
     
