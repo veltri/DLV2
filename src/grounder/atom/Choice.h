@@ -32,7 +32,7 @@ public:
 		: Atom(t), firstBinop(fB), secondBinop(sB), choiceElements(cE) {};
 
 	///Return the term of variable present in the Atom
-	virtual set_term getVariable();
+	virtual set_term getVariable(bool guard=true);
 
 	///Getter method for the first binary operation
 	Binop getFirstBinop() const {return firstBinop;};
@@ -109,6 +109,7 @@ public:
 
 	//Return the variable in the guard of an aggregate
 	virtual set_term getGuardVariable();
+
 
 	///Destructor
 	virtual ~Choice() {

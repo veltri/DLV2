@@ -92,6 +92,7 @@ namespace grounder{
 
 	#define NATIVE_CHOICE 0
 	#define DISJUNCTION 1
+	#define NATIVE_CHOICE2 2
 
 	typedef unsigned index_object;
 

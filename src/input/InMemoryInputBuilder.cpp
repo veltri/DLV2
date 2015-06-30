@@ -36,6 +36,9 @@ InMemoryInputBuilder::InMemoryInputBuilder() :
 		case DISJUNCTION:
 			inputRewriter=new BaseInputRewriter();
 			break;
+		case NATIVE_CHOICE2:
+			inputRewriter=new ChoiceBaseNoRewriteFirstInputRewriter();
+			break;
 		default:
 			inputRewriter=new ChoiceBaseInputRewriter();
 			break;
@@ -468,13 +471,12 @@ void InMemoryInputBuilder::rewriteAggregate(Rule* rule) {
 
 	//Translate the rule
 	vector<Rule*> rules;
-	inputRewriter->translateAggregate(rule, rules, orderRule);
+	inputRewriter->translateAggregate(rule, rules, &orderRule);
 
 	for (auto r : rules) {
 		OrderRule orderR(r);
 		isSafe = orderR.order();
 		if (!isSafe)
-			r->print();
 		safetyError(isSafe,"RULE IS UNSAFE");
 		statementDependency->addRuleMapping(r);
 	}
@@ -486,9 +488,9 @@ void InMemoryInputBuilder::rewriteChoice(Rule* rule) {
 	vector<Rule*> rules;
 	inputRewriter->translateChoice(rule, rules);
 	for (auto r : rules){
-		if(r->isMustBeRewritedForAggregates())
+		if(r->isMustBeRewritedForAggregates()){
 			rewriteAggregate(r);
-		else
+		}else
 			manageSimpleRule(r);
 	}
 }

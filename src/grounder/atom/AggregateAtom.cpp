@@ -17,9 +17,12 @@ using namespace std;
 namespace DLV2{
 namespace grounder{
 
-set_term AggregateAtom::getVariable(){
+set_term AggregateAtom::getVariable(bool guard){
 
-	set_term variables=getGuardVariable();
+	set_term variables;
+
+	if(guard)
+		variables=getGuardVariable();
 
 	for(auto element:aggregateElements)
 		Atom::getVariables(element->getNafLiterals(),variables);

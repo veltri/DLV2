@@ -84,16 +84,22 @@ namespace DLV2
          * @param intersection_set unordered_set
          */
         template<class T>
-        static void intersectionSet(T& set1,T& set2,T& intersection_set){
+        static bool intersectionSet(T& set1,T& set2,T& intersection_set){
+        	bool isIntersection=false;
         	if(set1.size()<set2.size()){
             	for(auto element:set1)
-            		if(set2.count(element))
+            		if(set2.count(element)){
             			intersection_set.insert(element);
+            			isIntersection=true;
+            		}
         	}else {
             	for(auto element:set2)
-            		if(set1.count(element))
+            		if(set1.count(element)){
             			intersection_set.insert(element);
+            			isIntersection=true;
+            		}
         	}
+        	return isIntersection;
         }
 
         /*

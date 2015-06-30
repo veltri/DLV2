@@ -72,7 +72,8 @@ public:
 	virtual bool operator==(const Atom& a)=0;
 
 	///Return the term of variable present in the Atom
-	virtual set_term getVariable();
+	///If the guard is true add also the variable in the guard
+	virtual set_term getVariable(bool guard=true);
 
 	/// Return true if is ground, each term is constant term
 	virtual bool isGround(){

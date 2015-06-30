@@ -28,7 +28,7 @@ void Atom::ground(map_term_term& substritutionTerm,Atom*& templateAtom){
 
 };
 
-set_term Atom::getVariable(){
+set_term Atom::getVariable(bool guard){
 	set_term variables;
 	getVariables(this,variables);
 	return variables;

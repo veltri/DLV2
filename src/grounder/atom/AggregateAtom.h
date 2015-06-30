@@ -66,7 +66,7 @@ public:
 
 	bool operator==(const Atom& a);
 
-	virtual set_term getVariable();
+	virtual set_term getVariable(bool guard=true);
 
 	virtual set_term getGuardVariable();
 

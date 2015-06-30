@@ -39,7 +39,7 @@ private:
 class InputRewriter {
 public:
 	InputRewriter():predicateExtTable(PredicateExtTable::getInstance()), predicateTable(PredicateTable::getInstance()) {};
-	virtual void translateAggregate(Rule* rule, vector<Rule*>& ruleRewrited, const OrderRule& orderRule) = 0;
+	virtual void translateAggregate(Rule* rule, vector<Rule*>& ruleRewrited, OrderRule* orderRule=nullptr) = 0;
 	virtual void translateChoice(Rule*& rule, vector<Rule*>& ruleRewrited) = 0;
 	virtual void  chooseBestSaviorForAggregate(Rule* rule, AggregateElement* aggregateElement, set_term& unsafeVars, vector<Atom*>& atomToAdd, const OrderRule& orderRule) = 0;
 	virtual ~InputRewriter(){};
@@ -64,7 +64,7 @@ public:
 	 *			- the atoms needed to save any atom in the aggregate element.
 	 * The choose of the savior(s) is delegated to the method chooseBestSaviorForAggregate
 	 */
-	virtual void translateAggregate(Rule* rule, vector<Rule*>& ruleRewrited, const OrderRule& orderRule);
+	virtual void translateAggregate(Rule* rule, vector<Rule*>& ruleRewrited, OrderRule* orderRule=nullptr);
 
 	/**
 	 * Given a choice rule it is rewritten by means of new auxiliary rules.
@@ -103,7 +103,7 @@ class ChoiceBaseInputRewriter : public BaseInputRewriter{
 public:
 	virtual vector<AggregateElement*> rewriteChoiceElements(unsigned id,unsigned counter, Atom* choice, Atom* auxiliaryAtomBody,	vector<Rule*>& ruleRewrited);
 	virtual void rewriteChoiceConstraint(const vector<AggregateElement*>& elements, Atom* auxiliaryAtomBody, Atom* choice, vector<Rule*>& ruleRewrited);
-private:
+protected:
 	Rule* createAuxChoiceRule(const vector<Atom*>& head,const vector<Atom*>& body);
 	Rule* createAuxChoiceRule(Atom* head,const vector<Atom*>& body){return createAuxChoiceRule(vector<Atom*>({head}),body);}
 	Rule* createAuxChoiceRule(const vector<Atom*>& head,Atom* body){return createAuxChoiceRule(head,vector<Atom*>({body}));}
@@ -113,6 +113,13 @@ private:
 
 
 };
+
+class ChoiceBaseNoRewriteFirstInputRewriter : public ChoiceBaseInputRewriter{
+public:
+	virtual vector<AggregateElement*> rewriteChoiceElements(unsigned id,unsigned counter, Atom* choice, Atom* auxiliaryAtomBody,	vector<Rule*>& ruleRewrited);
+	virtual void rewriteChoiceConstraint(const vector<AggregateElement*>& elements, Atom* auxiliaryAtomBody, Atom* choice, vector<Rule*>& ruleRewrited);
+};
+
 
 
 } /* namespace grounder */

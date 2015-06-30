@@ -63,8 +63,11 @@ set_term Choice::getGuardVariable(){
 	return terms_variable;
 }
 
-set_term Choice::getVariable() {
+set_term Choice::getVariable(bool guard) {
 	set_term terms_variable;
+
+	if(guard)
+		terms_variable=getGuardVariable();
 
 	for(auto choice_element:choiceElements){
 		for(unsigned i=0;i<choice_element->getSize();++i)
@@ -73,10 +76,10 @@ set_term Choice::getVariable() {
 			terms_variable.insert(variables.begin(),variables.end());
 		}
 	}
-	set_term guardTerms=getGuardVariable();
-	terms_variable.insert(guardTerms.begin(), guardTerms.end());
+
 	return terms_variable;
 }
+
 
 set_term Choice::getVariableToSave(){
 	set_term terms_variable;
