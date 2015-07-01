@@ -52,16 +52,23 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited,
 						terms.push_back(term);
 
 				unsigned countGroundTermInAggElem=0;
+				unsigned aggregation_term_count=0;
 				for(auto term:aggElem->getTerms()){
 					if(term->isGround())countGroundTermInAggElem++;
-					terms.push_back(term);
+					set_term variables,groundTerms;
+					term->getGroundTerm(groundTerms);
+					term->getVariable(variables);
+					aggregation_term_count+=variables.size()+groundTerms.size();
+					terms.insert(terms.end(),variables.begin(),variables.end());
+					terms.insert(terms.end(),groundTerms.begin(),groundTerms.end());
 				}
+
 
 				//terms.insert(terms.end(),aggElem->getTerms().begin(),aggElem->getTerms().end());
 
 				// Avoid the rewriting if there is just one aggregate element and the rewritten atom will have have the same number of terms of the only atom
 				// contained in the aggregate element
-				if(aggElem->getNafLiteralsSize()<2 && terms.size()==aggElem->getNafLiteral(0)->getTermsSize() && countGroundTermInAggElem==0) continue;
+				if(aggElem->getNafLiteralsSize()<2 && terms.size()==aggregation_term_count && countGroundTermInAggElem==0) continue;
 
 				Rule* rule=new Rule;
 				vector<Atom*> atoms=aggElem->getNafLiterals();
@@ -117,7 +124,11 @@ void BaseInputRewriter::chooseBestSaviorForAggregate(Rule* rule, AggregateElemen
 set_term BaseInputRewriter::getVariablesInAggregateElem(AggregateElement* aggregateElem){
 	set_term variables;
 	Atom::getVariables(aggregateElem->getNafLiterals(),variables);
-	for(auto term:aggregateElem->getTerms())variables.erase(term);
+	for(auto term:aggregateElem->getTerms()){
+		set_term variables_in_term;
+		term->getVariable(variables_in_term);
+		for(auto term_to_delete:variables_in_term)variables.erase(term_to_delete);
+	}
 	return variables;
 }
 
@@ -276,6 +287,7 @@ vector<AggregateElement*> ChoiceBaseInputRewriter::rewriteChoiceElements(unsigne
 		Atom* first_atom = choiceElement->getFirstAtom();
 		AggregateElement* element=nullptr;
 
+
 		//Put the choice element with one atom in an unique choice rule ( this coice element don't have body/naf literal)
 		if(choiceElement->getSize()==1){
 			atoms_single_choice.push_back(first_atom);
@@ -297,11 +309,12 @@ vector<AggregateElement*> ChoiceBaseInputRewriter::rewriteChoiceElements(unsigne
 			vector<Atom*> naf_to_add;
 			for(unsigned i=1;i<choiceElement->getSize();i++){
 				set_term variables=choiceElement->getAtom(i)->getVariable();
-				if(Utils::intersectionSet(variables,terms_missed_in_first,terms_to_add)){
+				if(!choice->isDefaultGuard() && Utils::intersectionSet(variables,terms_missed_in_first,terms_to_add)){
 					naf_to_add.push_back(choiceElement->getAtom(i));
 					Utils::intersectionSet(variables,terms_in_choice_first,terms_to_add);
-				}else
+				}else{
 					naf_elements.push_back(choiceElement->getAtom(i));
+				}
 
 			}
 

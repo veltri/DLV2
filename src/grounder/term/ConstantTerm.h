@@ -31,6 +31,8 @@ public:
 	ConstantTerm(bool negative): Term(negative){};
 	ConstantTerm(bool negative, index_object index): Term(negative,index){};
 
+	virtual void getGroundTerm(set_term& variables){variables.insert(this);};
+
 	virtual bool isGround() {return true;}
 
 	/// Return the itself as constant term

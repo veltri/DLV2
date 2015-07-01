@@ -138,8 +138,10 @@ public:
 	virtual void setOperator(Operator op){};
 	/// Calculate the value for arithmetic term and return the ID of the result term
 	virtual Term* calculate(){return this;};
-	/// If the term is variable insert the variables in the vector
+	/// If the term is variable insert the variables in the set
 	virtual void getVariable(set_term& variables){void(0);};
+	/// If the term is ground insert the term in the setr
+	virtual void getGroundTerm(set_term& variables){void(0);};
 	/// Substitute the term with the given terms and return the term of substitute term
 	/// @param substritutionTerm map of index_object. The first index is the ID of term to substitute and second the value
 	virtual Term* substitute(map_term_term& substritutionTerm){return nullptr;};

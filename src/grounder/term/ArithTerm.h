@@ -48,6 +48,10 @@ public:
 			term->getVariable(variables);
 	};
 
+	virtual void getGroundTerm(set_term& variables){
+		for(auto term:terms)
+			term->getGroundTerm(variables);
+	};
 
 	/// Calculate the value based on the operators and terms
 	virtual Term* calculate();
