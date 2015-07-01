@@ -296,8 +296,7 @@ vector<AggregateElement*> ChoiceBaseInputRewriter::rewriteChoiceElements(unsigne
 
 			//Naf element to add in the choice rule
 			vector<Atom*> naf_elements;
-			if (auxiliaryAtomBody != nullptr)
-				naf_elements.push_back(auxiliaryAtomBody->clone());
+
 
 			//Calculate if is needed an additional rewriting: if a variable in the body is binded only with an atom in naf literal of the choice element.
 			// In this case in the constraint rule we need a binding for the body variable and the first atom in the coice.
@@ -305,6 +304,8 @@ vector<AggregateElement*> ChoiceBaseInputRewriter::rewriteChoiceElements(unsigne
 			//ps: if the choice have the default guard we don't have the constraint then we don't have to do the additional rewriting
 			set_term terms_in_choice_first=first_atom->getVariable();
 			set_term terms_missed_in_first,terms_to_add;
+			set_term difference_naf_body;
+			Utils::intersectionSet(terms_in_body,terms_in_choice_first,difference_naf_body);
 			Utils::differenceSet(terms_in_body,terms_in_choice_first,terms_missed_in_first);
 			vector<Atom*> naf_to_add;
 			for(unsigned i=1;i<choiceElement->getSize();i++){
@@ -315,9 +316,15 @@ vector<AggregateElement*> ChoiceBaseInputRewriter::rewriteChoiceElements(unsigne
 				}else{
 					naf_elements.push_back(choiceElement->getAtom(i));
 				}
-
+				for(auto t:variables)difference_naf_body.erase(t);
 			}
 
+			if (auxiliaryAtomBody != nullptr){
+				if(choice->isDefaultGuard() || difference_naf_body.size()>0)
+					naf_elements.push_back(auxiliaryAtomBody->clone());
+				else if(Options::globalOptions()->getRewritingType()!=2)
+					naf_elements.push_back(auxiliaryAtomBody->clone());
+			}
 
 			Rule* aux_rule;
 
@@ -403,114 +410,6 @@ void ChoiceBaseInputRewriter::rewriteChoiceConstraint(const vector<AggregateElem
 	translateAggregate(ruleRewrited.back(),ruleRewrited);
 }
 
-
-vector<AggregateElement*> ChoiceBaseNoRewriteFirstInputRewriter::rewriteChoiceElements(unsigned id, unsigned counter, Atom* choice, Atom* auxiliaryAtomBody, vector<Rule*>& ruleRewrited) {
-
-	vector<AggregateElement*> elements;
-	vector<Atom*> atoms_single_choice;
-
-	//All variable in the body of the rule that appear in the choice except the variable in the guard
-	set_term terms_in_body;
-	if(auxiliaryAtomBody!=nullptr){
-		terms_in_body.insert(auxiliaryAtomBody->getTerms().begin(),auxiliaryAtomBody->getTerms().end());
-		set_term variable_in_choice=choice->getVariable(false);
-		Term * firstGuard=choice->getFirstGuard();
-		Term * secondGuard=choice->getSecondGuard();
-		if(choice->getFirstBinop()!=NONE_OP && !firstGuard->isGround() && !variable_in_choice.count(firstGuard))
-			terms_in_body.erase(firstGuard);
-		if(choice->getSecondBinop()!=NONE_OP && !secondGuard->isGround() && !variable_in_choice.count(secondGuard))
-			terms_in_body.erase(secondGuard);
-	}
-
-	for (unsigned i = 0; i < choice->getChoiceElementsSize(); ++i) {
-		ChoiceElement* choiceElement = choice->getChoiceElement(i);
-		Atom* first_atom = choiceElement->getFirstAtom();
-		AggregateElement* element=nullptr;
-
-		//Put the choice element with one atom in an unique choice rule ( this coice element don't have body/naf literal)
-		if(choiceElement->getSize()==1){
-			atoms_single_choice.push_back(first_atom);
-			element = new AggregateElement(first_atom->clone(),	first_atom->getTerms());
-		}else{
-
-			vector<Atom*> naf_elements;
-			choiceElement->getNafAtoms(naf_elements);
-			if (auxiliaryAtomBody != nullptr)
-				naf_elements.push_back(auxiliaryAtomBody->clone());
-
-			//Calculate if is needed an additional rewriting: if a variable in the body is binded only with an atom in naf literal of the choice element.
-			// In this case in the constraint rule we need an binding for the body variable and the first atom in the coice, then an aux is created.
-			//ps: if the choice have the default guard we don't have the constraint then we don't have to do the additional rewriting
-			set_term terms_in_choice_first=choiceElement->getFirstAtom()->getVariable();
-			set_term terms_in_choice_naf=choiceElement->getVariableInNaf();
-			set_term terms_missed_in_first,terms_to_add;
-			Utils::differenceSet(terms_in_body,terms_in_choice_first,terms_missed_in_first);
-			Utils::intersectionSet(terms_missed_in_first,terms_in_choice_naf,terms_to_add);
-
-
-			Rule* aux_rule;
-
-			if(terms_to_add.size()==0 || choice->isDefaultGuard()){
-				aux_rule=createAuxChoiceRule(first_atom,naf_elements);
-				element = new AggregateElement(first_atom->clone(),	first_atom->getTerms());
-			}else{
-				//For the additional rewriting add in the choice element an auxiliary with the variable of the
-				//first atom in choice element and the additional variable for binding the body. Then add an additional rule
-				//for bind the head of the choice and the auxiliary in the choice
-
-				string predicate_name=AUXILIARY+SEPARATOR+to_string(id)+SEPARATOR+to_string(counter);
-				vector<Term*> terms_to_add_vector=choiceElement->getFirstAtom()->getTerms();
-				terms_to_add_vector.insert(terms_to_add_vector.end(),terms_to_add.begin(),terms_to_add.end());
-				Atom* new_aux=generateNewAuxiliaryAtom(predicate_name,terms_to_add_vector);
-				aux_rule=createAuxChoiceRule(new_aux,naf_elements);
-
-				Rule *projection_rule=new Rule;
-				projection_rule->addInBody(new_aux->clone());
-				projection_rule->addInHead(choiceElement->getFirstAtom());
-
-				ruleRewrited.push_back(projection_rule);
-
-				element = new AggregateElement(new_aux->clone(),new_aux->getTerms());
-			}
-
-
-			ruleRewrited.push_back(aux_rule);
-			counter++;
-
-		}
-		if(element!=nullptr)
-		// Create a new aggregate element
-		elements.push_back(element);
-	}
-
-	if(atoms_single_choice.size()>0){
-
-
-		Rule* aux_rule;
-		if(auxiliaryAtomBody!=nullptr)
-			aux_rule= createAuxChoiceRule(atoms_single_choice,auxiliaryAtomBody->clone());
-		else
-			aux_rule= createAuxChoiceRule(atoms_single_choice);
-
-		ruleRewrited.push_back(aux_rule);
-		counter++;
-	}
-
-	return elements;
-
-}
-
-void ChoiceBaseNoRewriteFirstInputRewriter::rewriteChoiceConstraint(const vector<AggregateElement*>& elements, Atom* auxiliaryAtomBody, Atom* choice, vector<Rule*>& ruleRewrited) {
-	if(!choice->isDefaultGuard()){
-		BaseInputRewriter::rewriteChoiceConstraint(elements, auxiliaryAtomBody, choice, ruleRewrited);
-	}
-	else{
-		for(auto element:elements){
-			element->deleteAtoms();
-			delete element;
-		}
-	}
-}
 
 
 void FirstSaviorChoosingPolicy::getRecursiveDependencies(const OrderRule& orderRule, unsigned savior_pos, vector<Atom*>& atomToAdd) {

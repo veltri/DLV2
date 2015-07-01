@@ -36,9 +36,6 @@ InMemoryInputBuilder::InMemoryInputBuilder() :
 		case DISJUNCTION:
 			inputRewriter=new BaseInputRewriter();
 			break;
-		case NATIVE_CHOICE2:
-			inputRewriter=new ChoiceBaseNoRewriteFirstInputRewriter();
-			break;
 		default:
 			inputRewriter=new ChoiceBaseInputRewriter();
 			break;
