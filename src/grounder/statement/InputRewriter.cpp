@@ -52,23 +52,21 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited,
 						terms.push_back(term);
 
 				unsigned countGroundTermInAggElem=0;
-				unsigned aggregation_term_count=0;
+				set_term aggregate_term;
 				for(auto term:aggElem->getTerms()){
 					if(term->isGround())countGroundTermInAggElem++;
-					set_term variables,groundTerms;
-					term->getGroundTerm(groundTerms);
-					term->getVariable(variables);
-					aggregation_term_count+=variables.size()+groundTerms.size();
-					terms.insert(terms.end(),variables.begin(),variables.end());
-					terms.insert(terms.end(),groundTerms.begin(),groundTerms.end());
+					term->getGroundTerm(aggregate_term);
+					term->getVariable(aggregate_term);
 				}
+				terms.insert(terms.end(),aggregate_term.begin(),aggregate_term.end());
+				terms.insert(terms.end(),aggregate_term.begin(),aggregate_term.end());
 
 
 				//terms.insert(terms.end(),aggElem->getTerms().begin(),aggElem->getTerms().end());
 
 				// Avoid the rewriting if there is just one aggregate element and the rewritten atom will have have the same number of terms of the only atom
 				// contained in the aggregate element
-				if(aggElem->getNafLiteralsSize()<2 && terms.size()==aggregation_term_count && countGroundTermInAggElem==0) continue;
+				if(aggElem->getNafLiteralsSize()<2 && terms.size()==aggregate_term.size() && countGroundTermInAggElem==0) continue;
 
 				Rule* rule=new Rule;
 				vector<Atom*> atoms=aggElem->getNafLiterals();
