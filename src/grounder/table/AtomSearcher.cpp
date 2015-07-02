@@ -157,11 +157,13 @@ int SingleTermAtomSearcher::manageIndex(Atom* templateAtom) {
 			possibleTableToSearch.push_back({i,t->getIndex()});
 	}
 
+
 	int indexSelected=-1;
 	if(!possibleTableToSearch.empty()){
 		indexSelected=selectBestIndex(possibleTableToSearch);
-		if(!createdSearchingTables[indexSelected])
+		if(!createdSearchingTables[indexSelected]){
 			initializeIndexMaps(indexSelected);
+		}
 	}
 	return indexSelected;
 }
@@ -232,7 +234,7 @@ unsigned int SingleTermMapAtomSearcher::selectBestIndex(const vector<pair<int,in
 
 	auto it=possibleTableToSearch.begin();
 	unsigned tableMinSize=(*it).first;
-	unsigned minSize=(searchingTables[(*it).first][(*it).second]).size();
+	unsigned minSize=INT_MAX;
 	for(it++;it!=possibleTableToSearch.end();++it){
 		if(createdSearchingTables[(*it).first]){
 			unsigned currentSize=(searchingTables[(*it).first][(*it).second]).size();
@@ -348,7 +350,7 @@ unsigned int SingleTermMultiMapAtomSearcher::selectBestIndex(const vector<pair<i
 
 	auto it=possibleTableToSearch.begin();
 	unsigned tableMinSize=(*it).first;
-	unsigned minSize=searchingTables[(*it).first].count((*it).second);
+	unsigned minSize=INT_MAX;
 	for(it++;it!=possibleTableToSearch.end();++it){
 		if(createdSearchingTables[(*it).first]){
 			unsigned currentSize=searchingTables[(*it).first].count((*it).second);
