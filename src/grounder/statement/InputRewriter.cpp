@@ -58,15 +58,16 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited,
 					term->getGroundTerm(aggregate_term);
 					term->getVariable(aggregate_term);
 				}
-				terms.insert(terms.end(),aggregate_term.begin(),aggregate_term.end());
-				terms.insert(terms.end(),aggregate_term.begin(),aggregate_term.end());
 
+
+				terms.insert(terms.end(),aggregate_term.begin(),aggregate_term.end());
 
 				//terms.insert(terms.end(),aggElem->getTerms().begin(),aggElem->getTerms().end());
 
 				// Avoid the rewriting if there is just one aggregate element and the rewritten atom will have have the same number of terms of the only atom
 				// contained in the aggregate element
-				if(aggElem->getNafLiteralsSize()<2 && terms.size()==aggregate_term.size() && countGroundTermInAggElem==0) continue;
+				if(aggElem->getNafLiteralsSize()<2 && aggElem->getNafLiteral(0)->getTermsSize()==terms.size() && countGroundTermInAggElem==0) continue;
+
 
 				Rule* rule=new Rule;
 				vector<Atom*> atoms=aggElem->getNafLiterals();
@@ -210,7 +211,7 @@ void BaseInputRewriter::translateChoice(Rule*& rule,vector<Rule*>& ruleRewrited)
 	rule=0;
 }
 
-vector<AggregateElement*> BaseInputRewriter::rewriteChoiceElements(unsigned id,unsigned counter, Atom* choice, Atom* auxiliaryAtomBody,vector<Rule*>& ruleRewrited) {
+vector<AggregateElement*> BaseInputRewriter::rewriteChoiceElements(unsigned& id,unsigned& counter, Atom* choice, Atom* auxiliaryAtomBody,vector<Rule*>& ruleRewrited) {
 	// For each choice element a new disjunctive auxiliary rule is created.
 	// Each rule has in the head a disjunction with a the first atom of the choice element and a new auxiliary atom
 	// having the same terms of the first atom, while in the body it contains the remaining atoms of the choice element
@@ -231,16 +232,20 @@ vector<AggregateElement*> BaseInputRewriter::rewriteChoiceElements(unsigned id,u
 		aux_rule->addInHead(auxiliaryAtom);
 		//Body
 		vector<Atom*> naf_elements;
-		choiceElement->getNafAtoms(naf_elements);
-		aux_rule->addInBody(naf_elements.begin(), naf_elements.end());
-		if (auxiliaryAtomBody != nullptr)
-			aux_rule->addInBody(auxiliaryAtomBody->clone());
+		set_term terms_in_bodychoice;
+		if(auxiliaryAtomBody!=nullptr){
+			set_term terms_in_body(auxiliaryAtomBody->getTerms().begin(),auxiliaryAtomBody->getTerms().end());
+			set_term variable_in_choice=choice->getVariable(false);
+			Utils::intersectionSet(terms_in_body,variable_in_choice,terms_in_bodychoice);
+		}
+		AggregateElement* element;
+		//Call with default guard false because this rewriting is indipendent with the type of guard
+		createBodyRuleChoice(id,counter,choiceElement,auxiliaryAtomBody,terms_in_bodychoice,ruleRewrited,naf_elements,element,false);
+		aux_rule->addInBody(naf_elements.begin(),naf_elements.end());
 
 		ruleRewrited.push_back(aux_rule);
 		counter++;
 		// Create a new aggregate element
-		AggregateElement* element = new AggregateElement(first_atom->clone(),
-				first_atom->getTerms());
 		elements.push_back(element);
 	}
 	return elements;
@@ -260,24 +265,91 @@ void BaseInputRewriter::rewriteChoiceConstraint(const vector<AggregateElement*>&
 	aggregate_atom->changeInStandardFormat();
 	constraint_aux_rule->addInBody(aggregate_atom);
 	ruleRewrited.push_back(constraint_aux_rule);
+	translateAggregate(ruleRewrited.back(),ruleRewrited);
 }
 
 
-vector<AggregateElement*> ChoiceBaseInputRewriter::rewriteChoiceElements(unsigned id, unsigned counter, Atom* choice, Atom* auxiliaryAtomBody,vector<Rule*>& ruleRewrited) {
+void BaseInputRewriter::createBodyRuleChoice(unsigned& id, unsigned& counter,ChoiceElement* choiceElement,Atom* auxiliaryAtomBody,set_term &terms_in_bodychoice,vector<Rule*>& ruleRewrited,vector<Atom*>& naf_elements,AggregateElement*& element,bool defaultGuard){
+	//Naf element to add in the choice rule
+	Atom* first_atom = choiceElement->getFirstAtom();
+
+	//Calculate if is needed an additional rewriting: if a variable in the body is binded only with an atom in naf literal of the choice element.
+	// In this case in the constraint rule we need a binding for the body variable and the first atom in the coice.
+	//Then an auxiliary rule is created with in the body the naf literal in the choice element that contain the variable missed in the first atom.
+	//ps: if the choice have the default guard we don't have the constraint then we don't have to do the additional rewriting
+
+	vector<Atom*> naf_in_aux;
+	set_term terms_in_first=first_atom->getVariable();
+	set_term terms_missed,terms_in_naf;
+	for(unsigned i=1;i<choiceElement->getSize();i++){
+		set_term variables=choiceElement->getAtom(i)->getVariable();
+		set_term intersection_naf_body;
+		Utils::intersectionSet(variables,terms_in_bodychoice,intersection_naf_body);
+		if(!defaultGuard && !Utils::isContained(intersection_naf_body,terms_in_first)){
+			naf_in_aux.push_back(choiceElement->getAtom(i));
+			Utils::differenceSet(intersection_naf_body,terms_in_first,terms_missed);
+		}else{
+			naf_elements.push_back(choiceElement->getAtom(i));
+		}
+		terms_in_naf.insert(variables.begin(),variables.end());
+	}
+
+
+
+
+	//Push the body of the rule if the intersection of term in the first atom and the naf is > 0, then is unsafe or rewritingtype=2
+	//Is there is default guard then the body is must be take
+	set_term difference_first_naf;
+	Utils::intersectionSet(terms_in_first,terms_in_naf,difference_first_naf);
+	if (auxiliaryAtomBody != nullptr){
+		if(defaultGuard || difference_first_naf.size()!=terms_in_first.size() || Options::globalOptions()->getRewritingType()!=2)
+			naf_elements.push_back(auxiliaryAtomBody->clone());
+	}
+
+	Atom *aux_naf=nullptr;
+	terms_missed.insert(difference_first_naf.begin(),difference_first_naf.end());
+
+	if(naf_in_aux.size()>1){
+		Rule *aux_naf_rule=new Rule;
+		string predicate_name=AUXILIARY+SEPARATOR+to_string(id)+SEPARATOR+to_string(counter);
+		counter++;
+		vector<Term*> terms(terms_missed.begin(),terms_missed.end());
+		aux_naf=generateNewAuxiliaryAtom(predicate_name,terms);
+		aux_naf_rule->addInHead(aux_naf);
+		aux_naf_rule->setBody(naf_in_aux);
+		ruleRewrited.push_back(aux_naf_rule);
+
+	}else if(naf_in_aux.size()==1)
+		aux_naf=naf_in_aux[0];
+
+	if(aux_naf!=nullptr)
+	naf_elements.push_back(aux_naf->clone());
+
+
+	//For aggregate element in constraint
+	if(naf_in_aux.size()==0)
+		element = new AggregateElement(first_atom->clone(),	first_atom->getTerms());
+	else{
+		element = new AggregateElement;
+		for(auto term:terms_missed)
+			element->addTerm(term);
+
+		element->addNafLiterals(aux_naf->clone());
+		element->addNafLiterals(first_atom->clone());
+	}
+}
+
+
+vector<AggregateElement*> ChoiceBaseInputRewriter::rewriteChoiceElements(unsigned& id, unsigned& counter, Atom* choice, Atom* auxiliaryAtomBody,vector<Rule*>& ruleRewrited) {
 	vector<AggregateElement*> elements;
 	vector<Atom*> atoms_single_choice;
 
 	//All variable in the body of the rule that appear in the choice except the variable in the guard
-	set_term terms_in_body;
+	set_term terms_in_bodychoice;
 	if(auxiliaryAtomBody!=nullptr){
-		terms_in_body.insert(auxiliaryAtomBody->getTerms().begin(),auxiliaryAtomBody->getTerms().end());
+		set_term terms_in_body(auxiliaryAtomBody->getTerms().begin(),auxiliaryAtomBody->getTerms().end());
 		set_term variable_in_choice=choice->getVariable(false);
-		Term * firstGuard=choice->getFirstGuard();
-		Term * secondGuard=choice->getSecondGuard();
-		if(choice->getFirstBinop()!=NONE_OP && !firstGuard->isGround() && !variable_in_choice.count(firstGuard))
-			terms_in_body.erase(firstGuard);
-		if(choice->getSecondBinop()!=NONE_OP && !secondGuard->isGround() && !variable_in_choice.count(secondGuard))
-			terms_in_body.erase(secondGuard);
+		Utils::intersectionSet(terms_in_body,variable_in_choice,terms_in_bodychoice);
 	}
 
 	for (unsigned i = 0; i < choice->getChoiceElementsSize(); ++i) {
@@ -295,60 +367,9 @@ vector<AggregateElement*> ChoiceBaseInputRewriter::rewriteChoiceElements(unsigne
 			//Naf element to add in the choice rule
 			vector<Atom*> naf_elements;
 
+			createBodyRuleChoice(id,counter,choiceElement,auxiliaryAtomBody,terms_in_bodychoice,ruleRewrited,naf_elements,element,choice->isDefaultGuard());
 
-			//Calculate if is needed an additional rewriting: if a variable in the body is binded only with an atom in naf literal of the choice element.
-			// In this case in the constraint rule we need a binding for the body variable and the first atom in the coice.
-			//Then an auxiliary rule is created with in the body the naf literal in the choice element that contain the variable missed in the first atom.
-			//ps: if the choice have the default guard we don't have the constraint then we don't have to do the additional rewriting
-			set_term terms_in_choice_first=first_atom->getVariable();
-			set_term terms_missed_in_first,terms_to_add;
-			set_term difference_naf_body;
-			Utils::intersectionSet(terms_in_body,terms_in_choice_first,difference_naf_body);
-			Utils::differenceSet(terms_in_body,terms_in_choice_first,terms_missed_in_first);
-			vector<Atom*> naf_to_add;
-			for(unsigned i=1;i<choiceElement->getSize();i++){
-				set_term variables=choiceElement->getAtom(i)->getVariable();
-				if(!choice->isDefaultGuard() && Utils::intersectionSet(variables,terms_missed_in_first,terms_to_add)){
-					naf_to_add.push_back(choiceElement->getAtom(i));
-					Utils::intersectionSet(variables,terms_in_choice_first,terms_to_add);
-				}else{
-					naf_elements.push_back(choiceElement->getAtom(i));
-				}
-				for(auto t:variables)difference_naf_body.erase(t);
-			}
-
-			if (auxiliaryAtomBody != nullptr){
-				if(choice->isDefaultGuard() || difference_naf_body.size()>0)
-					naf_elements.push_back(auxiliaryAtomBody->clone());
-				else if(Options::globalOptions()->getRewritingType()!=2)
-					naf_elements.push_back(auxiliaryAtomBody->clone());
-			}
-
-			Rule* aux_rule;
-
-			if(terms_to_add.size()==0 || choice->isDefaultGuard()){
-				aux_rule=createAuxChoiceRule(first_atom,naf_elements);
-				element = new AggregateElement(first_atom->clone(),	first_atom->getTerms());
-			}else{
-
-				Rule *aux_naf_rule=new Rule;
-				string predicate_name=AUXILIARY+SEPARATOR+to_string(id)+SEPARATOR+to_string(counter);
-				vector<Term*> terms(terms_to_add.begin(),terms_to_add.end());
-				Atom *aux_naf=generateNewAuxiliaryAtom(predicate_name,terms);
-				aux_naf_rule->addInHead(aux_naf);
-				aux_naf_rule->setBody(naf_to_add);
-				ruleRewrited.push_back(aux_naf_rule);
-
-				naf_elements.push_back(aux_naf->clone());
-				aux_rule=createAuxChoiceRule(first_atom,naf_elements);
-
-
-				element = new AggregateElement;
-				for(auto term:terms_to_add)
-					element->addTerm(term);
-				element->addNafLiterals(aux_naf->clone());
-				element->addNafLiterals(first_atom->clone());
-			}
+			Rule *aux_rule=createAuxChoiceRule(first_atom,naf_elements);
 
 
 			ruleRewrited.push_back(aux_rule);
@@ -356,12 +377,11 @@ vector<AggregateElement*> ChoiceBaseInputRewriter::rewriteChoiceElements(unsigne
 
 		}
 		if(element!=nullptr)
-		// Create a new aggregate element
-		elements.push_back(element);
+			// Create a new aggregate element
+			elements.push_back(element);
 	}
 
 	if(atoms_single_choice.size()>0){
-
 
 		Rule* aux_rule;
 		if(auxiliaryAtomBody!=nullptr)
@@ -405,7 +425,6 @@ void ChoiceBaseInputRewriter::rewriteChoiceConstraint(const vector<AggregateElem
 			delete element;
 		}
 	}
-	translateAggregate(ruleRewrited.back(),ruleRewrited);
 }
 
 

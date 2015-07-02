@@ -94,16 +94,20 @@ protected:
 	set_term getVariablesInAggregateElem(AggregateElement* aggregateElem);
 
 	///Create an auxiliary rule for each  choice element
-	virtual vector<AggregateElement*> rewriteChoiceElements(unsigned id,unsigned counter, Atom* choice, Atom* auxiliaryAtomBody,	vector<Rule*>& ruleRewrited);
+	virtual vector<AggregateElement*> rewriteChoiceElements(unsigned& id,unsigned& counter, Atom* choice, Atom* auxiliaryAtomBody,	vector<Rule*>& ruleRewrited);
 
 	virtual void rewriteChoiceConstraint(const vector<AggregateElement*>& elements, Atom* auxiliaryAtomBody, Atom* choice, vector<Rule*>& ruleRewrited);
+
+	virtual void createBodyRuleChoice(unsigned& id, unsigned& counter,ChoiceElement* choiceElement,Atom* auxiliaryAtomBody,set_term &terms_in_bodychoice,vector<Rule*>& ruleRewrited,vector<Atom*>& naf_elements,AggregateElement*& element,bool defaultGuard);
 };
 
 class ChoiceBaseInputRewriter : public BaseInputRewriter{
 public:
-	virtual vector<AggregateElement*> rewriteChoiceElements(unsigned id,unsigned counter, Atom* choice, Atom* auxiliaryAtomBody,	vector<Rule*>& ruleRewrited);
+	virtual vector<AggregateElement*> rewriteChoiceElements(unsigned& id,unsigned& counter, Atom* choice, Atom* auxiliaryAtomBody,	vector<Rule*>& ruleRewrited);
 	virtual void rewriteChoiceConstraint(const vector<AggregateElement*>& elements, Atom* auxiliaryAtomBody, Atom* choice, vector<Rule*>& ruleRewrited);
 protected:
+
+
 	Rule* createAuxChoiceRule(const vector<Atom*>& head,const vector<Atom*>& body);
 	Rule* createAuxChoiceRule(Atom* head,const vector<Atom*>& body){return createAuxChoiceRule(vector<Atom*>({head}),body);}
 	Rule* createAuxChoiceRule(const vector<Atom*>& head,Atom* body){return createAuxChoiceRule(head,vector<Atom*>({body}));}
