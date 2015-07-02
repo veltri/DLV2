@@ -188,7 +188,7 @@ Options::init(
         int optionIndex = 0;
         
         code = getopt_long (argc, argv, shortOptions, longOptions, &optionIndex);
-        
+
         switch (code)
         {
             case -1:

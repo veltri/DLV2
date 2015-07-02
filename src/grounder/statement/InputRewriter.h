@@ -114,13 +114,6 @@ protected:
 
 };
 
-class ChoiceBaseNoRewriteFirstInputRewriter : public ChoiceBaseInputRewriter{
-public:
-	virtual vector<AggregateElement*> rewriteChoiceElements(unsigned id,unsigned counter, Atom* choice, Atom* auxiliaryAtomBody,	vector<Rule*>& ruleRewrited);
-	virtual void rewriteChoiceConstraint(const vector<AggregateElement*>& elements, Atom* auxiliaryAtomBody, Atom* choice, vector<Rule*>& ruleRewrited);
-};
-
-
 
 } /* namespace grounder */
 } /* namespace DLV2 */
