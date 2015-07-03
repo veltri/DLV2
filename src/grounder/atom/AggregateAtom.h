@@ -75,22 +75,22 @@ public:
 	///Getter method for the aggregate elements
 	const vector<AggregateElement*>& getAggregateElements() const {return aggregateElements;};
 	///Getter method for the i-th aggregate element
-	AggregateElement* getAggregateElement(unsigned i) {return aggregateElements[i];}
+	AggregateElement* getAggregateElement(unsigned i) const{return aggregateElements[i];}
 	///Setter method for the aggregate elements
 	void setAggregateElements(const vector<AggregateElement*>& aggregateElements) {this->aggregateElements = aggregateElements;};
 	///Getter method for the aggregate elements size
-	virtual unsigned getAggregateElementsSize() {return aggregateElements.size();};
+	virtual unsigned getAggregateElementsSize() const{return aggregateElements.size();};
 	/// Add aggregate element
 	void addAggregateElement(AggregateElement *element){aggregateElements.push_back(element);};
 
 	void setFirstGuard(Term* lower){firstGuard=lower;};
 	void setSecondGuard(Term* upper){secondGuard=upper;};
 
-	virtual bool isAggregateAtom(){return true;}
+	virtual bool isAggregateAtom()const{return true;}
 
 
-	Term* getFirstGuard(){return firstGuard;};
-	Term* getSecondGuard(){return secondGuard;};
+	Term* getFirstGuard()const{return firstGuard;};
+	Term* getSecondGuard()const{return secondGuard;};
 
 	///Getter method for the aggregate function
 	AggregateFunction getAggregateFunction() const {return aggregateFunction;};

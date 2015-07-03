@@ -81,6 +81,8 @@ public:
 	unsigned int getSizeBody() const {return body.size();}
 	///Remove atom in body
 	void removeInBody(unsigned position){body.erase(body.begin()+position);};
+	///Remove atom in body
+	void removeInBody(vector<Atom*>::iterator it){body.erase(it);};
 	///Insert an element in the body at specified position
 	void insertInBody(Atom* atom,unsigned position){body.insert(body.begin()+position,atom);};
 

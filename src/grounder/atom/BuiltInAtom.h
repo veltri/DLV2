@@ -73,7 +73,7 @@ public:
 	bool evaluate(map_term_term& substitutionTerm);
 
 	/// Return true if is BuiltInAtom
-	virtual bool isBuiltIn(){return true;};
+	virtual bool isBuiltIn()const{return true;};
 
 	///Printer Method
 	void print();

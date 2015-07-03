@@ -189,6 +189,17 @@ public:
 	/// Getter for the ith constraint
 	Rule* getConstraint(int i) {return constraints[i];}
 
+	vector<Rule*>::iterator getBeginRules(){return rules.begin();}
+	vector<Rule*>::iterator getEndRules(){return rules.end();}
+	vector<Rule*>::iterator getBeginConstraints(){return constraints.begin();}
+	vector<Rule*>::iterator getEndConstraints(){return constraints.end();}
+
+	///Clear the atom in the rule and delete in the vector rules
+	void deleteRule(vector<Rule*>::iterator it){clearRule(*it);rules.erase(it);}
+	///Clear the atom in the rule and delete in the vector constraint
+	void deleteRuleConstraint(vector<Rule*>::iterator it){clearRule(*it);constraints.erase(it);}
+
+
 	bool isOnlyInHead(index_object predicate){
 		return (!statementAtomMapping.isInBody(predicate));
 	}
@@ -197,21 +208,24 @@ public:
 	void print();
 
 	virtual ~StatementDependency() {
-		for(Rule* r:rules){
-			r->deleteBody([](Atom* atom){
-				return 2;
-			});
+		for(Rule* r:rules)
+			clearRule(r);
+
+		for(Rule* r:constraints)
+			clearRule(r);
+
+	}
+
+	void clearRule(Rule *r){
+		r->deleteBody([](Atom* atom){
+			return 2;
+		});
+		if(!r->isAStrongConstraint())
 			r->deleteHead([](Atom* atom){
 				return 2;
 			});
-			delete r;
-		}
-		for(Rule* r:constraints){
-			r->deleteBody([](Atom* atom){
-				return 2;
-			});
-			delete r;
-		}
+
+		delete r;
 	}
 
 	static StatementDependency* getInstance();

@@ -48,8 +48,8 @@ void ClassicalLiteral::print(Predicate* predicate,const vector<Term*>& terms,boo
 
 bool ClassicalLiteral::operator==(const Atom& a){
 
-//	if(a.getPredicate()==nullptr) return false;
-//	if(*predicate==*a.getPredicate())return false;
+	if(a.getPredicate()==nullptr) return false;
+	if(predicate->getIndex()==a.getPredicate()->getIndex())return false;
 	if(terms.size()!=a.getTermsSize())return false;
 	for(unsigned int i=0;i<terms.size();i++)
 		if(terms[i]->getIndex()!=a.getTerm(i)->getIndex())

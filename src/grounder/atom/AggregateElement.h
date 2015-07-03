@@ -71,6 +71,8 @@ class AggregateElement {
 
 		bool areAggregationTermsSafe()const;
 
+		bool operator==(const AggregateElement& element)const;
+
 	private:
 		///Vector of terms
 		vector<Term*> terms;

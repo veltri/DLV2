@@ -55,7 +55,19 @@ size_t AggregateAtom::hash() {
 }
 
 bool AggregateAtom::operator ==(const Atom& a) {
-	return false; //TODO
+	if(!a.isAggregateAtom())return false;
+	if(aggregateFunction!=a.getAggregateFunction())return false;
+	if(firstBinop!=a.getFirstBinop())return false;
+	if(secondBinop!=a.getSecondBinop())return false;
+	if(firstBinop!=NONE_OP && firstGuard->getIndex()!=a.getFirstGuard()->getIndex())return false;
+	if(secondBinop!=NONE_OP && secondGuard->getIndex()!=a.getSecondGuard()->getIndex())return false;
+	if(aggregateElements.size()!=a.getAggregateElementsSize())return false;
+	for(unsigned i=0;i<aggregateElements.size();i++)
+		if(!(*aggregateElements[i]==*a.getAggregateElement(i)))
+			return false;
+
+	return true;
+
 }
 
 

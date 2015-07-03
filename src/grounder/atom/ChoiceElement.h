@@ -59,6 +59,8 @@ public:
 	///Return the variable in naf literal
 	set_term getVariableInNaf();
 
+	bool operator==(const ChoiceElement& choiceElement)const;
+
 	void deleteAtoms();
 	///Destructor
 	~ChoiceElement(){};

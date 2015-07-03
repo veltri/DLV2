@@ -55,6 +55,7 @@ size_t BuiltInAtom::hash(){
 
 bool BuiltInAtom::operator==(const Atom& a) {
 
+	if(!a.isBuiltIn())return false;
 	if(binop != a.getBinop()) return false;
 	if(terms[0]->getIndex() != a.getTerm(0)->getIndex()) return false;
 	if(terms[1]->getIndex() != a.getTerm(1)->getIndex()) return false;

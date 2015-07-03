@@ -138,7 +138,7 @@ public:
 	///Setter method for the binary operation
 	virtual void setBinop(Binop binop) {};
 	/// Return true if is BuiltInAtom
-	virtual bool isBuiltIn(){return false;};
+	virtual bool isBuiltIn()const{return false;};
 	///This method evaluate the truth value of the built-in atom, if there is bind variable
 	/// and equal then assign that value for the bind variable
 	virtual bool evaluate(map_term_term& substitutionTerm){return false;};
@@ -151,13 +151,13 @@ public:
 	///Getter method for the aggregate elements
 	virtual const vector<AggregateElement*>& getAggregateElements() const {return vector<AggregateElement*>(0);};
 	///Getter method for the i-th aggregate element
-	virtual AggregateElement* getAggregateElement(unsigned i) {return 0;}
+	virtual AggregateElement* getAggregateElement(unsigned i) const{return 0;}
 	///Setter method for the aggregate elements
 	virtual void setAggregateElements(const vector<AggregateElement*>& aggregateElements) {};
 	///Getter method for the aggregate elements size
-	virtual unsigned getAggregateElementsSize() {return 0;};
+	virtual unsigned getAggregateElementsSize() const{return 0;};
 	/// Return true if is an aggregate atom
-	virtual bool isAggregateAtom(){return false;}
+	virtual bool isAggregateAtom()const{return false;}
 	///Setter method for the i-th aggregate element
 	virtual void setAggregateElement(unsigned i, const vector<Atom*>& nafLits, const vector<Term*>& terms) {}
 	///Setter method for the i-th aggregate element
@@ -169,9 +169,9 @@ public:
 	///Set second guard of aggregate
 	virtual void setSecondGuard(Term* upper){};
 	///Get lower guard of aggregate
-	virtual Term* getFirstGuard(){return nullptr;};
+	virtual Term* getFirstGuard()const{return nullptr;};
 	///Get upper guard of aggregate
-	virtual Term* getSecondGuard(){return nullptr;};
+	virtual Term* getSecondGuard()const{return nullptr;};
 	///Setter method for the aggregate function
 	virtual void setAggregateFunction(AggregateFunction aggregateFunction) {};
 	///Getter method for the first binary operation
@@ -219,7 +219,7 @@ public:
 	///Returns the i-th choice element
 	virtual ChoiceElement* getChoiceElement(unsigned i) const {return 0;}
 	///Return true if is a choice atom
-	virtual bool isChoice(){return false;}
+	virtual bool isChoice()const{return false;}
 	///Add a choice element
 	virtual void addChoiceElement(ChoiceElement* choiceElement){}
 	virtual void addSingleChoiceElement(Atom* atom){}

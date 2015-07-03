@@ -67,15 +67,14 @@ public:
 		choiceElements.push_back(element);
 	}
 
-	virtual bool isChoice(){return true;}
+	virtual bool isChoice()const{return true;}
 
 	///This method compute the resulting hash of a choice atom TODO
 	size_t getHash() const {return 0;};
 
 	virtual void print();
 
-	//TODO
-	virtual bool operator==(const Atom& a){return false;};
+	virtual bool operator==(const Atom& a);
 	virtual size_t hash(){return 0;};
 
 	virtual Atom* clone();

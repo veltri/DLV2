@@ -13,6 +13,7 @@
 #include "../atom/ClassicalLiteral.h"
 #include "../../util/Timer.h"
 #include "../../util/Utils.h"
+#include "NonGroundSimplifier.h"
 
 namespace DLV2{
 
@@ -37,6 +38,9 @@ void ProgramGrounder::printProgram(const vector<vector<Rule*> >& exitRules,	cons
 
 void ProgramGrounder::ground() {
 
+	NonGroundSimplifier nonGroundSimplificator;
+	nonGroundSimplificator.simplify();
+
 	//Create the dependency graph
 	statementDependency->createDependencyGraph(predicateTable);
 
@@ -48,6 +52,7 @@ void ProgramGrounder::ground() {
 	vector<vector<Rule*>> recursiveRules;
 	vector<unordered_set<index_object>> componentPredicateInHead;
 	statementDependency->createComponentGraphAndComputeAnOrdering(exitRules, recursiveRules, componentPredicateInHead);
+
 
 	if (Options::globalOptions()->isPrintRewrittenProgram())
 		printProgram(exitRules, recursiveRules);

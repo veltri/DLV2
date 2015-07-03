@@ -52,6 +52,19 @@ Atom* Choice::clone() {
 	return atom;
 }
 
+bool Choice::operator ==(const Atom& a) {
+	if(!a.isChoice())return false;
+	if(firstBinop!=a.getFirstBinop())return false;
+	if(secondBinop!=a.getSecondBinop())return false;
+	if(firstBinop!=NONE_OP && terms[0]->getIndex()!=a.getFirstGuard()->getIndex())return false;
+	if(secondBinop!=NONE_OP && terms[1]->getIndex()!=a.getSecondGuard()->getIndex())return false;
+	if(choiceElements.size()!=a.getChoiceElementsSize())return false;
+	for(unsigned i=0;i<choiceElements.size();i++)
+		if(!(*choiceElements[i]==*a.getChoiceElement(i)))
+			return false;
+
+	return true;
+}
 
 set_term Choice::getGuardVariable(){
 	set_term terms_variable;

@@ -73,7 +73,19 @@ namespace grounder{
 		return true;
 	}
 
-}
-}
+	bool AggregateElement::operator ==(const AggregateElement& element) const {
+		if(terms.size()!=element.terms.size())return false;
+		if(nafLiterals.size()!=element.nafLiterals.size())return false;
+		for(unsigned i=0;i<terms.size();i++)
+			if(terms[i]->getIndex()!=element.terms[i]->getIndex())
+				return false;
+		for(unsigned i=0;i<nafLiterals.size();i++)
+			if(!(nafLiterals[i]==nafLiterals[i]))
+				return false;
 
+		return true;
+	}
+
+}
+}
 

@@ -47,6 +47,16 @@ void ChoiceElement::deleteAtoms() {
 		delete atom;
 }
 
+bool ChoiceElement::operator ==(const ChoiceElement& element) const {
+	if(choiceElement.size()!=element.choiceElement.size())return false;
+	for(unsigned i=0;i<choiceElement.size();i++)
+		if(!(choiceElement[i]==element.choiceElement[i]))
+			return false;
+
+
+	return true;
 }
 
 }
+}
+
