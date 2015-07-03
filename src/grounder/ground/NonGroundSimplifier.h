@@ -28,6 +28,7 @@ protected:
 	bool checkOpposite(vector<Atom*>::const_iterator begin,vector<Atom*>::const_iterator end,vector<Atom*>::const_iterator currentIt)const;
 	bool checkFalsity(vector<Atom*>::const_iterator currentIt)const;
 	bool checkAggregateSumCountStringGuard(vector<Atom*>::const_iterator currentIt,bool& alwaysTrue) const ;
+	bool checkAggregateAllAggTermShared(vector<Atom*>::const_iterator currentIt,bool& alwaysTrue) const ;
 
 
 private:

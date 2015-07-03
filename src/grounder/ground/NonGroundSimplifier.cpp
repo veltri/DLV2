@@ -86,6 +86,10 @@ bool NonGroundSimplifier::checkAggregateSumCountStringGuard(vector<Atom*>::const
 	return false;
 }
 
+bool NonGroundSimplifier::checkAggregateAllAggTermShared(vector<Atom*>::const_iterator currentIt, bool& alwaysTrue) const {
+	//TODO Do in aggregate atom a method for check if all the agg term are shared variable.
+	//If true then partial evaluation is 0 to N (then number of agg element). Then do the simplification based on the guard.
+}
 
 } /* namespace grounder */
 } /* namespace DLV2 */
