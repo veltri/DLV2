@@ -66,7 +66,7 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited,
 
 				// Avoid the rewriting if there is just one aggregate element and the rewritten atom will have have the same number of terms of the only atom
 				// contained in the aggregate element
-				if(aggElem->getNafLiteralsSize()<2 && aggElem->getNafLiteral(0)->getTermsSize()==terms.size() && countGroundTermInAggElem==0) continue;
+				if(aggElem->getNafLiteralsSize()<2 && aggElem->getNafLiteral(0)->getVariable(false).size()==terms.size() && countGroundTermInAggElem==0) continue;
 
 
 				Rule* rule=new Rule;
