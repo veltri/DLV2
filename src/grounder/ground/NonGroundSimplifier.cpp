@@ -13,13 +13,20 @@ namespace grounder {
 bool NonGroundSimplifier::simplifyRule(Rule* r) {
 
 	vector<vector<Atom*>::iterator> atoms_to_delete;
+	bool boolean;
 	for(auto it=r->getBeginBody();it!=r->getEndBody();it++){
 		if(checkDuplicate(it+1,r->getEndBody(),it))
 			atoms_to_delete.push_back(it);
 		if(checkOpposite(it+1,r->getEndBody(),it))
 			return true;
+
 		if(checkFalsity(it)){
 			if(!(*it)->isNegative())
+				return true;
+			atoms_to_delete.push_back(it);
+		}
+		if(checkAggregateSumCountStringGuard(it,boolean)){
+			if(!boolean)
 				return true;
 			atoms_to_delete.push_back(it);
 		}
@@ -61,6 +68,24 @@ bool NonGroundSimplifier::checkFalsity(	vector<Atom*>::const_iterator currentIt)
 	}
 	return false;
 }
+
+bool NonGroundSimplifier::checkAggregateSumCountStringGuard(vector<Atom*>::const_iterator currentIt,bool& alwaysTrue) const {
+	Atom* atom=*currentIt;
+	if(atom->isAggregateAtom() && (atom->getAggregateFunction()==SUM || atom->getAggregateFunction()==COUNT) ){
+		if((atom->getFirstBinop()==LESS_OR_EQ || atom->getFirstBinop()==EQUAL || atom->getFirstBinop()==LESS)
+		&& atom->getFirstGuard()->getType()!=VARIABLE && atom->getFirstGuard()->getType()!=NUMERIC_CONSTANT){
+			alwaysTrue= atom->isNegative();
+			return true;
+		}
+		if((atom->getSecondBinop()==LESS || atom->getSecondBinop()==LESS_OR_EQ) && atom->getFirstBinop()==NONE_OP
+			&& atom->getSecondGuard()->getType()!=VARIABLE && atom->getSecondGuard()->getType()!=NUMERIC_CONSTANT){
+			alwaysTrue= !atom->isNegative();
+			return true;
+		}
+	}
+	return false;
+}
+
 
 } /* namespace grounder */
 } /* namespace DLV2 */

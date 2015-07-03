@@ -27,6 +27,8 @@ protected:
 	bool checkDuplicate(vector<Atom*>::const_iterator begin,vector<Atom*>::const_iterator end,vector<Atom*>::const_iterator currentIt)const;
 	bool checkOpposite(vector<Atom*>::const_iterator begin,vector<Atom*>::const_iterator end,vector<Atom*>::const_iterator currentIt)const;
 	bool checkFalsity(vector<Atom*>::const_iterator currentIt)const;
+	bool checkAggregateSumCountStringGuard(vector<Atom*>::const_iterator currentIt,bool& alwaysTrue) const ;
+
 
 private:
 	///A pointer to the instances table

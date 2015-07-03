@@ -445,20 +445,6 @@ void BackTrackingGrounder::removeBindValueInAssignment(const set_term& bind_vari
 
 bool BackTrackingGrounder::groundAggregate() {
 	Atom *aggregateAtom=templateSetAtom[index_current_atom];
-	if(aggregateAtom->getAggregateFunction()==SUM || aggregateAtom->getAggregateFunction()==COUNT){
-			if((aggregateAtom->getFirstBinop()==LESS_OR_EQ || aggregateAtom->getFirstBinop()==EQUAL)
-			&& aggregateAtom->getFirstGuard()->getType()!=VARIABLE && aggregateAtom->getFirstGuard()->getType()!=NUMERIC_CONSTANT){
-				ground_rule->setAtomToSimplifyInBody(index_current_atom);
-				substiteInGroundRule(index_current_atom,nullptr);
-				return aggregateAtom->isNegative();
-		}
-		if(aggregateAtom->getSecondBinop()==LESS && aggregateAtom->getFirstBinop()==NONE_OP
-			&& aggregateAtom->getSecondGuard()->getType()!=VARIABLE && aggregateAtom->getSecondGuard()->getType()!=NUMERIC_CONSTANT){
-				ground_rule->setAtomToSimplifyInBody(index_current_atom);
-				substiteInGroundRule(index_current_atom,nullptr);
-				return !aggregateAtom->isNegative();
-		}
-	}
 
 	Atom *ground_aggregate;
 	if(aggregateAtom->isAnAssigment() && ground_rule->getAtomInBody(index_current_atom)!=nullptr){
