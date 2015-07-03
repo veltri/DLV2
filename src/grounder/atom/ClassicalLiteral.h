@@ -46,7 +46,7 @@ public:
 	set_predicate getPredicates() const {return set_predicate({predicate});};
 	virtual unordered_set<index_object> getPredicatesIndices() const {return unordered_set<index_object>({predicate->getIndex()});};
 
-	virtual bool isClassicalLiteral(){return true;};
+	virtual bool isClassicalLiteral()const{return true;};
 
 	///Setter method for the predicate
 	void setPredicate(Predicate* predicate) {this->predicate=predicate;};
@@ -66,7 +66,7 @@ public:
 	 * 	@details{Two classical atoms are compared by the predicate and the terms.
 	 * 	It is needed in order to compare facts. }
 	 */
-	bool operator==(const Atom& a);
+	bool operator==(const Atom& a) const;
 
 	///This method is used in the printer method @see print()
 	//It is static since it is used in Instance class, where just terms are stored instead of the whole classical atom
@@ -80,6 +80,9 @@ public:
 
 	virtual bool isFact() const { return fact; }
 	virtual void setFact(bool isFact) { this->fact=isFact; }
+
+	//Check if two atoms are completely equal (checking also negation as failure, and strong negation)
+	virtual bool equal(const Atom& atom) const;
 
 	///Destructor
 	virtual ~ClassicalLiteral() {};

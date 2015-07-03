@@ -52,7 +52,7 @@ Atom* Choice::clone() {
 	return atom;
 }
 
-bool Choice::operator ==(const Atom& a) {
+bool Choice::operator ==(const Atom& a) const {
 	if(!a.isChoice())return false;
 	if(firstBinop!=a.getFirstBinop())return false;
 	if(secondBinop!=a.getSecondBinop())return false;

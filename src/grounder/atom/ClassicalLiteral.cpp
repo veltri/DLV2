@@ -46,10 +46,10 @@ void ClassicalLiteral::print(Predicate* predicate,const vector<Term*>& terms,boo
 
 
 
-bool ClassicalLiteral::operator==(const Atom& a){
+bool ClassicalLiteral::operator==(const Atom& a)const {
 
 	if(a.getPredicate()==nullptr) return false;
-	if(predicate->getIndex()==a.getPredicate()->getIndex())return false;
+	if(predicate->getIndex()!=a.getPredicate()->getIndex())return false;
 	if(terms.size()!=a.getTermsSize())return false;
 	for(unsigned int i=0;i<terms.size();i++)
 		if(terms[i]->getIndex()!=a.getTerm(i)->getIndex())
@@ -70,9 +70,14 @@ void ClassicalLiteral::substitute(map_term_term& substitutionTerm,Atom*& templat
 		for(unsigned int i=0;i<terms.size();i++)
 			templateAtom->setTerm(i,terms[i]->substitute(substitutionTerm));
 
-};
+}
 
 
-};
+bool ClassicalLiteral::equal(const Atom& atom) const {
+	if(!atom.isClassicalLiteral()) return false;
+	if(negative!=atom.isNegative()) return false;
+	if(hasMinus!=atom.isHasMinus()) return false;
+	return (*this)==atom;
+}
 
-};
+}}

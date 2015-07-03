@@ -204,6 +204,10 @@ public:
 		return (!statementAtomMapping.isInBody(predicate));
 	}
 
+	bool isOnlyInBody(index_object predicate){
+		return (!statementAtomMapping.isInHead(predicate));
+	}
+
 	///Printer method
 	void print();
 

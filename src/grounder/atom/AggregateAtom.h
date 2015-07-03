@@ -64,7 +64,7 @@ public:
 	///This method compute the resulting hash for an aggregateElement TODO
 	size_t getHash() const {return 0;};
 
-	bool operator==(const Atom& a);
+	bool operator==(const Atom& a)const;
 
 	virtual set_term getVariable(bool guard=true);
 
@@ -158,6 +158,9 @@ public:
 
 	//Copy the guard of the atom
 	virtual void copyGuard(Atom *atom);
+
+	//Check if two atoms are completely equal (checking also negation as failure, and strong negation)
+	virtual bool equal(const Atom& atom) const;
 
 	virtual ~AggregateAtom() {for(auto& aggregateElem:aggregateElements) delete aggregateElem;};
 

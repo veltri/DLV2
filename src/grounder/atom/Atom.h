@@ -69,7 +69,7 @@ public:
 
 	///Equal-to operator for atoms
 	/// Not check the predicate of the atoms
-	virtual bool operator==(const Atom& a)=0;
+	virtual bool operator==(const Atom& a)const = 0;
 
 	///Return the term of variable present in the Atom
 	///If the guard is true add also the variable in the guard
@@ -105,7 +105,7 @@ public:
 	virtual unordered_set<index_object> getPredicatesIndices() const {return unordered_set<index_object>();};
 
 	///Return true if is a Classical Literal
-	virtual bool isClassicalLiteral(){return false;};
+	virtual bool isClassicalLiteral()const {return false;};
 
 	///Setter method for the predicate
 	virtual void setPredicate(Predicate* predicate) {};
@@ -255,6 +255,9 @@ public:
 
 	static void getVariables(Atom* atom,set_term& variables);
 	static void getVariables(const vector<Atom*>& atoms,set_term& variables);
+
+	//Check if two atoms are completely equal (checking also negation as failure, and strong negation)
+	virtual bool equal(const Atom& atom) const {return (*this)==atom;}
 
 protected:
 	vector<Term*> terms;

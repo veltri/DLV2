@@ -16,22 +16,13 @@
 #include "../table/TermTable.h"
 #include "StatementDependency.h"
 #include "../statement/GroundRule.h"
+#include "NonGroundSimplifier.h"
 
 using namespace std;
 
 namespace DLV2{
 
 namespace grounder{
-
-/* Table of Predicate Extension:
- * 		FACT: Table of fact
- * 		NOFACT: Table of atom derived
- * 		DELTA, NEXTDELTA: Auxiliary table for grounding recursive rule
-*/
-#define FACT 0
-#define NOFACT 1
-#define DELTA 2
-#define NEXTDELTA 3
 
 /**
  * @brief This class manages and executes the grounding process.
@@ -97,6 +88,8 @@ protected:
 	/// For each predicate in the current rule this vector stores the table of insert for the atom in head and
 	/// searching table for the predicate in the body
 	vector<vector<unsigned>> predicate_searchInsert_table;
+	///The NonGroundSimplifier object
+	NonGroundSimplifier nonGroundSimplificator;
 
 
 	void swapInDelta(Rule* r);

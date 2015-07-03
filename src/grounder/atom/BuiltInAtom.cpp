@@ -53,7 +53,7 @@ size_t BuiltInAtom::hash(){
 	return HashVecInt::getHashVecInt()->computeHashTerm(terms);
 }
 
-bool BuiltInAtom::operator==(const Atom& a) {
+bool BuiltInAtom::operator==(const Atom& a) const {
 
 	if(!a.isBuiltIn())return false;
 	if(binop != a.getBinop()) return false;

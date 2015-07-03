@@ -20,12 +20,13 @@ class NonGroundSimplifier {
 public:
 	NonGroundSimplifier():predicateExtTable(PredicateExtTable::getInstance()),statementDependency(StatementDependency::getInstance()){};
 	///Simplify the rules and constraints in the statement Dependency
-	void simplify();
 	bool simplifyRule(Rule *r);
 	virtual ~NonGroundSimplifier(){};
 
 protected:
-	bool checkDuplicate(vector<Atom*>::iterator begin,vector<Atom*>::iterator end,vector<Atom*>::iterator currentIt);
+	bool checkDuplicate(vector<Atom*>::const_iterator begin,vector<Atom*>::const_iterator end,vector<Atom*>::const_iterator currentIt)const;
+	bool checkOpposite(vector<Atom*>::const_iterator begin,vector<Atom*>::const_iterator end,vector<Atom*>::const_iterator currentIt)const;
+	bool checkFalsity(vector<Atom*>::const_iterator currentIt)const;
 
 private:
 	///A pointer to the instances table

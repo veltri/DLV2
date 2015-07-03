@@ -20,6 +20,16 @@ namespace DLV2{
 
 namespace grounder{
 
+/* Table of Predicate Extension:
+ * 		FACT: Table of fact
+ * 		NOFACT: Table of atom derived
+ * 		DELTA, NEXTDELTA: Auxiliary table for grounding recursive rule
+*/
+#define FACT 0
+#define NOFACT 1
+#define DELTA 2
+#define NEXTDELTA 3
+
 class PredicateInformation{
 public:
 	PredicateInformation(unsigned arity);
@@ -119,6 +129,8 @@ public:
 	static void setMaxTableNumber(unsigned int maxTableNumber) {MAX_TABLE_NUMBER = maxTableNumber;}
 
 	PredicateInformation* getPredicateInformation() const {return predicateInformation;}
+
+	unsigned getPredicateExtentionSize(unsigned table)const{return tables[table]->size();}
 
 private:
 	///The predicate

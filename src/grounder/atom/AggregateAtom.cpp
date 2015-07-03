@@ -54,7 +54,7 @@ size_t AggregateAtom::hash() {
 	return 0; //TODO
 }
 
-bool AggregateAtom::operator ==(const Atom& a) {
+bool AggregateAtom::operator ==(const Atom& a) const {
 	if(!a.isAggregateAtom())return false;
 	if(aggregateFunction!=a.getAggregateFunction())return false;
 	if(firstBinop!=a.getFirstBinop())return false;
@@ -694,6 +694,12 @@ void AggregateAtom::copyGuard(Atom* atom) {
 		secondBinop=atom->getSecondBinop();
 		secondGuard=atom->getSecondGuard();
 	}
+}
+
+bool AggregateAtom::equal(const Atom& atom) const {
+	if(!atom.isAggregateAtom()) return false;
+	if(negative!=atom.isNegative()) return false;
+	return (*this)==atom;
 }
 
 }

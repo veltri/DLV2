@@ -55,9 +55,9 @@ public:
 	///Set second guard of the choice
 	virtual void setSecondGuard(Term* upper){if(terms.size()==0) terms[0]=0; terms[1]=upper;};
 	///Get lower guard of the choice
-	virtual Term* getFirstGuard(){return terms[0];};
+	virtual Term* getFirstGuard()const{return terms[0];};
 	///Get upper guard of the choice
-	virtual Term* getSecondGuard(){return terms[1];};
+	virtual Term* getSecondGuard()const{return terms[1];};
 	///Add a choice element
 	virtual void addChoiceElement(ChoiceElement* choiceElement){choiceElements.push_back(choiceElement);}
 	///Add a choice element composed with the atom
@@ -74,7 +74,7 @@ public:
 
 	virtual void print();
 
-	virtual bool operator==(const Atom& a);
+	virtual bool operator==(const Atom& a)const ;
 	virtual size_t hash(){return 0;};
 
 	virtual Atom* clone();

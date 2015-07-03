@@ -10,32 +10,23 @@
 namespace DLV2 {
 namespace grounder {
 
-
-void NonGroundSimplifier::simplify() {
-
-	vector<vector<Rule*>::iterator> rules_to_delete,constraint_to_delete;
-	for(auto it=statementDependency->getBeginRules();it!=statementDependency->getEndRules();it++){
-		if(simplifyRule(*it))
-			rules_to_delete.push_back(it);
-	}
-	for(auto rule_it:rules_to_delete)statementDependency->deleteRule(rule_it);
-	for(auto it=statementDependency->getBeginConstraints();it!=statementDependency->getEndConstraints();it++){
-		if(simplifyRule(*it))
-			constraint_to_delete.push_back(it);
-	}
-	for(auto rule_it:constraint_to_delete)statementDependency->deleteRuleConstraint(rule_it);
-}
-
 bool NonGroundSimplifier::simplifyRule(Rule* r) {
 
-	vector<vector<Atom*>::iterator> atom_to_delete;
+	vector<vector<Atom*>::iterator> atoms_to_delete;
 	for(auto it=r->getBeginBody();it!=r->getEndBody();it++){
 		if(checkDuplicate(it+1,r->getEndBody(),it))
-			atom_to_delete.push_back(it);
+			atoms_to_delete.push_back(it);
+		if(checkOpposite(it+1,r->getEndBody(),it))
+			return true;
+		if(checkFalsity(it)){
+			if(!(*it)->isNegative())
+				return true;
+			atoms_to_delete.push_back(it);
+		}
 	}
 
 
-	for(auto it:atom_to_delete){
+	for(auto it:atoms_to_delete){
 		(*it)->deleteAtoms();
 		delete (*it);
 		r->removeInBody(it);
@@ -44,11 +35,30 @@ bool NonGroundSimplifier::simplifyRule(Rule* r) {
 
 }
 
-bool NonGroundSimplifier::checkDuplicate(vector<Atom*>::iterator begin,vector<Atom*>::iterator end, vector<Atom*>::iterator currentIt) {
+bool NonGroundSimplifier::checkDuplicate(vector<Atom*>::const_iterator begin,vector<Atom*>::const_iterator end, vector<Atom*>::const_iterator currentIt) const {
 	for(auto it=begin;it!=end;it++)
-		if((*it)==(*currentIt))
+		if((*it)->equal(*(*currentIt)))
 			return true;
 
+	return false;
+}
+
+bool NonGroundSimplifier::checkOpposite(vector<Atom*>::const_iterator begin,vector<Atom*>::const_iterator end,vector<Atom*>::const_iterator currentIt) const {
+	for(auto it=begin;it!=end;it++)
+		if((*(*it))==(*(*currentIt)) && (*it)->isNegative()!=(*currentIt)->isNegative())
+			return true;
+
+	return false;
+}
+
+bool NonGroundSimplifier::checkFalsity(	vector<Atom*>::const_iterator currentIt) const {
+	Atom* atom=*currentIt;
+	if(atom->isClassicalLiteral()){
+		Predicate* predicate=atom->getPredicate();
+		bool isOnlyInBody=StatementDependency::getInstance()->isOnlyInBody(predicate->getIndex());
+		if(isOnlyInBody && predicateExtTable->getPredicateExt(predicate)->getPredicateExtentionSize(FACT)==0)
+			return true;
+	}
 	return false;
 }
 

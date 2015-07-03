@@ -67,7 +67,7 @@ public:
 	/** @brief Equal-to operator for built-in atom
 	 * 	@details {Two built-in atoms are compared by the binary operation and the terms}
 	 */
-	virtual bool operator==(const Atom& a);
+	virtual bool operator==(const Atom& a)const;
 
 	///This method evaluate the truth value of the built-in atom
 	bool evaluate(map_term_term& substitutionTerm);

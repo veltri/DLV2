@@ -13,7 +13,6 @@
 #include "../atom/ClassicalLiteral.h"
 #include "../../util/Timer.h"
 #include "../../util/Utils.h"
-#include "NonGroundSimplifier.h"
 
 namespace DLV2{
 
@@ -37,9 +36,6 @@ void ProgramGrounder::printProgram(const vector<vector<Rule*> >& exitRules,	cons
 }
 
 void ProgramGrounder::ground() {
-
-	NonGroundSimplifier nonGroundSimplificator;
-	nonGroundSimplificator.simplify();
 
 	//Create the dependency graph
 	statementDependency->createDependencyGraph(predicateTable);
@@ -244,15 +240,13 @@ void ProgramGrounder::swapInDelta(Rule *rule){
 
 bool ProgramGrounder::groundRule(Rule* rule) {
 
-//	cout<<"RULE ";rule->print();
-//	unsigned i=0;
-//	for(auto v1:predicate_searchInsert_table){
-//		cout<<"ATOM "<<i<<endl;
-//		for(auto v2:v1){
-//			cout<<"\t TABLE "<<v2<<endl;
-//		}
-//		i++;
-//	}
+	if(nonGroundSimplificator.simplifyRule(rule)){
+		cout<<"SEMPLIFICATA"<<endl;
+		rule->print();
+		return false;
+	}
+	rule->print();
+
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("RULE");
 #endif
