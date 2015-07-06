@@ -56,6 +56,9 @@ class AggregateElement {
 		/// Remove all terms
 		void clearTerms(){terms.clear();}
 
+		///Return true if all the aggregate term in the element compare in the set shared_variable
+		bool isAllAggregateTermShared(set_term& shared_variable)const;
+
 		void getPredicates(set_predicate& predicates)const;
 
 		void deleteAtoms();

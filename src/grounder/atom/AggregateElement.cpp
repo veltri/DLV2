@@ -6,6 +6,7 @@
  */
 
 #include "AggregateElement.h"
+#include "../../util/Utils.h"
 
 
 namespace DLV2{
@@ -85,6 +86,16 @@ namespace grounder{
 
 		return true;
 	}
+
+bool AggregateElement::isAllAggregateTermShared(set_term& shared_variable)const{
+	for(auto term:terms){
+		set_term variable_term;
+		term->getVariable(variable_term);
+		if(!Utils::isContained(variable_term,shared_variable))
+			return false;
+	}
+	return true;
+}
 
 }
 }

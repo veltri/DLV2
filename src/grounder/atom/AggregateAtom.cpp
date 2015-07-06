@@ -567,6 +567,16 @@ set_term AggregateAtom::getSharedVariable(Rule* rule,bool alsoGuards) {
 	return sharedTerms;
 }
 
+bool AggregateAtom::isAllAggregateTermShared(Rule *rule)  {
+	set_term shared_variable=getSharedVariable(rule,false);
+	for(auto element:aggregateElements){
+		if(!element->isAllAggregateTermShared(shared_variable))
+			return false;
+	}
+
+	return true;
+}
+
 Term* AggregateAtom::getCheckValue() {
 	Term* value = 0;
 	switch (aggregateFunction) {
@@ -590,11 +600,10 @@ Term* AggregateAtom::getCheckValue() {
 }
 
 
-bool AggregateAtom::checkOperator(Term* term,Binop binopGuard,Binop binop, Binop op, bool checkUndef) {
+
+
+bool AggregateAtom::checkOperatorValue(Term* term,Binop binopGuard,Binop binop, Binop op,Term* value){
 	if(binopGuard!=binop)return false;
-	if(binop==EQUAL && !term->isGround()) return false;
-	Term* value=partialEvaluation;
-	if(checkUndef)value=getCheckValue();
 	switch (op) {
 		case LESS:
 			if(*value<*term)
@@ -617,6 +626,13 @@ bool AggregateAtom::checkOperator(Term* term,Binop binopGuard,Binop binop, Binop
 			break;
 	}
 	return false;
+}
+
+bool AggregateAtom::checkOperator(Term* term,Binop binopGuard,Binop binop, Binop op, bool checkUndef) {
+	Term* value=partialEvaluation;
+	if(checkUndef)value=getCheckValue();
+	if(binop==EQUAL && !term->isGround()) return false;
+	return checkOperatorValue(term,binopGuard,binop,op,value);
 }
 
 void AggregateAtom::computeNextCombination(){

@@ -50,8 +50,8 @@ void ProgramGrounder::ground() {
 	statementDependency->createComponentGraphAndComputeAnOrdering(exitRules, recursiveRules, componentPredicateInHead);
 
 
-	if (Options::globalOptions()->isPrintRewrittenProgram())
-		printProgram(exitRules, recursiveRules);
+//	if (Options::globalOptions()->isPrintRewrittenProgram())
+//		printProgram(exitRules, recursiveRules);
 
 	// Ground each module according to the ordering:
 	// For each component, each rule is either recursive or exit,
@@ -240,12 +240,13 @@ void ProgramGrounder::swapInDelta(Rule *rule){
 
 bool ProgramGrounder::groundRule(Rule* rule) {
 
-	if(nonGroundSimplificator.simplifyRule(rule)){
-		cout<<"SEMPLIFICATA"<<endl;
-		rule->print();
+	if(nonGroundSimplificator.simplifyRule(rule))
 		return false;
-	}
-	rule->print();
+
+	if (Options::globalOptions()->isPrintRewrittenProgram())
+		rule->print();
+
+
 
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("RULE");

@@ -27,6 +27,10 @@ namespace grounder{
 class AggregateAtom: public Atom {
 public:
 
+	///Check if the binopGuard is equal to binop and check the value of true atom if checkUndef is false otherwise the getCheckValue, between
+	/// the constant value of term with the operator op
+	static bool checkOperatorValue(Term* term,Binop binopGuard,Binop binop, Binop op,Term* value);
+
 	///Default constructor
 	AggregateAtom(): firstBinop(Binop::NONE_OP), secondBinop(Binop::NONE_OP), aggregateFunction(AggregateFunction::NONE), negative(false),
 		partialEvaluation(TermTable::getInstance()->term_zero), undefAtomEvaluation(TermTable::getInstance()->term_zero), firstGuard(nullptr), secondGuard(nullptr), assignment(false){};
@@ -161,6 +165,8 @@ public:
 
 	//Check if two atoms are completely equal (checking also negation as failure, and strong negation)
 	virtual bool equal(const Atom& atom) const;
+
+	virtual bool isAllAggregateTermShared(Rule *rule);
 
 	virtual ~AggregateAtom() {for(auto& aggregateElem:aggregateElements) delete aggregateElem;};
 

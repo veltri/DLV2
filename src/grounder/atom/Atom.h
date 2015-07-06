@@ -41,6 +41,7 @@ enum ResultEvaluation{
 };
 
 
+
 /**      The hierarchy is this:
 *      									Atom
 *      	|					|				|					|
@@ -51,6 +52,7 @@ enum ResultEvaluation{
 
 class Atom: public Hashable {
 public:
+
 
 	///Default constructor
 	Atom() {};
