@@ -631,7 +631,7 @@ bool AggregateAtom::checkOperatorValue(Term* term,Binop binopGuard,Binop binop, 
 bool AggregateAtom::checkOperator(Term* term,Binop binopGuard,Binop binop, Binop op, bool checkUndef) {
 	Term* value=partialEvaluation;
 	if(checkUndef)value=getCheckValue();
-	if(binop==EQUAL && !term->isGround()) return false;
+	if((binop==binopGuard)==EQUAL && !term->isGround()) return false;
 	return checkOperatorValue(term,binopGuard,binop,op,value);
 }
 
