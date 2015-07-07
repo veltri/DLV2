@@ -66,6 +66,8 @@ void ProgramGrounder::ground() {
 
 		// Ground exit rules
 		for (Rule* r : exitRules[component]){
+			if(nonGroundSimplificator.simplifyRule(r))
+				continue;
 			inizializeSearchInsertPredicate(r);
 			groundRule(r);
 #ifdef DEBUG_RULE_TIME
@@ -73,48 +75,50 @@ void ProgramGrounder::ground() {
 #endif
 		}
 
+		if (recursiveRules[component].size() == 0) continue;
 		// Ground recursive rules
-		if (recursiveRules[component].size() > 0) {
-			unsigned int n_rules = recursiveRules[component].size();
-			bool found_something = false;
+		unsigned int n_rules = recursiveRules[component].size();
+		bool found_something = false;
 
-			// First iteration
+		// First iteration
+		for (unsigned int i = 0; i < n_rules; i++) {
+			Rule *rule=recursiveRules[component][i];
+			if(nonGroundSimplificator.simplifyRule(rule))
+				continue;
+			inizializeSearchInsertPredicate(rule,componentPredicateInHead[component]);
+			if(groundRule(rule))
+				found_something=true;
+		}
+		while (found_something) {
+			found_something = false;
+
+			// Since in the first iteration search is performed in facts and no facts tables,
+			// while in the next iteration search is performed in the delta table, it is needed
+			// to keep track if the current iteration is the first or not.
 			for (unsigned int i = 0; i < n_rules; i++) {
-				Rule *rule=recursiveRules[component][i];
-				inizializeSearchInsertPredicate(rule,componentPredicateInHead[component]);
-				if(groundRule(rule))
-					found_something=true;
-			}
-			while (found_something) {
-				found_something = false;
-
-				// Since in the first iteration search is performed in facts and no facts tables,
-				// while in the next iteration search is performed in the delta table, it is needed
-				// to keep track if the current iteration is the first or not.
-				for (unsigned int i = 0; i < n_rules; i++) {
-					Rule* r = recursiveRules[component][i];
-					//If no more knowledge is derived the grounding of this component can stop
+				Rule* r = recursiveRules[component][i];
+				//If no more knowledge is derived the grounding of this component can stop
 #if DEBUG == 1
-					r->print();
+				r->print();
 #endif
 
-					inizializeRecursiveCombinationPredicate(r,componentPredicateInHead[component]);
-					for(unsigned i=0;i<pow(2,predicate_combination.size())-1;i++){
-						computeRecursiveCombinationPredicate();
-						nextSearchInsertPredicate(r,componentPredicateInHead[component]);
-						if (groundRule(r)){
-							found_something = true;
-						}
+				inizializeRecursiveCombinationPredicate(r,componentPredicateInHead[component]);
+				for(unsigned i=0;i<pow(2,predicate_combination.size())-1;i++){
+					computeRecursiveCombinationPredicate();
+					nextSearchInsertPredicate(r,componentPredicateInHead[component]);
+					if (groundRule(r)){
+						found_something = true;
 					}
 				}
-
-				for (unsigned int i = 0; i < n_rules; i++)
-					// Move the content of the delta table in the no fact table,
-					// and fill delta with the content of the next delta table.
-					swapInDelta(recursiveRules[component][i]);
-
 			}
+
+			for (unsigned int i = 0; i < n_rules; i++)
+				// Move the content of the delta table in the no fact table,
+				// and fill delta with the content of the next delta table.
+				swapInDelta(recursiveRules[component][i]);
+
 		}
+
 	}
 
 	// Constraints are grounded at the end
@@ -174,6 +178,7 @@ void ProgramGrounder::inizializeSearchInsertPredicate(Rule* rule,unordered_set<i
 }
 
 void ProgramGrounder::inizializeSearchInsertPredicate(Rule* rule) {
+	rule->print();
 	predicate_searchInsert_table.clear();
 	for(auto atom=rule->getBeginHead();atom!=rule->getEndHead();atom++){
 		vector<unsigned> tableToInsert(1,NOFACT);
@@ -240,13 +245,8 @@ void ProgramGrounder::swapInDelta(Rule *rule){
 
 bool ProgramGrounder::groundRule(Rule* rule) {
 
-	if(nonGroundSimplificator.simplifyRule(rule))
-		return false;
-
 	if (Options::globalOptions()->isPrintRewrittenProgram())
 		rule->print();
-
-
 
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("RULE");
@@ -276,6 +276,7 @@ bool ProgramGrounder::groundRule(Rule* rule) {
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->stop("RULE");
 #endif
+
 	return find_assignment;
 }
 
