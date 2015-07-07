@@ -13,39 +13,41 @@ namespace grounder {
 
 bool NonGroundSimplifier::simplifyRule(Rule* r) {
 
-	vector<vector<Atom*>::iterator> atoms_to_delete;
+	vector<unsigned> atoms_to_delete;
 	bool boolean;
-	for(auto it=r->getBeginBody();it!=r->getEndBody();it++){
+	int i=0;
+	for(auto it=r->getBeginBody();it!=r->getEndBody();it++,i++){
 		if(checkDuplicate(it+1,r->getEndBody(),it))
-			atoms_to_delete.push_back(it);
+			atoms_to_delete.push_back(i);
 		if(checkOpposite(it+1,r->getEndBody(),it))
 			return true;
 
 		if(checkFalsity(it)){
 			if(!(*it)->isNegative())
 				return true;
-			atoms_to_delete.push_back(it);
+			atoms_to_delete.push_back(i);
 		}
 		if(checkAggregateSumCountStringGuard(it,boolean)){
 			if(!boolean)
 				return true;
-			atoms_to_delete.push_back(it);
+			atoms_to_delete.push_back(i);
 		}
 		if(checkAggregateAllAggTermShared(r,it,boolean)){
 			if(!boolean)
 				return true;
-			atoms_to_delete.push_back(it);
+			atoms_to_delete.push_back(i);
 		}
 
 
 	}
 
 
-	for(auto it:atoms_to_delete){
-		(*it)->deleteAtoms();
-		delete (*it);
-		r->removeInBody(it);
+	for(auto i:atoms_to_delete){
+		Atom *atom=r->getAtomInBody(i);
+		atom->deleteAtoms();
+		delete atom;
 	}
+	r->removeInBody(atoms_to_delete);
 	return false;
 
 }

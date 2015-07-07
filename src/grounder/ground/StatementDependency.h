@@ -194,10 +194,6 @@ public:
 	vector<Rule*>::iterator getBeginConstraints(){return constraints.begin();}
 	vector<Rule*>::iterator getEndConstraints(){return constraints.end();}
 
-	///Clear the atom in the rule and delete in the vector rules
-	void deleteRule(vector<Rule*>::iterator it){clearRule(*it);rules.erase(it);}
-	///Clear the atom in the rule and delete in the vector constraint
-	void deleteRuleConstraint(vector<Rule*>::iterator it){clearRule(*it);constraints.erase(it);}
 
 
 	bool isOnlyInHead(index_object predicate){
