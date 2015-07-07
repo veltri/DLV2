@@ -50,12 +50,12 @@ enum ResultEvaluation{
 *	Atom acts like an interface for its subclasses.
 */
 
-class Atom: public Hashable {
+class Atom: public Hashable, public Indexable {
 public:
 
 
 	///Default constructor
-	Atom() {};
+	Atom():Indexable(0) {};
 
 	/** Constructor
 	 * @param termsVec set the terms vector

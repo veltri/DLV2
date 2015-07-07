@@ -11,7 +11,8 @@
 namespace DLV2 {
 namespace grounder {
 
-IdGenerator* IdGenerator::idGenerator = nullptr;
+IdGenerator * IdGenerator::idGenerator;
+
 
 }
 }

@@ -129,6 +129,8 @@ void ProgramGrounder::ground() {
 			groundRule(rule);
 		}
 
+	outputBuilder->onEnd();
+
 	//Print and simplify the rule
 //	evaluator.printAndSimplify(predicateExtTable);
 
@@ -178,7 +180,6 @@ void ProgramGrounder::inizializeSearchInsertPredicate(Rule* rule,unordered_set<i
 }
 
 void ProgramGrounder::inizializeSearchInsertPredicate(Rule* rule) {
-	rule->print();
 	predicate_searchInsert_table.clear();
 	for(auto atom=rule->getBeginHead();atom!=rule->getEndHead();atom++){
 		vector<unsigned> tableToInsert(1,NOFACT);
@@ -288,6 +289,7 @@ ProgramGrounder::~ProgramGrounder() {
 	delete predicateExtTable;
 	delete termsMap;
 	delete predicateTable;
+	delete outputBuilder;
 }
 
 };

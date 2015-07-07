@@ -38,7 +38,7 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited,
 			AggregateAtom* aggregate=dynamic_cast<AggregateAtom*>(*it);
 			set_term variablesRule=aggregate->getSharedVariable(r,false);
 			aggregateAtoms.push_back(index_atom);
-			unsigned id=IdGenerator::getInstance()->getId();
+			unsigned id=IdGenerator::getInstance()->getNewId();
 			unsigned counter=1;
 			for(unsigned i=0;i<aggElementsSize;++i){
 				AggregateElement* aggElem=(*it)->getAggregateElement(i);
@@ -133,7 +133,7 @@ set_term BaseInputRewriter::getVariablesInAggregateElem(AggregateElement* aggreg
 
 void BaseInputRewriter::translateChoice(Rule*& rule,vector<Rule*>& ruleRewrited) {
 
-	unsigned id=IdGenerator::getInstance()->getId();
+	unsigned id=IdGenerator::getInstance()->getNewId();
 	unsigned counter=1;
 
 	// Create an auxiliary rule in order to ground the body only once.

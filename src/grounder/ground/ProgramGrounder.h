@@ -17,6 +17,7 @@
 #include "StatementDependency.h"
 #include "../statement/GroundRule.h"
 #include "NonGroundSimplifier.h"
+#include "../output/NumericOutputBuilder.h"
 
 using namespace std;
 
@@ -39,7 +40,7 @@ public:
 	 *	Since the term table is a singleton, it is not needed to give it as a parameter.
 	 */
 	ProgramGrounder() :
-			predicateTable(PredicateTable::getInstance()), predicateExtTable(PredicateExtTable::getInstance()), statementDependency(StatementDependency::getInstance()), termsMap(TermTable::getInstance()){};
+		outputBuilder(new NumericOutputBuilder),predicateTable(PredicateTable::getInstance()), predicateExtTable(PredicateExtTable::getInstance()), statementDependency(StatementDependency::getInstance()), termsMap(TermTable::getInstance()){};
 
 	///This method executes the overall grounding process
 	virtual void ground();
@@ -90,6 +91,10 @@ protected:
 	vector<vector<unsigned>> predicate_searchInsert_table;
 	///The NonGroundSimplifier object
 	NonGroundSimplifier nonGroundSimplificator;
+
+
+	///Output builder
+	OutputBuilder *outputBuilder;
 
 
 	void swapInDelta(Rule* r);

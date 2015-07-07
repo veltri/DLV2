@@ -639,6 +639,18 @@ void StatementDependency::createComponentGraphAndComputeAnOrdering(vector<vector
 	unordered_map<index_object, unsigned int> components=compGraph.getComponent();
 	unordered_set<unsigned> addedRules;
 
+//	using set_int = unordered_set<index_object>;
+//	vector<Rule*> constraint_rule=constraints;
+//	vector<set_int> predicate_to_evaluate(constraint_rule.size());
+//
+//	for(unsigned i=0;i<constraint_rule.size();i++){
+//		set_predicate predicates_in_rule=constraint_rule[i]->getPredicateInBody();
+//		unsigned predicate_count=predicates_in_rule.size();
+//		for(auto p:predicates_in_rule)if(p->isEdb())predicate_count--;
+//		predicate_to_evaluate[i]=predicate_count;
+//	}
+//
+
 	for(auto comp: ordering){
 		exitRules.push_back(vector<Rule*>());
 		recursiveRules.push_back(vector<Rule*>());

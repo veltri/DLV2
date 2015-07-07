@@ -284,10 +284,11 @@ void SingleTermMapAtomSearcher::initializeIndexMaps(unsigned int indexingTerm){
 		if(!searchingTables[indexingTerm].count(termIndex)){
 			AtomTable values;
 			values.insert(a);
-			searchingTables[indexingTerm].insert({termIndex,values});
+			searchingTables[indexingTerm].insert({termIndex,values}).second;
 		}
 		else
-			searchingTables[indexingTerm][termIndex].insert(a);
+			searchingTables[indexingTerm][termIndex].insert(a).second;
+
 	}
 
 #ifdef DEBUG_RULE_TIME
@@ -390,6 +391,7 @@ void SingleTermMultiMapAtomSearcher::initializeIndexMaps(unsigned int indexingTe
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("Compute iterator "+predicate->getName());
 #endif
+	bool isInserted=true;
 	createdSearchingTables[indexingTerm]=true;
 	for (Atom* a : *table) {
 		index_object termIndex=a->getTerm(indexingTerm)->getIndex();

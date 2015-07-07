@@ -8,14 +8,28 @@
 #ifndef SRC_GROUNDER_TABLE_IDGENERATOR_H_
 #define SRC_GROUNDER_TABLE_IDGENERATOR_H_
 
+#include <vector>
+
+using namespace std;
+
 namespace DLV2 {
 namespace grounder {
+
 
 class IdGenerator {
 public:
 	virtual ~IdGenerator(){};
 
-	unsigned getId(){return current_id++;};
+
+	unsigned getNewId(unsigned id=0){
+		return ++(idGenerators[id]);
+	}
+
+	unsigned generateId(unsigned init){
+		idGenerators.push_back(init);
+
+		return idGenerators.size()-1;
+	}
 
 	static IdGenerator* getInstance(){
 		if(idGenerator==nullptr)
@@ -24,13 +38,14 @@ public:
 		return idGenerator;
 	}
 
-	static void freeInstance(){if(idGenerator!=nullptr)delete idGenerator;};
+
 
 private:
-	IdGenerator():current_id(1){};
-	unsigned current_id;
+	IdGenerator():INIT_VALUE(1){idGenerators.push_back(INIT_VALUE);idGenerators.push_back(INIT_VALUE);};
 
 	static IdGenerator *idGenerator;
+	vector<unsigned> idGenerators;
+	unsigned INIT_VALUE;
 };
 
 } /* namespace grounder */

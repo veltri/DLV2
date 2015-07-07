@@ -85,7 +85,6 @@ public:
 	///@position the index of the body atoms to remove from the vector
 	void removeInBody(vector<unsigned>& position){
 		sort(position.begin(),position.end());
-		unsigned deleted=0;
 		for(unsigned i=0;i<position.size();i++){body.erase(body.begin()+(position[i]-i));};
 	};
 	///Remove atom in body
@@ -118,6 +117,8 @@ public:
 	void setAtomToSimplifyInHead(unsigned position, bool simplify = true){ simplifiedHead[position]=simplify;}
 	///Set the simplification of the atom in the given position in the body
 	void setAtomToSimplifyInBody(unsigned position, bool simplify = true){ simplifiedBody[position]=simplify;}
+	///Get the simplification of the atom in the given position in the body
+	bool isAtomToSimplifyInBody(unsigned position){return simplifiedBody[position];}
 
 	///This method remove all the atoms in the body and in the head
 	void clear(){head.clear();body.clear();};

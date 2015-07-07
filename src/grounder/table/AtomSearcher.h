@@ -114,6 +114,7 @@ public:
 	/// Return true if constant term are equal, else false
 	bool matchTerm(Term *genericTerm, Term *termToMatch, map_term_term& varAssignment);
 
+
 	virtual ~AtomSearcher() {};
 
 protected:
