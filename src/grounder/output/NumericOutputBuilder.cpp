@@ -36,7 +36,7 @@ void NumericOutputBuilder::onHeadAtom(Atom* atom) {
 void NumericOutputBuilder::onHead(const vector<Atom*>& head) {
 	if(head.size()>0 && head[0]->isChoice())
 		onChoiceAtom(head[0]);
-	if(head.size()>1)
+	else if(head.size()>1)
 		onDisjunctionAtom(head);
 	else if(head.size()>0)
 		onHeadAtom(head[0]);
