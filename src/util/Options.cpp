@@ -63,6 +63,7 @@ namespace DLV2
 #define OPTIONID_nofacts ('z' + 37)
 #define OPTIONID_printRewrite ('z' + 38)
 #define OPTIONID_rewritingType ('z' + 39)
+#define OPTIONID_outputFormat ('z' + 40)
 
 
 
@@ -110,7 +111,8 @@ Options::Options():
 		predicatesIndexType(""),
 		nofacts(false),
 		printRewrittenProgram(false),
-		rewritingType(NATIVE_CHOICE)
+		rewritingType(NATIVE_CHOICE),
+		outputFormat(0)
 {
 
 }
@@ -129,7 +131,8 @@ Options::Options(
 		predicatesIndexType(o.predicatesIndexTerm),
 		nofacts(o.nofacts),
 		printRewrittenProgram(o.printRewrittenProgram),
-		rewritingType(o.rewritingType)
+		rewritingType(o.rewritingType),
+		outputFormat(o.outputFormat)
 
 {
 
@@ -178,6 +181,7 @@ Options::init(
 		{"nofacts",no_argument, NULL, OPTIONID_nofacts},
 		{"printRewrite",no_argument, NULL, OPTIONID_printRewrite},
 		{"rewritingtype",required_argument, NULL, OPTIONID_rewritingType},
+		{"outputformat",required_argument, NULL, OPTIONID_outputFormat},
 
         // Required at end of array. 
         { NULL, 0, NULL, 0 }
@@ -286,6 +290,10 @@ Options::init(
 
             case OPTIONID_rewritingType:
             	rewritingType= atoi(optarg);
+            	break;
+
+            case OPTIONID_outputFormat:
+            	outputFormat=atoi(optarg);
             	break;
 
             default:

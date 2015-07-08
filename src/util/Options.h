@@ -93,6 +93,8 @@ namespace DLV2
 
 		unsigned getRewritingType() const {	return rewritingType;}
 
+		unsigned getOutputFormat() const {return outputFormat;}
+
         ~Options() { /*if (instance != NULL) delete instance;*/ }
 
     private:
@@ -154,6 +156,8 @@ namespace DLV2
     	bool printRewrittenProgram;
 
     	unsigned rewritingType;
+
+    	unsigned outputFormat;
     };
     
 };
