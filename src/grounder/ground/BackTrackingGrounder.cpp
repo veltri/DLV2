@@ -124,7 +124,10 @@ bool BackTrackingGrounder::firstMatch(){
 			find=!undef;
 
 		if(templateAtom->isNegative() && !find){
+			index_object index=0;
+			if(atomFound!=nullptr)index=atomFound->getIndex();
 			atomFound=templateAtom->clone();
+			atomFound->setIndex(index);
 			substiteInGroundRule(index_current_atom,atomFound);
 			if(StatementDependency::getInstance()->isPredicateNotStratified(atomFound->getPredicate()->getIndex()))
 				ground_rule->setAtomToSimplifyInBody(index_current_atom,false);

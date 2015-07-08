@@ -64,7 +64,7 @@ void NumericOutputBuilder::onBody(Rule *rule) {
 			negative.push_back(atom);
 	}
 
-	cout<<negative.size()+positive.size()<<" "<<negative.size();
+	cout<<negative.size()+positive.size()<<" "<<negative.size()<<" ";
 	for(auto& atom:negative)
 		onClassicalLiteral(atom);
 	for(auto& atom:positive)

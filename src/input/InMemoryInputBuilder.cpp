@@ -520,11 +520,11 @@ void InMemoryInputBuilder::createFact(Atom* fact) {
 	Predicate* predicate = fact->getPredicate();
 	if (!(instancesTable->getPredicateExt(predicate)->addAtom(FACT, fact)))
 		delete fact;
-	else
-		if (!Options::globalOptions()->isNofacts()) {
-			ClassicalLiteral::print(predicate, fact->getTerms(), false, false);
-			cout << "." << endl;
-		}
+//	else
+//		if (!Options::globalOptions()->isNofacts()) {
+//			ClassicalLiteral::print(predicate, fact->getTerms(), false, false);
+//			cout << "." << endl;
+//		}
 }
 
 void InMemoryInputBuilder::expandTermsRecursive(Atom* atom, vector<Term*>& currentTerms, vector<Atom*>& atomExpanded,unsigned currentPosition){
