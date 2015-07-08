@@ -125,6 +125,10 @@ void ProgramGrounder::ground() {
 	for (unsigned int i = 0; i < statementDependency->getConstraintSize(); i++)
 		if (statementDependency->getConstraint(i)->getSizeBody() > 0){
 			Rule *rule=statementDependency->getConstraint(i);
+			if(nonGroundSimplificator.simplifyRule(rule)){
+				cout<<"cont"<<endl;
+				continue;
+			}
 			inizializeSearchInsertPredicate(rule);
 			groundRule(rule);
 		}

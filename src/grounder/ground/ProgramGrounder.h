@@ -104,7 +104,7 @@ protected:
 
 	void swapInDelta(Rule* r);
 
-	/* Inizialize the vector of predicate_searchInsert_table with:
+	/* Initialize the vector of predicate_searchInsert_table with:
 	 * 		Atom in head: if is recursive predicate DELTA table else NOFACT table
 	 * 		Atom in body: FACT and NOFACT table
 	*/
@@ -112,13 +112,13 @@ protected:
 	void inizializeSearchInsertPredicate(Rule* rule);
 	/// Based on the sequence of searching table set the table to search and insert for grounding process
 	void nextSearchInsertPredicate(Rule* rule,unordered_set<index_object>& componentPredicateInHead);
-	/// Inizialize the combination of searching table, FACT and NOFACT
+	/// Initialize the combination of searching table, FACT and NOFACT
 	void inizializeRecursiveCombinationPredicate(Rule* rule,unordered_set<index_object>& componentPredicateInHead);
 	/// Calculate the next sequence of searching table during the grounding of recursive rule
 	void computeRecursiveCombinationPredicate();
 
 
-	/// Inizialization of grounding rule r
+	/// Initialization of grounding rule r
 	virtual void inizialize(Rule* rule) = 0;
 	/// Return true if exist a match with the current atom and current assignment
 	virtual bool match() = 0;

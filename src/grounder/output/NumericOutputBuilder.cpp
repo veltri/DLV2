@@ -94,6 +94,7 @@ void NumericOutputBuilder::onAggregateElement(Atom* atom) {
 }
 
 void NumericOutputBuilder::onEnd() {
+	cout<<"0"<<endl;
 	PredicateExtTable::getInstance()->print();
 	cout<<"0"<<endl<<"B+"<<endl<<"0"<<endl<<"B-"<<endl<<"1"<<endl<<"0"<<endl<<"1"<<endl;
 }
