@@ -40,7 +40,15 @@ public:
 	 *	Since the term table is a singleton, it is not needed to give it as a parameter.
 	 */
 	ProgramGrounder() :
-		outputBuilder(new NumericOutputBuilder),predicateTable(PredicateTable::getInstance()), predicateExtTable(PredicateExtTable::getInstance()), statementDependency(StatementDependency::getInstance()), termsMap(TermTable::getInstance()){};
+		predicateTable(PredicateTable::getInstance()), predicateExtTable(PredicateExtTable::getInstance()),
+		statementDependency(StatementDependency::getInstance()), termsMap(TermTable::getInstance()){
+		switch(Options::globalOptions()->getOutputFormat()){
+//			case OUTPUT_TEXTUAL:
+//				break;
+			default:
+				outputBuilder=new NumericOutputBuilder;
+		}
+	};
 
 	///This method executes the overall grounding process
 	virtual void ground();
@@ -78,6 +86,8 @@ protected:
 	StatementDependency* statementDependency;
 	///A pointer to the terms table
 	TermTable* termsMap;
+	///Output builder
+	OutputBuilder *outputBuilder;
 
 //	///The set of grounder rules
 //	GroundedRules groundedRule;
@@ -91,11 +101,6 @@ protected:
 	vector<vector<unsigned>> predicate_searchInsert_table;
 	///The NonGroundSimplifier object
 	NonGroundSimplifier nonGroundSimplificator;
-
-
-	///Output builder
-	OutputBuilder *outputBuilder;
-
 
 	void swapInDelta(Rule* r);
 

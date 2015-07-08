@@ -77,7 +77,7 @@ public:
 	virtual set_predicate getPredicates()const;
 
 	///Getter method for the aggregate elements
-	const vector<AggregateElement*>& getAggregateElements() const {return aggregateElements;};
+//	const vector<AggregateElement*>& getAggregateElements() const {return aggregateElements;};
 	///Getter method for the i-th aggregate element
 	AggregateElement* getAggregateElement(unsigned i) const{return aggregateElements[i];}
 	///Setter method for the aggregate elements

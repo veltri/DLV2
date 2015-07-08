@@ -94,6 +94,9 @@ namespace grounder{
 	#define DISJUNCTION 1
 	#define NATIVE_CHOICE2 2
 
+	#define OUTPUT_NUMERIC 0
+	#define OUTPUT_TEXTUAL 1
+
 	typedef unsigned index_object;
 
 };

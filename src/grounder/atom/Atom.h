@@ -151,7 +151,7 @@ public:
 
 	/******** Methods useful for AggregateAtom ********/
 	///Getter method for the aggregate elements
-	virtual const vector<AggregateElement*>& getAggregateElements() const {return vector<AggregateElement*>(0);};
+//	virtual const vector<AggregateElement*>& getAggregateElements() const {return vector<AggregateElement*>(0);};
 	///Getter method for the i-th aggregate element
 	virtual AggregateElement* getAggregateElement(unsigned i) const{return 0;}
 	///Setter method for the aggregate elements
@@ -213,7 +213,7 @@ public:
 
 	/******** Methods useful for Choice ********/
 	///Getter method for the choice elements
-	virtual const vector<ChoiceElement*>& getChoiceElements() const {return vector<ChoiceElement*>(0);};
+//	virtual const vector<ChoiceElement*>& getChoiceElements() const {return vector<ChoiceElement*>(0);};
 	///Setter method for the choice elements
 	virtual void setChoiceElements(const vector<ChoiceElement*>& choiceElements) {};
 	///Returns the choice elements size

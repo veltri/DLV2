@@ -43,7 +43,7 @@ public:
 	///Setter method for the second binary operation
 	void setSecondBinop(Binop secondBinop) {this->secondBinop = secondBinop;};
 	///Getter method for the choice elements
-	const vector<ChoiceElement*>& getChoiceElements() const {return choiceElements;};
+//	const vector<ChoiceElement*>& getChoiceElements() const {return choiceElements;};
 	///Setter method for the choice elements
 	void setChoiceElements(const vector<ChoiceElement*>& choiceElements) {this->choiceElements = choiceElements;};
 	///Returns the choice elements size
