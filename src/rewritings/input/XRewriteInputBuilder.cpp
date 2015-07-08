@@ -36,6 +36,7 @@ XRewriteInputBuilder::XRewriteInputBuilder():
         predName(),
         atomStack(),
         literalStack(),
+        literalActuallyAddedToLiteralStack(false),
         currentBodyLiterals(0),
         currentHeadAtoms(0),
         isDisjunctiveCurrentHead(false),
@@ -208,7 +209,8 @@ XRewriteInputBuilder::onHead()
 void
 XRewriteInputBuilder::onBodyLiteral()
 {
-    currentBodyLiterals++;
+    if( literalActuallyAddedToLiteralStack )
+        currentBodyLiterals++;
 }
 
 void
@@ -224,7 +226,7 @@ XRewriteInputBuilder::onNafLiteral(
     XLiteral* currentLiteral = program->createLiteral(atomStack.back(),naf);
     assert_msg( currentLiteral, "Trying to finalize a literal without any atom" );
 
-    literalStack.pushItem(*currentLiteral);
+    literalActuallyAddedToLiteralStack = literalStack.pushItem(*currentLiteral);
 
     if( naf )
         hasNegation = true;

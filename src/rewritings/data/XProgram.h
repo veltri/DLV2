@@ -28,12 +28,15 @@
 #define XPROGRAM_H
 
 #include <list>
+
 #include "XPredicateNames.h"
 #include "XRule.h"
 #include "XSafetyException.h"
-#include "../../util/Constants.h"
 #include "XStickyUnifier.h"
 #include "XPropagationGraph.h"
+#include "XNullsetTable.h"
+
+#include "../../util/Constants.h"
 
 namespace std {
     template <>
@@ -105,11 +108,13 @@ namespace DLV2{ namespace REWRITERS{
         std::pair< index_t, bool > addPredicate( const std::string& name, unsigned arity, bool internal = false );
         unsigned incrementVariablesCounter() { return varsCounter++; }
         void computeQueryRules();
+        void computePredicateNullsets();
 
         unsigned getVariablesCounter() const { return varsCounter; }
         const XPredicateNames& getPredicateNamesTable() const { return predicates; }
         const std::string& getPredicateName( index_t predIndex ) const;
         unsigned getPredicateArity( index_t predIndex ) const;
+        std::pair< index_t, bool > findPredicate( const std::string& predName, unsigned arity ) const;
         const_iterator beginRules() const { return rules.begin(); }
         const_iterator endRules() const { return rules.end(); }
         size_t rulesSize() const { return rules.size(); }
@@ -125,6 +130,7 @@ namespace DLV2{ namespace REWRITERS{
         size_t queryRulesSize() const { return queryRules.size(); }
         const XPropagationGraph& getPropagationGraph() const { return propagationGraph; }
         const std::string& getPropagationGraphAsString() { return propagationGraph.toString(); }
+        const XNullsetTable& getPredicateNullsets() const { return predNullsets; }
 
     private:
         friend inline std::ostream& operator<< ( std::ostream&, const XProgram& );
@@ -146,6 +152,9 @@ namespace DLV2{ namespace REWRITERS{
         std::list< XRule > queryRules;
         XPropagationGraph propagationGraph;
         int nonTemporaryRulesSize;
+        XNullsetTable predNullsets;
+        // For each null, this map stores the rule where it has been introduced.
+        std::unordered_map< index_t, const_iterator > nullIndex2RuleIterator;
     };
 
     inline

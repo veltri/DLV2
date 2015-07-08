@@ -48,6 +48,7 @@ namespace DLV2
 
 /* GENERIC OPTIONS */
 #define OPTIONID_stdin ( 'z' + 20 )
+#define OPTIONID_parallelrewriting ( 'z' + 21 )
 
 /* DB OPTIONS */
 #define OPTIONID_datasource ('z' + 30 )
@@ -95,6 +96,7 @@ Options::finalizeGlobalOptions()
 Options::Options(): 
         aspCore2Strict(false),
         datalogpm(false),
+        parallelRewriting(false),
         printProgram(false),
         printDepGraph(false),
         printStatistics(false),
@@ -108,6 +110,7 @@ Options::Options(
     const Options& o):
         aspCore2Strict(o.aspCore2Strict),
         datalogpm(o.datalogpm),
+        parallelRewriting(o.parallelRewriting),
         printProgram(o.printProgram),
         printDepGraph(o.printDepGraph),
         printStatistics(o.printStatistics),
@@ -149,6 +152,7 @@ Options::init(
         /* GENERIC OPTIONS */
         { "help", no_argument, NULL, OPTIONID_help },
         { "stdin", no_argument, NULL, OPTIONID_stdin },
+        { "parallel-rewriting", no_argument, NULL, OPTIONID_parallelrewriting },
         
         /* DB OPTIONS */
         { "db-source", required_argument, NULL, OPTIONID_datasource },
@@ -255,6 +259,10 @@ Options::init(
                 inputFiles.push_back("--");
                 break;
             
+            case OPTIONID_parallelrewriting:
+                setParallelRewriting(true);
+                break;
+
             case OPTIONID_datasource:
                 dbDataSource.append(optarg);
                 break;

@@ -47,7 +47,7 @@ namespace DLV2{ namespace REWRITERS{
         virtual std::vector< XRule* > rewrite();
         virtual void printStatistics() const;
 
-    private:
+    protected:
         void pushRewriting( XRule* rewriting, std::vector< XRule* >& rewritings );
         void encodeInputQueries( std::vector< XRule* >& finalRewriting );
         // Algorithm 3 of the paper

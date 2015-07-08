@@ -115,8 +115,8 @@ XRewrite::rewrite()
         currentSize = finalRewriting.size();
     }
 
-    // Before returning, erase every rule containing atoms "aux_X" where X is an int, because they have been
-    // added by the DL2Datalog translator in order to normalize conjunctive heads.
+    // Before returning, erase eventual rules containing atoms "aux_X" where X is an int, because they are
+    // added by some DL2Datalog translators in order to normalize conjunctive heads.
     // Notice that, erasing elements from a vector is expensive, thus it is worth creating a new vector from scratch.
     vector< XRule* > finalRewritingWithoutAuxAtoms;
     for( index_t i=0; i<finalRewriting.size(); i++ )
@@ -1060,6 +1060,7 @@ XRewrite::queryElimination(
                 queryBody->at(i).getAtom().getPredIndex() != predicateOldQueryHeadAtom )
         {
             const XAtom& atom = queryBody->at(i).getAtom();
+
             bool covered = false;
             trace_msg( rewriting, 2, "Is " << atom << " eliminable?" );
             // Compute T(query,atom), i.e., the set of shared variables and constants from 'atom'.
@@ -1097,6 +1098,7 @@ XRewrite::queryElimination(
                         // If the atoms share the same predicate name and the variables from 'TVars' occur in 'coveringCandidate'
                         // in the same positions of 'atom', the coverage check is not needed.
                         bool coverageCheckNeeded = true;
+                        // This check allows us to avoid nooses in the propagation graph.
                         if( atom.getPredicateName() == coveringCandidate.getPredicateName() )
                         {
                             bool varPositionsMatching = true;
@@ -1116,149 +1118,165 @@ XRewrite::queryElimination(
                         }
                         if( coverageCheckNeeded )
                         {
-                            // Check whether there exists a sequence S=sigma_(1)sigma_(2)...sigma_(m) for 'm'>=1 such that:
-                            //
-                            // 1) S is tight and compatible to coveringCandidate;
-                            //
-                            // 2) for each term 't' in T('query','atom') and for each position
-                            //    of 'atom', 'p', where 't' appears there exists a minimal path 'p_(1)p_(2)...p_(m+1)'
-                            //    in the propagation graph such that 'p_(1)' is in positions('coveringCandidate','t'),
-                            //    'p_(m+1)'='p' and label('e_(j)','e_(j+1)')='sigma_(j)' for each 'j' in [m].
-                            //
-                            // This check is carried out by means of an invocation of DLV.
-                            stringstream inputStream;
-                            inputStream << reachabilityProblem;
-                            stringstream finalQueryOnReachability;
-                            finalQueryOnReachability << "ok(PATH):-";
-                            for( unsigned p1=0; p1<posTVars.size(); p1++ )
+                            // If one of these atoms does not match any vertex in the propagation graph,
+                            // this check will definitely be negative, thus avoid to execute it.
+                            if( inputProgram.getPropagationGraph().getVertexId(atom.getPredIndex(),0).second &&
+                                    inputProgram.getPropagationGraph().getVertexId(coveringCandidate.getPredIndex(),0).second )
                             {
-                                const XTerm& tVar = atom.getTerms().at(posTVars[p1]);
-                                for( unsigned p2=0; p2<query.getBodyPositions(tVar).size(); p2++ )
+                                // Check whether there exists a sequence S=sigma_(1)sigma_(2)...sigma_(m) for 'm'>=1 such that:
+                                //
+                                // 1) S is tight and compatible to coveringCandidate;
+                                //
+                                // 2) for each term 't' in T('query','atom') and for each position
+                                //    of 'atom', 'p', where 't' appears there exists a minimal path 'p_(1)p_(2)...p_(m+1)'
+                                //    in the propagation graph such that 'p_(1)' is in positions('coveringCandidate','t'),
+                                //    'p_(m+1)'='p' and label('e_(j)','e_(j+1)')='sigma_(j)' for each 'j' in [m].
+                                //
+                                // This check is carried out by means of an invocation of DLV.
+                                stringstream inputStream;
+                                inputStream << reachabilityProblem;
+                                stringstream finalQueryOnReachability;
+                                finalQueryOnReachability << "ok(PATH):-";
+                                for( unsigned p1=0; p1<posTVars.size(); p1++ )
                                 {
-                                    if( j == query.getBodyPositions(tVar).at(p2).atomPos )
+                                    const XTerm& tVar = atom.getTerms().at(posTVars[p1]);
+                                    assert_msg( inputProgram.getPropagationGraph().getVertexId(atom.getPredIndex(),posTVars[p1]).second,
+                                            "The required vertex does not exist" );
+                                    Vertex atomVertex = inputProgram.getPropagationGraph().getVertexId(atom.getPredIndex(),posTVars[p1]).first;
+                                    for( unsigned p2=0; p2<query.getBodyPositions(tVar).size(); p2++ )
                                     {
-                                        inputStream << "reach(\"" << atom.getPredicateName() << "_" << posTVars[p1] << "\",PATH):-"
-                                                << "reachable(\"" << coveringCandidate.getPredicateName() << "_"
-                                                << query.getBodyPositions(tVar).at(p2).termPos << "\",\""
-                                                << atom.getPredicateName() << "_" << posTVars[p1] << "\",_,PATH).\n";
+                                        if( j == query.getBodyPositions(tVar).at(p2).atomPos )
+                                        {
+                                            assert_msg( inputProgram.getPropagationGraph().getVertexId(
+                                                    coveringCandidate.getPredIndex(),query.getBodyPositions(tVar).at(p2).termPos).second,
+                                                    "The required vertex does not exist" );
+                                            Vertex coveringCandidateVertex = inputProgram.getPropagationGraph().getVertexId(
+                                                    coveringCandidate.getPredIndex(),query.getBodyPositions(tVar).at(p2).termPos).first;
+                                            inputStream << "reach(" << atomVertex << ",PATH):-"
+                                                    << "reachable(" << coveringCandidateVertex << "," << atomVertex << ",_,PATH).\n";
+                                        }
                                     }
+                                    finalQueryOnReachability << "reach(" << atomVertex << ",PATH)";
+                                    if( p1 < posTVars.size()-1 )
+                                        finalQueryOnReachability << ",";
                                 }
-                                finalQueryOnReachability << "reach(\"" << atom.getPredicateName() << "_" << posTVars[p1] << "\",PATH)";
-                                if( p1 < posTVars.size()-1 )
-                                    finalQueryOnReachability << ",";
-                            }
-                            finalQueryOnReachability << "." << endl << "ok(PATH)?";
-                            inputStream << finalQueryOnReachability.str();
-                            trace_action( rewriting, 2,
-                                    trace_tag( cerr, rewriting, 2 );
-                                    cerr << "The input to DLV is the following:" << endl;
-                                    char* tmpInputBuffer = new char[inputStream.str().length()+1];
-                                    strcpy(tmpInputBuffer,inputStream.str().c_str());
-                                    tmpInputBuffer[inputStream.str().length()] = '\0';
-                                    char* t = NULL;
-                                    t = strtok(tmpInputBuffer,"\n");
-                                    while( t != NULL )
-                                    {
+                                finalQueryOnReachability << "." << endl << "ok(PATH)?";
+                                inputStream << finalQueryOnReachability.str();
+                                trace_action( rewriting, 2,
                                         trace_tag( cerr, rewriting, 2 );
-                                        cerr << "\t" << t << endl;
-                                        t = strtok(NULL,"\n");
-                                    }
-                                    delete[] tmpInputBuffer;
-                                );
-                            // DLV is called in order to solve the reachability problem.
-                            char outputBuffer[BUFFER_MAX_LENGTH];
-                            if( !isInReachabilityCache(inputStream.str(),outputBuffer) )
-                            {
-                                auto sReachabilityTime = std::chrono::high_resolution_clock::now();
-                                Utils::systemCallTo("./executables/dlNofinitecheck",inputStream.str(),outputBuffer,BUFFER_MAX_LENGTH);
-                                auto eReachabilityTime = std::chrono::high_resolution_clock::now();
-                                reachabilityDuration += ( eReachabilityTime - sReachabilityTime );
-                                addToReachabilityCache(inputStream.str(),outputBuffer);
-                            }
-                            trace_action( rewriting, 2,
-                                    trace_tag( cerr, rewriting, 2 );
-                                    cerr << "The output from DLV is the following: ";
-                                    if( strcmp(outputBuffer,"") == 0 )
-                                        cerr << "EMPTY RESULT" << endl;
-                                    else
-                                    {
-                                        cerr << std::endl;
-                                        char* tmpOutputBuffer = new char[strlen(outputBuffer)+1];
-                                        strcpy(tmpOutputBuffer,outputBuffer);
-                                        tmpOutputBuffer[strlen(outputBuffer)] = '\0';
+                                        cerr << "The input to DLV is the following:" << endl;
+                                        char* tmpInputBuffer = new char[inputStream.str().length()+1];
+                                        strcpy(tmpInputBuffer,inputStream.str().c_str());
+                                        tmpInputBuffer[inputStream.str().length()] = '\0';
                                         char* t = NULL;
-                                        t = strtok(tmpOutputBuffer,"\n");
+                                        t = strtok(tmpInputBuffer,"\n");
                                         while( t != NULL )
                                         {
                                             trace_tag( cerr, rewriting, 2 );
                                             cerr << "\t" << t << endl;
                                             t = strtok(NULL,"\n");
                                         }
-                                        delete[] tmpOutputBuffer;
+                                        delete[] tmpInputBuffer;
+                                    );
+                                // DLV is called in order to solve the reachability problem.
+                                char outputBuffer[BUFFER_MAX_LENGTH];
+                                if( !isInReachabilityCache(inputStream.str(),outputBuffer) )
+                                {
+                                    auto sReachabilityTime = std::chrono::high_resolution_clock::now();
+                                    Utils::systemCallTo("./executables/dlNofinitecheck",inputStream.str(),outputBuffer,BUFFER_MAX_LENGTH);
+                                    auto eReachabilityTime = std::chrono::high_resolution_clock::now();
+                                    reachabilityDuration += ( eReachabilityTime - sReachabilityTime );
+                                    addToReachabilityCache(inputStream.str(),outputBuffer);
+                                }
+                                trace_action( rewriting, 2,
+                                        trace_tag( cerr, rewriting, 2 );
+                                        cerr << "The output from DLV is the following: ";
+                                        if( strcmp(outputBuffer,"") == 0 )
+                                            cerr << "EMPTY RESULT" << endl;
+                                        else
+                                        {
+                                            cerr << std::endl;
+                                            char* tmpOutputBuffer = new char[strlen(outputBuffer)+1];
+                                            strcpy(tmpOutputBuffer,outputBuffer);
+                                            tmpOutputBuffer[strlen(outputBuffer)] = '\0';
+                                            char* t = NULL;
+                                            t = strtok(tmpOutputBuffer,"\n");
+                                            while( t != NULL )
+                                            {
+                                                trace_tag( cerr, rewriting, 2 );
+                                                cerr << "\t" << t << endl;
+                                                t = strtok(NULL,"\n");
+                                            }
+                                            delete[] tmpOutputBuffer;
+                                        }
+                                    );
+
+                                // Each returned tuple represents a different path which proves the existence of
+                                // a covering relationship between 'currentAtom' and 'coveringCandidate' only if such
+                                // a path is compatible with 'coveringCandidate'. REMINDER: an atom 'a' is compatible
+                                // with a sequence S of TGDs iff the body of the first TGD from S is homomorphic to 'a'.
+                                trace_msg( rewriting, 3, "Analyzing the result..." << ( strcmp(outputBuffer,"") == 0 ? "EMPTY RESULT" : "" ) );
+//                                bool validPath = false;
+                                string text(outputBuffer);
+                                boost::char_separator< char > sep("\n");
+                                boost::tokenizer< boost::char_separator< char > > tokens(text,sep);
+                                for( const auto& line : tokens )
+                                {
+                                    trace_msg( rewriting, 3, "The i^th path returned is: " << line );
+                                    size_t delimiterIndex = line.find(',');
+                                    if( delimiterIndex == string::npos )
+                                        delimiterIndex = line.find(']');
+                                    assert_msg( delimiterIndex != string::npos,
+                                            "The sequence should either contain a ',' or be terminated by ']'" );
+
+                                    int tgdIndex = -1;
+                                    Utils::parseInteger(line.substr(1,delimiterIndex-1).c_str(),tgdIndex);
+                                    assert_msg( (tgdIndex >= 0 && tgdIndex < (int)inputProgram.rulesSize()), "Index out of range" );
+                                    XProgram::const_iterator tgdIterator = inputProgram.beginRules();
+                                    advance(tgdIterator,tgdIndex);
+                                    trace_msg( rewriting, 3, "The first TGD is rule number " << tgdIndex << ": " << *tgdIterator );
+                                    // Check if the body of the first TGD is homomorphic to 'coveringCandidate'.
+                                    assert_msg( tgdIterator->getBody() != NULL, "Null body" );
+                                    assert_msg( tgdIterator->getBody()->size() > 0, "Invalid body size" );
+                                    const XAtom& tgdListFirstAtom = tgdIterator->getBody()->at(0).getAtom();
+                                    trace_msg( rewriting, 3, "Check whether the current sequence is compatible with 'coveringCandidate', i.e., "
+                                            "whether " << tgdListFirstAtom << " is homomorphic to " << coveringCandidate );
+                                    pair< bool, bool > resCache = homomorphismCache.inCache(
+                                            pair< const XAtom&, const XAtom& >(coveringCandidate,tgdListFirstAtom));
+                                    if( !resCache.first )
+                                    {
+                                        vector< XAtom > tgdAtomList;
+                                        tgdAtomList.push_back(tgdListFirstAtom);
+                                        vector< XAtom > coveringCandidateAtomList;
+                                        coveringCandidateAtomList.push_back(coveringCandidate);
+                                        auto sHomomorphismTime = std::chrono::high_resolution_clock::now();
+                                        pair< XMapping*, bool  > resHomomorphism =
+                                                isomorphismStrategy->isHomomorphicTo(coveringCandidateAtomList,tgdAtomList);
+                                        auto eHomomorphismTime = std::chrono::high_resolution_clock::now();
+                                        homomorphismDuration += ( eHomomorphismTime - sHomomorphismTime );
+                                        if( resHomomorphism.second )
+                                            delete resHomomorphism.first;
+                                        homomorphismCache.cache(
+                                            pair< const XAtom&, const XAtom& >(coveringCandidate,tgdListFirstAtom),
+                                            resHomomorphism.second);
+                                        resCache.second = resHomomorphism.second;
                                     }
-                                );
-
-                            // Each returned tuple represents a different path which proves the existence of
-                            // a covering relationship between 'currentAtom' and 'coveringCandidate' only if such
-                            // a path is compatible with 'coveringCandidate'. REMINDER: an atom 'a' is compatible
-                            // with a sequence S of TGDs iff the body of the first TGD from S is homomorphic to 'a'.
-                            trace_msg( rewriting, 3, "Analyzing the result..." << ( strcmp(outputBuffer,"") == 0 ? "EMPTY RESULT" : "" ) );
-//                            bool validPath = false;
-                            string text(outputBuffer);
-                            boost::char_separator< char > sep("\n");
-                            boost::tokenizer< boost::char_separator< char > > tokens(text,sep);
-                            for( const auto& line : tokens )
-                            {
-                                trace_msg( rewriting, 3, "The i^th path returned is: " << line );
-                                size_t delimiterIndex = line.find(',');
-                                if( delimiterIndex == string::npos )
-                                    delimiterIndex = line.find(']');
-                                assert_msg( delimiterIndex != string::npos,
-                                        "The sequence should either contain a ',' or be terminated by ']'" );
-
-                                int tgdIndex = -1;
-                                Utils::parseInteger(line.substr(1,delimiterIndex-1).c_str(),tgdIndex);
-                                assert_msg( (tgdIndex >= 0 && tgdIndex < (int)inputProgram.rulesSize()), "Index out of range" );
-                                XProgram::const_iterator tgdIterator = inputProgram.beginRules();
-                                advance(tgdIterator,tgdIndex);
-                                trace_msg( rewriting, 3, "The first TGD is rule number " << tgdIndex << ": " << *tgdIterator );
-                                // Check if the body of the first TGD is homomorphic to 'coveringCandidate'.
-                                assert_msg( tgdIterator->getBody() != NULL, "Null body" );
-                                assert_msg( tgdIterator->getBody()->size() > 0, "Invalid body size" );
-                                const XAtom& tgdListFirstAtom = tgdIterator->getBody()->at(0).getAtom();
-                                trace_msg( rewriting, 3, "Check whether the current sequence is compatible with 'coveringCandidate', i.e., "
-                                        "whether " << tgdListFirstAtom << " is homomorphic to " << coveringCandidate );
-                                pair< bool, bool > resCache = homomorphismCache.inCache(
-                                        pair< const XAtom&, const XAtom& >(coveringCandidate,tgdListFirstAtom));
-                                if( !resCache.first )
-                                {
-                                    vector< XAtom > tgdAtomList;
-                                    tgdAtomList.push_back(tgdListFirstAtom);
-                                    vector< XAtom > coveringCandidateAtomList;
-                                    coveringCandidateAtomList.push_back(coveringCandidate);
-                                    auto sHomomorphismTime = std::chrono::high_resolution_clock::now();
-                                    pair< XMapping*, bool  > resHomomorphism =
-                                            isomorphismStrategy->isHomomorphicTo(coveringCandidateAtomList,tgdAtomList);
-                                    auto eHomomorphismTime = std::chrono::high_resolution_clock::now();
-                                    homomorphismDuration += ( eHomomorphismTime - sHomomorphismTime );
-                                    if( resHomomorphism.second )
-                                        delete resHomomorphism.first;
-                                    homomorphismCache.cache(
-                                        pair< const XAtom&, const XAtom& >(coveringCandidate,tgdListFirstAtom),
-                                        resHomomorphism.second);
-                                    resCache.second = resHomomorphism.second;
+                                    if( resCache.second )
+                                    {
+                                        // 'atom' is eliminable, because its covering set is not empty.
+                                        trace_msg( rewriting, 2, "Atom " << coveringCandidate << " covers "  << atom << " which has been erased." );
+                                        erasedAtomIndexSet.insert(i);
+//                                        validPath = true;
+                                        covered = true;
+                                        break;
+                                    }
                                 }
-                                if( resCache.second )
-                                {
-                                    // 'atom' is eliminable, because its covering set is not empty.
-                                    trace_msg( rewriting, 2, "Atom " << coveringCandidate << " covers "  << atom << " which has been erased." );
-                                    erasedAtomIndexSet.insert(i);
-//                                    validPath = true;
-                                    covered = true;
-                                    break;
-                                }
+                                traceIf( rewriting, 2, !covered, "Atom " << coveringCandidate << " does not cover "  << atom );
                             }
-                            traceIf( rewriting, 2, !covered, "Atom " << coveringCandidate << " does not cover "  << atom );
+                            else
+                            {
+                                trace_msg( rewriting, 2, "Atom " << coveringCandidate << "does not cover" << atom );
+                            }
                         }
                     }
                 }

@@ -96,6 +96,7 @@ namespace DLV2{ namespace REWRITERS{
         std::string predName;
         std::vector< XAtom > atomStack;
         XRandomAccessSet< XLiteral > literalStack;
+        bool literalActuallyAddedToLiteralStack;
         unsigned currentBodyLiterals;
         unsigned currentHeadAtoms;
         bool isDisjunctiveCurrentHead;

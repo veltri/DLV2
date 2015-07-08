@@ -58,6 +58,7 @@ namespace DLV2{ namespace REWRITERS{
         const std::vector< XCoordinates >& getBodyPositions( const XTerm& term ) const;
         unsigned getHeadOccurrences( const XTerm& term ) const;
         unsigned getBodyOccurrences( const XTerm& term ) const;
+        const std::unordered_set< XTerm >& getExistentialVariables() const { return existVars; }
         bool isMarked( const XTerm& term ) const;
         void markVariable( const XTerm& term );
 
@@ -85,6 +86,7 @@ namespace DLV2{ namespace REWRITERS{
         int recursive;
         bool hasExistentialVars;
         bool hasFrontierVars;
+        std::unordered_set< XTerm > existVars;
 
     };
 

@@ -41,7 +41,8 @@ XRule::XRule():
         naf(false),
         recursive(false),
         hasExistentialVars(false),
-        hasFrontierVars(false)
+        hasFrontierVars(false),
+        existVars()
 {
     assert(0);
 }
@@ -57,7 +58,6 @@ XRule::XRule(
     assert_msg( head != NULL, "Rules must have at least the head" );
     hasExistentialVars = false;
     hasFrontierVars = false;
-    unordered_set< XTerm > existVars;
     // Count the occurrences of each variable.
     for( unsigned i=0; i<head->size(); i++ )
     {
@@ -147,7 +147,8 @@ XRule::XRule(
         naf(rule.naf),
         recursive(rule.recursive),
         hasExistentialVars(rule.hasExistentialVars),
-        hasFrontierVars(rule.hasFrontierVars)
+        hasFrontierVars(rule.hasFrontierVars),
+        existVars(rule.existVars)
 {
     assert_msg( rule.head != NULL, "Null rule head" );
     try{

@@ -68,6 +68,8 @@ namespace DLV2
         
         const std::string& getDBPassword() const { return dbPassword; }
 
+        bool getParallelRewriting() const { return parallelRewriting; }
+
         ~Options() { /*if (instance != NULL) delete instance;*/ }
 
         #ifdef TRACE_ON
@@ -80,23 +82,27 @@ namespace DLV2
 
         Options();
 
-        Options(const Options& o);
+        Options( const Options& o );
 
-        void setOutputPolicy(OUTPUT_POLICY outPolicy) { outputPolicy = outPolicy; }
+        void setOutputPolicy( OUTPUT_POLICY outPolicy ) { outputPolicy = outPolicy; }
 
-        void setInputBuilderPolicy(INPUT_BUILDER_POLICY inPolicy) { inputPolicy = inPolicy; }
+        void setInputBuilderPolicy( INPUT_BUILDER_POLICY inPolicy ) { inputPolicy = inPolicy; }
 
-        void setInputFiles(const std::vector<const char*>& inFiles) { inputFiles = inFiles; }
+        void setInputFiles( const std::vector<const char*>& inFiles ) { inputFiles = inFiles; }
 
-        void setAspCore2Strict(bool strict) { aspCore2Strict = strict;	}
+        void setAspCore2Strict( bool strict ) { aspCore2Strict = strict;	}
 
-        void setDatalogPM(bool datpm) { datalogpm = datpm;  }
+        void setDatalogPM( bool datpm ) { datalogpm = datpm;  }
+
+        void setParallelRewriting( bool parallRewr ) { parallelRewriting = parallRewr; }
 
         std::vector< const char* > inputFiles;
 
         bool aspCore2Strict;
         
         bool datalogpm;
+
+        bool parallelRewriting;
 
         bool printProgram;
         

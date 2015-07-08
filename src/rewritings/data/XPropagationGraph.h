@@ -29,13 +29,21 @@
 
 #include <string>
 #include <unordered_map>
+#include <vector>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/strong_components.hpp>
 
 namespace DLV2{ namespace REWRITERS{
 
+    typedef size_t index_t;
+
+    class XProgram;
+
+    struct VertexProperty {
+        index_t predicateIndex;
+        unsigned termPosition;
+    };
     typedef boost::property< boost::edge_name_t, unsigned > EdgeProperty;
-    typedef boost::property< boost::vertex_name_t, std::string > VertexProperty;
 
     class DirectedMultiGraph: public boost::adjacency_list<
             boost::vecS,
@@ -59,20 +67,24 @@ namespace DLV2{ namespace REWRITERS{
 
         // Add a noose with the same label to each vertex.
         void addNooses( unsigned label );
-        void addEdge( const std::string& srcPredPos, const std::string& destPredPos, unsigned label );
-        bool isEdge( const std::string& srcPredPos, const std::string& destPredPos, unsigned label ) const;
+        void addEdge( index_t srcPredIdx, unsigned srcPos, index_t destPredIdx, unsigned destPos, unsigned label );
+        bool isEdge( index_t srcPredIdx, unsigned srcPos, index_t destPredIdx, unsigned destPos, unsigned label ) const;
         unsigned numOfVertices() const { return boost::num_vertices(graph); }
+        std::pair< Vertex, bool > getVertexId( index_t predIdx, unsigned termPos ) const;
+        std::pair< index_t, unsigned > getIndexByVertexId( Vertex id ) const;
         const std::string& toString();
 
     private:
         friend class XProgram;
 
-        XPropagationGraph();
-        unsigned addVertex( const std::string& atomPredPos );
+        XPropagationGraph( const XProgram& p );
+        unsigned addVertex( index_t predIdx, unsigned pos );
 
+        const XProgram& program;
         DirectedMultiGraph graph;
         std::string graphString;
-        std::unordered_map< std::string, Vertex > vertexLabels;
+        // For each predicate index there is a vector containing the vertex id for each position.
+        std::unordered_map< index_t, std::vector< Vertex > > index2vertexId;
 
     };
 

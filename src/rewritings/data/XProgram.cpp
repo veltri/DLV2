@@ -36,6 +36,10 @@
 #include "../../util/ErrorMessage.h"
 #include "../../util/Trace.h"
 #include "../../util/Options.h"
+#include "../../util/Utils.h"
+
+#include <boost/tokenizer.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 
 using namespace std;
 using namespace DLV2::REWRITERS;
@@ -50,8 +54,10 @@ XProgram::XProgram():
         varsCounter(0),
         query(NULL),
         queryRules(),
-        propagationGraph(),
-        nonTemporaryRulesSize(-1)
+        propagationGraph(*this),
+        nonTemporaryRulesSize(-1),
+        predNullsets(*this),
+        nullIndex2RuleIterator()
 {
 }
 
@@ -66,7 +72,9 @@ XProgram::XProgram(
         varsCounter(program.varsCounter),
         queryRules(program.queryRules),
         propagationGraph(program.propagationGraph),
-        nonTemporaryRulesSize(program.nonTemporaryRulesSize)
+        nonTemporaryRulesSize(program.nonTemporaryRulesSize),
+        predNullsets(program.predNullsets),
+        nullIndex2RuleIterator(program.nullIndex2RuleIterator)
 {
     if( program.query != NULL )
     {
@@ -409,6 +417,65 @@ XProgram::computeQueryRules()
     computePropagationGraph();
 }
 
+void
+XProgram::computePredicateNullsets()
+{
+    trace_msg( rewriting, 1, "Computing null-sets..." );
+    unsigned nullIndex = 0;
+    for( const_iterator ruleIt = beginRules(); ruleIt != endRules(); ruleIt++ )
+    {
+        const XHead* head = ruleIt->getHead();
+        assert_msg( head != NULL, "Null head" );
+        const unordered_set< XTerm > existVars = ruleIt->getExistentialVariables();
+        for( unordered_set< XTerm >::const_iterator varIt = existVars.begin(); varIt != existVars.end(); varIt++ )
+        {
+            trace_msg( rewriting, 2, "Null " << nullIndex << " has been introduced by rule " << *ruleIt );
+            nullIndex2RuleIterator.insert(pair< index_t, const_iterator >(nullIndex,ruleIt));
+            const vector< XCoordinates > headPositions = ruleIt->getHeadPositions(*varIt);
+            for( unsigned i=0; i<headPositions.size(); i++ )
+            {
+                assert_msg( headPositions[i].atomPos < head->size(), "Index out of range" );
+                index_t predIdx = head->at(headPositions[i].atomPos).getPredIndex();
+                predNullsets[predIdx].insertNull(headPositions[i].termPos,nullIndex);
+                trace_msg( rewriting, 2,
+                        "Add null " << nullIndex << " to null-set "
+                        << getPredicateName(predIdx) << "-" << getPredicateArity(predIdx) << "_" << headPositions[i].termPos );
+
+                // Propagate the current null
+                pair< Vertex, bool > resVertexId = propagationGraph.getVertexId(predIdx,headPositions[i].termPos);
+                // If the current position does not belong to the vertex-set of the propagation graph, this null cannot be propagated.
+                if( resVertexId.second )
+                {
+                    stringstream reachabilityProblem;
+                    reachabilityProblem << getPropagationGraphAsString();
+                    reachabilityProblem << "reachable(X,Y):-edge(X,Y,_). reachable(X,Y):-reachable(X,Z),edge(Z,Y,_).\n";
+                    reachabilityProblem << "reachable(" << resVertexId.first << ",Y)?\n";
+                    char outputBuffer[BUFFER_MAX_LENGTH];
+                    Utils::systemCallTo("./executables/dlNofinitecheck",reachabilityProblem.str(),outputBuffer,BUFFER_MAX_LENGTH);
+                    string result(outputBuffer);
+                    boost::char_separator< char > lineSep("\n");
+                    boost::tokenizer< boost::char_separator< char > > lines(result,lineSep);
+                    for( const auto& line : lines )
+                    {
+                        // Each resulting node is represented by its index
+                        int vertexId;
+                        assert_msg( Utils::isNumeric(line.c_str(),10), "The resulting vertex id is not numeric" );
+                        Utils::parseInteger(line.c_str(),vertexId);
+                        pair< index_t, unsigned > vertexPredPos = propagationGraph.getIndexByVertexId(vertexId);
+                        assert_msg( predicates.isValidIndex(vertexPredPos.first), "Predicate not found" );
+                        predNullsets[vertexPredPos.first].insertNull(vertexPredPos.second,nullIndex);
+                        trace_msg( rewriting, 2, "Add null " << nullIndex
+                                << " to null-set " << getPredicateName(vertexPredPos.first)
+                                << "-" << getPredicateArity(vertexPredPos.first)
+                                << "_" << vertexPredPos.second );
+                    }
+                }
+            }
+            nullIndex++;
+        }
+    }
+}
+
 const string&
 XProgram::getPredicateName(
     index_t predIndex ) const
@@ -421,6 +488,14 @@ XProgram::getPredicateArity(
     index_t predIndex ) const
 {
     return predicates.getArity(predIndex);
+}
+
+pair< index_t, bool >
+XProgram::findPredicate(
+    const string& predName,
+    unsigned arity ) const
+{
+    return predicates.find(predName,arity);
 }
 
 const XProgram::XRulePointers&
@@ -517,8 +592,6 @@ XProgram::updatePropagationGraph(
             for( unsigned j=0; j<currAtom.getTerms().size(); j++ )
             {
                 const XTerm& currTerm = currAtom.getTerms().at(j);
-                stringstream sDest;
-                sDest << currAtom.getPredicateName() << "_" << j;
                 const vector< XCoordinates >& bodyPositions = ruleIt->getBodyPositions(currTerm);
                 for( unsigned k=0; k<bodyPositions.size(); k++ )
                 {
@@ -526,9 +599,7 @@ XProgram::updatePropagationGraph(
                     unsigned termCoord = bodyPositions[k].termPos;
                     assert_msg( atomCoord < body->size(), "Index out of range" );
                     assert_msg( termCoord < body->at(atomCoord).getAtom().getTerms().size(), "Index out of range" );
-                    stringstream sSrc;
-                    sSrc << body->at(atomCoord).getAtom().getPredicateName() << "_" << termCoord;
-                    propagationGraph.addEdge(sSrc.str(),sDest.str(),ruleIndex);
+                    propagationGraph.addEdge(body->at(atomCoord).getPredIndex(),termCoord,currAtom.getPredIndex(),j,ruleIndex);
                 }
             }
         }
@@ -541,6 +612,12 @@ XProgram::computePropagationGraph()
     index_t ruleIdx = 0;
     for( const_iterator rIt = beginRules(); rIt != endRules(); rIt++ )
         updatePropagationGraph(rIt,ruleIdx++);
-//    // Add a noose with the same label to each vertex. Notice that such a label does not match any rule index.
-//    propagationGraph.addNooses(ruleIdx);
+
+    // This operation is not needed because the check on nooses is carried out in a different way
+    // by XRewrite (have a look at XRewrite.cpp --> function QueryElimination).
+
+    // Add a noose with the same label to each vertex. Notice that such a label does not match any rule index.
+//    for( index_t pIdx = 0; pIdx < predicates.size(); pIdx++ )
+//        for( unsigned pos = 0; pos < predicates.getArity(pIdx); pos++ )
+//            propagationGraph.addEdge(pIdx,pos,pIdx,pos,ruleIdx);
 }

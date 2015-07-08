@@ -25,40 +25,54 @@
  */
 
 #include "XPropagationGraph.h"
-
+#include "XProgram.h"
 #include "../../util/Assert.h"
+#include "../../util/Trace.h"
+#include "../../util/Options.h"
 
 using namespace std;
 using namespace DLV2::REWRITERS;
 
-XPropagationGraph::XPropagationGraph():
+XPropagationGraph::XPropagationGraph(
+    const XProgram& p ):
+        program(p),
         graph(),
         graphString(),
-        vertexLabels()
+        index2vertexId()
 {
 }
 
 XPropagationGraph::XPropagationGraph(
     const XPropagationGraph& g ):
+        program(g.program),
         graph(g.graph),
         graphString(g.graphString),
-        vertexLabels(g.vertexLabels)
+        index2vertexId(g.index2vertexId)
 {
 }
 
 unsigned
 XPropagationGraph::addVertex(
-    const std::string& atomPredPos )
+    index_t predIdx,
+    unsigned pos )
 {
-    unordered_map< string, Vertex >::const_iterator it = vertexLabels.find(atomPredPos);
-    if( it == vertexLabels.end() )
+    assert_msg( pos < program.getPredicateArity(predIdx), "Position out of range" );
+    unordered_map< index_t, vector< Vertex > >::const_iterator it = index2vertexId.find(predIdx);
+    if( it == index2vertexId.end() )
     {
-        Vertex v = boost::add_vertex(atomPredPos,graph);
-        vertexLabels.insert(pair< const string&, const Vertex& >(atomPredPos,v));
-        return v;
+        vector< Vertex > vertices;
+        for( unsigned i=0; i<program.getPredicateArity(predIdx); i++ )
+            vertices.push_back(boost::add_vertex(graph));
+        index2vertexId.insert(pair< index_t, vector< Vertex > >(predIdx,vertices));
+        graph[vertices[pos]].predicateIndex = predIdx;
+        graph[vertices[pos]].termPosition = pos;
+        return vertices[pos];
     }
     else
-        return it->second;
+    {
+        assert_msg( pos < it->second.size(), "Position out of range" );
+        return it->second.at(pos);
+    }
 }
 
 void
@@ -67,35 +81,40 @@ XPropagationGraph::addNooses(
 {
     pair< VertexIterator, VertexIterator > verticesIt = boost::vertices(graph);
     for( VertexIterator currVertexIt = verticesIt.first; currVertexIt != verticesIt.second; currVertexIt++ )
-        addEdge(boost::get(boost::vertex_name,graph,*currVertexIt),boost::get(boost::vertex_name,graph,*currVertexIt),label);
+        boost::add_edge(*currVertexIt,*currVertexIt,label,graph);
 }
 
 void
 XPropagationGraph::addEdge(
-    const string& srcPredPos,
-    const string& destPredPos,
+    index_t srcPredIdx,
+    unsigned srcPos,
+    index_t destPredIdx,
+    unsigned destPos,
     unsigned label )
 {
-    Vertex src = addVertex(srcPredPos);
-    Vertex dest = addVertex(destPredPos);
+    Vertex src = addVertex(srcPredIdx,srcPos);
+    Vertex dest = addVertex(destPredIdx,destPos);
     boost::add_edge(src,dest,label,graph);
 }
 
 bool
 XPropagationGraph::isEdge(
-    const string& srcPredPos,
-    const string& destPredPos,
+    index_t srcPredIdx,
+    unsigned srcPos,
+    index_t destPredIdx,
+    unsigned destPos,
     unsigned label ) const
 {
-    unordered_map< string, Vertex >::const_iterator itSrc = vertexLabels.find(srcPredPos);
-    if( itSrc == vertexLabels.end() )
+    unordered_map< index_t, vector< Vertex > >::const_iterator itSrc = index2vertexId.find(srcPredIdx);
+    if( itSrc == index2vertexId.end() )
         return false;
 
-    unordered_map< string, Vertex >::const_iterator itDest = vertexLabels.find(destPredPos);
-    if( itDest == vertexLabels.end() )
+    unordered_map< index_t, vector < Vertex > >::const_iterator itDest = index2vertexId.find(destPredIdx);
+    if( itDest == index2vertexId.end() )
         return false;
 
-    std::pair< Edge, bool > alreadyExists = boost::edge(itSrc->second,itDest->second,graph);
+    assert_msg( ( srcPos < itSrc->second.size() && destPos < itDest->second.size() ), "Position out of range" );
+    std::pair< Edge, bool > alreadyExists = boost::edge(itSrc->second.at(srcPos),itDest->second.at(destPos),graph);
     if( !alreadyExists.second )
         return false;
 
@@ -104,6 +123,28 @@ XPropagationGraph::isEdge(
         return false;
 
     return true;
+}
+
+pair< Vertex, bool >
+XPropagationGraph::getVertexId(
+    index_t predIdx,
+    unsigned termPos ) const
+{
+    unordered_map< index_t, vector< Vertex > >::const_iterator it = index2vertexId.find(predIdx);
+    if( it != index2vertexId.end() )
+    {
+        assert_msg( termPos < it->second.size(), "Index out of range" );
+        return pair< Vertex, bool >(it->second.at(termPos),true);
+    }
+    return pair< Vertex, bool >(0,false);
+}
+
+pair< index_t, unsigned >
+XPropagationGraph::getIndexByVertexId(
+    Vertex id ) const
+{
+    assert_msg( id < boost::num_vertices(graph), "Index out of range" );
+    return pair < index_t, unsigned >(graph[id].predicateIndex,graph[id].termPosition);
 }
 
 const string&
@@ -115,7 +156,7 @@ XPropagationGraph::toString()
 
         pair< VertexIterator, VertexIterator > verticesIt = boost::vertices(graph);
         for( VertexIterator currVertexIt = verticesIt.first; currVertexIt != verticesIt.second; currVertexIt++ )
-            graphStream << "vertex(\"" << boost::get(boost::vertex_name,graph,*currVertexIt) << "\").\n";
+            graphStream << "vertex(" << *currVertexIt << ").\n";
 
         pair< EdgeIterator, EdgeIterator > edgesIt = boost::edges(graph);
         for( EdgeIterator currEdgeIt = edgesIt.first; currEdgeIt != edgesIt.second; currEdgeIt++ )
@@ -123,12 +164,41 @@ XPropagationGraph::toString()
             unsigned edgeLabel = boost::get(boost::edge_name,graph,*currEdgeIt);
             Vertex src = source(*currEdgeIt,graph);
             Vertex trgt = target(*currEdgeIt,graph);
-            graphStream << "edge(\""
-                    << boost::get(boost::vertex_name,graph,src) << "\",\""
-                    << boost::get(boost::vertex_name,graph,trgt) << "\","
-                    << edgeLabel << ").\n";
+            graphStream << "edge(" << src << "," << trgt << "," << edgeLabel << ").\n";
         }
         graphString.append(graphStream.str());
     }
+    trace_action( rewriting, 3,
+            trace_tag( cerr, rewriting, 3 );
+            cerr << "Propagation graph:";
+            if( numOfVertices() > 0 )
+            {
+                cerr << endl;
+                char* tmpGraphString = new char[strlen(graphString.c_str())+1];
+                strcpy(tmpGraphString,graphString.c_str());
+                tmpGraphString[strlen(graphString.c_str())] = '\0';
+                char* t = NULL;
+                t = strtok(tmpGraphString,"\n");
+                while( t != NULL )
+                {
+                    trace_tag( cerr, rewriting, 3 );
+                    cerr << "\t" << t << endl;
+                    t = strtok(NULL,"\n");
+                }
+                delete[] tmpGraphString;
+                trace_tag( cerr, rewriting, 3 );
+                cerr << "Vertices map:" << endl;
+                for( std::unordered_map< index_t, std::vector <Vertex > >::const_iterator it = index2vertexId.begin(); it != index2vertexId.end(); it++ )
+                {
+                    for( unsigned i=0; i<it->second.size(); i++ )
+                    {
+                        trace_tag( cerr, rewriting, 3 );
+                        cerr << "\t" << program.getPredicateName(it->first) << "-" << i << ": " << it->second.at(i) << endl;
+                    }
+                }
+            }
+            else
+                cerr << " EMPTY!" << endl;
+    );
     return graphString;
 }

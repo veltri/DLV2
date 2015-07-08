@@ -31,7 +31,7 @@
 #include "dlvdb_src/DLVDBFacade.h"
 #include "rewritings/input/ParserConstraintDatalogPM.h"
 #include "rewritings/input/XRewriteInputBuilder.h"
-#include "rewritings/algorithms/XRewrite.h"
+#include "rewritings/algorithms/XParallelRewrite.h"
 #include "rewritings/output/IRISOutputBuilder.h"
 
 //extern Buffer theBuffer;
@@ -246,8 +246,11 @@ DLV2Facade::solve()
                 }
             );
 
-
-        RewritingAlgorithm* rewritingAlgorithm = new XRewrite(*program);
+        RewritingAlgorithm* rewritingAlgorithm;
+        if( getOptions().getParallelRewriting() )
+            rewritingAlgorithm = new XParallelRewrite(*program);
+        else
+            rewritingAlgorithm = new XRewrite(*program);
         vector< XRule* > rewriting = rewritingAlgorithm->rewrite();
 
         trace_action( rewriting, 1,
