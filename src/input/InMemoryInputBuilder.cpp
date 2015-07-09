@@ -521,9 +521,8 @@ void InMemoryInputBuilder::createFact(Atom* fact) {
 	if (!(instancesTable->getPredicateExt(predicate)->addAtom(FACT, fact)))
 		delete fact;
 	else
-		if (Options::globalOptions()->getOutputFormat()==OUTPUT_TEXTUAL && !Options::globalOptions()->isNofacts()) {
-			ClassicalLiteral::print(predicate, fact->getTerms(), false, false);
-			cout << "." << endl;
+		if (!Options::globalOptions()->isNofacts()) {
+			OutputBuilder::getInstance()->onFact(fact);
 		}
 }
 

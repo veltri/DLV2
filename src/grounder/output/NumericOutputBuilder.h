@@ -30,6 +30,8 @@ public:
     virtual void onChoiceAtom(Atom *atom);
     virtual void onAggregate(Atom *atom);
     virtual void onAggregateElement(Atom *atom);
+    virtual void onFact(Atom* atom);
+
 
     virtual void onEnd();
 

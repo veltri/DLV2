@@ -10,6 +10,8 @@
 
 
 #include "../statement/Rule.h"
+#include "../../util/Options.h"
+
 using namespace std;
 
 namespace DLV2 {
@@ -18,7 +20,6 @@ namespace grounder {
 
 class OutputBuilder {
 public:
-	OutputBuilder(){};
 
     virtual void onRule(Rule *rule) = 0;
     virtual void onWeakConstraint() = 0;
@@ -32,10 +33,23 @@ public:
     virtual void onChoiceAtom(Atom *atom) = 0;
     virtual void onAggregate(Atom *atom) = 0;
     virtual void onAggregateElement(Atom *atom) = 0;
+    virtual void onFact(Atom* atom)=0;
 
     virtual void onEnd()=0;
 
     virtual ~OutputBuilder(){};
+
+    static OutputBuilder* getInstance();
+
+    static void freeInstance(){
+    	delete outputBuilder;
+    }
+
+protected:
+	OutputBuilder(){};
+
+    static OutputBuilder* outputBuilder;
+
 };
 
 } /* namespace grounder */

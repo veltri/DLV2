@@ -289,6 +289,7 @@ bool ProgramGrounder::groundRule(Rule* rule) {
 ProgramGrounder::~ProgramGrounder() {
 	HashString::freeInstance();
 	HashVecInt::freeInstance();
+	OutputBuilder::freeInstance();
 	delete statementDependency;
 	delete predicateExtTable;
 	delete termsMap;

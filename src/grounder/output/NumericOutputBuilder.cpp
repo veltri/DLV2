@@ -93,6 +93,10 @@ void NumericOutputBuilder::onDisjunctionAtom(const vector<Atom*>& head) {
 void NumericOutputBuilder::onAggregateElement(Atom* atom) {
 }
 
+void NumericOutputBuilder::onFact(Atom* atom) {
+	onHeadAtom(atom);cout<<"0 0"<<endl;
+}
+
 void NumericOutputBuilder::onEnd() {
 	cout<<"0"<<endl;
 	PredicateExtTable::getInstance()->print();
@@ -101,3 +105,5 @@ void NumericOutputBuilder::onEnd() {
 
 } /* namespace grounder */
 } /* namespace DLV2 */
+
+

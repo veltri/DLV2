@@ -41,13 +41,7 @@ public:
 	 */
 	ProgramGrounder() :
 		predicateTable(PredicateTable::getInstance()), predicateExtTable(PredicateExtTable::getInstance()),
-		statementDependency(StatementDependency::getInstance()), termsMap(TermTable::getInstance()){
-		switch(Options::globalOptions()->getOutputFormat()){
-//			case OUTPUT_TEXTUAL:
-//				break;
-			default:
-				outputBuilder=new NumericOutputBuilder;
-		}
+		statementDependency(StatementDependency::getInstance()), termsMap(TermTable::getInstance()),outputBuilder(OutputBuilder::getInstance()){
 	};
 
 	///This method executes the overall grounding process
