@@ -44,7 +44,7 @@ void Rule::print(){
 	for (auto atom:head) {
 		if(firstAtomPrinted && !simplifiedHead[i])
 			cout<<";";
-		if(!simplifiedHead[i]){
+		if(!simplifiedHead[i] && atom!=nullptr){
 			atom->print();
 			if(!firstAtomPrinted)
 				firstAtomPrinted=true;
@@ -58,7 +58,7 @@ void Rule::print(){
 		for (auto atom:body) {
 			if(firstAtomPrinted && !simplifiedBody[i])
 				cout<<";";
-			if(!simplifiedBody[i]){
+			if(!simplifiedBody[i] && atom!=nullptr){
 				atom->print();
 				if(!firstAtomPrinted)
 					firstAtomPrinted=true;
@@ -120,24 +120,24 @@ bool Rule::operator ==(const Rule& r) {
 void Rule::deleteBody(function<int(Atom*)> f) {
 	for(auto atom:body){
 		int result=f(atom);
-			if(result==1)
-				delete atom;
-			if(result==2){
-				atom->deleteAtoms();
-				delete atom;
-			}
+		if(result==1)
+			delete atom;
+		if(result==2){
+			atom->deleteAtoms();
+			delete atom;
+		}
 	}
 }
 
 void Rule::deleteHead(function<int(Atom*)> f) {
 	for(auto atom:head){
 		int result=f(atom);
-			if(result==1)
-				delete atom;
-			if(result==2){
-				atom->deleteAtoms();
-				delete atom;
-			}
+		if(result==1)
+			delete atom;
+		if(result==2){
+			atom->deleteAtoms();
+			delete atom;
+		}
 	}
 }
 

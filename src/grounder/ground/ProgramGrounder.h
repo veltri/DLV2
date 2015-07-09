@@ -123,6 +123,13 @@ protected:
 	/// Previous atom in the rule, if not exist return false
 	virtual bool back() = 0;
 
+	vector<Rule*> rulesWithPossibleUndefAtoms;
+	vector<vector<unsigned>> atomsPossibleUndefPositions;
+
+	void addAtomPossibleUndef(unsigned atomPosition, bool newRule);
+	void substituteIndicesInRulesWithPossibleUndefAtoms();
+
+
 private:
 	///Print the program rule
 	void printProgram(const vector<vector<Rule*> >& exitRules,const vector<vector<Rule*> >& recursiveRules);

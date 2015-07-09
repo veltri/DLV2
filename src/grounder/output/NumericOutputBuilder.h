@@ -32,7 +32,6 @@ public:
     virtual void onAggregateElement(Atom *atom);
     virtual void onFact(Atom* atom);
 
-
     virtual void onEnd();
 
 };

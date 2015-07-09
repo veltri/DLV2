@@ -41,9 +41,7 @@ public:
 
     static OutputBuilder* getInstance();
 
-    static void freeInstance(){
-    	delete outputBuilder;
-    }
+    static void freeInstance(){delete outputBuilder;}
 
 protected:
 	OutputBuilder(){};

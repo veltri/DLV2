@@ -121,6 +121,8 @@ void ProgramGrounder::ground() {
 
 	}
 
+	substituteIndicesInRulesWithPossibleUndefAtoms();
+
 	// Constraints are grounded at the end
 	for (unsigned int i = 0; i < statementDependency->getConstraintSize(); i++)
 		if (statementDependency->getConstraint(i)->getSizeBody() > 0){
@@ -285,6 +287,41 @@ bool ProgramGrounder::groundRule(Rule* rule) {
 	return find_assignment;
 }
 
+void ProgramGrounder::addAtomPossibleUndef(unsigned atomPosition, bool newRule){
+	if(newRule)
+		atomsPossibleUndefPositions.push_back(vector<unsigned>({atomPosition}));
+	else
+		atomsPossibleUndefPositions.back().push_back(atomPosition);
+}
+
+void ProgramGrounder::substituteIndicesInRulesWithPossibleUndefAtoms(){
+	for(unsigned i=0;i<rulesWithPossibleUndefAtoms.size();i++){
+		Rule* rule=rulesWithPossibleUndefAtoms[i];
+		cout<<"RULE PROBLEMATIC "<<i<<" ";rule->print();
+		for(unsigned possibleUndef:atomsPossibleUndefPositions[i]){
+			Atom* atom=rule->getAtomInBody(possibleUndef);
+			Atom* atomFound=predicateExtTable->getPredicateExt(atom->getPredicate())->getAtom(atom);
+			if(atomFound!=nullptr){
+				atom->setIndex(atomFound->getIndex());
+//				Simplification TODO
+			}
+		}
+
+		outputBuilder->onRule(rule);
+		rule->deleteBody([](Atom* atom){
+			//Delete the given atom if is a false negative atom or is an aggregate (atoms not present in PredicateExtension)
+			if(atom!=nullptr && ( (atom->isClassicalLiteral() && atom->isNegative() ) || atom->isAggregateAtom()))
+				return 1;
+			return 0;
+		});
+		rule->deleteHead([](Atom* atom){
+			if(atom!=0 && atom->isChoice())
+				return 1;
+			return 0;
+		});
+		delete rule;
+	}
+}
 
 ProgramGrounder::~ProgramGrounder() {
 	HashString::freeInstance();
@@ -294,7 +331,6 @@ ProgramGrounder::~ProgramGrounder() {
 	delete predicateExtTable;
 	delete termsMap;
 	delete predicateTable;
-	delete outputBuilder;
 }
 
 };

@@ -133,20 +133,6 @@ public:
 
 	///Destructor
 	~Rule(){
-		//The delete policy differs when the rule is not ground
-//		if(!ground){
-//			for(auto atom:head)
-//				delete atom;
-//			for(auto atom:body){
-//				atom->deleteAtoms();
-//				delete atom;
-//			}
-//		}
-//		else{
-//			delete[] simplifiedBody;
-//			delete[] simplifiedHead;
-//		}
-
 		if(ground){
 			delete[] simplifiedBody;
 			delete[] simplifiedHead;

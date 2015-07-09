@@ -88,6 +88,7 @@ bool BackTrackingGrounder::match() {
 #ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("Match");
 #endif
+
 		return match;
 	}
 
@@ -108,6 +109,12 @@ bool BackTrackingGrounder::firstMatch(){
 	unsigned current_table=current_id_match_iterator[index_current_atom];
 	unsigned n_table=current_id_match[index_current_atom].size();
 	Atom* templateAtom=templateSetAtom[index_current_atom];
+
+	// Avoid to clone template atom for each table for negative atoms
+	bool isPossibleUndef=true;
+	index_object indexNegativeAtom=0;
+	bool negativeToClone=false;
+
 	while(current_table<n_table){
 		unsigned tableToSearch = current_id_match[index_current_atom][current_table].first;
 		AtomSearcher *searcher=predicateExtTable->getPredicateExt(templateAtom->getPredicate())->getAtomSearcher(tableToSearch);
@@ -124,12 +131,12 @@ bool BackTrackingGrounder::firstMatch(){
 			find=!undef;
 
 		if(templateAtom->isNegative() && !find){
-			index_object index=0;
-			if(atomFound!=nullptr)index=atomFound->getIndex();
-			atomFound=templateAtom->clone();
-			atomFound->setIndex(index);
-			substiteInGroundRule(index_current_atom,atomFound);
-			if(StatementDependency::getInstance()->isPredicateNotStratified(atomFound->getPredicate()->getIndex()))
+			if(atomFound!=nullptr){
+				indexNegativeAtom=atomFound->getIndex();
+				isPossibleUndef=false;
+			}
+			negativeToClone=true;
+			if(StatementDependency::getInstance()->isPredicateNotStratified(templateAtom->getPredicate()->getIndex()))
 				ground_rule->setAtomToSimplifyInBody(index_current_atom,false);
 			else
 				ground_rule->setAtomToSimplifyInBody(index_current_atom,!undef);
@@ -154,6 +161,18 @@ bool BackTrackingGrounder::firstMatch(){
 		current_id_match_iterator[index_current_atom]=++current_table;
 
 	}
+
+	if(negativeToClone){
+		Atom* atomFound=templateAtom->clone();
+		atomFound->setIndex(indexNegativeAtom);
+		substiteInGroundRule(index_current_atom,atomFound);
+	}
+	if(isPossibleUndef){
+		if(!hasCurrentRuleAPossibleUndefAtom)
+			hasCurrentRuleAPossibleUndefAtom=true;
+		addAtomPossibleUndef(index_current_atom,hasCurrentRuleAPossibleUndefAtom);
+	}
+
 	current_id_match_iterator[index_current_atom]=0;
 
 #ifdef DEBUG_RULE_TIME
@@ -280,8 +299,15 @@ bool BackTrackingGrounder::foundAssignment() {
 		Timer::getInstance()->stop("Head");
 #endif
 
+	if(hasCurrentRuleAPossibleUndefAtom){
+		rulesWithPossibleUndefAtoms.push_back(ground_rule);
+		vector<Atom*> body=ground_rule->getBody();
+		ground_rule=new Rule(true, currentRule->getSizeHead(), currentRule->getSizeBody());
+		for(unsigned i=0;i<currentRule->getSizeBody();i++)
+			substiteInGroundRule(i,body[i]);
+	}
 	//Print if ground new atom, an atom changed from undef to true, the rule is a strong constraint, there are some undefined atom in body
-	if( ground_new_atom || (!ground_new_atom && !head_true) || (find_new_true_atom && head_true) || ground_rule->isAStrongConstraint() || ground_rule->areThereUndefinedAtomInBody())
+	else if( ground_new_atom || (!ground_new_atom && !head_true) || (find_new_true_atom && head_true) || ground_rule->isAStrongConstraint() || ground_rule->areThereUndefinedAtomInBody())
 		outputBuilder->onRule(ground_rule);
 
 	if(currentRule->getSizeBody() > 0)
@@ -347,13 +373,13 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 #ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("Init");
 #endif
-	if(ground_rule==0){
+	if(ground_rule==0)
 		ground_rule=new Rule(true, rule->getSizeHead(), rule->getSizeBody());
-	}
 	else{
-		deleteGroundRule();
+		if(!hasCurrentRuleAPossibleUndefAtom) deleteGroundRule(); else delete ground_rule;
 		ground_rule=new Rule(true, rule->getSizeHead(), rule->getSizeBody());
 	}
+	hasCurrentRuleAPossibleUndefAtom=false;
 }
 
 void BackTrackingGrounder::deleteGroundRule(){
@@ -401,7 +427,7 @@ void BackTrackingGrounder::findBindVariablesRule() {
 
 		///Set true if is ground
 		if(is_ground_atom.size()<=index_current_atom)
-				is_ground_atom.push_back((current_atom->isBuiltIn() || (current_atom->isClassicalLiteral() && current_atom->isNegative()) || current_variables_atoms[index_current_atom].size()==0));
+			is_ground_atom.push_back((current_atom->isBuiltIn() || (current_atom->isClassicalLiteral() && current_atom->isNegative()) || current_variables_atoms[index_current_atom].size()==0));
 
 	}
 #ifdef DEBUG_RULE_TIME
