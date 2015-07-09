@@ -253,6 +253,8 @@ DLV2Facade::solve()
             rewritingAlgorithm = new XRewrite(*program);
         vector< XRule* > rewriting = rewritingAlgorithm->rewrite();
 
+        cout << "#rewriting: " << rewriting.size() << endl;
+
         trace_action( rewriting, 1,
                 trace_tag( cerr, rewriting, 1 );
                 cerr << "The final rewriting is: " << endl;
