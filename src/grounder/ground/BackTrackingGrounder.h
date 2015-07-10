@@ -22,7 +22,7 @@ public:
 	virtual ~BackTrackingGrounder() {
 		for(auto atom:templateSetAtom) {if(atom!=nullptr){atom->deleteAtoms(); delete atom;}}
 		if(ground_rule!=0)
-			deleteGroundRule();
+			ground_rule->deleteGroundRule();
 	};
 
 protected:
@@ -53,8 +53,6 @@ protected:
 	/// Print the current assignment
 	void printAssignment();
 
-	//Delete the ground rule
-	void deleteGroundRule();
 	//Delete the atom at the given position and substitute it with the given atom at that position
 	void substiteInGroundRule(unsigned position, Atom* new_atom) {
 		Atom* atom=(ground_rule->getAtomInBody(position));
@@ -92,9 +90,10 @@ private:
 	///Find the bind variable on rule
 	void findBindVariablesRule();
 
-	//find the table to search for each atom in the body
+	///Determine the table to search for each atom in the body
 	void findSearchTable();
 
+	///Is true if the current ground rule has at least a negative atom that an potentially be an undef atom (an atom without a valid index)
 	bool hasCurrentRuleAPossibleUndefAtom;
 };
 

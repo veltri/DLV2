@@ -135,6 +135,7 @@ bool BackTrackingGrounder::firstMatch(){
 				indexNegativeAtom=atomFound->getIndex();
 				isPossibleUndef=false;
 			}
+			//We can avoid to clone the template atom for each table and do it just at the end
 			negativeToClone=true;
 			if(StatementDependency::getInstance()->isPredicateNotStratified(templateAtom->getPredicate()->getIndex()))
 				ground_rule->setAtomToSimplifyInBody(index_current_atom,false);
@@ -162,18 +163,14 @@ bool BackTrackingGrounder::firstMatch(){
 
 	}
 
-	if(negativeToClone){
-		if(isPossibleUndef){
-			if(!hasCurrentRuleAPossibleUndefAtom){
-				hasCurrentRuleAPossibleUndefAtom=true;
-				addAtomPossibleUndef(index_current_atom,true);
-			}
-			else
-				addAtomPossibleUndef(index_current_atom,false);
+	//If at least a possible undef atom has been found then update accordingly the vector of undef atoms of this rule
+	if(isPossibleUndef){
+		if(!hasCurrentRuleAPossibleUndefAtom){
+			hasCurrentRuleAPossibleUndefAtom=true;
+			addAtomPossibleUndef(index_current_atom,true);
 		}
-		Atom* atomFound=templateAtom->clone();
-		atomFound->setIndex(indexNegativeAtom);
-		substiteInGroundRule(index_current_atom,atomFound);
+		else
+			addAtomPossibleUndef(index_current_atom,false);
 	}
 
 	current_id_match_iterator[index_current_atom]=0;
@@ -302,6 +299,10 @@ bool BackTrackingGrounder::foundAssignment() {
 		Timer::getInstance()->stop("Head");
 #endif
 
+	/// If the rule has possible undef atoms in its body its printing is postponed to the end of grounding
+	/// So that:
+	/// 	- if the printing type is numeric we give to that atoms the right indices,
+	/// 	- independently from the output format, we simplify that atoms.
 	if(hasCurrentRuleAPossibleUndefAtom){
 		rulesWithPossibleUndefAtoms.push_back(ground_rule);
 		vector<Atom*> body=ground_rule->getBody();
@@ -385,25 +386,10 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 	if(ground_rule==0)
 		ground_rule=new Rule(true, rule->getSizeHead(), rule->getSizeBody());
 	else{
-		deleteGroundRule();
+		ground_rule->deleteGroundRule();
 		ground_rule=new Rule(true, rule->getSizeHead(), rule->getSizeBody());
 	}
 	hasCurrentRuleAPossibleUndefAtom=false;
-}
-
-void BackTrackingGrounder::deleteGroundRule(){
-	ground_rule->deleteBody([](Atom* atom){
-		//Delete the given atom if is a false negative atom or is an aggregate (atoms not present in PredicateExtension)
-		if(atom!=nullptr && ((atom->isClassicalLiteral() && atom->isNegative()) || atom->isAggregateAtom()))
-			return 1;
-		return 0;
-	});
-	ground_rule->deleteHead([](Atom* atom){
-		if(atom!=0 && atom->isChoice())
-			return 1;
-		return 0;
-	});
-	delete ground_rule;
 }
 
 void BackTrackingGrounder::findBindVariablesRule() {

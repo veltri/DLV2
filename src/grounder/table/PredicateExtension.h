@@ -200,9 +200,7 @@ public:
 	///Printer method for the first table in Predicate Extension
 	void print(unsigned table) {for (auto& i : predicateExtTable) i.second->print(table);};
 
-	void print(){
-		for (auto& i : predicateExtTable) i.second->print();
-	}
+	void print(){ for (auto& i : predicateExtTable) i.second->print();}
 
 	///Destructor
 	~PredicateExtTable(){for(auto pair_predExt:predicateExtTable) delete pair_predExt.second;};

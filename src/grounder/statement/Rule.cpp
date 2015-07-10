@@ -141,6 +141,21 @@ void Rule::deleteHead(function<int(Atom*)> f) {
 	}
 }
 
+void Rule::deleteGroundRule(){
+	this->deleteBody([](Atom* atom){
+		//Delete the given atom if is a false negative atom or is an aggregate (atoms not present in PredicateExtension)
+		if(atom!=nullptr && ((atom->isClassicalLiteral() && atom->isNegative()) || atom->isAggregateAtom()))
+			return 1;
+		return 0;
+	});
+	this->deleteHead([](Atom* atom){
+		if(atom!=0 && atom->isChoice())
+			return 1;
+		return 0;
+	});
+	delete this;
+}
+
 
 }}
 

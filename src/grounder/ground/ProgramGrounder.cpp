@@ -295,29 +295,25 @@ void ProgramGrounder::addAtomPossibleUndef(unsigned atomPosition, bool newRule){
 void ProgramGrounder::substituteIndicesInRulesWithPossibleUndefAtoms(){
 	for(unsigned i=0;i<rulesWithPossibleUndefAtoms.size();i++){
 		Rule* rule=rulesWithPossibleUndefAtoms[i];
+		bool ruleSimplified=false;
 		for(unsigned possibleUndef:atomsPossibleUndefPositions[i]){
 			Atom* atom=rule->getAtomInBody(possibleUndef);
-			PredicateExtension* predExt=predicateExtTable->getPredicateExt(atom->getPredicate());
-			Atom* atomFound=predExt->getAtom(atom);
+			Atom* atomFound=predicateExtTable->getPredicateExt(atom->getPredicate()->getIndex())->getAtom(atom);
 			if(atomFound!=nullptr){
 				atom->setIndex(atomFound->getIndex());
-//				Simplification TODO
+				//Simplification now can be done
+				//TODO Move in the ground simplification or elsewhere
+				if(atomFound->isFact()){
+					ruleSimplified=true;
+					break;
+				}
 			}
+			else
+				rule->setAtomToSimplifyInBody(possibleUndef);
 		}
-
-		outputBuilder->onRule(rule);
-		rule->deleteBody([](Atom* atom){
-			//Delete the given atom if is a false negative atom or is an aggregate (atoms not present in PredicateExtension)
-			if(atom!=nullptr && ((atom->isClassicalLiteral() && atom->isNegative()) || atom->isAggregateAtom()))
-				return 1;
-			return 0;
-		});
-		rule->deleteHead([](Atom* atom){
-			if(atom!=0 && atom->isChoice())
-				return 1;
-			return 0;
-		});
-		delete rule;
+		if(!ruleSimplified)
+			outputBuilder->onRule(rule);
+		rule->deleteGroundRule();
 	}
 }
 
