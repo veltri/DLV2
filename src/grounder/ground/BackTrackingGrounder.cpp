@@ -304,20 +304,24 @@ bool BackTrackingGrounder::foundAssignment() {
 		Timer::getInstance()->stop("Head");
 #endif
 
-	/// If the rule has possible undef atoms in its body its printing is postponed to the end of grounding
-	/// So that:
-	/// 	- if the printing type is numeric we give to that atoms the right indices,
-	/// 	- independently from the output format, we simplify that atoms.
+	// If the rule has possible undef atoms in its body its printing is postponed to the end of grounding
+	// So that:
+	// 	- if the printing type is numeric we give to that atoms the right indices,
+	// 	- independently from the output format, we simplify that atoms.
+	// In this case ground_rule content cannot be changed (for example, substituting atoms in its body),
+	// so after a ground rule is saved to be processed later, the ground_rule must be reinitialized coping
+	// into it, the body of the saved ground rule.
 	if(hasCurrentRuleAPossibleUndefAtom){
 		rulesWithPossibleUndefAtoms.push_back(ground_rule);
-		vector<Atom*> body=ground_rule->getBody();
+		Rule* savedRule=ground_rule;
 		ground_rule=new Rule(true, currentRule->getSizeHead(), currentRule->getSizeBody());
 		for(unsigned i=0;i<currentRule->getSizeBody();i++){
-			Atom* atom=body[i];
+			Atom* atom=savedRule->getAtomInBody(i);
 			if(atom!=nullptr && ((atom->isClassicalLiteral() && atom->isNegative()) || atom->isAggregateAtom()))
 				substiteInGroundRule(i,atom->clone());
 			else
 				substiteInGroundRule(i,atom);
+			ground_rule->setAtomToSimplifyInBody(i,savedRule->isAtomToSimplifyInBody(i));
 		}
 		hasCurrentRuleAPossibleUndefAtom=false;
 	}

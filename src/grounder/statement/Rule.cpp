@@ -44,7 +44,7 @@ void Rule::print(){
 	for (auto atom:head) {
 		if(firstAtomPrinted && !simplifiedHead[i])
 			cout<<";";
-		if(!simplifiedHead[i] && atom!=nullptr){
+		if(!simplifiedHead[i]){
 			atom->print();
 			if(!firstAtomPrinted)
 				firstAtomPrinted=true;
@@ -58,7 +58,7 @@ void Rule::print(){
 		for (auto atom:body) {
 			if(firstAtomPrinted && !simplifiedBody[i])
 				cout<<";";
-			if(!simplifiedBody[i] && atom!=nullptr){
+			if(!simplifiedBody[i]){
 				atom->print();
 				if(!firstAtomPrinted)
 					firstAtomPrinted=true;
