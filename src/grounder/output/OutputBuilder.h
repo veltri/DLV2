@@ -35,7 +35,7 @@ public:
     virtual void onAggregateElement(Atom *atom) = 0;
     virtual void onFact(Atom* atom)=0;
 
-    virtual void onEnd()=0;
+    virtual void onEnd(){};
 
     virtual ~OutputBuilder(){};
 

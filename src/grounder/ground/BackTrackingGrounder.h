@@ -21,12 +21,8 @@ public:
 	BackTrackingGrounder():ProgramGrounder(),currentRule(0),index_current_atom(0),callFoundAssignment(0),ground_rule(0),hasCurrentRuleAPossibleUndefAtom(false) {};
 	virtual ~BackTrackingGrounder() {
 		for(auto atom:templateSetAtom) {if(atom!=nullptr){atom->deleteAtoms(); delete atom;}}
-		if(ground_rule!=0){
-			if(!hasCurrentRuleAPossibleUndefAtom)
-				deleteGroundRule();
-			else
-				delete ground_rule;
-		}
+		if(ground_rule!=0)
+			deleteGroundRule();
 	};
 
 protected:
@@ -62,7 +58,7 @@ protected:
 	//Delete the atom at the given position and substitute it with the given atom at that position
 	void substiteInGroundRule(unsigned position, Atom* new_atom) {
 		Atom* atom=(ground_rule->getAtomInBody(position));
-		if(!hasCurrentRuleAPossibleUndefAtom && atom!=nullptr && ((atom->isClassicalLiteral() && atom->isNegative() && atom->getIndex()!=0) || atom->isAggregateAtom()))
+		if(atom!=nullptr && ((atom->isClassicalLiteral() && atom->isNegative()) || atom->isAggregateAtom()))
 			delete atom;
 		ground_rule->setAtomInBody(position,new_atom);
 	}

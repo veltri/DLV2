@@ -163,14 +163,17 @@ bool BackTrackingGrounder::firstMatch(){
 	}
 
 	if(negativeToClone){
+		if(isPossibleUndef){
+			if(!hasCurrentRuleAPossibleUndefAtom){
+				hasCurrentRuleAPossibleUndefAtom=true;
+				addAtomPossibleUndef(index_current_atom,true);
+			}
+			else
+				addAtomPossibleUndef(index_current_atom,false);
+		}
 		Atom* atomFound=templateAtom->clone();
 		atomFound->setIndex(indexNegativeAtom);
 		substiteInGroundRule(index_current_atom,atomFound);
-	}
-	if(isPossibleUndef){
-		if(!hasCurrentRuleAPossibleUndefAtom)
-			hasCurrentRuleAPossibleUndefAtom=true;
-		addAtomPossibleUndef(index_current_atom,hasCurrentRuleAPossibleUndefAtom);
 	}
 
 	current_id_match_iterator[index_current_atom]=0;
@@ -303,8 +306,14 @@ bool BackTrackingGrounder::foundAssignment() {
 		rulesWithPossibleUndefAtoms.push_back(ground_rule);
 		vector<Atom*> body=ground_rule->getBody();
 		ground_rule=new Rule(true, currentRule->getSizeHead(), currentRule->getSizeBody());
-		for(unsigned i=0;i<currentRule->getSizeBody();i++)
-			substiteInGroundRule(i,body[i]);
+		for(unsigned i=0;i<currentRule->getSizeBody();i++){
+			Atom* atom=body[i];
+			if(atom!=nullptr && ((atom->isClassicalLiteral() && atom->isNegative()) || atom->isAggregateAtom()))
+				substiteInGroundRule(i,atom->clone());
+			else
+				substiteInGroundRule(i,atom);
+		}
+		hasCurrentRuleAPossibleUndefAtom=false;
 	}
 	//Print if ground new atom, an atom changed from undef to true, the rule is a strong constraint, there are some undefined atom in body
 	else if( ground_new_atom || (!ground_new_atom && !head_true) || (find_new_true_atom && head_true) || ground_rule->isAStrongConstraint() || ground_rule->areThereUndefinedAtomInBody())
@@ -376,7 +385,7 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 	if(ground_rule==0)
 		ground_rule=new Rule(true, rule->getSizeHead(), rule->getSizeBody());
 	else{
-		if(!hasCurrentRuleAPossibleUndefAtom) deleteGroundRule(); else delete ground_rule;
+		deleteGroundRule();
 		ground_rule=new Rule(true, rule->getSizeHead(), rule->getSizeBody());
 	}
 	hasCurrentRuleAPossibleUndefAtom=false;
@@ -385,7 +394,7 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 void BackTrackingGrounder::deleteGroundRule(){
 	ground_rule->deleteBody([](Atom* atom){
 		//Delete the given atom if is a false negative atom or is an aggregate (atoms not present in PredicateExtension)
-		if(atom!=nullptr && ( (atom->isClassicalLiteral() && atom->isNegative() ) || atom->isAggregateAtom()))
+		if(atom!=nullptr && ((atom->isClassicalLiteral() && atom->isNegative()) || atom->isAggregateAtom()))
 			return 1;
 		return 0;
 	});
@@ -463,7 +472,6 @@ void BackTrackingGrounder::removeBindValueInAssignment(const set_term& bind_vari
 
 	for (auto variable : bind_variables)
 		current_var_assign.erase(variable);
-
 
 #ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->stop("Remove Assignment");

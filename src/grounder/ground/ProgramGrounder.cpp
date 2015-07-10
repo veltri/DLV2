@@ -121,20 +121,18 @@ void ProgramGrounder::ground() {
 
 	}
 
-	substituteIndicesInRulesWithPossibleUndefAtoms();
 
 	// Constraints are grounded at the end
 	for (unsigned int i = 0; i < statementDependency->getConstraintSize(); i++)
 		if (statementDependency->getConstraint(i)->getSizeBody() > 0){
 			Rule *rule=statementDependency->getConstraint(i);
-			if(nonGroundSimplificator.simplifyRule(rule)){
-				cout<<"cont"<<endl;
+			if(nonGroundSimplificator.simplifyRule(rule))
 				continue;
-			}
 			inizializeSearchInsertPredicate(rule);
 			groundRule(rule);
 		}
 
+	substituteIndicesInRulesWithPossibleUndefAtoms();
 	outputBuilder->onEnd();
 
 	//Print and simplify the rule
@@ -297,10 +295,10 @@ void ProgramGrounder::addAtomPossibleUndef(unsigned atomPosition, bool newRule){
 void ProgramGrounder::substituteIndicesInRulesWithPossibleUndefAtoms(){
 	for(unsigned i=0;i<rulesWithPossibleUndefAtoms.size();i++){
 		Rule* rule=rulesWithPossibleUndefAtoms[i];
-		cout<<"RULE PROBLEMATIC "<<i<<" ";rule->print();
 		for(unsigned possibleUndef:atomsPossibleUndefPositions[i]){
 			Atom* atom=rule->getAtomInBody(possibleUndef);
-			Atom* atomFound=predicateExtTable->getPredicateExt(atom->getPredicate())->getAtom(atom);
+			PredicateExtension* predExt=predicateExtTable->getPredicateExt(atom->getPredicate());
+			Atom* atomFound=predExt->getAtom(atom);
 			if(atomFound!=nullptr){
 				atom->setIndex(atomFound->getIndex());
 //				Simplification TODO
@@ -310,7 +308,7 @@ void ProgramGrounder::substituteIndicesInRulesWithPossibleUndefAtoms(){
 		outputBuilder->onRule(rule);
 		rule->deleteBody([](Atom* atom){
 			//Delete the given atom if is a false negative atom or is an aggregate (atoms not present in PredicateExtension)
-			if(atom!=nullptr && ( (atom->isClassicalLiteral() && atom->isNegative() ) || atom->isAggregateAtom()))
+			if(atom!=nullptr && ((atom->isClassicalLiteral() && atom->isNegative()) || atom->isAggregateAtom()))
 				return 1;
 			return 0;
 		});
