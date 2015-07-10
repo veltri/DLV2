@@ -132,7 +132,7 @@ public:
 	inline void print(unsigned table){for(auto fact:*tables[table]){cout<<fact->getIndex()<<" ";ClassicalLiteral::print(predicate,fact->getTerms(),false,false);cout<<endl;}}
 
 	///Printer method for a single table
-	inline void print(){for(unsigned table=0;table<tables.size();table++)print(table);}
+	inline void print(){for(unsigned table=0;table<tables.size();table++) print(table);}
 
 
 	///Destructor
@@ -198,9 +198,9 @@ public:
 	unsigned int getSize() {return predicateExtTable.size();};
 
 	///Printer method for the first table in Predicate Extension
-	void print(unsigned table) {for (auto& i : predicateExtTable) i.second->print(table);};
+	void print(unsigned table) {for (auto& i : predicateExtTable) if(!(i.second->getPredicate()->isHiddenForPrinting())) i.second->print(table);};
 
-	void print(){ for (auto& i : predicateExtTable) i.second->print();}
+	void print(){ for (auto& i : predicateExtTable) if(!(i.second->getPredicate()->isHiddenForPrinting())) i.second->print();}
 
 	///Destructor
 	~PredicateExtTable(){for(auto pair_predExt:predicateExtTable) delete pair_predExt.second;};

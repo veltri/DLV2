@@ -25,20 +25,20 @@ class Predicate : public Hashable,public Indexable{
 public:
 
 	///Default constructor
-	Predicate() : Indexable(), arity(0), edb(true) {};
+	Predicate() : Indexable(), arity(0), edb(true), hiddenForPrinting(false) {};
 
 	/** Constructor
 	 * @param name set the name of the predicate
 	 * @param arity set the arity of the predicate
 	 */
-	Predicate(string& name, unsigned int arity) : Indexable(), arity(arity), name(name), edb(true) {};
+	Predicate(string& name, unsigned int arity) : Indexable(), arity(arity), name(name), edb(true), hiddenForPrinting(false) {};
 
 	/** Constructor
 	 * @param name set the name of the predicate
 	 * @param arity set the arity of the predicate
 	 * @param edbIdb set whether the the predicate is an EDB or not
 	 */
-	Predicate(string& name, unsigned int arity, bool edbIdb) : Indexable(), arity(arity), name(name), edb(edbIdb) {};
+	Predicate(string& name, unsigned int arity, bool edbIdb) : Indexable(), arity(arity), name(name), edb(edbIdb), hiddenForPrinting(false) {};
 
 	///Getter method for the arity
 	unsigned int getArity() const {return arity;}
@@ -59,15 +59,18 @@ public:
 	/// @details Two predicates are equal if they have the same name and the same arity
 	bool operator==(Predicate &p)const{return p.getArity()==this->getArity() && p.getName()==this->getName();}
 
-	size_t hash(){
+	virtual size_t hash(){
 		vector<size_t> hash_vec(2);
 		hash_vec[0]=HashString::getHashString()->computeHash(name);
 		hash_vec[1]=arity;
 		return HashVecInt::getHashVecInt()->computeHashSize_T(hash_vec);
 	}
 
+	bool isHiddenForPrinting() const {return hiddenForPrinting;}
+	void setHiddenForPrinting(bool hiddenForPrinting) {this->hiddenForPrinting = hiddenForPrinting;}
 
-	~Predicate(){};
+	~Predicate() {}
+
 private:
 	///Arity
 	unsigned int arity;
@@ -75,6 +78,8 @@ private:
 	string name;
 	///Whether it is EDB or IDB
 	bool edb;
+	///Whether the predicate is hidden from printing
+	bool hiddenForPrinting;
 };
 
 

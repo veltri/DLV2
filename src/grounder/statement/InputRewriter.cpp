@@ -20,6 +20,7 @@ const string SEPARATOR="_";
 
 Atom* InputRewriter::generateNewAuxiliaryAtom(string& predicate_name, vector<Term*>& terms) {
 	Predicate* predicate=new Predicate(predicate_name,terms.size());
+	predicate->setHiddenForPrinting(true);
 	predicateTable->getInstance()->insertPredicate(predicate);
 	predicateExtTable->addPredicateExt(predicate);
 	Atom* auxiliaryAtom=new ClassicalLiteral(predicate,terms,false,false);
