@@ -164,13 +164,18 @@ bool BackTrackingGrounder::firstMatch(){
 	}
 
 	//If at least a possible undef atom has been found then update accordingly the vector of undef atoms of this rule
-	if(isPossibleUndef){
-		if(!hasCurrentRuleAPossibleUndefAtom){
-			hasCurrentRuleAPossibleUndefAtom=true;
-			addAtomPossibleUndef(index_current_atom,true);
+	if(negativeToClone){
+		if(isPossibleUndef){
+			if(!hasCurrentRuleAPossibleUndefAtom){
+				hasCurrentRuleAPossibleUndefAtom=true;
+				addAtomPossibleUndef(index_current_atom,true);
+			}
+			else
+				addAtomPossibleUndef(index_current_atom,false);
 		}
-		else
-			addAtomPossibleUndef(index_current_atom,false);
+		Atom* atomFound=templateAtom->clone();
+		atomFound->setIndex(indexNegativeAtom);
+		substiteInGroundRule(index_current_atom,atomFound);
 	}
 
 	current_id_match_iterator[index_current_atom]=0;
