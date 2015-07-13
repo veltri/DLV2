@@ -159,8 +159,7 @@ void OrderRule::computeAtomsVariables() {
 		if (!atom->isAggregateAtom())
 			mapAtomsVariables.insert( { i, atom->getVariable() });
 		else{
-			AggregateAtom* aggregate=dynamic_cast<AggregateAtom*>(atom);
-			mapAtomsVariables.insert( { i, aggregate->getSharedVariable(rule->getBeginBody(),rule->getEndBody(),true) });
+			mapAtomsVariables.insert( { i, atom->getSharedVariable(rule->getBeginBody(),rule->getEndBody(),true) });
 		}
 	}
 }

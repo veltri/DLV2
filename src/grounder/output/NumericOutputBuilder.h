@@ -8,6 +8,7 @@
 #ifndef SRC_GROUNDER_OUTPUT_NUMERICOUTPUTBUILDER_H_
 #define SRC_GROUNDER_OUTPUT_NUMERICOUTPUTBUILDER_H_
 
+#include <sstream>
 #include "OutputBuilder.h"
 
 namespace DLV2 {
@@ -39,7 +40,8 @@ public:
 
 
     virtual void onEnd();
-
+private:
+    stringstream stream;
 };
 
 } /* namespace grounder */

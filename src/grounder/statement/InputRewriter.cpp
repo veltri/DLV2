@@ -105,8 +105,7 @@ void BaseInputRewriter::chooseBestSaviorForAggregate(Rule* rule, AggregateElemen
 			set_term variables; //TODO togliere dal for o fare cache
 			if (atom->isAggregateAtom()){
 				if(atom->getFirstBinop()==Binop::EQUAL){
-					AggregateAtom* aggregate=dynamic_cast<AggregateAtom*>(atom);
-					variables=aggregate->getGuardVariable();
+					variables=atom->getGuardVariable();
 				}
 			}
 			else if (atom->isBuiltIn()){

@@ -298,7 +298,6 @@ void ProgramGrounder::substituteIndicesInRulesWithPossibleUndefAtoms(){
 		bool ruleSimplified=false;
 		for(unsigned possibleUndef:atomsPossibleUndefPositions[i]){
 			Atom* atom=rule->getAtomInBody(possibleUndef);
-			cout<<"AAA";atom->print();cout<<endl;
 			Atom* atomFound=predicateExtTable->getPredicateExt(atom->getPredicate())->getAtom(atom);
 			if(atomFound!=nullptr){
 				atom->setIndex(atomFound->getIndex());

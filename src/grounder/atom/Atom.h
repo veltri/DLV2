@@ -221,7 +221,10 @@ public:
 
 
 	virtual set_term getSharedVariable(vector<Atom*>::iterator begin,vector<Atom*>::iterator end,bool alsoGuards){return set_term();};
-
+	/// Set the aggregate atom to standard format:
+	/// - if it has an EQUAL binop, its first binop is set to EQUAL
+	/// - else the first binop is LESS_EQUAL and the second LESS
+	virtual void changeInStandardFormat(){};
 
 	/*****************************************************/
 

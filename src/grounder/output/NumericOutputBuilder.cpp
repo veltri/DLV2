@@ -12,8 +12,8 @@ namespace DLV2 {
 namespace grounder {
 
 void NumericOutputBuilder::onRule(Rule* rule) {
-	cout<<"RULE ";
-	rule->print();
+//	cout<<"RULE ";
+//	rule->print();
 	if(rule->isAStrongConstraint())
 		onConstraint(rule);
 	else{
@@ -21,6 +21,9 @@ void NumericOutputBuilder::onRule(Rule* rule) {
 		onBody(rule);
 	}
 	cout<<endl;
+	cout<<stream.str();
+	stream.flush();
+	stream.str("");
 }
 
 void NumericOutputBuilder::onWeakConstraint() {
@@ -69,10 +72,8 @@ void NumericOutputBuilder::onBody(Rule *rule) {
 		onClassicalLiteral(atom);
 	for(auto& atom:positive)
 		if(atom->isAggregateAtom()){
-			cout<<endl<<"---------AGGREGATE---------"<<endl;
-			unsigned pred=onAggregate(atom);
-			cout<<endl<<"---------------------------"<<endl;
-			cout<<pred<<" ";
+			unsigned agg_pred=onAggregate(atom);
+			cout<<agg_pred<<" ";
 		}else
 			onClassicalLiteral(atom);
 }
@@ -91,30 +92,37 @@ unsigned NumericOutputBuilder::onAggregate(Atom* atom) {
 	if(atom->getAggregateFunction()==COUNT || atom->getAggregateFunction()==SUM){
 		return printSumAggregate(atom);
 	}
+	return 0;
 }
 
 unsigned NumericOutputBuilder::printSumAggregate(Atom* atom) {
 	unsigned pred_first_binop=0,pred_second_binop=0;
 	//TODO we can optimize scan the aggregate one time also if there is two guard, saving the body of the rule in string
 	if(atom->getFirstBinop()!=NONE_OP){
-		unsigned bound=atom->getFirstGuard()->getConstantValue()+(atom->getFirstBinop()!=LESS_OR_EQ);
+		unsigned bound=atom->getFirstGuard()->getConstantValue();
+		if(atom->getFirstBinop()==LESS)bound++;
 		if(atom->getAggregateFunction()==COUNT)
 			pred_first_binop=onConstraintRule(atom,bound);
 		else
 			pred_first_binop=onWeightRule(atom,bound);
 	}
-	if(atom->getSecondBinop()!=NONE_OP){
-		unsigned bound=atom->getSecondGuard()->getConstantValue()+(atom->getSecondBinop()==LESS_OR_EQ);
+	if(atom->getSecondBinop()!=NONE_OP || atom->getFirstBinop()==EQUAL){
+		unsigned bound;
+		if(atom->getFirstBinop()==EQUAL)
+			bound=atom->getFirstGuard()->getConstantValue()+1;
+		else
+			bound=atom->getSecondGuard()->getConstantValue();
+		if(atom->getSecondBinop()==LESS_OR_EQ)bound++;
 		if(atom->getAggregateFunction()==COUNT)
 			pred_second_binop=onConstraintRule(atom,bound);
 		else
 			pred_second_binop=onWeightRule(atom,bound);
 	}
 	unsigned index_aggregate=IdGenerator::getInstance()->getNewId(1);
-	cout<<"1 "<<index_aggregate<<" "<<(pred_first_binop!=0 && pred_second_binop!=0)+1<<" "<<(pred_first_binop!=0)<<" ";
-	if(pred_second_binop!=0)cout<<pred_second_binop<<" ";
-	if(pred_first_binop!=0)cout<<pred_first_binop;
-	cout<<endl;
+	stream<<"1 "<<index_aggregate<<" "<<(pred_first_binop!=0 && pred_second_binop!=0)+1<<" "<<(pred_first_binop!=0)<<" ";
+	if(pred_second_binop!=0)stream<<pred_second_binop<<" ";
+	if(pred_first_binop!=0)stream<<pred_first_binop;
+	stream<<endl;
 	return index_aggregate;
 }
 
@@ -133,7 +141,7 @@ void NumericOutputBuilder::onFact(Atom* atom) {
 
 unsigned NumericOutputBuilder::onWeightRule(Atom* aggregateAtom, unsigned bound) {
 	unsigned pred_id=IdGenerator::getInstance()->getNewId(1);
-	cout<<"5 "<<pred_id<<" "<<bound<<" ";
+	stream<<"5 "<<pred_id<<" "<<bound<<" ";
 	unsigned body_size=aggregateAtom->getAggregateElementsSize();
 	vector<Atom*> negative,positive;
 	vector<int> weight_negative,weight_positive;
@@ -154,25 +162,25 @@ unsigned NumericOutputBuilder::onWeightRule(Atom* aggregateAtom, unsigned bound)
 		}
 	}
 
-	cout<<negative.size()+positive.size()<<" "<<negative.size()<<" ";
+	stream<<negative.size()+positive.size()<<" "<<negative.size()<<" ";
 	for(auto& atom:negative)
-		onClassicalLiteral(atom);
+		stream<<atom->getIndex()<<" ";
 	for(auto& atom:positive)
-		onClassicalLiteral(atom);
+		stream<<atom->getIndex()<<" ";
 
 
 	for(auto& weight:weight_negative)
-		cout<<weight<<" ";
+		stream<<weight<<" ";
 	for(auto& weight:weight_positive)
-		cout<<weight<<" ";
+		stream<<weight<<" ";
 
-	cout<<endl;
+	stream<<endl;
 	return pred_id;
 }
 
 unsigned NumericOutputBuilder::onConstraintRule(Atom* aggregateAtom,unsigned bound) {
 	unsigned pred_id=IdGenerator::getInstance()->getNewId(1);
-	cout<<"2 "<<pred_id<<" ";
+	stream<<"2 "<<pred_id<<" ";
 	unsigned body_size=aggregateAtom->getAggregateElementsSize();
 	vector<Atom*> negative,positive;
 	negative.reserve(body_size);
@@ -188,13 +196,13 @@ unsigned NumericOutputBuilder::onConstraintRule(Atom* aggregateAtom,unsigned bou
 
 	}
 
-	cout<<negative.size()+positive.size()<<" "<<negative.size()<<" "<<bound<<" ";
+	stream<<negative.size()+positive.size()<<" "<<negative.size()<<" "<<bound<<" ";
 	for(auto& atom:negative)
-		onClassicalLiteral(atom);
+		stream<<atom->getIndex()<<" ";
 	for(auto& atom:positive)
-		onClassicalLiteral(atom);
+		stream<<atom->getIndex()<<" ";
 
-	cout<<endl;
+	stream<<endl;
 	return pred_id;
 }
 

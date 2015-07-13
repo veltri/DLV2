@@ -170,8 +170,10 @@ bool BackTrackingGrounder::firstMatch(){
 				hasCurrentRuleAPossibleUndefAtom=true;
 				addAtomPossibleUndef(index_current_atom,true);
 			}
-			else
+			else{
+
 				addAtomPossibleUndef(index_current_atom,false);
+			}
 		}
 		Atom* atomFound=templateAtom->clone();
 		atomFound->setIndex(indexNegativeAtom);
