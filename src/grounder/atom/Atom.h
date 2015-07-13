@@ -209,6 +209,20 @@ public:
 
 	//Copy the guard of the atom
 	virtual void copyGuard(Atom *atom){};
+
+	 ///Check if a aggregate is a count or sum aggregate and have in the guard term different respect number. Because this aggregate
+	 ///can return only number we can simplify the aggregate without evaluating.
+	 ///The function return true if we can simplify and set alwaysTrue true if the aggregate is always true else false if is always false
+	virtual  bool checkAggregateSumCountStringGuard(bool& alwaysTrue) const{return false;};
+	///Check if a aggregate is a count aggregate and have all the aggregate term shared. In this case we can simplify
+	/// the aggregate without evaluate.
+	///The function return true if we can simplify and set alwaysTrue true if the aggregate is always true else false if is always false
+	virtual bool checkAggregateAllAggTermShared(vector<Atom*>::iterator begin,vector<Atom*>::iterator end,bool& alwaysTrue) {return false;};
+
+
+	virtual set_term getSharedVariable(vector<Atom*>::iterator begin,vector<Atom*>::iterator end,bool alsoGuards){return set_term();};
+
+
 	/*****************************************************/
 
 	/******** Methods useful for Choice ********/

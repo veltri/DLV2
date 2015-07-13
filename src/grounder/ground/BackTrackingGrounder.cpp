@@ -478,6 +478,12 @@ void BackTrackingGrounder::removeBindValueInAssignment(const set_term& bind_vari
 bool BackTrackingGrounder::groundAggregate() {
 	Atom *aggregateAtom=templateSetAtom[index_current_atom];
 
+	//Check if we can simplify without evaluate the aggregate
+	bool alwaysTrue;
+	if(aggregateAtom->checkAggregateSumCountStringGuard(alwaysTrue) || aggregateAtom->checkAggregateAllAggTermShared(currentRule->getBeginBody(),currentRule->getEndBody(),alwaysTrue)){
+		return alwaysTrue;
+	}
+
 	Atom *ground_aggregate;
 	if(aggregateAtom->isAnAssigment() && ground_rule->getAtomInBody(index_current_atom)!=nullptr){
 		//An assignment is in the lower guard

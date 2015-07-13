@@ -144,6 +144,17 @@ public:
 
 	 Term* getUndefEvaluation(){return undefAtomEvaluation;}
 
+	 ///Check if a aggregate is a count or sum aggregate and have in the guard term different respect number. Because this aggregate
+	 ///can return only number we can simplify the aggregate without evaluating.
+	 ///The function return true if we can simplify and set alwaysTrue true if the aggregate is always true else false if is always false
+	 bool checkAggregateSumCountStringGuard(bool& alwaysTrue) const;
+
+	 ///Check if a aggregate is a count aggregate and have all the aggregate term shared. In this case we can simplify
+	 /// the aggregate without evaluate.
+	 ///The function return true if we can simplify and set alwaysTrue true if the aggregate is always true else false if is always false
+	 bool checkAggregateAllAggTermShared(vector<Atom*>::iterator begin,vector<Atom*>::iterator end,bool& alwaysTrue) ;
+
+
 	///return true if one guard is an equal
 	bool isAnAssigment(){return ((firstBinop==Binop::EQUAL && !firstGuard->isGround()) || (secondBinop==Binop::EQUAL && !secondGuard->isGround() ));}
 
@@ -168,7 +179,7 @@ public:
 	virtual bool isAssignment(){return assignment;};
 	virtual void setAssignment(bool assignment){this->assignment=assignment;};
 
-	set_term getSharedVariable(Rule* rule,bool alsoGuards);
+	set_term getSharedVariable(vector<Atom*>::iterator begin,vector<Atom*>::iterator end,bool alsoGuards);
 
 	//Copy the guard of the atom
 	virtual void copyGuard(Atom *atom);
@@ -176,7 +187,7 @@ public:
 	//Check if two atoms are completely equal (checking also negation as failure, and strong negation)
 	virtual bool equal(const Atom& atom) const;
 
-	virtual bool isAllAggregateTermShared(Rule *rule);
+	virtual bool isAllAggregateTermShared(vector<Atom*>::iterator begin,vector<Atom*>::iterator end);
 
 	virtual ~AggregateAtom() {for(auto& aggregateElem:aggregateElements) delete aggregateElem;};
 

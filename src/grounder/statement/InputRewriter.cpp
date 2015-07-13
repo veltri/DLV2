@@ -36,8 +36,8 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited,
 	for(auto it=r->getBeginBody();it!=r->getEndBody();++it,++index_atom){
 		unsigned aggElementsSize=(*it)->getAggregateElementsSize();
 		if(aggElementsSize>0){
-			AggregateAtom* aggregate=dynamic_cast<AggregateAtom*>(*it);
-			set_term variablesRule=aggregate->getSharedVariable(r,false);
+			Atom* aggregate=(*it);
+			set_term variablesRule=aggregate->getSharedVariable(r->getBeginBody(),r->getEndBody(), false);
 			aggregateAtoms.push_back(index_atom);
 			unsigned id=IdGenerator::getInstance()->getNewId();
 			unsigned counter=1;

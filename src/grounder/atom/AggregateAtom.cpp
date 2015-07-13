@@ -542,12 +542,12 @@ void AggregateAtom::changeInStandardFormat() {
 //	}
 }
 
-set_term AggregateAtom::getSharedVariable(Rule* rule,bool alsoGuards) {
+set_term AggregateAtom::getSharedVariable(vector<Atom*>::iterator begin,vector<Atom*>::iterator end,bool alsoGuards) {
 	set_term sharedTerms;
 	if(alsoGuards && (negative || firstBinop!=EQUAL))
 		sharedTerms=getGuardVariable();
 	set_term terms=getVariable();
-	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();++atom){
+	for(auto atom=begin;atom!=end;++atom){
 		Atom* current_atom=*atom;
 		set_term variables;
 		if(current_atom!=this){
@@ -567,8 +567,8 @@ set_term AggregateAtom::getSharedVariable(Rule* rule,bool alsoGuards) {
 	return sharedTerms;
 }
 
-bool AggregateAtom::isAllAggregateTermShared(Rule *rule)  {
-	set_term shared_variable=getSharedVariable(rule,false);
+bool AggregateAtom::isAllAggregateTermShared(vector<Atom*>::iterator begin,vector<Atom*>::iterator end) {
+	set_term shared_variable=getSharedVariable(begin,end,false);
 	for(auto element:aggregateElements){
 		if(!element->isAllAggregateTermShared(shared_variable))
 			return false;
@@ -717,6 +717,68 @@ bool AggregateAtom::equal(const Atom& atom) const {
 	if(negative!=atom.isNegative()) return false;
 	return (*this)==atom;
 }
+
+bool AggregateAtom::checkAggregateSumCountStringGuard(bool& alwaysTrue) const {
+	if(aggregateFunction==SUM || aggregateFunction==COUNT) {
+		if((firstBinop==LESS_OR_EQ || firstBinop==EQUAL || firstBinop==LESS)
+		&& firstGuard->getType()!=VARIABLE && firstGuard->getType()!=NUMERIC_CONSTANT){
+			alwaysTrue= isNegative();
+			return true;
+		}
+		if((secondBinop==LESS || secondBinop==LESS_OR_EQ) && firstBinop==NONE_OP
+			&& secondGuard->getType()!=VARIABLE && secondGuard->getType()!=NUMERIC_CONSTANT){
+			alwaysTrue= isNegative();
+			return true;
+		}
+	}
+	return false;
+}
+
+bool AggregateAtom::checkAggregateAllAggTermShared(vector<Atom*>::iterator begin,vector<Atom*>::iterator end, bool& alwaysTrue)  {
+	bool returnValue=false;
+	if(aggregateFunction==COUNT  && isAllAggregateTermShared(begin,end) &&
+		 (	(firstBinop==NONE_OP || firstGuard->getType()==NUMERIC_CONSTANT) && ((secondBinop==NONE_OP || secondGuard->getType()==NUMERIC_CONSTANT)) )){
+		Term* max_evaluation=new NumericConstantTerm(false,aggregateElements.size());
+
+		if(firstBinop==NONE_OP && checkOperatorValue(secondGuard,secondBinop,LESS,LESS,max_evaluation)){
+			alwaysTrue=true;
+			returnValue= true;
+		}else
+		if(firstBinop==NONE_OP && checkOperatorValue(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,max_evaluation)){
+			alwaysTrue=true;
+			returnValue= true;
+		}else
+		if(checkOperatorValue(firstGuard,firstBinop,LESS,LESS_OR_EQ,max_evaluation)){
+			alwaysTrue=false;
+			returnValue= true;
+		}else
+		if(checkOperatorValue(firstGuard,firstBinop,LESS_OR_EQ,LESS,max_evaluation)){
+			alwaysTrue=false;
+			returnValue= true;
+		}else
+		if( checkOperatorValue(firstGuard,firstBinop,EQUAL,LESS,max_evaluation)){
+			alwaysTrue=false;
+			returnValue= true;
+		}else
+		if(checkOperatorValue(firstGuard,firstBinop,LESS,GREATER,TermTable::getInstance()->term_zero) || checkOperatorValue(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,TermTable::getInstance()->term_zero))
+		{
+			if(checkOperatorValue(secondGuard,secondBinop,LESS,LESS,max_evaluation) || checkOperatorValue(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,max_evaluation)){
+				alwaysTrue=true;
+				returnValue= true;
+			}
+		}
+
+		delete max_evaluation;
+
+	}
+
+	if(isNegative())
+		alwaysTrue=!alwaysTrue;
+
+
+	return returnValue;
+}
+
 
 }
 }
