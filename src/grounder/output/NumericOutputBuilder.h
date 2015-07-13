@@ -28,9 +28,15 @@ public:
     virtual void onBody(Rule *rule);
     virtual void onClassicalLiteral(Atom *atom);
     virtual void onChoiceAtom(Atom *atom);
-    virtual void onAggregate(Atom *atom);
+    virtual unsigned onAggregate(Atom *atom);
     virtual void onAggregateElement(Atom *atom);
     virtual void onFact(Atom* atom);
+
+    virtual unsigned printSumAggregate(Atom *atom);
+    virtual unsigned onWeightRule(Atom *aggregateAtom,unsigned bound);
+    virtual unsigned onConstraintRule(Atom *aggregateAtom,unsigned bound);
+
+
 
     virtual void onEnd();
 

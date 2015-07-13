@@ -31,7 +31,7 @@ public:
     virtual void onBody(Rule *rule) = 0;
     virtual void onClassicalLiteral(Atom *atom) = 0;
     virtual void onChoiceAtom(Atom *atom) = 0;
-    virtual void onAggregate(Atom *atom) = 0;
+    virtual unsigned onAggregate(Atom *atom) = 0;
     virtual void onAggregateElement(Atom *atom) = 0;
     virtual void onFact(Atom* atom)=0;
 

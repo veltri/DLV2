@@ -727,7 +727,7 @@ bool AggregateAtom::checkAggregateSumCountStringGuard(bool& alwaysTrue) const {
 		}
 		if((secondBinop==LESS || secondBinop==LESS_OR_EQ) && firstBinop==NONE_OP
 			&& secondGuard->getType()!=VARIABLE && secondGuard->getType()!=NUMERIC_CONSTANT){
-			alwaysTrue= isNegative();
+			alwaysTrue= !isNegative();
 			return true;
 		}
 	}
@@ -774,7 +774,6 @@ bool AggregateAtom::checkAggregateAllAggTermShared(vector<Atom*>::iterator begin
 
 	if(isNegative())
 		alwaysTrue=!alwaysTrue;
-
 
 	return returnValue;
 }

@@ -68,7 +68,13 @@ void NumericOutputBuilder::onBody(Rule *rule) {
 	for(auto& atom:negative)
 		onClassicalLiteral(atom);
 	for(auto& atom:positive)
-		onClassicalLiteral(atom);
+		if(atom->isAggregateAtom()){
+			cout<<endl<<"---------AGGREGATE---------"<<endl;
+			unsigned pred=onAggregate(atom);
+			cout<<endl<<"---------------------------"<<endl;
+			cout<<pred<<" ";
+		}else
+			onClassicalLiteral(atom);
 }
 
 void NumericOutputBuilder::onClassicalLiteral(Atom* atom) {
@@ -81,7 +87,35 @@ void NumericOutputBuilder::onChoiceAtom(Atom* atom) {
 		onClassicalLiteral(atom->getChoiceElement(i)->getFirstAtom());
 }
 
-void NumericOutputBuilder::onAggregate(Atom* atom) {
+unsigned NumericOutputBuilder::onAggregate(Atom* atom) {
+	if(atom->getAggregateFunction()==COUNT || atom->getAggregateFunction()==SUM){
+		return printSumAggregate(atom);
+	}
+}
+
+unsigned NumericOutputBuilder::printSumAggregate(Atom* atom) {
+	unsigned pred_first_binop=0,pred_second_binop=0;
+	//TODO we can optimize scan the aggregate one time also if there is two guard, saving the body of the rule in string
+	if(atom->getFirstBinop()!=NONE_OP){
+		unsigned bound=atom->getFirstGuard()->getConstantValue()+(atom->getFirstBinop()!=LESS_OR_EQ);
+		if(atom->getAggregateFunction()==COUNT)
+			pred_first_binop=onConstraintRule(atom,bound);
+		else
+			pred_first_binop=onWeightRule(atom,bound);
+	}
+	if(atom->getSecondBinop()!=NONE_OP){
+		unsigned bound=atom->getSecondGuard()->getConstantValue()+(atom->getSecondBinop()==LESS_OR_EQ);
+		if(atom->getAggregateFunction()==COUNT)
+			pred_second_binop=onConstraintRule(atom,bound);
+		else
+			pred_second_binop=onWeightRule(atom,bound);
+	}
+	unsigned index_aggregate=IdGenerator::getInstance()->getNewId(1);
+	cout<<"1 "<<index_aggregate<<" "<<(pred_first_binop!=0 && pred_second_binop!=0)+1<<" "<<(pred_first_binop!=0)<<" ";
+	if(pred_second_binop!=0)cout<<pred_second_binop<<" ";
+	if(pred_first_binop!=0)cout<<pred_first_binop;
+	cout<<endl;
+	return index_aggregate;
 }
 
 void NumericOutputBuilder::onDisjunctionAtom(const vector<Atom*>& head) {
@@ -95,6 +129,73 @@ void NumericOutputBuilder::onAggregateElement(Atom* atom) {
 
 void NumericOutputBuilder::onFact(Atom* atom) {
 	onHeadAtom(atom);cout<<"0 0"<<endl;
+}
+
+unsigned NumericOutputBuilder::onWeightRule(Atom* aggregateAtom, unsigned bound) {
+	unsigned pred_id=IdGenerator::getInstance()->getNewId(1);
+	cout<<"5 "<<pred_id<<" "<<bound<<" ";
+	unsigned body_size=aggregateAtom->getAggregateElementsSize();
+	vector<Atom*> negative,positive;
+	vector<int> weight_negative,weight_positive;
+	negative.reserve(body_size);
+	positive.reserve(body_size);
+	weight_negative.reserve(body_size);
+	weight_positive.reserve(body_size);
+	Atom *atom;
+	for(unsigned i=0;i<aggregateAtom->getAggregateElementsSize();i++){
+		AggregateElement *element=aggregateAtom->getAggregateElement(i);
+		atom=element->getNafLiteral(0);
+		if(!atom->isNegative()){
+			positive.push_back(atom);
+			weight_positive.push_back(element->getTerm(0)->getConstantValue());
+		}else{
+			negative.push_back(atom);
+			weight_negative.push_back(element->getTerm(0)->getConstantValue());
+		}
+	}
+
+	cout<<negative.size()+positive.size()<<" "<<negative.size()<<" ";
+	for(auto& atom:negative)
+		onClassicalLiteral(atom);
+	for(auto& atom:positive)
+		onClassicalLiteral(atom);
+
+
+	for(auto& weight:weight_negative)
+		cout<<weight<<" ";
+	for(auto& weight:weight_positive)
+		cout<<weight<<" ";
+
+	cout<<endl;
+	return pred_id;
+}
+
+unsigned NumericOutputBuilder::onConstraintRule(Atom* aggregateAtom,unsigned bound) {
+	unsigned pred_id=IdGenerator::getInstance()->getNewId(1);
+	cout<<"2 "<<pred_id<<" ";
+	unsigned body_size=aggregateAtom->getAggregateElementsSize();
+	vector<Atom*> negative,positive;
+	negative.reserve(body_size);
+	positive.reserve(body_size);
+	Atom *atom;
+	for(unsigned i=0;i<aggregateAtom->getAggregateElementsSize();i++){
+		AggregateElement *element=aggregateAtom->getAggregateElement(i);
+		atom=element->getNafLiteral(0);
+		if(!atom->isNegative())
+			positive.push_back(atom);
+		else
+			negative.push_back(atom);
+
+	}
+
+	cout<<negative.size()+positive.size()<<" "<<negative.size()<<" "<<bound<<" ";
+	for(auto& atom:negative)
+		onClassicalLiteral(atom);
+	for(auto& atom:positive)
+		onClassicalLiteral(atom);
+
+	cout<<endl;
+	return pred_id;
 }
 
 void NumericOutputBuilder::onEnd() {

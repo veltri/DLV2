@@ -35,7 +35,7 @@ void TextualOutputBuilder::onClassicalLiteral(Atom* atom) {
 void TextualOutputBuilder::onChoiceAtom(Atom* atom) {
 }
 
-void TextualOutputBuilder::onAggregate(Atom* atom) {
+unsigned TextualOutputBuilder::onAggregate(Atom* atom) {
 }
 
 void TextualOutputBuilder::onAggregateElement(Atom* atom) {

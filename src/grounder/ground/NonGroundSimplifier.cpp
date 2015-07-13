@@ -88,8 +88,7 @@ bool NonGroundSimplifier::checkAggregateSumCountStringGuard(vector<Atom*>::const
 bool NonGroundSimplifier::checkAggregateAllAggTermShared(Rule *rule,vector<Atom*>::const_iterator currentIt, bool& alwaysTrue) const {
 	Atom* atom=*currentIt;
 	if(!atom->isAggregateAtom())return false;
-	AggregateAtom *aggregate_atom=dynamic_cast<AggregateAtom*>(atom);
-	return aggregate_atom->checkAggregateAllAggTermShared(rule->getBeginBody(),rule->getEndBody(),alwaysTrue);
+	return atom->checkAggregateAllAggTermShared(rule->getBeginBody(),rule->getEndBody(),alwaysTrue);
 }
 
 } /* namespace grounder */

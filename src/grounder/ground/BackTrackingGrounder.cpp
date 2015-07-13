@@ -480,7 +480,9 @@ bool BackTrackingGrounder::groundAggregate() {
 
 	//Check if we can simplify without evaluate the aggregate
 	bool alwaysTrue;
-	if(aggregateAtom->checkAggregateSumCountStringGuard(alwaysTrue) || aggregateAtom->checkAggregateAllAggTermShared(currentRule->getBeginBody(),currentRule->getEndBody(),alwaysTrue)){
+	if(aggregateAtom->checkAggregateSumCountStringGuard(alwaysTrue) ){
+		substiteInGroundRule(index_current_atom,nullptr);
+		ground_rule->setAtomToSimplifyInBody(index_current_atom,true);
 		return alwaysTrue;
 	}
 
