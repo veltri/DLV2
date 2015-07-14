@@ -129,9 +129,6 @@ protected:
 	/// containing the positions of the atoms in that rule that can potentially be undef atoms.
 	vector<vector<unsigned>> atomsPossibleUndefPositions;
 
-	/// Given an atom position add a new vector in atomsPossibleUndefPositions with that position if newRule is true,
-	/// otherwise just add another atom position to the last vector in atomsPossibleUndefPositions
-	void addAtomPossibleUndef(unsigned atomPosition, bool newRule);
 	///This method iterates the rulesWithPossibleUndefAtoms, in order to see whether the atoms possible undef have been
 	///derived or not:
 	/// 	-If it was derived, then its index is set to the index of the derived atom

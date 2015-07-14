@@ -166,16 +166,10 @@ bool BackTrackingGrounder::firstMatch(){
 
 	//If at least a possible undef atom has been found then update accordingly the vector of undef atoms of this rule
 	if(negativeToClone){
-		if(isPossibleUndef){
-			if(!hasCurrentRuleAPossibleUndefAtom){
-				hasCurrentRuleAPossibleUndefAtom=true;
-				addAtomPossibleUndef(index_current_atom,true);
-			}
-			else{
-
-				addAtomPossibleUndef(index_current_atom,false);
-			}
-		}
+		while(indicesPossibleUndef.size()>0 && indicesPossibleUndef.back()>=index_current_atom)
+			indicesPossibleUndef.pop_back();
+		if(isPossibleUndef)
+			indicesPossibleUndef.push_back(index_current_atom);
 		Atom* atomFound=templateAtom->clone();
 		atomFound->setIndex(indexNegativeAtom);
 		substiteInGroundRule(index_current_atom,atomFound);
@@ -314,7 +308,8 @@ bool BackTrackingGrounder::foundAssignment() {
 	// In this case ground_rule content cannot be changed (for example, substituting atoms in its body),
 	// so after a ground rule is saved to be processed later, the ground_rule must be reinitialized coping
 	// into it, the body of the saved ground rule.
-	if(hasCurrentRuleAPossibleUndefAtom){
+	if(indicesPossibleUndef.size()>0){
+		atomsPossibleUndefPositions.push_back(indicesPossibleUndef);
 		rulesWithPossibleUndefAtoms.push_back(ground_rule);
 		Rule* savedRule=ground_rule;
 		ground_rule=new Rule(true, currentRule->getSizeHead(), currentRule->getSizeBody());
@@ -326,7 +321,6 @@ bool BackTrackingGrounder::foundAssignment() {
 				substiteInGroundRule(i,atom);
 			ground_rule->setAtomToSimplifyInBody(i,savedRule->isAtomToSimplifyInBody(i));
 		}
-		hasCurrentRuleAPossibleUndefAtom=false;
 	}
 	//Print if ground new atom, an atom changed from undef to true, the rule is a strong constraint, there are some undefined atom in body
 	else if( ground_new_atom || (!ground_new_atom && !head_true) || (find_new_true_atom && head_true) || ground_rule->isAStrongConstraint() || ground_rule->areThereUndefinedAtomInBody()){
@@ -402,7 +396,7 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 		ground_rule->deleteGroundRule();
 		ground_rule=new Rule(true, rule->getSizeHead(), rule->getSizeBody());
 	}
-	hasCurrentRuleAPossibleUndefAtom=false;
+	indicesPossibleUndef.clear();
 }
 
 void BackTrackingGrounder::findBindVariablesRule() {

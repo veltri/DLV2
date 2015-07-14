@@ -285,13 +285,6 @@ bool ProgramGrounder::groundRule(Rule* rule) {
 	return find_assignment;
 }
 
-void ProgramGrounder::addAtomPossibleUndef(unsigned atomPosition, bool newRule){
-	if(newRule)
-		atomsPossibleUndefPositions.push_back(vector<unsigned>({atomPosition}));
-	else
-		atomsPossibleUndefPositions.back().push_back(atomPosition);
-}
-
 void ProgramGrounder::substituteIndicesInRulesWithPossibleUndefAtoms(){
 	for(unsigned i=0;i<rulesWithPossibleUndefAtoms.size();i++){
 		Rule* rule=rulesWithPossibleUndefAtoms[i];
