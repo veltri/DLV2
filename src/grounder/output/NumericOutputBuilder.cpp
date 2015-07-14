@@ -12,8 +12,8 @@ namespace DLV2 {
 namespace grounder {
 
 void NumericOutputBuilder::onRule(Rule* rule) {
-//	cout<<"RULE ";
-//	rule->print();
+	cout<<"RULE ";
+	rule->print();
 	if(rule->isAStrongConstraint())
 		onConstraint(rule);
 	else{
@@ -69,7 +69,11 @@ void NumericOutputBuilder::onBody(Rule *rule) {
 
 	cout<<negative.size()+positive.size()<<" "<<negative.size()<<" ";
 	for(auto& atom:negative)
-		onClassicalLiteral(atom);
+		if(atom->isAggregateAtom()){
+			unsigned agg_pred=onAggregate(atom);
+			cout<<agg_pred<<" ";
+		}else
+			onClassicalLiteral(atom);
 	for(auto& atom:positive)
 		if(atom->isAggregateAtom()){
 			unsigned agg_pred=onAggregate(atom);
@@ -89,13 +93,16 @@ void NumericOutputBuilder::onChoiceAtom(Atom* atom) {
 }
 
 unsigned NumericOutputBuilder::onAggregate(Atom* atom) {
-	if(atom->getAggregateFunction()==COUNT || atom->getAggregateFunction()==SUM){
-		return printSumAggregate(atom);
+	AggregateFunction function=atom->getAggregateFunction();
+	if(function==COUNT || function==SUM){
+		return printCountSumAggregate(atom);
+	}else if(function==MIN || function==MAX){
+		return printMaxMinAggregate(atom);
 	}
 	return 0;
 }
 
-unsigned NumericOutputBuilder::printSumAggregate(Atom* atom) {
+unsigned NumericOutputBuilder::printCountSumAggregate(Atom* atom) {
 	unsigned pred_first_binop=0,pred_second_binop=0;
 	//TODO we can optimize scan the aggregate one time also if there is two guard, saving the body of the rule in string
 	if(atom->getFirstBinop()!=NONE_OP){
@@ -119,7 +126,7 @@ unsigned NumericOutputBuilder::printSumAggregate(Atom* atom) {
 			pred_second_binop=onWeightRule(atom,bound);
 	}
 	unsigned index_aggregate=IdGenerator::getInstance()->getNewId(1);
-	stream<<"1 "<<index_aggregate<<" "<<(pred_first_binop!=0 && pred_second_binop!=0)+1<<" "<<(pred_first_binop!=0)<<" ";
+	stream<<"1 "<<index_aggregate<<" "<<(pred_first_binop!=0 && pred_second_binop!=0)+1<<" "<<(pred_second_binop!=0)<<" ";
 	if(pred_second_binop!=0)stream<<pred_second_binop<<" ";
 	if(pred_first_binop!=0)stream<<pred_first_binop;
 	stream<<endl;
@@ -204,6 +211,116 @@ unsigned NumericOutputBuilder::onConstraintRule(Atom* aggregateAtom,unsigned bou
 
 	stream<<endl;
 	return pred_id;
+}
+
+void NumericOutputBuilder::printAuxRuleMinMax(Atom *aggregate,function<unsigned(Term*)>& function, unsigned & positivePredicate,unsigned & negativePredicate) {
+	IdGenerator* generator=IdGenerator::getInstance();
+	for(unsigned i=0;i<aggregate->getAggregateElementsSize();i++){
+
+		unsigned index_agg_atom=aggregate->getAggregateElement(i)->getNafLiteral(0)->getIndex();
+		Term *agg_term=aggregate->getAggregateElement(i)->getTerm(0);
+		unsigned value=function(agg_term);
+		switch (value) {
+			case 1:
+				if(positivePredicate==0)positivePredicate=generator->getNewId(1);
+				stream<<"1 "<<positivePredicate<<" 1 0 "<<index_agg_atom<<endl;
+				break;
+			case 2:
+				if(negativePredicate==0)negativePredicate=generator->getNewId(1);
+				stream<<"1 "<<negativePredicate<<" 1 0 "<<index_agg_atom<<endl;
+				break;
+			default:
+				break;
+		}
+	}
+}
+
+unsigned NumericOutputBuilder::printMaxMinAggregate(Atom* atom) {
+	function<unsigned(Term*)> function;
+
+	if(atom->getAggregateFunction()==MAX){
+
+		if(atom->getFirstBinop()!=NONE_OP && atom->getFirstBinop()!=EQUAL && atom->getSecondBinop()==NONE_OP){
+			function=[&](Term * term){
+				if(atom->getFirstBinop()==LESS && *term>*(atom->getFirstGuard()))return 1;
+				if(atom->getFirstBinop()==LESS_OR_EQ && *term>=*(atom->getFirstGuard()))return 1;
+				return 0;
+			};
+		}else if(atom->getSecondBinop()!=NONE_OP && atom->getFirstBinop()==NONE_OP){
+			function=[&](Term * term){
+				if(atom->getSecondBinop()==LESS && *term>=*(atom->getSecondGuard()))return 2;
+				if(atom->getSecondBinop()==LESS_OR_EQ && *term>*(atom->getSecondGuard()))return 2;
+				return 0;
+			};
+		}else if(atom->getSecondBinop()!=NONE_OP && atom->getFirstBinop()!=NONE_OP){
+			function=[&](Term * term){
+				if(atom->getFirstBinop()==LESS && atom->getSecondBinop()==LESS  && *term>*(atom->getFirstGuard()) && *term<*(atom->getSecondGuard()))return 1;
+				if(atom->getFirstBinop()==LESS && atom->getSecondBinop()==LESS_OR_EQ  && *term>*(atom->getFirstGuard()) && *term<=*(atom->getSecondGuard()))return 1;
+				if(atom->getFirstBinop()==LESS_OR_EQ && atom->getSecondBinop()==LESS  && *term>=*(atom->getFirstGuard()) && *term<*(atom->getSecondGuard()))return 1;
+				if(atom->getFirstBinop()==LESS_OR_EQ && atom->getSecondBinop()==LESS_OR_EQ  && *term>=*(atom->getFirstGuard()) && *term<=*(atom->getSecondGuard()))return 1;
+
+				if(atom->getSecondBinop()==LESS  && *term>=*(atom->getSecondGuard()))return 2;
+				if(atom->getSecondBinop()==LESS_OR_EQ  && *term>*(atom->getSecondGuard()))return 2;
+
+				return 0;
+			};
+		}else if(atom->getFirstBinop()==EQUAL){
+			function=[&](Term * term){
+				if( *term==*(atom->getFirstGuard()) )return 1;
+				if(*term>*(atom->getFirstGuard()))return 2;
+				return 0;
+			};
+		}
+
+	}else if(atom->getAggregateFunction()==MIN){
+
+
+			if(atom->getFirstBinop()!=NONE_OP && atom->getFirstBinop()!=EQUAL && atom->getSecondBinop()==NONE_OP){
+				function=[&](Term * term){
+					if(atom->getFirstBinop()==LESS && *term<=*(atom->getFirstGuard()))return 2;
+					if(atom->getFirstBinop()==LESS_OR_EQ && *term<*(atom->getFirstGuard()))return 2;
+					return 0;
+				};
+			}else if(atom->getSecondBinop()!=NONE_OP && atom->getFirstBinop()==NONE_OP){
+				function=[&](Term * term){
+					if(atom->getSecondBinop()==LESS && *term<*(atom->getSecondGuard()))return 1;
+					if(atom->getSecondBinop()==LESS_OR_EQ && *term<=*(atom->getSecondGuard()))return 1;
+					return 0;
+				};
+			}else if(atom->getSecondBinop()!=NONE_OP && atom->getFirstBinop()!=NONE_OP){
+				function=[&](Term * term){
+					if(atom->getFirstBinop()==LESS && atom->getSecondBinop()==LESS  && *term>*(atom->getFirstGuard()) && *term<*(atom->getSecondGuard()))return 1;
+					if(atom->getFirstBinop()==LESS && atom->getSecondBinop()==LESS_OR_EQ  && *term>*(atom->getFirstGuard()) && *term<=*(atom->getSecondGuard()))return 1;
+					if(atom->getFirstBinop()==LESS_OR_EQ && atom->getSecondBinop()==LESS  && *term>=*(atom->getFirstGuard()) && *term<*(atom->getSecondGuard()))return 1;
+					if(atom->getFirstBinop()==LESS_OR_EQ && atom->getSecondBinop()==LESS_OR_EQ  && *term>=*(atom->getFirstGuard()) && *term<=*(atom->getSecondGuard()))return 1;
+
+					if(atom->getFirstBinop()==LESS && *term<=*(atom->getFirstGuard()))return 2;
+					if(atom->getFirstBinop()==LESS_OR_EQ && *term<*(atom->getFirstGuard()))return 2;
+
+					return 0;
+				};
+			}else if(atom->getFirstBinop()==EQUAL){
+				function=[&](Term * term){
+					if( *term==*(atom->getFirstGuard()) )return 1;
+					if(*term<*(atom->getFirstGuard()))return 2;
+					return 0;
+				};
+			}
+
+	}
+
+
+
+
+
+	unsigned  positivePredicate=0, negativePredicate=0;
+	printAuxRuleMinMax(atom,function,positivePredicate,negativePredicate);
+	unsigned index_aggregate=IdGenerator::getInstance()->getNewId(1);
+	stream<<"1 "<<index_aggregate<<" "<<(positivePredicate!=0 && negativePredicate!=0)+1<<" "<<(negativePredicate!=0)<<" ";
+	if(negativePredicate!=0)stream<<negativePredicate<<" ";
+	if(positivePredicate!=0)stream<<positivePredicate;
+	stream<<endl;
+	return index_aggregate;
 }
 
 void NumericOutputBuilder::onEnd() {

@@ -104,6 +104,7 @@ bool BackTrackingGrounder::firstMatch(){
 #endif
 
 
+
 	// For each table to search call the first match until one table return find
 	bool find=false;
 	unsigned current_table=current_id_match_iterator[index_current_atom];
@@ -328,8 +329,9 @@ bool BackTrackingGrounder::foundAssignment() {
 		hasCurrentRuleAPossibleUndefAtom=false;
 	}
 	//Print if ground new atom, an atom changed from undef to true, the rule is a strong constraint, there are some undefined atom in body
-	else if( ground_new_atom || (!ground_new_atom && !head_true) || (find_new_true_atom && head_true) || ground_rule->isAStrongConstraint() || ground_rule->areThereUndefinedAtomInBody())
+	else if( ground_new_atom || (!ground_new_atom && !head_true) || (find_new_true_atom && head_true) || ground_rule->isAStrongConstraint() || ground_rule->areThereUndefinedAtomInBody()){
 		outputBuilder->onRule(ground_rule);
+	}
 
 	if(currentRule->getSizeBody() > 0)
 		removeBindValueInAssignment(current_variables_atoms[index_current_atom]);

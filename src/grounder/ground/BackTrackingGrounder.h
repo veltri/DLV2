@@ -93,8 +93,8 @@ private:
 	///Determine the table to search for each atom in the body
 	void findSearchTable();
 
-	///Is true if the current ground rule has at least a negative atom that an potentially be an undef atom (an atom without a valid index)
-	bool hasCurrentRuleAPossibleUndefAtom;
+	///The size is >0 if the current ground rule has at least a negative atom that an potentially be an undef atom (an atom without a valid index)
+	vector<unsigned> indexUndef;
 };
 
 } /* namespace grounder */

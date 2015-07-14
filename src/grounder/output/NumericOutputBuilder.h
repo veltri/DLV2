@@ -33,11 +33,12 @@ public:
     virtual void onAggregateElement(Atom *atom);
     virtual void onFact(Atom* atom);
 
-    virtual unsigned printSumAggregate(Atom *atom);
+    virtual unsigned printCountSumAggregate(Atom *atom);
     virtual unsigned onWeightRule(Atom *aggregateAtom,unsigned bound);
     virtual unsigned onConstraintRule(Atom *aggregateAtom,unsigned bound);
 
-
+    virtual unsigned printMaxMinAggregate(Atom *atom);
+    virtual void printAuxRuleMinMax(Atom *aggregate,function<unsigned(Term*)>& function,unsigned& positivePredicate,unsigned& negativePredicate);
 
     virtual void onEnd();
 private:
