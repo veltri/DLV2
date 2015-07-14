@@ -80,7 +80,6 @@ namespace REWRITERS{
 
     // Rewriters constants
     #define QUERY_ANS "QUERY_ANS"
-    #define QUERY_PRED "QUERY_PRED"
     #define BUFFER_MAX_LENGTH  1024
     #define TARGET_PRED  "ansISO"
 

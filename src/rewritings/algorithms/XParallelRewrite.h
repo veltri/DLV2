@@ -38,6 +38,9 @@ namespace DLV2{ namespace REWRITERS{
 
         virtual std::vector< XRule* > rewrite();
 
+    private:
+        std::vector< XRule* > rewriteAtomicQuery( std::vector< XProgram::const_iterator > rules, const XRule& query );
+        std::vector< XRule* > rewriteConjunctiveQuery( std::vector< XProgram::const_iterator > rules, const XRule& query );
     };
 
 };};

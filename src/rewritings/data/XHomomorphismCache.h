@@ -44,7 +44,7 @@ namespace DLV2{ namespace REWRITERS{
         size_t getCanonicalHash( const XAtom& atom ) const;
 
         // Keys are atom indices and for each atom index 'k' another map is provided;
-        // given an atom index 'j', such a map says whether 'k' is homomorphic to 'j'.
+        // such a map says, given an atom index 'j', whether 'k' is homomorphic to 'j'.
         std::unordered_map< size_t, std::unordered_map< size_t, bool > > cacheMap;
         const XProgram& program;
     };

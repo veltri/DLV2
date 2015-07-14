@@ -108,6 +108,8 @@ namespace DLV2{ namespace REWRITERS{
         std::pair< index_t, bool > addPredicate( const std::string& name, unsigned arity, bool internal = false );
         unsigned incrementVariablesCounter() { return varsCounter++; }
         void computeQueryRules();
+        bool isQueryAtomic() const { assert_msg( queryRulesOk , "Query rules not computed yet" ); return queryRules.size() == 0; }
+        bool isQueryConjnctive() const { assert_msg( queryRulesOk , "Query rules not computed yet" ); return queryRules.size() > 0; }
         void computePredicateNullsets();
 
         unsigned getVariablesCounter() const { return varsCounter; }
@@ -131,6 +133,7 @@ namespace DLV2{ namespace REWRITERS{
         const XPropagationGraph& getPropagationGraph() const { return propagationGraph; }
         const std::string& getPropagationGraphAsString() { return propagationGraph.toString(); }
         const XNullsetTable& getPredicateNullsets() const { return predNullsets; }
+        const_iterator getRuleIntroducingNullIdx( index_t nullIdx ) const;
 
     private:
         friend inline std::ostream& operator<< ( std::ostream&, const XProgram& );
@@ -150,9 +153,12 @@ namespace DLV2{ namespace REWRITERS{
         unsigned varsCounter;
         XAtom* query;
         std::list< XRule > queryRules;
+        bool queryRulesOk;
         XPropagationGraph propagationGraph;
+        bool propagationGraphOk;
         int nonTemporaryRulesSize;
         XNullsetTable predNullsets;
+        bool predNullsetsOk;
         // For each null, this map stores the rule where it has been introduced.
         std::unordered_map< index_t, const_iterator > nullIndex2RuleIterator;
     };

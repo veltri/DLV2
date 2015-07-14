@@ -46,13 +46,12 @@ using namespace std;
 XRewrite::XRewrite(
     XProgram& input ):
         RewritingAlgorithm(input),
-        numberOfAggregatedRulesAddedToTheProgram(0),
         isomorphismStrategy(new IsomorphismCheckByWasp(input)),
         canonicalRuleHashCodesCache(),
         reachabilityCache(),
         homomorphismCache(input),
-        predicateNewQueryHeadAtom(0),
-        predicateOldQueryHeadAtom(0),
+//        predicateNewQueryHeadAtom(0),
+//        predicateOldQueryHeadAtom(0),
         rewritingDuration(0),
         rewritingSize(0),
         unifierAggregationDuration(0),
@@ -74,13 +73,9 @@ XRewrite::rewrite()
     auto sTime = std::chrono::high_resolution_clock::now();
     assert_msg( inputProgram.getQuery() != NULL, "The input query is null." );
     trace_msg( rewriting, 1, "Start by adding the input query rules to the final rewriting: " );
-    // Notice that, our algorithm is designed to work with BCQs. Anyway, this is not a restriction
-    // since we can actually process a CQ with free variables x_1,...,x_q by translating
-    // it into a BCQ with an added atom QUERY_ANS(x_1,...,x_q), where QUERY_ANS is a special predicate
-    // not occurring anywhere else. Of course, we need to transform the final result by removing this
-    // atom from the body in order to produce a rewriting which can be processed by a Datalog engine.
+
     vector< XRule* > finalRewriting;
-    encodeInputQueries(finalRewriting);
+    addInputQueries(finalRewriting);
 
     size_t oldSize = 0;
     size_t currentSize = finalRewriting.size();
@@ -119,27 +114,10 @@ XRewrite::rewrite()
     // added by some DL2Datalog translators in order to normalize conjunctive heads.
     // Notice that, erasing elements from a vector is expensive, thus it is worth creating a new vector from scratch.
     vector< XRule* > finalRewritingWithoutAuxAtoms;
-    for( index_t i=0; i<finalRewriting.size(); i++ )
-    {
-        const XBody* ruleBody = finalRewriting[i]->getBody();
-        assert_msg( ruleBody != NULL, "Null body!" );
-        bool hasAux = false;
-        for( unsigned j=0; j<ruleBody->size() && !hasAux; j++ )
-        {
-            if( boost::starts_with(ruleBody->at(j).getPredicateName(),"aux_") )
-                hasAux = true;
-        }
-        if( hasAux )
-            delete finalRewriting[i];
-        else
-            finalRewritingWithoutAuxAtoms.push_back(finalRewriting[i]);
-    }
+    eraseQueryWithAuxPreds(finalRewriting,finalRewritingWithoutAuxAtoms);
     auto eTime = std::chrono::high_resolution_clock::now();
     rewritingDuration = ( eTime - sTime );
     rewritingSize = finalRewritingWithoutAuxAtoms.size();
-    // There is no need to reverse the shifting of the old head (into the body) which has been carried out
-    // at the beginning of the process, since this set of query rules is not the final one which will
-    // be sent to the Datalog engine.
     return finalRewritingWithoutAuxAtoms;
 }
 
@@ -198,82 +176,43 @@ XRewrite::pushRewriting(
 }
 
 void
-XRewrite::encodeInputQueries(
+XRewrite::addInputQueries(
     vector< XRule* >& finalRewriting )
 {
-    // If the input query is conjunctive, "queryRules" is not empty. Otherwise, the query is atomic.
-    // If the query is atomic, q(X,Y), add just the rule: QUERY_PRED :- q(X,Y), QUERY_ANS(X,Y).
     const XAtom* queryAtom = inputProgram.getQuery();
-    if( inputProgram.queryRulesSize() > 0 )
-        for( XProgram::const_iterator it = inputProgram.beginQueryRules(); it != inputProgram.endQueryRules(); it++ )
-        {
-            // If the query is conjunctive, its head predicate appears only here. Thus, it will never be
-            // rewritten. Therefore, if such a predicate is propositional it is suitable to be used as query head.
-            // Otherwise, a new propositional head has to be added.
-            assert_msg( it->getBody() != NULL, "Null body" );
-            assert_msg( it->getHead() != NULL, "Null head" );
-            assert_msg( it->getHead()->size() == 1, "Query rules with more than one head atom are not allowed" );
-            if( !(it->getHead()->at(0).isPropositional()) )
-            {
-                // Move the current head into the body and replace it by a propositional atom.
-                // At the end of the algorithm this process will be reverted.
-                predicateOldQueryHeadAtom = it->getHead()->at(0).getPredIndex();
-                pair< index_t, bool > resQueryPred = inputProgram.addPredicate(QUERY_PRED,0);
-                predicateNewQueryHeadAtom = resQueryPred.first;
-                XAtom* queryHeadAtom = inputProgram.createAtom(resQueryPred.first,vector< XTerm >());
-                XHead* queryHead = inputProgram.createAtomicHead(*queryHeadAtom);
-                delete queryHeadAtom;
-                vector< XLiteral > queryBodyContainer;
-                for( unsigned i=0; i<it->getBody()->size(); i++ )
-                    queryBodyContainer.push_back(it->getBody()->at(i));
-                XLiteral* queryBodyLiteral = inputProgram.createLiteral(it->getHead()->at(0));
-                queryBodyContainer.push_back(*queryBodyLiteral);
-                delete queryBodyLiteral;
-                XBody* queryBody = inputProgram.createBody(queryBodyContainer);
-                XRule* queryRule = inputProgram.createRule(queryHead,queryBody);
-                // queryRule will be destroyed by the caller.
-                pushRewriting(queryRule,finalRewriting);
-            }
-            else
-            {
-                predicateOldQueryHeadAtom = it->getHead()->at(0).getPredIndex();
-                predicateNewQueryHeadAtom = it->getHead()->at(0).getPredIndex();
-                XRule* queryRule = new XRule(*it);
-                // queryRule will be destroyed by the caller.
-                pushRewriting(queryRule,finalRewriting);
-            }
-        }
-    else
+    // If the query is atomic, q(X,Y), add just the rule: QUERY_ANS(X,Y) :- q(X,Y).
+    if( inputProgram.isQueryAtomic() )
     {
         // FIXME: the standard aspcore2.0 does not allow for existential variables in queries.
         // I mean, you can do it but you may introduce rules which don't enjoy the main properties
         // about decidability like for example stickiness, guardedness, and so on.
-        pair< index_t, bool > resQueryPred = inputProgram.addPredicate(QUERY_PRED,0);
-        predicateNewQueryHeadAtom = resQueryPred.first;
+        pair< index_t, bool > resQueryPred = inputProgram.addPredicate(QUERY_ANS,0);
         XAtom* queryHeadAtom = inputProgram.createAtom(resQueryPred.first,vector< XTerm >());
         XHead* queryHead = inputProgram.createAtomicHead(*queryHeadAtom);
         delete queryHeadAtom;
         vector< XLiteral > queryBodyContainer;
         // Notice that, if the query is atomic, its predicate might be rewritten. Thus, the query atom
-        // has to be moved to the body because the rewriting algorithm works just on body atoms.
+        // is to be moved to the body because the rewriting algorithm is able to work just on body atoms.
         XLiteral* queryBodyLiteral = inputProgram.createLiteral(*queryAtom);
         queryBodyContainer.push_back(*queryBodyLiteral);
-        predicateOldQueryHeadAtom = queryAtom->getPredIndex();
         delete queryBodyLiteral;
-        if( !queryAtom->isPropositional() )
-        {
-            pair< index_t, bool > resAtomicHead = inputProgram.addPredicate(QUERY_ANS,queryAtom->getTerms().size());
-            XAtom* atomicQueryBodyAtom = inputProgram.createAtom(resAtomicHead.first,queryAtom->getTerms());
-            XLiteral* atomicQueryBodyLiteral = inputProgram.createLiteral(*atomicQueryBodyAtom);
-            queryBodyContainer.push_back(*atomicQueryBodyLiteral);
-            predicateOldQueryHeadAtom = atomicQueryBodyAtom->getPredIndex();
-            delete atomicQueryBodyAtom;
-            delete atomicQueryBodyLiteral;
-        }
         XBody* queryBody = inputProgram.createBody(queryBodyContainer);
         XRule* queryRule = inputProgram.createRule(queryHead,queryBody);
         // queryRule will be destroyed by the caller.
         pushRewriting(queryRule,finalRewriting);
+    }
+    else
+    {
+        for( XProgram::const_iterator it = inputProgram.beginQueryRules(); it != inputProgram.endQueryRules(); it++ )
+        {
+            // If the query is conjunctive, its head predicate appears only here. Thus, it will never be rewritten.
+            assert_msg( it->getBody() != NULL, "Null body" );
+            assert_msg( it->getHead() != NULL, "Null head" );
+            assert_msg( it->getHead()->size() == 1, "Query rules with more than one head atom are not allowed" );
+            XRule* queryRule = new XRule(*it);
+            // queryRule will be destroyed by the caller.
+            pushRewriting(queryRule,finalRewriting);
+        }
     }
 }
 
@@ -410,50 +349,63 @@ XRewrite::SPUext(
     else
     {
         trace_collection_msg( rewriting, 3, "The set of its sticky variables is", unordered_set< XTerm >, stickyVariables );
-        // Compute idxAtomsCandidates, the set of atoms from the query which
-        // are not in the sub-query and have at least one sticky variable.
-        unordered_set< unsigned > idxAtomsCandidates;
-        const unordered_set< unsigned >& subQueryAtomPositions = currentPreUnifier->getSubQueryAtomPositions();
-        const XBody* qBody = query.getBody();
-        for( unsigned i=0; i<qBody->size(); i++ )
+        // If one or more sticky variables are shared with the head, there is no possibilities to extend the current unifier
+        // since the predicate of the query head is not included in any APU.
+        bool isExtensible = true;
+        const XHead* qHead = query.getHead();
+        for( unsigned i=0; i<qHead->size(); i++ )
         {
-            // Consider the current atom only if it is not part of the current sub-query.
-            if( subQueryAtomPositions.find(i) == subQueryAtomPositions.end() )
+            const XAtom& currentAtom = qHead->at(i);
+            for( unsigned j=0; j<currentAtom.getTerms().size() && isExtensible; j++ )
             {
-                const XAtom& currentAtom = qBody->at(i).getAtom();
-                bool ok = false;
-                for( unsigned j=0; j<currentAtom.getTerms().size() && !ok; j++ )
-                {
-                    if( stickyVariables.find(currentAtom.getTerms().at(j)) != stickyVariables.end() )
-                        ok = true;
-                }
-                if( ok )
-                    idxAtomsCandidates.insert(i);
+                if( stickyVariables.find(currentAtom.getTerms().at(j)) != stickyVariables.end() )
+                    isExtensible = false;
             }
         }
-        assert_msg( idxAtomsCandidates.size() > 0,
-                "If the set of sticky variables is not empty, at least one extending atom should exist. "
-                "Otherwise an infinite loop might be activated. " );
-        trace_collection_msg( rewriting, 3, "Extending query atoms are in positions",
-                unordered_set< unsigned >, idxAtomsCandidates );
-        // NOTICE: The following call returns a vector of freshly instantiated unifiers; this function
-        // is responsible for their deallocation. Since they won't be returned, they need to be
-        // destroyed at the end of this block. They won't be returned because the elements which
-        // will be returned are the ones given by the recursive call to SPUExt; the only exit condition
-        // of this function allocates from scratch (copying the input one) the element to be returned.
-        vector< XPieceUnifier* > Ext = Extend(currentPreUnifier,idxAtomsCandidates,APU);
-        trace_msg( rewriting, 3, "Candidate extensions computed! Size: " << Ext.size() );
-        for( unsigned i=0; i<Ext.size(); i++ )
+        if( isExtensible )
         {
-            trace_msg( rewriting, 3, "This is one of the returned candidate: " << *(Ext[i]) );
-            vector< XPieceUnifier* > EPUExt = SPUext(query,rule,APU,Ext[i]);
-            for( XPieceUnifier* unifierPointer: EPUExt )
+            // Compute idxAtomsCandidates, the set of atoms from the query which
+            // are not in the sub-query and have at least one sticky variable.
+            unordered_set< unsigned > idxAtomsCandidates;
+            const unordered_set< unsigned >& subQueryAtomPositions = currentPreUnifier->getSubQueryAtomPositions();
+            const XBody* qBody = query.getBody();
+            for( unsigned i=0; i<qBody->size(); i++ )
             {
-                trace_msg( rewriting, 3, "The following is a single-piece unifier: " << *unifierPointer );
-                EPU.push_back(unifierPointer);
+                // Consider the current atom only if it is not part of the current sub-query.
+                if( subQueryAtomPositions.find(i) == subQueryAtomPositions.end() )
+                {
+                    const XAtom& currentAtom = qBody->at(i).getAtom();
+                    bool ok = false;
+                    for( unsigned j=0; j<currentAtom.getTerms().size() && !ok; j++ )
+                    {
+                        if( stickyVariables.find(currentAtom.getTerms().at(j)) != stickyVariables.end() )
+                            ok = true;
+                    }
+                    if( ok )
+                        idxAtomsCandidates.insert(i);
+                }
             }
-            // This element won't be returned, thus it needs to be deallocated.
-            delete Ext[i];
+            assert_msg( idxAtomsCandidates.size() > 0, "If the current piece unifier is extensible at least one extending atom should exist." );
+            trace_collection_msg( rewriting, 3, "Extending query atoms are in positions", unordered_set< unsigned >, idxAtomsCandidates );
+            // NOTICE: The following call returns a vector of freshly instantiated unifiers; this function
+            // is responsible for their deallocation. Since they won't be returned, they need to be
+            // destroyed at the end of this block. They won't be returned because the elements which
+            // will be returned are the ones given by the recursive call to SPUExt; the only exit condition
+            // of this function allocates from scratch (copying the input one) the element to be returned.
+            vector< XPieceUnifier* > Ext = Extend(currentPreUnifier,idxAtomsCandidates,APU);
+            trace_msg( rewriting, 3, "Candidate extensions computed! Size: " << Ext.size() );
+            for( unsigned i=0; i<Ext.size(); i++ )
+            {
+                trace_msg( rewriting, 3, "This is one of the returned candidate: " << *(Ext[i]) );
+                vector< XPieceUnifier* > EPUExt = SPUext(query,rule,APU,Ext[i]);
+                for( XPieceUnifier* unifierPointer: EPUExt )
+                {
+                    trace_msg( rewriting, 3, "The following is a single-piece unifier: " << *unifierPointer );
+                    EPU.push_back(unifierPointer);
+                }
+                // This element won't be returned, thus it needs to be deallocated.
+                delete Ext[i];
+            }
         }
     }
     return EPU;
@@ -798,6 +750,20 @@ XRewrite::produceRewritingByPieceUnifier(
     trace_msg( rewriting, 2, "Producing the rewriting rule for piece unifier: " << p );
     assert_msg( p.getQuery().getBody() != NULL, "Null body" );
     assert_msg( p.getRule().getBody() != NULL, "Null body" );
+    assert_msg( p.getQuery().getHead() != NULL, "Null head" );
+    assert_msg( p.getQuery().getHead()->isAtomic(), "Non-atomic query head" );
+    XAtom* rewrittenHeadAtom;
+    const XAtom& currentAtom = p.getQuery().getHead()->at(0);
+    vector< XTerm > rewrittenTerms;
+    for( unsigned j=0; j<currentAtom.getTerms().size(); j++ )
+    {
+        const XTerm& rewrittenTerm = p.getPartition().getMapping(currentAtom.getTerms().at(j));
+        rewrittenTerms.push_back(rewrittenTerm);
+    }
+    rewrittenHeadAtom = inputProgram.createAtom(currentAtom.getPredIndex(),rewrittenTerms);
+    XHead* rewrittenHead = inputProgram.createAtomicHead(*rewrittenHeadAtom);
+    delete rewrittenHeadAtom;
+
     vector< XLiteral > rewrittenBodyAtoms;
     for( unsigned i=0; i<p.getQuery().getBody()->size(); i++ )
     {
@@ -834,10 +800,6 @@ XRewrite::produceRewritingByPieceUnifier(
         delete rewrittenAtom;
     }
     XBody* rewrittenBody = inputProgram.createBody(rewrittenBodyAtoms);
-    assert_msg( p.getQuery().getHead() != NULL, "Null head" );
-    assert_msg( p.getQuery().getHead()->isAtomic(), "Every query rule must have exactly one atom in the head" );
-    assert_msg( p.getQuery().getHead()->getAtoms().at(0).getTerms().size() == 0, "Only atomic propositional heads are allowed" );
-    XHead* rewrittenHead = inputProgram.createAtomicHead(p.getQuery().getHead()->getAtoms().at(0));
     XRule* rewrittenRule = inputProgram.createRule(rewrittenHead,rewrittenBody);
     trace_msg( rewriting, 2, "The rule produced is: " << *rewrittenRule );
     return rewrittenRule;
@@ -867,32 +829,7 @@ XRewrite::isUnnecessary(
     unsigned varCounter = 0;
     XMapping renaming;
 
-    // Canonical renaming procedure should start from the head of a rule. Since the algorithm works
-    // with propositional heads, it looks for the original head atom which has been moved to the body and
-    // starts renaming from it.
-    for( unsigned i=0; i<rule.getBody()->size(); i++ )
-    {
-        if( rule.getBody()->at(i).getPredIndex() == predicateOldQueryHeadAtom )
-        {
-            for( unsigned j=0; j<rule.getBody()->at(i).getTerms().size(); j++ )
-            {
-                XMapping::const_iterator termIt = renaming.find(rule.getBody()->at(i).getTerms().at(j));
-                if( termIt == renaming.end() )
-                {
-                    stringstream renamedTermStream;
-                    // Character 'Z' has been never used before for variable names.
-                    // This ensures the uniqueness of a canonical renaming.
-                    renamedTermStream << "Z" << varCounter++;
-                    XTerm* renamedTerm = inputProgram.createStandardVariable(renamedTermStream.str());
-                    pair< XMapping::const_iterator, bool > res =
-                            renaming.insert(pair< const XTerm&, const XTerm& >(rule.getBody()->at(i).getTerms().at(j),*renamedTerm));
-                    termIt = res.first;
-                    delete renamedTerm;
-                }
-            }
-        }
-    }
-
+    // Canonical renaming procedure should start from the head of a rule.
     vector< XAtom > renamedHeadAtoms;
     for( unsigned i=0; i<orderedHeadPositions.size(); i++ )
     {
@@ -1056,8 +993,7 @@ XRewrite::queryElimination(
     set< unsigned > erasedAtomIndexSet;
     for( unsigned i=0; i<queryBody->size(); i++ )
     {
-        if( erasedAtomIndexSet.find(i) == erasedAtomIndexSet.end() &&
-                queryBody->at(i).getAtom().getPredIndex() != predicateOldQueryHeadAtom )
+        if( erasedAtomIndexSet.find(i) == erasedAtomIndexSet.end() )
         {
             const XAtom& atom = queryBody->at(i).getAtom();
 
@@ -1086,8 +1022,7 @@ XRewrite::queryElimination(
                     vector< unsigned >, posTVars );
             for( unsigned j=0; j<queryBody->size() && !covered; j++ )
             {
-                if( i != j && erasedAtomIndexSet.find(j) == erasedAtomIndexSet.end() &&
-                        queryBody->at(j).getAtom().getPredIndex() != predicateOldQueryHeadAtom )
+                if( i != j && erasedAtomIndexSet.find(j) == erasedAtomIndexSet.end() )
                 {
                     const XAtom& coveringCandidate = queryBody->at(j).getAtom();
                     // If T(query,atom) is a subset of terms(coveringCandidate) check
@@ -1353,4 +1288,26 @@ XRewrite::addToReachabilityCache(
     hash< string > strHash;
     size_t inputHash = strHash(input);
     reachabilityCache.insert(pair< const size_t&, const string& >(inputHash,string(output)));
+}
+
+void
+XRewrite::eraseQueryWithAuxPreds(
+    vector< XRule* > queryRules,
+    vector< XRule* >& outputQueryRules ) const
+{
+    for( index_t i=0; i<queryRules.size(); i++ )
+    {
+        const XBody* ruleBody = queryRules[i]->getBody();
+        assert_msg( ruleBody != NULL, "Null body!" );
+        bool hasAux = false;
+        for( unsigned j=0; j<ruleBody->size() && !hasAux; j++ )
+        {
+            if( boost::starts_with(ruleBody->at(j).getPredicateName(),"aux_") )
+                hasAux = true;
+        }
+        if( hasAux )
+            delete queryRules[i];
+        else
+            outputQueryRules.push_back(queryRules[i]);
+    }
 }

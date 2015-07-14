@@ -49,7 +49,7 @@ namespace DLV2{ namespace REWRITERS{
 
     protected:
         void pushRewriting( XRule* rewriting, std::vector< XRule* >& rewritings );
-        void encodeInputQueries( std::vector< XRule* >& finalRewriting );
+        void addInputQueries( std::vector< XRule* >& finalRewriting );
         // Algorithm 3 of the paper
         std::vector< XPieceUnifier* > computeSPU( const XRule& query, const XRule& rule ) const;
         // Algorithm 2 of the paper
@@ -88,6 +88,7 @@ namespace DLV2{ namespace REWRITERS{
                 const std::vector< XTerm >& termList2 ) const;
         bool isInReachabilityCache( const std::string& input, char output[] ) const;
         void addToReachabilityCache( const std::string& input, char output[] );
+        void eraseQueryWithAuxPreds( std::vector< XRule* > queryRules, std::vector< XRule* >& output ) const;
 
         template < typename T >
         void mergeSort(
@@ -104,8 +105,6 @@ namespace DLV2{ namespace REWRITERS{
                 unsigned center,
                 unsigned right ) const;
 
-
-        unsigned numberOfAggregatedRulesAddedToTheProgram;
         IsomorphismCheckStrategy* isomorphismStrategy;
         // This vector stores hash_codes of the canonical renaming of the rewriting rules.
         std::vector< size_t > canonicalRuleHashCodesCache;
@@ -114,16 +113,6 @@ namespace DLV2{ namespace REWRITERS{
         std::unordered_map< size_t, std::string > reachabilityCache;
         // Given the hash codes of two atoms, a1 and a2, this map says whether a1 is homomorphich to a2.
         XHomomorphismCache homomorphismCache;
-        // Notice that, our algorithm is designed to work with BCQs. Anyway, this is not a restriction
-        // since we can actually process a CQ with free variables x_1,...,x_q by translating
-        // it into a BCQ with an added atom QUERY_ANS(x_1,...,x_q), where QUERY_ANS is a special predicate
-        // not occurring anywhere else. Of course, we need to transform the final result by removing this
-        // atom from the body in order to produce a rewriting which can be processed by a Datalog engine.
-        // This variable stores the predicate index of the atom which will be moved from the head to the body
-        // If the head of the input query is already propositional (BCQs), no atoms will be moved to the body
-        // and this index won't be modified.
-        index_t predicateNewQueryHeadAtom;
-        index_t predicateOldQueryHeadAtom;
 
         // Statistics
         std::chrono::duration< double, std::milli > rewritingDuration;

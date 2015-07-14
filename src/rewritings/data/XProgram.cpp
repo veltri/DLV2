@@ -54,9 +54,12 @@ XProgram::XProgram():
         varsCounter(0),
         query(NULL),
         queryRules(),
+        queryRulesOk(false),
         propagationGraph(*this),
+        propagationGraphOk(false),
         nonTemporaryRulesSize(-1),
         predNullsets(*this),
+        predNullsetsOk(false),
         nullIndex2RuleIterator()
 {
 }
@@ -71,9 +74,12 @@ XProgram::XProgram(
         predicateToRulesMapping(program.predicateToRulesMapping),
         varsCounter(program.varsCounter),
         queryRules(program.queryRules),
+        queryRulesOk(program.queryRulesOk),
         propagationGraph(program.propagationGraph),
+        propagationGraphOk(program.propagationGraphOk),
         nonTemporaryRulesSize(program.nonTemporaryRulesSize),
         predNullsets(program.predNullsets),
+        predNullsetsOk(program.predNullsetsOk),
         nullIndex2RuleIterator(program.nullIndex2RuleIterator)
 {
     if( program.query != NULL )
@@ -361,6 +367,7 @@ XProgram::addPredicate(
 void
 XProgram::computeQueryRules()
 {
+    assert_msg( !queryRulesOk , "Query rules already computed" );
     if( query != NULL && queryRulesSize() == 0 )
     {
         // Look up rules with the query predicate in their atomic head.
@@ -415,11 +422,13 @@ XProgram::computeQueryRules()
                     "in the non-atomic head or in the body of a rule" << endl;
     }
     computePropagationGraph();
+    queryRulesOk = true;
 }
 
 void
 XProgram::computePredicateNullsets()
 {
+    assert_msg( !predNullsetsOk, "Predicate null-sets already computed" );
     trace_msg( rewriting, 1, "Computing null-sets..." );
     unsigned nullIndex = 0;
     for( const_iterator ruleIt = beginRules(); ruleIt != endRules(); ruleIt++ )
@@ -474,6 +483,7 @@ XProgram::computePredicateNullsets()
             nullIndex++;
         }
     }
+    predNullsetsOk = true;
 }
 
 const string&
@@ -504,6 +514,15 @@ XProgram::getPredicateRulePointers(
 {
     XPredicateToXRulesetMap::const_iterator it = predicateToRulesMapping.find(predIndex);
     assert_msg( it != predicateToRulesMapping.end(), "Predicate index not valid" );
+    return it->second;
+}
+
+XProgram::const_iterator
+XProgram::getRuleIntroducingNullIdx(
+    index_t nullIdx ) const
+{
+    unordered_map< index_t, const_iterator >::const_iterator it = nullIndex2RuleIterator.find(nullIdx);
+    assert_msg( it != nullIndex2RuleIterator.end(), "Null value not recognized" );
     return it->second;
 }
 
@@ -609,6 +628,7 @@ XProgram::updatePropagationGraph(
 void
 XProgram::computePropagationGraph()
 {
+    assert_msg( !propagationGraphOk, "Propagation graph already computed" );
     index_t ruleIdx = 0;
     for( const_iterator rIt = beginRules(); rIt != endRules(); rIt++ )
         updatePropagationGraph(rIt,ruleIdx++);
@@ -620,4 +640,5 @@ XProgram::computePropagationGraph()
 //    for( index_t pIdx = 0; pIdx < predicates.size(); pIdx++ )
 //        for( unsigned pos = 0; pos < predicates.getArity(pIdx); pos++ )
 //            propagationGraph.addEdge(pIdx,pos,pIdx,pos,ruleIdx);
+    propagationGraphOk = true;
 }

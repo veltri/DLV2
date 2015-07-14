@@ -26,6 +26,9 @@
 
 #include "XParallelRewrite.h"
 
+#include "../../util/Trace.h"
+#include "../../util/Options.h"
+
 using namespace DLV2::REWRITERS;
 using namespace std;
 
@@ -34,7 +37,24 @@ XParallelRewrite::rewrite()
 {
     inputProgram.computePredicateNullsets();
     const XNullsetTable& predNullsets = inputProgram.getPredicateNullsets();
+
     // TODO
+
     return vector< XRule* >();
 }
 
+vector< XRule* >
+XParallelRewrite::rewriteAtomicQuery(
+    vector< XProgram::const_iterator > rules,
+    const XRule& query )
+{
+
+}
+
+vector< XRule* >
+XParallelRewrite::rewriteConjunctiveQuery(
+    vector< XProgram::const_iterator > rules,
+    const XRule& query )
+{
+
+}
