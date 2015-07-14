@@ -58,6 +58,11 @@ void InMemoryInputBuilder::onDirective(char* directiveName,
 void InMemoryInputBuilder::onRule() {
 	if(currentRule->isAFact()){
 		Atom *fact=*currentRule->getBeginHead();
+		if(!fact->isGround()) {
+			fact->print();
+			currentRule->clear();
+			assert_msg(false, "ATOM IS UNSAFE");
+		}
 		if(fact->containsRangeTerms()){
 			vector<Atom*> atomExpanded;
 			expandRangeAtom(fact,atomExpanded);
