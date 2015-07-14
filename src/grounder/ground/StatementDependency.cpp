@@ -616,9 +616,11 @@ void StatementDependency::createComponentGraph() {
 // An utility function that specifies how to sort the rules of a component
 bool sortRules (Rule* r1,Rule* r2) {
 	set_predicate headSecondRule=r2->getPredicateInHead();
-	for(auto it=r1->getBeginBody();it!=r1->getEndBody();it++)
-		if(headSecondRule.count((*it)->getPredicate()))
+	for(auto it=r1->getBeginBody();it!=r1->getEndBody();it++){
+		Predicate* pred=(*it)->getPredicate();
+		if(pred!=nullptr && headSecondRule.count(pred))
 			return false;
+	}
 	return true;
 
 }

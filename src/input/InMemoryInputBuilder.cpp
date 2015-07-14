@@ -58,11 +58,6 @@ void InMemoryInputBuilder::onDirective(char* directiveName,
 void InMemoryInputBuilder::onRule() {
 	if(currentRule->isAFact()){
 		Atom *fact=*currentRule->getBeginHead();
-		if(!fact->isGround()) {
-			fact->print();
-			currentRule->clear();
-			assert_msg(false, "ATOM IS UNSAFE");
-		}
 		if(fact->containsRangeTerms()){
 			vector<Atom*> atomExpanded;
 			expandRangeAtom(fact,atomExpanded);
@@ -520,6 +515,10 @@ void InMemoryInputBuilder::createRule(vector<Atom*>* head, vector<Atom*>* body) 
 }
 
 void InMemoryInputBuilder::createFact(Atom* fact) {
+//	if(!fact->isGround()) {
+//		fact->print();
+//		assert_msg(false, "ATOM IS UNSAFE");
+//	}
 	fact->setFact(true);
 	Predicate* predicate = fact->getPredicate();
 	if (!(instancesTable->getPredicateExt(predicate)->addAtom(FACT, fact)))

@@ -12,8 +12,8 @@ namespace DLV2 {
 namespace grounder {
 
 void NumericOutputBuilder::onRule(Rule* rule) {
-	cout<<"RULE ";
-	rule->print();
+//	cout<<"RULE ";
+//	rule->print();
 	if(rule->isAStrongConstraint())
 		onConstraint(rule);
 	else{
