@@ -298,16 +298,17 @@ void InMemoryInputBuilder::onArithmeticOperation(char arithOperator) {
 		arithTerm=new ArithTerm;
 		arithTerm->addTerm(*second_last);
 		arithTerm->addTerm(*(++second_last));
+		arithTerm->setOperator(ArithTerm::getOperatorName(arithOperator));
+		termTable->addTerm(arithTerm);
 
 	}else{
 		arithTerm = *second_last;
 		arithTerm->addTerm(terms_parsered.back());
+		arithTerm->setOperator(ArithTerm::getOperatorName(arithOperator));
 	}
 
-	arithTerm->setOperator(ArithTerm::getOperatorName(arithOperator));
 	terms_parsered.pop_back();
 	terms_parsered.pop_back();
-	termTable->addTerm(arithTerm);
 	terms_parsered.push_back(arithTerm);
 }
 

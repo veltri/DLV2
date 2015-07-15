@@ -82,6 +82,8 @@ public:
 	static string getNameOperator(Operator op);
 	static Operator getOperatorName(char op);
 
+	virtual ~ArithTerm(){};
+
 
 private:
 	/*
