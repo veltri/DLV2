@@ -32,6 +32,7 @@ public:
     virtual unsigned onAggregate(Atom *atom);
     virtual void onAggregateElement(Atom *atom);
     virtual void onFact(Atom* atom);
+    virtual void onEnd();
 
     virtual unsigned printCountSumAggregate(Atom *atom);
     virtual unsigned onWeightRule(Atom *aggregateAtom,unsigned bound);
@@ -40,9 +41,11 @@ public:
     virtual unsigned printMaxMinAggregate(Atom *atom);
     virtual void printAuxRuleMinMax(Atom *aggregate,function<unsigned(Term*)>& function,unsigned& positivePredicate,unsigned& negativePredicate);
 
-    virtual void onEnd();
+    virtual void appendToStreamAtomTable(Atom* atom);
+
 private:
     stringstream stream;
+    stringstream streamAtomTable;
 };
 
 } /* namespace grounder */

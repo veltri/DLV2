@@ -325,11 +325,16 @@ unsigned NumericOutputBuilder::printMaxMinAggregate(Atom* atom) {
 
 void NumericOutputBuilder::onEnd() {
 	cout<<"0"<<endl;
-	PredicateExtTable::getInstance()->print();
+//	PredicateExtTable::getInstance()->print();
+	cout<<streamAtomTable.str();
 	cout<<"0"<<endl<<"B+"<<endl<<"0"<<endl<<"B-"<<endl<<"1"<<endl<<"0"<<endl<<"1"<<endl;
 }
 
+void NumericOutputBuilder::appendToStreamAtomTable(Atom* atom) {
+	streamAtomTable<<atom->getIndex()<<" ";ClassicalLiteral::print(atom->getPredicate(),atom->getTerms(),false,false,streamAtomTable);streamAtomTable<<endl;
+}
+
+
 } /* namespace grounder */
 } /* namespace DLV2 */
-
 

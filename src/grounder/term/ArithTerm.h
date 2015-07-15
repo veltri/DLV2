@@ -77,7 +77,7 @@ public:
 
 	/// Return the string composed by the concatenation of terms and operators
 	virtual size_t hash();
-	virtual void print();
+	virtual void print(ostream& stream=cout);
 	/// Return the string of enum operator
 	static string getNameOperator(Operator op);
 	static Operator getOperatorName(char op);

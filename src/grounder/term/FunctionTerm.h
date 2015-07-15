@@ -81,7 +81,7 @@ public:
 	/// Return the name of the function concatenated with '*' and the id of the composites term
 	virtual size_t hash();
 
-	virtual void print();
+	virtual void print(ostream& stream=cout);
 private:
 	/**
 	 *   The name of a function

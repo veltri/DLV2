@@ -112,14 +112,14 @@ bool FunctionTerm::operator<=(const Term& term) const {
 	return false;
 }
 
-void FunctionTerm::print() {
-	cout<<name<<"(";
+void FunctionTerm::print(ostream& stream) {
+	stream<<name<<"(";
 	for(unsigned int i=0;i<terms.size();i++){
 		if(i!=0)
-			cout<<",";
-		terms[i]->print();
+			stream<<",";
+		terms[i]->print(stream);
 	}
-	cout<<")";
+	stream<<")";
 }
 
 Term* FunctionTerm::substitute(map_term_term& substritutionTerm) {

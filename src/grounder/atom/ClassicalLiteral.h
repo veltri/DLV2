@@ -70,7 +70,7 @@ public:
 
 	///This method is used in the printer method @see print()
 	//It is static since it is used in Instance class, where just terms are stored instead of the whole classical atom
-	static void print(Predicate* predicate,const vector<Term*>& terms,bool negative,bool hasMinus);
+	static void print(Predicate* predicate,const vector<Term*>& terms,bool negative,bool hasMinus,ostream& stream);
 
 	///Printer Method
 	void print();

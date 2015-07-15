@@ -67,7 +67,7 @@ public:
 	virtual size_t hash() {if(numeric_constant<0)return abs(numeric_constant); return numeric_constant;};
 	virtual int getConstantValue() const {return numeric_constant;};
 	virtual string getName() const {return boost::lexical_cast<string>(numeric_constant);}
-	virtual void print() {cout<<numeric_constant;}
+	virtual void print(ostream& stream=cout) {stream<<numeric_constant;}
 	void setNegative(bool n){numeric_constant=-numeric_constant;};
 
 private:
@@ -91,7 +91,7 @@ public:
 	virtual bool contain(TermType type) { return TermType::STRING_CONSTANT==type;};
 	virtual size_t hash() {return HashString::getHashString()->computeHash(string_constant);};
 	virtual string getName()const {return string_constant;};
-	virtual void print() {cout<<string_constant;}
+	virtual void print(ostream& stream=cout) {stream<<string_constant;}
 private:
 	string string_constant;
 };

@@ -24,23 +24,23 @@ size_t ClassicalLiteral::hash(){
 
 
 void ClassicalLiteral::print(){
-	print(predicate,terms,negative,hasMinus);
+	print(predicate,terms,negative,hasMinus,cout);
 }
 
-void ClassicalLiteral::print(Predicate* predicate,const vector<Term*>& terms,bool negative,bool hasMinus){
+void ClassicalLiteral::print(Predicate* predicate,const vector<Term*>& terms,bool negative,bool hasMinus,ostream& stream){
 	if(negative)
-		cout<<"not ";
+		stream<<"not ";
 	if(hasMinus)
-		cout<<"- ";
-	cout<<predicate->getName();
+		stream<<"- ";
+	stream<<predicate->getName();
 	for (unsigned int i = 0; i < terms.size(); ++i){
 		if(i==0)
-			cout<<"(";
-		terms[i]->print();
+			stream<<"(";
+		terms[i]->print(stream);
 		if(i!=terms.size()-1)
-			cout<<",";
+			stream<<",";
 		else
-			cout<<")";
+			stream<<")";
 	}
 }
 

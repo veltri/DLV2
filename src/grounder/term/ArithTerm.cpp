@@ -50,12 +50,12 @@ size_t ArithTerm::hash() {
 	return HashVecInt::getHashVecInt()->computeHashSize_T(hashVec);
 }
 
-void ArithTerm::print() {
+void ArithTerm::print(ostream& stream) {
 	for (unsigned int i = 0; i < terms.size() - 1; i++) {
-		terms[i]->print();
-		cout  << getNameOperator(operators[i]);
+		terms[i]->print(stream);
+		stream  << getNameOperator(operators[i]);
 	}
-	terms[terms.size() - 1]->print();
+	terms[terms.size() - 1]->print(stream);
 }
 
 string ArithTerm::getNameOperator(Operator op) {

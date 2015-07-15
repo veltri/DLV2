@@ -146,7 +146,7 @@ public:
 	/// @param substritutionTerm map of index_object. The first index is the ID of term to substitute and second the value
 	virtual Term* substitute(map_term_term& substritutionTerm){return nullptr;};
 	/// Print with the cout the term
-	virtual void print(){};
+	virtual void print(ostream& stream=cout){};
 
 	virtual ~Term(){};
 protected:

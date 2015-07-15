@@ -34,13 +34,13 @@ public:
     virtual unsigned onAggregate(Atom *atom) = 0;
     virtual void onAggregateElement(Atom *atom) = 0;
     virtual void onFact(Atom* atom)=0;
-
     virtual void onEnd(){};
+
+    virtual void appendToStreamAtomTable(Atom* atom){};
 
     virtual ~OutputBuilder(){};
 
     static OutputBuilder* getInstance();
-
     static void freeInstance(){delete outputBuilder;}
 
 protected:

@@ -52,8 +52,8 @@ public:
 		return this;
 	};
 
-	virtual void print(){
-		cout<<name;
+	virtual void print(ostream& stream=cout){
+		stream<<name;
 	}
 
 

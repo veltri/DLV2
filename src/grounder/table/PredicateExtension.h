@@ -14,6 +14,7 @@
 #include "../../util/Assert.h"
 #include "AtomSearcher.h"
 #include "IdGenerator.h"
+#include "../output/OutputBuilder.h"
 
 using namespace std;
 
@@ -119,17 +120,19 @@ public:
 		return nullptr;
 	}
 
-	///Set the index of the atom with new id if the atom is not yet indexed
+	///Set the index of the atom with new id if the atom is not yet indexed, and send it to the output builder
 	void setIndexOfAtom(Atom* atom){
-		if(atom->getIndex()==0)
+		if(atom->getIndex()==0){
 			atom->setIndex(IdGenerator::getInstance()->getNewId(1));
+			OutputBuilder::getInstance()->appendToStreamAtomTable(atom);
+		}
 	}
 
 	 //Moves the content of the tableFrom (source) to the tableTo (destination)
 	 void swapTables(unsigned tableFrom,unsigned tableTo);
 
 	///Printer method for a single table
-	inline void print(unsigned table){for(auto fact:*tables[table]){cout<<fact->getIndex()<<" ";ClassicalLiteral::print(predicate,fact->getTerms(),false,false);cout<<endl;}}
+	inline void print(unsigned table){for(auto fact:*tables[table]){cout<<fact->getIndex()<<" ";ClassicalLiteral::print(predicate,fact->getTerms(),false,false,cout);cout<<endl;}}
 
 	///Printer method for a single table
 	inline void print(){for(unsigned table=0;table<tables.size();table++) print(table);}
