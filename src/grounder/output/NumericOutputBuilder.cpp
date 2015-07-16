@@ -21,9 +21,11 @@ void NumericOutputBuilder::onRule(Rule* rule) {
 		onBody(rule);
 	}
 	cout<<endl;
-	cout<<stream.str();
-	stream.flush();
-	stream.str("");
+	if(printStream){
+		cout<<stream.str();
+		stream.str("");
+		printStream=false;
+	}
 }
 
 void NumericOutputBuilder::onWeakConstraint() {
@@ -93,6 +95,7 @@ void NumericOutputBuilder::onChoiceAtom(Atom* atom) {
 }
 
 unsigned NumericOutputBuilder::onAggregate(Atom* atom) {
+	printStream=true;
 	AggregateFunction function=atom->getAggregateFunction();
 	if(function==COUNT || function==SUM){
 		return printCountSumAggregate(atom);

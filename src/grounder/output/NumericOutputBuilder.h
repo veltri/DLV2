@@ -16,7 +16,7 @@ namespace grounder {
 
 class NumericOutputBuilder: public OutputBuilder {
 public:
-	NumericOutputBuilder(){};
+	NumericOutputBuilder():printStream(false){};
 	virtual ~NumericOutputBuilder(){};
 
     virtual void onRule(Rule *rule);
@@ -46,6 +46,7 @@ public:
 private:
     stringstream stream;
     stringstream streamAtomTable;
+    bool printStream;
 };
 
 } /* namespace grounder */
