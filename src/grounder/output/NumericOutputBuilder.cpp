@@ -316,9 +316,11 @@ unsigned NumericOutputBuilder::printMaxMinAggregate(Atom* atom) {
 	unsigned  positivePredicate=0, negativePredicate=0;
 	printAuxRuleMinMax(atom,function,positivePredicate,negativePredicate);
 	unsigned index_aggregate=IdGenerator::getInstance()->getNewId(1);
-	stream<<"1 "<<index_aggregate<<" "<<(positivePredicate!=0 && negativePredicate!=0)+1<<" "<<(negativePredicate!=0)<<" ";
+	bool boolean=atom->getSecondBinop()!=NONE_OP && atom->getFirstBinop()!=NONE_OP && positivePredicate==0;
+	stream<<"1 "<<index_aggregate<<" "<<(positivePredicate!=0 && negativePredicate!=0)+1+boolean<<" "<<(negativePredicate!=0)<<" ";
 	if(negativePredicate!=0)stream<<negativePredicate<<" ";
 	if(positivePredicate!=0)stream<<positivePredicate;
+	else if(boolean) stream<<IdGenerator::getInstance()->getNewId(1);
 	stream<<endl;
 	return index_aggregate;
 }
