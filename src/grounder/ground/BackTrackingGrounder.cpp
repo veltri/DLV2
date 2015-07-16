@@ -168,7 +168,7 @@ bool BackTrackingGrounder::firstMatch(){
 	if(negativeToClone){
 		while(indicesPossibleUndef.size()>0 && indicesPossibleUndef.back()>=index_current_atom)
 			indicesPossibleUndef.pop_back();
-		if(isPossibleUndef)
+		if(isPossibleUndef && !ground_rule->isAtomToSimplifyInBody(index_current_atom))
 			indicesPossibleUndef.push_back(index_current_atom);
 		Atom* atomFound=templateAtom->clone();
 		atomFound->setIndex(indexNegativeAtom);
