@@ -124,7 +124,7 @@ public:
 	void setIndexOfAtom(Atom* atom){
 		if(atom->getIndex()==0){
 			atom->setIndex(IdGenerator::getInstance()->getNewId(1));
-//			if(!atom->getPredicate()->isHiddenForPrinting())
+			if(!atom->getPredicate()->isHiddenForPrinting())
 				OutputBuilder::getInstance()->appendToStreamAtomTable(atom);
 		}
 	}
