@@ -18,6 +18,8 @@
 #include "../statement/GroundRule.h"
 #include "NonGroundSimplifier.h"
 #include "../output/NumericOutputBuilder.h"
+#include "../exception/ConstrainException.h"
+
 
 using namespace std;
 

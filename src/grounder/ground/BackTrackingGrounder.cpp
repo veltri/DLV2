@@ -327,6 +327,8 @@ bool BackTrackingGrounder::foundAssignment() {
 		outputBuilder->onRule(ground_rule);
 	}
 
+	if(ground_rule->isAStrongConstraint() && !ground_rule->areThereUndefinedAtomInBody()){throw ConstrainException{};};
+
 	if(currentRule->getSizeBody() > 0)
 		removeBindValueInAssignment(current_variables_atoms[index_current_atom]);
 	return ground_new_atom;

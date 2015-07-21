@@ -14,6 +14,7 @@
 #include "../../util/Timer.h"
 #include "../../util/Utils.h"
 
+
 namespace DLV2{
 
 namespace grounder{
@@ -129,21 +130,28 @@ void ProgramGrounder::ground() {
 			if(nonGroundSimplificator.simplifyRule(r))
 				continue;
 			inizializeSearchInsertPredicate(r);
-			groundRule(r);
+			try{groundRule(r);}catch (exception& e){
+				foundEmptyConstraint=true;
+			}
 		}
 	}
 
 
 	// Remained Constraints are grounded at the end
-	for (auto rule:remainedConstraint)
-		if (rule->getSizeBody() > 0){
-			if(nonGroundSimplificator.simplifyRule(rule))
-				continue;
-			inizializeSearchInsertPredicate(rule);
-			groundRule(rule);
-		}
+	if(!foundEmptyConstraint)
+	{
+		for (auto rule:remainedConstraint)
+			if (rule->getSizeBody() > 0){
+				if(nonGroundSimplificator.simplifyRule(rule))
+					continue;
+				inizializeSearchInsertPredicate(rule);
+				try{groundRule(rule);}catch (exception& e){
+					break;
+				}
+			}
+		substituteIndicesInRulesWithPossibleUndefAtoms();
+	}
 
-	substituteIndicesInRulesWithPossibleUndefAtoms();
 	outputBuilder->onEnd();
 
 	//Print and simplify the rule
