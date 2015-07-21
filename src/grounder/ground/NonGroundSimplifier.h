@@ -29,7 +29,7 @@ protected:
 	bool checkFalsity(vector<Atom*>::const_iterator currentIt)const;
 	bool checkAggregateSumCountStringGuard(vector<Atom*>::const_iterator currentIt,bool& alwaysTrue) const ;
 	bool checkAggregateAllAggTermShared(Rule *rule,vector<Atom*>::const_iterator currentIt,bool& alwaysTrue) const ;
-
+	bool checkAggregateCountNegativeGuard(vector<Atom*>::const_iterator currentIt,bool& alwaysTrue)const;
 
 private:
 	///A pointer to the instances table

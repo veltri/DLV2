@@ -154,6 +154,10 @@ public:
 	 ///The function return true if we can simplify and set alwaysTrue true if the aggregate is always true else false if is always false
 	 bool checkAggregateAllAggTermShared(vector<Atom*>::iterator begin,vector<Atom*>::iterator end,bool& alwaysTrue) ;
 
+	 ///Check if is count aggregate and if have negative guard simplify the aggregate
+	 ///If the aggregate have to be > of -1 the aggregate is always true. If the aggregate have to be < -1 the aggregate is always false
+	 ///The function return true if we can simplify and set alwaysTrue true if the aggregate is always true else false if is always false
+	 bool checkAggregateCountNegativeGuard(bool& alwaysTrue)const;
 
 	///return true if one guard is an equal
 	bool isAnAssigment(){return ((firstBinop==Binop::EQUAL && !firstGuard->isGround()) || (secondBinop==Binop::EQUAL && !secondGuard->isGround() ));}

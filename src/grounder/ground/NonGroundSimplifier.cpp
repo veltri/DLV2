@@ -32,6 +32,11 @@ bool NonGroundSimplifier::simplifyRule(Rule* r) {
 				return true;
 			atoms_to_delete.push_back(i);
 		}
+		if(checkAggregateCountNegativeGuard(it,boolean)){
+			if(!boolean)
+				return true;
+			atoms_to_delete.push_back(i);
+		}
 		if(checkAggregateAllAggTermShared(r,it,boolean)){
 			if(!boolean)
 				return true;
@@ -83,6 +88,12 @@ bool NonGroundSimplifier::checkAggregateSumCountStringGuard(vector<Atom*>::const
 	Atom* atom=*currentIt;
 	if(!atom->isAggregateAtom()) return false;
 	return atom->checkAggregateSumCountStringGuard(alwaysTrue);
+}
+
+bool NonGroundSimplifier::checkAggregateCountNegativeGuard(vector<Atom*>::const_iterator currentIt,bool& alwaysTrue) const {
+	Atom* atom=*currentIt;
+	if(!atom->isAggregateAtom()) return false;
+	return atom->checkAggregateCountNegativeGuard(alwaysTrue);
 }
 
 bool NonGroundSimplifier::checkAggregateAllAggTermShared(Rule *rule,vector<Atom*>::const_iterator currentIt, bool& alwaysTrue) const {

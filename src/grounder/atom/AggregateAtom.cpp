@@ -577,6 +577,20 @@ bool AggregateAtom::isAllAggregateTermShared(vector<Atom*>::iterator begin,vecto
 	return true;
 }
 
+bool AggregateAtom::checkAggregateCountNegativeGuard(bool& alwaysTrue) const{
+	if(aggregateFunction==COUNT) {
+		if(firstBinop!=NONE_OP && secondBinop==NONE_OP && firstGuard->getType()==NUMERIC_CONSTANT && firstGuard->getConstantValue()<0){
+			alwaysTrue= !isNegative();
+			return true;
+		}
+		if(secondBinop!=NONE_OP && secondGuard->getType()==NUMERIC_CONSTANT && secondGuard->getConstantValue()<0){
+			alwaysTrue= isNegative();
+			return true;
+		}
+	}
+	return false;
+}
+
 Term* AggregateAtom::getCheckValue() {
 	Term* value = 0;
 	switch (aggregateFunction) {

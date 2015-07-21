@@ -219,6 +219,10 @@ public:
 	///The function return true if we can simplify and set alwaysTrue true if the aggregate is always true else false if is always false
 	virtual bool checkAggregateAllAggTermShared(vector<Atom*>::iterator begin,vector<Atom*>::iterator end,bool& alwaysTrue) {return false;};
 
+	///Check if is count aggregate and if have negative guard simplify the aggregate.
+	///If the aggregate have to be > of -1 the aggregate is always true. If the aggregate have to be < -1 the aggregate is always false
+	 ///The function return true if we can simplify and set alwaysTrue true if the aggregate is always true else false if is always false
+	virtual bool checkAggregateCountNegativeGuard(bool& alwaysTrue)const{return false;};
 
 	virtual set_term getSharedVariable(vector<Atom*>::iterator begin,vector<Atom*>::iterator end,bool alsoGuards){return set_term();};
 	/// Set the aggregate atom to standard format:
