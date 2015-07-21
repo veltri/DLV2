@@ -626,7 +626,7 @@ bool sortRules (Rule* r1,Rule* r2) {
 }
 
 void StatementDependency::createComponentGraphAndComputeAnOrdering(vector<vector<Rule*>>& exitRules, vector<vector<Rule*>>& recursiveRules,
-		vector<unordered_set<index_object>>& componentPredicateInHead) {
+		vector<unordered_set<index_object>>& componentPredicateInHead,vector<vector<Rule*>>& constraintRules,vector<Rule*>& remainedConstraint) {
 	/// Create the component graph
 	compGraph.createComponent(depGraph, statementAtomMapping);
 
@@ -641,23 +641,26 @@ void StatementDependency::createComponentGraphAndComputeAnOrdering(vector<vector
 	unordered_map<index_object, unsigned int> components=compGraph.getComponent();
 	unordered_set<unsigned> addedRules;
 
-//	using set_int = unordered_set<index_object>;
-//	vector<Rule*> constraint_rule=constraints;
-//	vector<set_int> predicate_to_evaluate(constraint_rule.size());
-//
-//	for(unsigned i=0;i<constraint_rule.size();i++){
-//		set_predicate predicates_in_rule=constraint_rule[i]->getPredicateInBody();
-//		unsigned predicate_count=predicates_in_rule.size();
-//		for(auto p:predicates_in_rule)if(p->isEdb())predicate_count--;
-//		predicate_to_evaluate[i]=predicate_count;
-//	}
-//
+	//For each constraint put the IDB predicates that appear in the constraint.For each component delete the predicates of this component in
+	//the predicates of constraints and if all predicate are deleted a constraint can be grounded in this component
+	using set_int = unordered_set<index_object>;
+	//List of constraint and a set of IDB predicates that appear in the constraint
+	using list_rule_setInt = list<pair<Rule*,set_int>>;
+	list_rule_setInt constraint_rule;
+
+	for(unsigned j=0;j<constraints.size();j++){
+		set_predicate predicates_in_rule=constraints[j]->getPredicateInBody();
+		set_int predicate_in_constraint;
+		for(auto p:predicates_in_rule)if(!p->isEdb())predicate_in_constraint.insert(p->getIndex());
+		constraint_rule.push_back({constraints[j],predicate_in_constraint});
+	}
+
 
 	for(auto comp: ordering){
 		exitRules.push_back(vector<Rule*>());
 		recursiveRules.push_back(vector<Rule*>());
 		componentPredicateInHead.push_back(unordered_set<index_object>());
-
+		constraintRules.push_back(vector<Rule*>());
 		for (auto pair: components)
 			if(pair.second==comp){
 				/// Get all the rules for the current component
@@ -685,6 +688,16 @@ void StatementDependency::createComponentGraphAndComputeAnOrdering(vector<vector
 					}
 				}
 				componentsRules.clear();
+				vector<list_rule_setInt::iterator> to_delete;
+				for(auto it=constraint_rule.begin();it!=constraint_rule.end();it++){
+					if(it->second.count(predicate))
+						it->second.erase(predicate);
+					if(it->second.size()==0){
+						constraintRules[i].push_back(it->first);
+						to_delete.push_back(it);
+					}
+				}
+				for(auto it:to_delete)constraint_rule.erase(it);
 			}
 		i++;
 	}
@@ -694,6 +707,9 @@ void StatementDependency::createComponentGraphAndComputeAnOrdering(vector<vector
 			stable_sort(recursiveRules[i].begin(),recursiveRules[i].end(),sortRules);
 	}
 
+	for(auto it=constraint_rule.begin();it!=constraint_rule.end();it++){
+		remainedConstraint.push_back(it->first);
+	}
 }
 
 

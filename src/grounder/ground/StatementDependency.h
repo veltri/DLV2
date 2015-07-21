@@ -173,7 +173,9 @@ public:
 	/// @param componentPredicateInHead A vector containing at the ith position an unordered set containing
 	/// @param stratifiedPred The set of predicate appearing as not statified negated
 	/// the predicates in the head of the recursive rules of the ith component
-	void createComponentGraphAndComputeAnOrdering(vector<vector<Rule*>>& exitRules, vector<vector<Rule*>>& recursiveRules,vector<unordered_set<index_object>>& componentPredicateInHead);
+	/// @param constraintRules A vector containing at the ith position a vector of constraints for the ith component
+	/// @param remainedConstraint A vector of constraint that not appear in any component
+	void createComponentGraphAndComputeAnOrdering(vector<vector<Rule*>>& exitRules, vector<vector<Rule*>>& recursiveRules,vector<unordered_set<index_object>>& componentPredicateInHead,vector<vector<Rule*>>& constraintRules,vector<Rule*>& remainedConstraint);
 
 	/// Return true if the predicate is recursive with negation not stratified
 	bool isPredicateNotStratified(index_object predicate){return compGraph.isPredicateNotStratified(predicate);};

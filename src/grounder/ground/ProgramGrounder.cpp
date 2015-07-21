@@ -39,6 +39,7 @@ void ProgramGrounder::ground() {
 
 	//Create the dependency graph
 	statementDependency->createDependencyGraph(predicateTable);
+	bool foundEmptyConstraint=false;
 
 	// Create the component graph and compute an ordering among components.
 	// Components' rules are classified as exit or recursive.
@@ -46,8 +47,10 @@ void ProgramGrounder::ground() {
 	// to the component in its positive body, otherwise it is said to be an exit rule.
 	vector<vector<Rule*>> exitRules;
 	vector<vector<Rule*>> recursiveRules;
+	vector<vector<Rule*>> constraintRules;
+	vector<Rule*> remainedConstraint;
 	vector<unordered_set<index_object>> componentPredicateInHead;
-	statementDependency->createComponentGraphAndComputeAnOrdering(exitRules, recursiveRules, componentPredicateInHead);
+	statementDependency->createComponentGraphAndComputeAnOrdering(exitRules, recursiveRules, componentPredicateInHead,constraintRules,remainedConstraint);
 
 
 //	if (Options::globalOptions()->isPrintRewrittenProgram())
@@ -56,7 +59,7 @@ void ProgramGrounder::ground() {
 	// Ground each module according to the ordering:
 	// For each component, each rule is either recursive or exit,
 	// Exit rules are grounded just once, while recursive rules are grounded until no more knowledge is derived
-	for (unsigned int component = 0; component < exitRules.size(); component++) {
+	for (unsigned int component = 0; component < exitRules.size()&&!foundEmptyConstraint; component++) {
 
 #if DEBUG == 1
 		cout<<"Component: "<<component;
@@ -75,57 +78,65 @@ void ProgramGrounder::ground() {
 #endif
 		}
 
-		if (recursiveRules[component].size() == 0) continue;
-		// Ground recursive rules
-		unsigned int n_rules = recursiveRules[component].size();
-		bool found_something = false;
+		if (recursiveRules[component].size() != 0){
+			// Ground recursive rules
+			unsigned int n_rules = recursiveRules[component].size();
+			bool found_something = false;
 
-		// First iteration
-		for (unsigned int i = 0; i < n_rules; i++) {
-			Rule *rule=recursiveRules[component][i];
-			if(nonGroundSimplificator.simplifyRule(rule))
-				continue;
-			inizializeSearchInsertPredicate(rule,componentPredicateInHead[component]);
-			if(groundRule(rule))
-				found_something=true;
-		}
-		while (found_something) {
-			found_something = false;
-
-			// Since in the first iteration search is performed in facts and no facts tables,
-			// while in the next iteration search is performed in the delta table, it is needed
-			// to keep track if the current iteration is the first or not.
+			// First iteration
 			for (unsigned int i = 0; i < n_rules; i++) {
-				Rule* r = recursiveRules[component][i];
-				//If no more knowledge is derived the grounding of this component can stop
-#if DEBUG == 1
-				r->print();
-#endif
+				Rule *rule=recursiveRules[component][i];
+				if(nonGroundSimplificator.simplifyRule(rule))
+					continue;
+				inizializeSearchInsertPredicate(rule,componentPredicateInHead[component]);
+				if(groundRule(rule))
+					found_something=true;
+			}
+			while (found_something) {
+				found_something = false;
 
-				inizializeRecursiveCombinationPredicate(r,componentPredicateInHead[component]);
-				for(unsigned i=0;i<pow(2,predicate_combination.size())-1;i++){
-					computeRecursiveCombinationPredicate();
-					nextSearchInsertPredicate(r,componentPredicateInHead[component]);
-					if (groundRule(r)){
-						found_something = true;
+				// Since in the first iteration search is performed in facts and no facts tables,
+				// while in the next iteration search is performed in the delta table, it is needed
+				// to keep track if the current iteration is the first or not.
+				for (unsigned int i = 0; i < n_rules; i++) {
+					Rule* r = recursiveRules[component][i];
+					//If no more knowledge is derived the grounding of this component can stop
+	#if DEBUG == 1
+					r->print();
+	#endif
+
+					inizializeRecursiveCombinationPredicate(r,componentPredicateInHead[component]);
+					for(unsigned i=0;i<pow(2,predicate_combination.size())-1;i++){
+						computeRecursiveCombinationPredicate();
+						nextSearchInsertPredicate(r,componentPredicateInHead[component]);
+						if (groundRule(r)){
+							found_something = true;
+						}
 					}
 				}
+
+				for (unsigned int i = 0; i < n_rules; i++)
+					// Move the content of the delta table in the no fact table,
+					// and fill delta with the content of the next delta table.
+					swapInDelta(recursiveRules[component][i]);
+
 			}
-
-			for (unsigned int i = 0; i < n_rules; i++)
-				// Move the content of the delta table in the no fact table,
-				// and fill delta with the content of the next delta table.
-				swapInDelta(recursiveRules[component][i]);
-
 		}
 
+		// Ground constraint rules
+		for (Rule* r : constraintRules[component]){
+			if (r->getSizeBody() == 0) continue;
+			if(nonGroundSimplificator.simplifyRule(r))
+				continue;
+			inizializeSearchInsertPredicate(r);
+			groundRule(r);
+		}
 	}
 
 
-	// Constraints are grounded at the end
-	for (unsigned int i = 0; i < statementDependency->getConstraintSize(); i++)
-		if (statementDependency->getConstraint(i)->getSizeBody() > 0){
-			Rule *rule=statementDependency->getConstraint(i);
+	// Remained Constraints are grounded at the end
+	for (auto rule:remainedConstraint)
+		if (rule->getSizeBody() > 0){
 			if(nonGroundSimplificator.simplifyRule(rule))
 				continue;
 			inizializeSearchInsertPredicate(rule);
@@ -251,8 +262,7 @@ void ProgramGrounder::swapInDelta(Rule *rule){
 bool ProgramGrounder::groundRule(Rule* rule) {
 
 	if (Options::globalOptions()->isPrintRewrittenProgram())
-		rule->print();
-
+		{cout<<"RULE: ";rule->print();}
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("RULE");
 #endif
