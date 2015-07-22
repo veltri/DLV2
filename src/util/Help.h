@@ -56,7 +56,9 @@ namespace DLV2
             std::cout << "--indextype                              - Set the index table of object. Possible values: DEFAULT=0, MAP=1, MULTIMAP=2, HASHSET=3, DOUBLEMAP=4." << std::endl;
             std::cout << "--predindexterm                          - Set on which term predicates have to be indexed. Example: -i p=2,a=3" << std::endl;
             std::cout << "--predindextype                          - Set the index type for the given predicates. Example: --predindextype=p=1,a=2" << std::endl;
+            std::cout << "--rewritingtype                          - Set the rewriting type of the choice: 0:Native choice with all atoms in the body of the choice; 2:Rewriting with disjunction.3: Native choice avoiding unnecessary atoms in the body. " << std::endl;
             std::cout << "--printRewrite                           - Print the rewrited program." << std::endl;
+            std::cout << "--outputformat                           - Set the output format: 0=NUmeric, 1=Textual." << std::endl;
             std::cout << separator << std::endl;
 
 
