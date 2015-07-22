@@ -62,10 +62,13 @@ XPropagationGraph::addVertex(
     {
         vector< Vertex > vertices;
         for( unsigned i=0; i<program.getPredicateArity(predIdx); i++ )
-            vertices.push_back(boost::add_vertex(graph));
+        {
+            Vertex v = boost::add_vertex(graph);
+            vertices.push_back(v);
+            graph[v].predicateIndex = predIdx;
+            graph[v].termPosition = i;
+        }
         index2vertexId.insert(pair< index_t, vector< Vertex > >(predIdx,vertices));
-        graph[vertices[pos]].predicateIndex = predIdx;
-        graph[vertices[pos]].termPosition = pos;
         return vertices[pos];
     }
     else

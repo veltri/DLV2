@@ -70,8 +70,11 @@ namespace DLV2{ namespace REWRITERS{
                 const XPieceUnifier* currentPreUnifier,
                 std::unordered_set< unsigned > candidates,
                 const std::list< XPieceUnifier* >& APU ) const;
-        void computeSPUAggregators( std::vector< XPieceUnifier* >& SPU );
-        std::pair< XPieceUnifier*, bool > aggregatePieceUnifier( const XPieceUnifier& piece1, const XPieceUnifier& piece2 );
+        void computeSPUAggregators( std::vector< XPieceUnifier* >& SPU, std::list< XRule >& aggrRules );
+        std::pair< XPieceUnifier*, bool > aggregatePieceUnifier(
+                const XPieceUnifier& piece1,
+                const XPieceUnifier& piece2,
+                std::list< XRule >& aggrRules );
         XMapping* renameInputRuleOf( const XPieceUnifier& p );
         XRule* createAggregatedRule( const XRule& ruleA, const XRule& ruleB, const XMapping& renaming ) const;
         XRule* produceRewritingByPieceUnifier( XPieceUnifier& p );

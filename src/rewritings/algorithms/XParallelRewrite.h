@@ -31,16 +31,22 @@
 
 namespace DLV2{ namespace REWRITERS{
 
+    class XParallelRuleset;
+
     class XParallelRewrite: public XRewrite {
     public:
-        XParallelRewrite( XProgram& input ): XRewrite(input) { }
+        XParallelRewrite( XProgram& input ): XRewrite(input), queryPredIdx(0) { }
         virtual ~XParallelRewrite() { }
 
         virtual std::vector< XRule* > rewrite();
 
     private:
-        std::vector< XRule* > rewriteAtomicQuery( std::vector< XProgram::const_iterator > rules, const XRule& query );
-        std::vector< XRule* > rewriteConjunctiveQuery( std::vector< XProgram::const_iterator > rules, const XRule& query );
+        void rewriteQueries( const std::vector< XRule* >& queries, XParallelRuleset* rulesetIterator, std::vector< XRule* >& output );
+        void rewriteAtomicQuery( const XRule& query, XParallelRuleset* rulesetIterator, std::vector< XRule* >& output );
+        void rewriteConjunctiveQuery( const XRule& query, XParallelRuleset* rulesetIterator, std::vector< XRule* >& output );
+        bool isBreakable( const XRule& query ) const;
+
+        unsigned queryPredIdx;
     };
 
 };};

@@ -102,8 +102,6 @@ namespace DLV2{ namespace REWRITERS{
                 const std::unordered_set< unsigned >& subQueryAtomPos ) const;
 
         void addRule( const XRule& r );
-        const_iterator addTemporaryRule( const XRule& r );
-        void eraseTemporaryRules();
         void addQuery( const XAtom& q );
         std::pair< index_t, bool > addPredicate( const std::string& name, unsigned arity, bool internal = false );
         unsigned incrementVariablesCounter() { return varsCounter++; }
@@ -156,7 +154,6 @@ namespace DLV2{ namespace REWRITERS{
         bool queryRulesOk;
         XPropagationGraph propagationGraph;
         bool propagationGraphOk;
-        int nonTemporaryRulesSize;
         XNullsetTable predNullsets;
         bool predNullsetsOk;
         // For each null, this map stores the rule where it has been introduced.

@@ -57,7 +57,6 @@ XProgram::XProgram():
         queryRulesOk(false),
         propagationGraph(*this),
         propagationGraphOk(false),
-        nonTemporaryRulesSize(-1),
         predNullsets(*this),
         predNullsetsOk(false),
         nullIndex2RuleIterator()
@@ -77,7 +76,6 @@ XProgram::XProgram(
         queryRulesOk(program.queryRulesOk),
         propagationGraph(program.propagationGraph),
         propagationGraphOk(program.propagationGraphOk),
-        nonTemporaryRulesSize(program.nonTemporaryRulesSize),
         predNullsets(program.predNullsets),
         predNullsetsOk(program.predNullsetsOk),
         nullIndex2RuleIterator(program.nullIndex2RuleIterator)
@@ -297,47 +295,6 @@ XProgram::addRule(
             hasDisjunction = true;
         else if( r.hasConjunctiveHead() )
             hasConjunction = true;
-    }
-}
-
-XProgram::const_iterator
-XProgram::addTemporaryRule(
-    const XRule& r )
-{
-    trace_msg( rewriting, 3, "Adding temporary rule: " << r );
-    if( nonTemporaryRulesSize == -1 )
-    {
-        trace_msg( rewriting, 3, "Old rules size was " << rules.size() );
-        nonTemporaryRulesSize = rules.size();
-    }
-
-    // First of all, check its safety!!!
-    try
-    {
-        checkSafety(r);
-    }
-    catch( XSafetyException& exc )
-    {
-        ErrorMessage::errorDuringParsing(exc.what());
-    }
-    assert_msg( !(r.hasAtomicHead() && r.getBody() == NULL && r.isGround()), "Temporary facts not allowed" );
-    const_iterator rIt = rules.insert(rules.end(),r);
-    trace_msg( rewriting, 3, "New rules size is: " << rules.size() );
-    return rIt;
-}
-
-void
-XProgram::eraseTemporaryRules()
-{
-    // How many rules are to be erased?
-    if( nonTemporaryRulesSize != -1 )
-    {
-        unsigned rulesToBeErased = rules.size()-nonTemporaryRulesSize;
-        trace_msg( rewriting, 3, "Erasing temporary rules, rules size = " << rules.size()
-                << ", rulesToBeErased = " << rulesToBeErased );
-        for( unsigned i=0; i<rulesToBeErased; i++ )
-            rules.pop_back();
-        nonTemporaryRulesSize = -1;
     }
 }
 

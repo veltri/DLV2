@@ -50,8 +50,6 @@ XRewrite::XRewrite(
         canonicalRuleHashCodesCache(),
         reachabilityCache(),
         homomorphismCache(input),
-//        predicateNewQueryHeadAtom(0),
-//        predicateOldQueryHeadAtom(0),
         rewritingDuration(0),
         rewritingSize(0),
         unifierAggregationDuration(0),
@@ -90,11 +88,12 @@ XRewrite::rewrite()
             {
                 trace_msg( rewriting, 2, "Computing single-piece unifiers between " <<
                         *finalRewriting[i] << " and " << *itRule );
+                std::list< XRule > tmpRules4AggrUnifiers;
                 // NOTICE: This function is responsible for the deallocation of the following pointers.
                 vector< XPieceUnifier* > SPU = computeSPU(*finalRewriting[i],*itRule);
                 // Extend SPU by computing the set of all single-piece aggregators of the
                 // input query with the starting set of TGDs.
-                computeSPUAggregators(SPU);
+                computeSPUAggregators(SPU,tmpRules4AggrUnifiers);
                 // Now, apply SPUs in order to produce new rewriting rules.
                 for( unsigned x=0; x<SPU.size(); x++ )
                 {
@@ -103,8 +102,6 @@ XRewrite::rewrite()
                     pushRewriting(rewrittenRule,finalRewriting);
                     delete SPU[x];
                 }
-                // Delete the aggregated rules added to the program in order to compute the aggregated single piece unifiers.
-                inputProgram.eraseTemporaryRules();
             }
         }
         currentSize = finalRewriting.size();
@@ -498,7 +495,8 @@ XRewrite::Extend(
  */
 void
 XRewrite::computeSPUAggregators(
-    vector< XPieceUnifier* >& SPU )
+    vector< XPieceUnifier* >& SPU,
+    list< XRule >& aggrRules )
 {
     auto sAggreTime = std::chrono::high_resolution_clock::now();
     trace_msg( rewriting, 2, "Aggregating single-piece unifiers from SPU" );
@@ -511,7 +509,7 @@ XRewrite::computeSPUAggregators(
     {
         for( size_t j=i+1; j<originalSPUSize; j++ )
         {
-            pair< XPieceUnifier*, bool > resAggregation = aggregatePieceUnifier(*SPU[i],*SPU[j]);
+            pair< XPieceUnifier*, bool > resAggregation = aggregatePieceUnifier(*SPU[i],*SPU[j],aggrRules);
             if( resAggregation.second )
             {
                 assert_msg( resAggregation.first != NULL, "Null aggregator" );
@@ -528,7 +526,7 @@ XRewrite::computeSPUAggregators(
         {
             for( size_t j=oldSize; j<currentSize; j++ )
             {
-                pair< XPieceUnifier*, bool > resAggregation = aggregatePieceUnifier(*SPU[i],*SPU[j]);
+                pair< XPieceUnifier*, bool > resAggregation = aggregatePieceUnifier(*SPU[i],*SPU[j],aggrRules);
                 if( resAggregation.second )
                 {
                     assert_msg( resAggregation.first != NULL, "Null aggregator" );
@@ -567,7 +565,8 @@ XRewrite::computeSPUAggregators(
 pair< XPieceUnifier*, bool >
 XRewrite::aggregatePieceUnifier(
     const XPieceUnifier& piece1,
-    const XPieceUnifier& piece2 )
+    const XPieceUnifier& piece2,
+    list< XRule >& aggrRules )
 {
     trace_msg( rewriting, 3, "Aggregating " << piece1 << " and " << piece2 );
     XPieceUnifier* aggregatedPieceUnifier = NULL;
@@ -583,9 +582,8 @@ XRewrite::aggregatePieceUnifier(
         {
             trace_msg( rewriting, 3, "Ok, they can be aggregated!" );
             XRule* aggregatedRule = createAggregatedRule(piece1.getRule(),piece2.getRule(),*renaming);
-            XProgram::const_iterator itAggregatedRule = inputProgram.addTemporaryRule(*aggregatedRule);
-            const XRule& aggregatedRuleRef = *itAggregatedRule;
             trace_msg( rewriting, 3, "The aggregated rule is " << *aggregatedRule );
+            aggrRules.push_back(*aggregatedRule);
             delete aggregatedRule;
             // Create the aggregated piece unifier.
             vector< XAtom > aggregatedSubQuery;
@@ -621,7 +619,7 @@ XRewrite::aggregatePieceUnifier(
                     aggregatedSubHead,
                     joinPartition,
                     piece1.getQuery(),
-                    aggregatedRuleRef,
+                    aggrRules.back(),
                     aggregatedSubQueryAtomPos);
 
             trace_msg( rewriting, 3, "The aggregated piece-unifier is: " << *aggregatedPieceUnifier );
@@ -645,6 +643,7 @@ XRewrite::renameInputRuleOf(
     const XHead* head = ruleToBeRenamed.getHead();
     assert_msg( head != NULL, "Null head" );
     for( unsigned i=0; i<head->size(); i++ )
+    {
         for( unsigned j=0; j<head->at(i).getTerms().size(); j++ )
             if( head->at(i).getTerms().at(j).isStandardVar() )
             {
@@ -659,7 +658,7 @@ XRewrite::renameInputRuleOf(
                     delete renamedTerm;
                 }
             }
-
+    }
     const XBody* body = ruleToBeRenamed.getBody();
     assert_msg( body != NULL, "Null body" );
     for( unsigned i=0; i<body->size(); i++ )
@@ -689,8 +688,10 @@ XRewrite::createAggregatedRule(
 {
     const XHead* headRuleA = ruleA.getHead();
     assert_msg( headRuleA != NULL, "Null head" );
+    assert_msg( !headRuleA->isDisjunctive(), "Disjunctive heads are not allowed" );
     const XHead* headRuleB = ruleB.getHead();
     assert_msg( headRuleB != NULL, "Null head" );
+    assert_msg( !headRuleB->isDisjunctive(), "Disjunctive heads are not allowed" );
     const XBody* bodyRuleA = ruleA.getBody();
     assert_msg( bodyRuleA != NULL, "Null body" );
     const XBody* bodyRuleB = ruleB.getBody();
