@@ -57,7 +57,7 @@ CXX = $(GCC)
 CXXFLAGS = $(cxxflags.$(BUILD))
 LINK = $(GCC)
 LINKFLAGS = $(linkflags.$(BUILD))
-LIBS = -lodbc
+LIBS = -lodbc -pthread
 
 SRCS = $(shell find $(SOURCE_DIR) -name '*.cpp')
 

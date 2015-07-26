@@ -36,6 +36,7 @@ namespace DLV2{ namespace REWRITERS{
     class XParallelRulesetNonSub : public XParallelRuleset {
     public:
         XParallelRulesetNonSub( const XProgram& inputProgram ): XParallelRuleset(inputProgram), iterators(), it(inputProgram.beginRules()) { }
+        XParallelRulesetNonSub( const XParallelRulesetNonSub& ruleset ): XParallelRuleset(ruleset.program), iterators(ruleset.iterators), it(ruleset.it) { }
         virtual ~XParallelRulesetNonSub() { }
 
         virtual void dontShow( XProgram::const_iterator it ) { assert_msg( it != program.endRules(), "Iterator not valid" ); iterators.insert(it); }

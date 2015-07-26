@@ -44,7 +44,15 @@ namespace DLV2{ namespace REWRITERS{
         void rewriteQueries( const std::vector< XRule* >& queries, XParallelRuleset* rulesetIterator, std::vector< XRule* >& output );
         void rewriteAtomicQuery( const XRule& query, XParallelRuleset* rulesetIterator, std::vector< XRule* >& output );
         void rewriteConjunctiveQuery( const XRule& query, XParallelRuleset* rulesetIterator, std::vector< XRule* >& output );
-        bool isBreakable( const XRule& query ) const;
+        void checkExistentialJoins(
+                const XRule& query,
+                unsigned currentLiteralPos,
+                XRandomAccessSet< unsigned >& subQueryAtomPositions,
+                XRandomAccessSet< index_t >& sharedNulls ) const;
+        XRule* generateSubQuery(
+                const XRule& query,
+                const XRandomAccessSet< unsigned >& subQueryAtomPositions,
+                std::vector< XLiteral >& mergeQueryBodyLiterals );
 
         unsigned queryPredIdx;
     };

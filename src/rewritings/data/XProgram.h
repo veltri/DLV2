@@ -130,7 +130,7 @@ namespace DLV2{ namespace REWRITERS{
         size_t queryRulesSize() const { return queryRules.size(); }
         const XPropagationGraph& getPropagationGraph() const { return propagationGraph; }
         const std::string& getPropagationGraphAsString() { return propagationGraph.toString(); }
-        const XNullsetTable& getPredicateNullsets() const { return predNullsets; }
+        const XNullsetTable& getPredicateNullsets() const { assert_msg( predNullsetsOk, "Predicate null-sets non computed" ); return predNullsets; }
         const_iterator getRuleIntroducingNullIdx( index_t nullIdx ) const;
 
     private:

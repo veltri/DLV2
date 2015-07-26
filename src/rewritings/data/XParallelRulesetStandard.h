@@ -36,6 +36,7 @@ namespace DLV2{ namespace REWRITERS{
     class XParallelRulesetStandard : public XParallelRuleset {
     public:
         XParallelRulesetStandard( const XProgram& inputProgram ): XParallelRuleset(inputProgram), it(inputProgram.beginRules()) { }
+        XParallelRulesetStandard( const XParallelRulesetStandard& ruleset ): XParallelRuleset(ruleset.program), it(ruleset.it) { }
         virtual ~XParallelRulesetStandard() { }
 
         virtual bool hasNext() { return it != program.endRules(); }
