@@ -114,7 +114,7 @@ void InMemoryInputBuilder::onHeadAtom() {
 	currentRule->addInHead(currentAtom);
 	if(currentAtom->containsAnonymous()){
 		currentAtom->print();cout<<" ";
-		assert_msg(false, "ATOM IS UNSAFE");
+		safetyError(false, "ATOM IS UNSAFE");
 	}
 	currentAtom= nullptr;
 }
@@ -134,7 +134,7 @@ void InMemoryInputBuilder::onNafLiteral(bool naf) {
 	currentAtom->setNegative(naf);
 	if(naf && currentAtom->containsAnonymous()){
 		currentAtom->print();cout<<" ";
-		assert_msg(false, "ATOM IS UNSAFE");
+		safetyError(false, "ATOM IS UNSAFE");
 	}
 }
 
