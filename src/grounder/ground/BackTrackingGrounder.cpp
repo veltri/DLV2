@@ -16,10 +16,6 @@
 namespace DLV2 {
 namespace grounder {
 
-
-/// If the firstMatch on table has not been called
-#define NO_MATCH -1
-
 void BackTrackingGrounder::generateTemplateAtom(){
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("Generate Template");

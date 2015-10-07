@@ -13,6 +13,8 @@
 namespace DLV2 {
 namespace grounder {
 
+/// If the firstMatch on table has not been called
+#define NO_MATCH -1
 /*
  *  Simple backtrack algorithm to ground a rule
  */
@@ -35,12 +37,12 @@ protected:
 
 	/// Generate the template atom of current atom (substitute at the current atom the current assignment)
 	virtual void generateTemplateAtom();
-	/// Remove the variable in the current assignment wich are in bind_variables
+	/// Remove the variable in the current assignment which are in bind_variables
 	virtual void removeBindValueInAssignment(const set_term& bind_variables);
 	/// Call the first match with the current atom
-	inline virtual bool firstMatch();
+	virtual bool firstMatch();
 	/// Call the next match with the current atom
-	inline virtual bool nextMatch();
+	virtual bool nextMatch();
 	/// Return true if is ground the current atom
 	virtual bool isGroundCurrentAtom();
 
@@ -61,7 +63,6 @@ protected:
 		ground_rule->setAtomInBody(position,new_atom);
 	}
 
-private:
 	/// Current assignment for grounding rule
 	/// The map of the assignment, map each variables to its assigned value
 	map_term_term current_var_assign;

@@ -31,6 +31,7 @@
 #include "dlvdb_src/DLVDBFacade.h"
 #include "input/InMemoryInputBuilder.h"
 #include "grounder/ground/BackTrackingGrounder.h"
+#include "grounder/ground/BackJumpingGrounder.h"
 
 //extern Buffer theBuffer;
 
@@ -198,7 +199,9 @@ DLV2Facade::solve()
     if( getOptions().getInputBuilderPolicy() == BUILDER_IN_MEMORY )
     {
 
-    	DLV2::grounder::ProgramGrounder *grounder= new DLV2::grounder::BackTrackingGrounder();
+//    	DLV2::grounder::ProgramGrounder *grounder= new DLV2::grounder::BackTrackingGrounder();
+    	DLV2::grounder::ProgramGrounder *grounder= new DLV2::grounder::BackJumpingGrounder();
+
     	grounder->ground();
     	delete grounder;
 
