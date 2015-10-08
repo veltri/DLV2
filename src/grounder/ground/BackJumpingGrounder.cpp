@@ -40,6 +40,8 @@ bool BackJumpingGrounder::back() {
 				current_id_match[i][j].second=NO_MATCH;
 			}
 			current_id_match_iterator[i]=0;
+			if(currentRule->getAtomInBody(i)->isAggregateAtom())
+				substiteInGroundRule(i,nullptr);
 		}
 	}
 
@@ -60,11 +62,6 @@ bool BackJumpingGrounder::firstMatch() {
 
 bool BackJumpingGrounder::nextMatch() {
 	current_status=NEXT_MATCH;
-//	bool result= BackTrackingGrounder::nextMatch();
-//	if(!result && index_current_atom==currentRule->getSizeBody()-1){
-//		current_status=SUCCESSFULL;
-//		back();
-//	}
 	return BackTrackingGrounder::nextMatch();
 }
 
@@ -115,7 +112,7 @@ void BackJumpingGrounder::closestBinder(vector<Atom*>::iterator literal_it, int 
 	}
 	for(;i>=0;i--,iteratorCB--){
 		Atom* atom=currentRule->getAtomInBody(i);
-		if(!is_ground_atom[i] && atom->isClassicalLiteral()){
+		if(!is_ground_atom[i]){
 			if(variables.size()==0){
 				positionCB=i;
 				break;
@@ -210,7 +207,7 @@ void BackJumpingGrounder::backFromNextMatch() {
 	if(index_current_atom==closestSuccessfulBinder_index){
 		closestBinder(current_atom_it,index_current_atom,outputVariables,closestSuccessfulBinder_index,closestSuccessfulBinder_it,false);
 	}
-
+//
 //	cout<<"CSB "<<closestSuccessfulBinder_index<<endl;
 //	cout<<"CS "<<closestBinder_pos<<endl;
 //	cout<<"CURRENT ATOM "<<index_current_atom<<endl;
