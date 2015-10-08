@@ -157,6 +157,8 @@ public:
 
 	void deleteGroundRule();
 
+	void setUnsolvedPredicates();
+
 private:
 
 	/// Return the predicate in atoms vector, if checkNegative is true compare the negative of atom with the parameter

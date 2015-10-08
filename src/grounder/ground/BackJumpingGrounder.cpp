@@ -85,6 +85,13 @@ void BackJumpingGrounder::inizialize(Rule* rule) {
 		set_term variables=atom->getVariable();
 		outputVariables.insert(variables.begin(),variables.end());
 	}
+	for (unsigned i = 0; i < currentRule->getSizeBody(); ++i) {
+		Atom* atom=currentRule->getAtomInBody(i);
+		if(!atom->isNegative() && atom->isClassicalLiteral() && !atom->getPredicate()->isSolved()){
+			set_term variables=atom->getVariable();
+			outputVariables.insert(variables.begin(),variables.end());
+		}
+	}
 
 //	for (int i = 0; i < rule->getSizeBody(); ++i) {
 //		set_term dep=dependencySets[i];
@@ -93,7 +100,7 @@ void BackJumpingGrounder::inizialize(Rule* rule) {
 //		}
 //		cout<<endl;
 //	}
-//
+
 //	set_term var=currentRule->getAtomInHead(0)->getVariable();
 //	cout<<closestBinder(2,var)<<endl;
 }
@@ -138,33 +145,59 @@ void BackJumpingGrounder::computeDependencySets() {
 }
 
 void BackJumpingGrounder::backFromSolutionFound() {
+//	cout<<"---> BACK SOLUTION FOUND"<<endl;
 	current_status=NEXT_MATCH;
-	closestBinder(current_atom_it,index_current_atom,outputVariables,closestSuccessfulBinder_index,closestSuccessfulBinder_it,true);
-	current_atom_it=closestSuccessfulBinder_it;
-	index_current_atom=closestSuccessfulBinder_index;
+
+	vector<Atom*>::iterator closestBinder_it;
+	int closestBinder_pos;
+	closestBinder(current_atom_it,index_current_atom,outputVariables,closestBinder_pos,closestBinder_it,true);
+
+	current_atom_it=closestBinder_it;
+	index_current_atom=closestBinder_pos;
+	closestBinder(current_atom_it,index_current_atom,outputVariables,closestSuccessfulBinder_index,closestSuccessfulBinder_it,false);
+
+//	cout<<"CSB "<<closestSuccessfulBinder_index<<endl;
+//	cout<<"CURRENT ATOM "<<index_current_atom<<endl;
 }
 
 void BackJumpingGrounder::backFromFirstMatch() {
+//	cout<<"---> BACK FIRST MATCH"<<endl;
+
 	vector<Atom*>::iterator closestBinder_it;
 	int closestBinder_pos;
 	set_term variables=(*current_atom_it)->getVariable();
 	closestBinder(current_atom_it,index_current_atom,variables,closestBinder_pos,closestBinder_it,false);
-	if(closestBinder_pos<closestSuccessfulBinder_index){
-		closestSuccessfulBinder_index=closestBinder_pos;
-		closestSuccessfulBinder_it=closestBinder_it;
-	}
+
 	current_atom_it=closestBinder_it;
 	index_current_atom=closestBinder_pos;
+
+//	cout<<"CSB "<<closestSuccessfulBinder_index<<endl;
+//	cout<<"CS "<<closestBinder_pos<<endl;
+//	cout<<"CURRENT ATOM "<<index_current_atom<<endl;
+}
+
+bool BackJumpingGrounder::match() {
+	bool result = BackTrackingGrounder::match();
+	if(!result){
+		set_term vars=(*current_atom_it)->getVariable();
+		failureSet.insert(vars.begin(),vars.end());
+	}
+	else{
+		set_term bindVars=current_variables_atoms[index_current_atom];
+		for(auto var: bindVars){
+			failureSet.erase(var);
+		}
+	}
+	return result;
 }
 
 void BackJumpingGrounder::backFromNextMatch() {
-	if(closestSuccessfulBinder_index==index_current_atom)
-		closestBinder(current_atom_it,index_current_atom,outputVariables,closestSuccessfulBinder_index,closestSuccessfulBinder_it,false);
+//	cout<<"---> BACK NEXT MATCH"<<endl;
 
 	vector<Atom*>::iterator closestBinder_it;
 	int closestBinder_pos;
-	set_term variables=dependencySets[index_current_atom];
-	closestBinder(current_atom_it,index_current_atom,variables,closestBinder_pos,closestBinder_it,false);
+	closestBinder(current_atom_it,index_current_atom,failureSet,closestBinder_pos,closestBinder_it,false);
+
 	if(closestSuccessfulBinder_it>closestBinder_it){
 		current_atom_it=closestSuccessfulBinder_it;
 		index_current_atom=closestSuccessfulBinder_index;
@@ -173,6 +206,14 @@ void BackJumpingGrounder::backFromNextMatch() {
 		current_atom_it=closestBinder_it;
 		index_current_atom=closestBinder_pos;
 	}
+
+	if(index_current_atom==closestSuccessfulBinder_index){
+		closestBinder(current_atom_it,index_current_atom,outputVariables,closestSuccessfulBinder_index,closestSuccessfulBinder_it,false);
+	}
+
+//	cout<<"CSB "<<closestSuccessfulBinder_index<<endl;
+//	cout<<"CS "<<closestBinder_pos<<endl;
+//	cout<<"CURRENT ATOM "<<index_current_atom<<endl;
 }
 
 } /* namespace grounder */

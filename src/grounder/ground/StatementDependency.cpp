@@ -310,7 +310,10 @@ void DependencyGraph::calculateUnstritifiedPredicate(unordered_set<index_object>
 		index_object p1 = stratifiedGraph[index[source(*ei, stratifiedGraph)]].pred_id;
 		index_object p2 = stratifiedGraph[index[target(*ei, stratifiedGraph)]].pred_id;
 
-		if(p1==p2 && weightmap[*ei]<0){predicateUnstratified.insert(p1);}
+		if(p1==p2 && weightmap[*ei]<0){
+			predicateUnstratified.insert(p1);
+			PredicateExtTable::getInstance()->getPredicateExt(p1)->getPredicate()->setSolved(false);
+		}
 	}
 
 	std::unordered_set<unsigned int> component_processed;
@@ -327,7 +330,10 @@ void DependencyGraph::calculateUnstritifiedPredicate(unordered_set<index_object>
 						if(stratifiedGraph[i].pred_id==p1 && component_indices_weight[i]==component_indices_weight[i2] && weightmap[*ei]<0){
 							component_processed.insert(component_indices_weight[i]);
 							for (unsigned int k = 0; k < component_indices_weight.size(); k++)
-								if(component_indices_weight[k]==component_indices_weight[i])predicateUnstratified.insert(stratifiedGraph[k].pred_id);
+								if(component_indices_weight[k]==component_indices_weight[i]){
+									predicateUnstratified.insert(stratifiedGraph[k].pred_id);
+									PredicateExtTable::getInstance()->getPredicateExt(stratifiedGraph[k].pred_id)->getPredicate()->setSolved(false);
+								}
 							next=true;
 						}
 					}

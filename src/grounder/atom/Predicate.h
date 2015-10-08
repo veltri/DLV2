@@ -31,14 +31,14 @@ public:
 	 * @param name set the name of the predicate
 	 * @param arity set the arity of the predicate
 	 */
-	Predicate(string& name, unsigned int arity) : Indexable(), arity(arity), name(name), edb(true), hiddenForPrinting(false) {};
+	Predicate(string& name, unsigned int arity) : Indexable(), arity(arity), name(name), edb(true), hiddenForPrinting(false), solved(true) {};
 
 	/** Constructor
 	 * @param name set the name of the predicate
 	 * @param arity set the arity of the predicate
 	 * @param edbIdb set whether the the predicate is an EDB or not
 	 */
-	Predicate(string& name, unsigned int arity, bool edbIdb) : Indexable(), arity(arity), name(name), edb(edbIdb), hiddenForPrinting(false) {};
+	Predicate(string& name, unsigned int arity, bool edbIdb) : Indexable(), arity(arity), name(name), edb(edbIdb), hiddenForPrinting(false), solved(true)  {};
 
 	///Getter method for the arity
 	unsigned int getArity() const {return arity;}
@@ -71,6 +71,9 @@ public:
 
 	~Predicate() {}
 
+	bool isSolved() const {	return solved;}
+	void setSolved(bool solved) { this->solved = solved; }
+
 private:
 	///Arity
 	unsigned int arity;
@@ -80,6 +83,10 @@ private:
 	bool edb;
 	///Whether the predicate is hidden from printing
 	bool hiddenForPrinting;
+	///Whether the predicate is solved (not undefined)
+	bool solved;
+
+
 };
 
 

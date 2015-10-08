@@ -497,6 +497,7 @@ void InMemoryInputBuilder::manageSimpleRule(Rule* rule) {
 	bool isSafe = orderRule.order();
 	safetyError(isSafe,"RULE IS UNSAFE");
 	statementDependency->addRuleMapping(rule);
+	rule->setUnsolvedPredicates();
 }
 
 void InMemoryInputBuilder::addRule(Rule* rule) {

@@ -23,6 +23,7 @@ public:
 
 protected:
 
+	virtual bool match();
 	virtual bool back();
 	virtual void inizialize(Rule* rule);
 	virtual bool foundAssignment();
@@ -65,7 +66,8 @@ private:
 	Status current_status;
 	/// The set of variables appearing in the head of the current rule
 	set_term outputVariables;
-
+	/// Set containing variables that give failure
+	set_term failureSet;
 };
 
 } /* namespace grounder */

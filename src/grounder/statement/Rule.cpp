@@ -156,7 +156,20 @@ void Rule::deleteGroundRule(){
 	delete this;
 }
 
+void Rule::setUnsolvedPredicates() {
+	if(isChoiceRule()){
+		Atom* choiceAtom=head[0];
+		for(unsigned i=0;i<choiceAtom->getChoiceElementsSize();++i)
+			choiceAtom->getChoiceElement(i)->getFirstAtom()->getPredicate()->setSolved(false);
+	}
+	if(head.size()>1){
+		for(auto atom:head)
+			atom->getPredicate()->setSolved(false);
+	}
+}
 
-}}
+
+}
+}
 
 
