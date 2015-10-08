@@ -289,8 +289,12 @@ bool ProgramGrounder::groundRule(Rule* rule) {
 
 		if(match()){
 			if(!next()) {
-				do{if(foundAssignment())find_assignment=true;}while(match());
-				if(!back())finish=true;
+
+				if(foundAssignment()){
+					find_assignment=true;
+				}
+				if(!back())
+					finish=true;
 			}
 		}else if(!back())
 			finish=true;

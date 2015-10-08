@@ -25,7 +25,7 @@ protected:
 
 	virtual bool back();
 	virtual void inizialize(Rule* rule);
-//	virtual bool foundAssignment();
+	virtual bool foundAssignment();
 
 	/// Call the first match with the current atom
 	virtual bool firstMatch();
@@ -34,7 +34,7 @@ protected:
 
 	/// Given a literal and a set of variables
 	/// computes the closest binder to that literal for that variables
-	void closestBinder(vector<Atom*>::iterator literal_it, unsigned literal_pos, set_term& variables,unsigned& positionCB,vector<Atom*>::iterator& iteratorCB);
+	void closestBinder(vector<Atom*>::iterator literal_it, int literal_pos, set_term& variables,int& positionCB,vector<Atom*>::iterator& iteratorCB, bool includeCurrentLiteral);
 	/// For each literal in the rule compute its dependency set:
 	/// the set of variables that depend on the instantiation of that literal
 	void computeDependencySets();
@@ -60,7 +60,7 @@ private:
 	/// An iterator pointing to the current CSB
 	vector<Atom*>::iterator closestSuccessfulBinder_it;
 	/// The position of the current CSB
-	unsigned closestSuccessfulBinder_index;
+	int closestSuccessfulBinder_index;
 	/// The current status of the procedure (can be SUCCESSFUL, FIRST_MATCH, NEXT_MATCH)
 	Status current_status;
 	/// The set of variables appearing in the head of the current rule
