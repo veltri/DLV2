@@ -85,12 +85,25 @@ void BackJumpingGrounder::inizialize(Rule* rule) {
 	}
 	for (unsigned i = 0; i < currentRule->getSizeBody(); ++i) {
 		Atom* atom=currentRule->getAtomInBody(i);
-		if(!atom->isNegative() && atom->isClassicalLiteral() && !atom->getPredicate()->isSolved()){
+		if(atom->isClassicalLiteral() && !atom->getPredicate()->isSolved()){
 			set_term variables=atom->getVariable();
 			outputVariables.insert(variables.begin(),variables.end());
 		}
+		else if(atom->isAggregateAtom()){ //&& atom->isAssignment()
+			set_term variables;
+			atom->getUnsolvedPredicateVariable(variables);
+			outputVariables.insert(variables.begin(),variables.end());
+			if(!variables.empty()){
+				set_term guards=atom->getGuardVariable();
+				outputVariables.insert(guards.begin(),guards.end());
+			}
+		}
 	}
 
+//		for(auto var: outputVariables){
+//			var->print();
+//		}
+//		cout<<endl;
 //	for (int i = 0; i < rule->getSizeBody(); ++i) {
 //		set_term dep=dependencySets[i];
 //		for(auto term: dep){
@@ -114,10 +127,10 @@ void BackJumpingGrounder::closestBinder(vector<Atom*>::iterator literal_it, int 
 	for(;i>=0;i--,iteratorCB--){
 		Atom* atom=currentRule->getAtomInBody(i);
 		if(!is_ground_atom[i] || (atom->isBuiltIn() && atom->isAssignment())){
-			if(variables.size()==0){
-				positionCB=i;
-				break;
-			}
+//			if(variables.size()==0){
+//				positionCB=i;
+//				break;
+//			}
 			set_term literal_variables=atom->getVariable();
 			if(!Utils::isDisjoint(literal_variables,variables)){
 				positionCB=i;

@@ -85,6 +85,9 @@ public:
 	///Add a given atom in specified table
 	bool addAtom(unsigned table, Atom* genericAtom, bool search = false){
 		assert_msg(table<tables.size(),"The specified table doesn't exist.");
+		if(!genericAtom->isFact()){
+			predicate->setSolved(false);
+		}
 		if(search){
 			AtomSearcher *atomSearcher=getAtomSearcher(table);
 			if((atomSearcher->findAtom(genericAtom))!=nullptr)

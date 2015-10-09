@@ -185,6 +185,8 @@ public:
 
 	set_term getSharedVariable(vector<Atom*>::iterator begin,vector<Atom*>::iterator end,bool alsoGuards);
 
+	virtual void getUnsolvedPredicateVariable(set_term& vars);
+
 	//Copy the guard of the atom
 	virtual void copyGuard(Atom *atom);
 

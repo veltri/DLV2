@@ -97,6 +97,16 @@ bool AggregateElement::isAllAggregateTermShared(set_term& shared_variable)const{
 	return true;
 }
 
+void AggregateElement::getUnsolvedPredicateVariable(set_term& vars) {
+	for(auto atom:nafLiterals){
+		if(atom->isClassicalLiteral() && !atom->getPredicate()->isSolved()){
+			set_term variables=atom->getVariable();
+			vars.insert(variables.begin(),variables.end());
+		}
+	}
+}
+
 }
 }
+
 

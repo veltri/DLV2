@@ -230,6 +230,9 @@ public:
 	/// - else the first binop is LESS_EQUAL and the second LESS
 	virtual void changeInStandardFormat(){};
 
+	///Get variables of unsolved predicates appearing in the aggregate
+	virtual void getUnsolvedPredicateVariable(set_term& vars){};
+
 	/*****************************************************/
 
 	/******** Methods useful for Choice ********/

@@ -76,6 +76,8 @@ class AggregateElement {
 
 		bool operator==(const AggregateElement& element)const;
 
+		void getUnsolvedPredicateVariable(set_term& vars);
+
 	private:
 		///Vector of terms
 		vector<Term*> terms;

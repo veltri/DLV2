@@ -792,6 +792,11 @@ bool AggregateAtom::checkAggregateAllAggTermShared(vector<Atom*>::iterator begin
 	return returnValue;
 }
 
+void AggregateAtom::getUnsolvedPredicateVariable(set_term& vars) {
+	for(auto element:aggregateElements){
+		element->getUnsolvedPredicateVariable(vars);
+	}
+}
 
 }
 }
