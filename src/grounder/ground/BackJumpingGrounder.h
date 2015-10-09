@@ -36,9 +36,10 @@ protected:
 	/// Given a literal and a set of variables
 	/// computes the closest binder to that literal for that variables
 	void closestBinder(vector<Atom*>::iterator literal_it, int literal_pos, set_term& variables,int& positionCB,vector<Atom*>::iterator& iteratorCB, bool includeCurrentLiteral);
-	/// For each literal in the rule compute its dependency set:
-	/// the set of variables that depend on the instantiation of that literal
-	void computeDependencySets();
+
+//	/// For each literal in the rule compute its dependency set:
+//	/// the set of variables that depend on the instantiation of that literal
+//	void computeDependencySets();
 
 	/// A total substitution is found, so we can jump
 	/// to the closest literal binding a variable in head
@@ -55,9 +56,9 @@ protected:
 	void backFromNextMatch();
 
 private:
-	/// For each literal in the body stores the dependency set
-	/// (that is the set of variables that depend on the instantiation of that literal)
-	vector<set_term> dependencySets;
+//	/// For each literal in the body stores the dependency set
+//	/// (that is the set of variables that depend on the instantiation of that literal)
+//	vector<set_term> dependencySets;
 	/// An iterator pointing to the current CSB
 	vector<Atom*>::iterator closestSuccessfulBinder_it;
 	/// The position of the current CSB

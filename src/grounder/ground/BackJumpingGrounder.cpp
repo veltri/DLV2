@@ -13,6 +13,7 @@ namespace grounder {
 
 bool BackJumpingGrounder::back() {
 
+	direction=0;
 	callFoundAssignment = false;
 	if (index_current_atom <  0)
 		return false;
@@ -73,8 +74,8 @@ void BackJumpingGrounder::inizialize(Rule* rule) {
 	closestSuccessfulBinder_index=0;
 	current_status=SUCCESSFULL;
 
-	dependencySets.clear();
-	computeDependencySets();
+//	dependencySets.clear();
+//	computeDependencySets();
 
 	outputVariables.clear();
 	for (unsigned i = 0; i < currentRule->getSizeHead(); ++i) {
@@ -112,7 +113,7 @@ void BackJumpingGrounder::closestBinder(vector<Atom*>::iterator literal_it, int 
 	}
 	for(;i>=0;i--,iteratorCB--){
 		Atom* atom=currentRule->getAtomInBody(i);
-		if(!is_ground_atom[i]){
+		if(!is_ground_atom[i] || (atom->isBuiltIn() && atom->isAssignment())){
 			if(variables.size()==0){
 				positionCB=i;
 				break;
@@ -127,19 +128,19 @@ void BackJumpingGrounder::closestBinder(vector<Atom*>::iterator literal_it, int 
 	}
 }
 
-void BackJumpingGrounder::computeDependencySets() {
-	for (unsigned i = 0; i < currentRule->getSizeBody(); ++i) {
-		Atom* atom=currentRule->getAtomInBody(i);
-		set_term dependencySet=atom->getVariable();
-		for (unsigned j = i+1; j < currentRule->getSizeBody(); ++j) {
-			Atom* atom2=currentRule->getAtomInBody(j);
-			set_term atom_variables=atom2->getVariable();
-			if(!Utils::isDisjoint(atom_variables,dependencySet))
-				dependencySet.insert(atom_variables.begin(),atom_variables.end());
-		}
-		dependencySets.push_back(dependencySet);
-	}
-}
+//void BackJumpingGrounder::computeDependencySets() {
+//	for (unsigned i = 0; i < currentRule->getSizeBody(); ++i) {
+//		Atom* atom=currentRule->getAtomInBody(i);
+//		set_term dependencySet=atom->getVariable();
+//		for (unsigned j = i+1; j < currentRule->getSizeBody(); ++j) {
+//			Atom* atom2=currentRule->getAtomInBody(j);
+//			set_term atom_variables=atom2->getVariable();
+//			if(!Utils::isDisjoint(atom_variables,dependencySet))
+//				dependencySet.insert(atom_variables.begin(),atom_variables.end());
+//		}
+//		dependencySets.push_back(dependencySet);
+//	}
+//}
 
 void BackJumpingGrounder::backFromSolutionFound() {
 //	cout<<"---> BACK SOLUTION FOUND"<<endl;
@@ -159,6 +160,9 @@ void BackJumpingGrounder::backFromSolutionFound() {
 
 void BackJumpingGrounder::backFromFirstMatch() {
 //	cout<<"---> BACK FIRST MATCH"<<endl;
+//	cout<<"CURRENT ATOM "<<index_current_atom<<endl;
+//	(*current_atom_it)->print();
+//	ground_rule->getAtomInBody(index_current_atom)->print();
 
 	vector<Atom*>::iterator closestBinder_it;
 	int closestBinder_pos;
@@ -168,13 +172,24 @@ void BackJumpingGrounder::backFromFirstMatch() {
 	current_atom_it=closestBinder_it;
 	index_current_atom=closestBinder_pos;
 
+//	for(auto var: failureSet){
+//		var->print();
+//	}
+//	cout<<endl;
+//
 //	cout<<"CSB "<<closestSuccessfulBinder_index<<endl;
-//	cout<<"CS "<<closestBinder_pos<<endl;
+//	cout<<"CB "<<closestBinder_pos<<endl;
 //	cout<<"CURRENT ATOM "<<index_current_atom<<endl;
 }
 
 bool BackJumpingGrounder::match() {
-	bool result = BackTrackingGrounder::match();
+	bool result = true;
+	if((*current_atom_it)->isBuiltIn() && (*current_atom_it)->isAssignment() && !direction )
+		result = false;
+
+	if(result)
+		result = BackTrackingGrounder::match();
+
 	if(!result){
 		set_term vars=(*current_atom_it)->getVariable();
 		failureSet.insert(vars.begin(),vars.end());
@@ -185,6 +200,7 @@ bool BackJumpingGrounder::match() {
 			failureSet.erase(var);
 		}
 	}
+
 	return result;
 }
 
@@ -207,9 +223,9 @@ void BackJumpingGrounder::backFromNextMatch() {
 	if(index_current_atom==closestSuccessfulBinder_index){
 		closestBinder(current_atom_it,index_current_atom,outputVariables,closestSuccessfulBinder_index,closestSuccessfulBinder_it,false);
 	}
-//
+
 //	cout<<"CSB "<<closestSuccessfulBinder_index<<endl;
-//	cout<<"CS "<<closestBinder_pos<<endl;
+//	cout<<"CB "<<closestBinder_pos<<endl;
 //	cout<<"CURRENT ATOM "<<index_current_atom<<endl;
 }
 

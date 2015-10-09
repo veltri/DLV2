@@ -96,6 +96,9 @@ protected:
 
 	///The size is >0 if the current ground rule has at least a negative atom that an potentially be an undef atom (an atom without a valid index)
 	vector<unsigned> indicesPossibleUndef;
+
+	/// Is 1 if forward, 0 if backward
+	bool direction;
 };
 
 } /* namespace grounder */

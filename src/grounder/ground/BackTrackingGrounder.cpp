@@ -229,7 +229,7 @@ bool BackTrackingGrounder::next() {
 		Timer::getInstance()->start("Next");
 #endif
 
-
+	direction=1;
 	callFoundAssignment = false;
 	if( unsigned(index_current_atom+1)>=currentRule->getSizeBody()){
 #ifdef DEBUG_RULE_TIME
@@ -332,6 +332,7 @@ bool BackTrackingGrounder::foundAssignment() {
 
 bool BackTrackingGrounder::back() {
 
+	direction=0;
 	callFoundAssignment = false;
 	if (index_current_atom <=  0)
 		return false;
@@ -371,6 +372,7 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 #ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->start("Init");
 #endif
+	direction=1;
 	currentRule=rule;
 	current_var_assign.clear();
 	current_id_match.clear();
