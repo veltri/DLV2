@@ -109,6 +109,7 @@ PredicateExtTable *PredicateExtTable::predicateExtTable_;
 PredicateInformation::PredicateInformation(unsigned arity) : min(arity,INT_MAX), max(arity,INT_MIN) {
 	min.reserve(arity);
 	max.reserve(arity);
+	termDictionary.resize(arity);
 }
 
 bool PredicateInformation::isOnlyPositive(unsigned index) const {
@@ -149,6 +150,7 @@ void PredicateInformation::update(Atom* atom) {
 			if(t->getConstantValue()<min[i])
 				min[i]=val;
 		}
+		addInDictionary(i,t);
 	}
 }
 
@@ -160,5 +162,11 @@ int PredicateInformation::getMin(unsigned index) const {
 	return min[index];
 }
 
-}}
+void PredicateInformation::addInDictionary(unsigned position, Term* term) {
+	termDictionary[position].insert(term);
+}
+
+
+}
+}
 
