@@ -296,8 +296,11 @@ bool ProgramGrounder::groundRule(Rule* rule) {
 				if(!back())
 					finish=true;
 			}
-		}else if(!back())
-			finish=true;
+		}else
+			{
+				if(!back())
+					finish=true;
+			}
 
 	}
 #ifdef DEBUG_RULE_TIME

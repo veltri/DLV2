@@ -51,7 +51,7 @@ bool BackTrackingGrounder::match() {
 #endif
 
 	//Avoid call multiple time method match for the ground atom in the last position of the rule
-	if(isGroundCurrentAtom() && callFoundAssignment){
+	if(isGroundCurrentAtom() && !direction){
 		return false;
 	}
 
@@ -333,6 +333,11 @@ bool BackTrackingGrounder::foundAssignment() {
 bool BackTrackingGrounder::back() {
 
 	direction=0;
+	if(callFoundAssignment){
+		callFoundAssignment=false;
+		return true;
+	}
+
 	callFoundAssignment = false;
 	if (index_current_atom <=  0)
 		return false;

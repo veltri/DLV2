@@ -55,17 +55,17 @@ public:
 
 
 	///Default constructor
-	Atom():Indexable(0) {};
+	Atom():Indexable(0),calculatedVariables(false) {};
 
 	/** Constructor
 	 * @param termsVec set the terms vector
 	 */
-	Atom(vector<Term*>& termsVec) : terms(move(termsVec)) {};
+	Atom(vector<Term*>& termsVec) : terms(move(termsVec)),calculatedVariables(false) {};
 
 	/** Constructor
 	 * @param negative set whether the atom is negated with negation as failure
 	 */
-	Atom(bool negative) {this->setNegative(negative);};
+	Atom(bool negative):calculatedVariables(false) {this->setNegative(negative);};
 
 	virtual Atom* clone() = 0;
 
@@ -287,6 +287,8 @@ public:
 
 protected:
 	vector<Term*> terms;
+	set_term variables;
+	bool calculatedVariables;
 };
 
 using AtomTable = hashSet<Atom> ;
