@@ -38,6 +38,7 @@ enum TermType{
 class Term;
 
 using map_term_term = unordered_map<Term*, Term*,IndexForTable<Term>,IndexForTable<Term>>;
+using map_term_bool = unordered_map<Term*, bool,IndexForTable<Term>,IndexForTable<Term>>;
 using set_term = hashIndexSet<Term>;
 
 

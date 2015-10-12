@@ -71,11 +71,11 @@ void BackJumpingGrounder::inizialize(Rule* rule) {
 	cout<<endl<<"---> INIZIALIZE"<<endl;
 #endif
 	BackTrackingGrounder::inizialize(rule);
-
 	closestSuccessfulBinder_it=currentRule->getBeginBody();
 	closestSuccessfulBinder_index=0;
 	current_status=SUCCESSFULL;
 
+	failureMap.clear();
 	outputVariables.clear();
 	for (unsigned i = 0; i < currentRule->getSizeHead(); ++i) {
 		Atom* atom=currentRule->getAtomInHead(i);
@@ -129,6 +129,32 @@ void BackJumpingGrounder::closestBinder(vector<Atom*>::iterator literal_it, int 
 	}
 }
 
+void BackJumpingGrounder::closestBinder(vector<Atom*>::iterator literal_it, int literal_pos,int& positionCB,vector<Atom*>::iterator& iteratorCB, bool includeCurrentLiteral) {
+	iteratorCB=literal_it;
+	positionCB=-1;
+	int i=literal_pos;
+	if(!includeCurrentLiteral){
+		i--;
+		iteratorCB--;
+	}
+	bool findVariable=false;
+	for(;i>=0;i--,iteratorCB--){
+		Atom* atom=currentRule->getAtomInBody(i);
+		if(!is_ground_atom[i] || (atom->isBuiltIn() && atom->isAssignment())){
+			set_term literal_variables=atom->getVariable();
+			for(auto variableInLiteral:literal_variables){
+				if(failureMap.count(variableInLiteral) && failureMap[variableInLiteral]){
+					positionCB=i;
+					findVariable=true;
+					break;
+				}
+			}
+		}
+		if(findVariable)
+			break;
+	}
+}
+
 void BackJumpingGrounder::backFromSolutionFound() {
 #ifdef DEBUG_GROUNDING
 	cout<<endl<<"---> BACK SOLUTION FOUND"<<endl;
@@ -179,12 +205,13 @@ bool BackJumpingGrounder::match() {
 
 	if(!result){
 		set_term vars=(*current_atom_it)->getVariable();
-		failureSet.insert(vars.begin(),vars.end());
+		for(auto variableInFailurSet:vars)
+			failureMap[variableInFailurSet]=true;
 	}
 	else{
 		set_term bindVars=current_variables_atoms[index_current_atom];
 		for(auto var: bindVars){
-			failureSet.erase(var);
+			failureMap[var]=false;
 		}
 	}
 #ifdef DEBUG_GROUNDING
@@ -206,7 +233,7 @@ void BackJumpingGrounder::backFromNextMatch() {
 
 	vector<Atom*>::iterator closestBinder_it;
 	int closestBinder_pos;
-	closestBinder(current_atom_it,index_current_atom,failureSet,closestBinder_pos,closestBinder_it,false);
+	closestBinder(current_atom_it,index_current_atom,closestBinder_pos,closestBinder_it,false);
 
 	if(closestSuccessfulBinder_it>closestBinder_it){
 		current_atom_it=closestSuccessfulBinder_it;

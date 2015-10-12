@@ -37,6 +37,11 @@ protected:
 	/// computes the closest binder to that literal for that variables
 	void closestBinder(vector<Atom*>::iterator literal_it, int literal_pos, set_term& variables,int& positionCB,vector<Atom*>::iterator& iteratorCB, bool includeCurrentLiteral);
 
+	/// Given a literal
+	/// computes the closest binder to that literal for that variables (on failure set)
+	void closestBinder(vector<Atom*>::iterator literal_it, int literal_pos,int& positionCB,vector<Atom*>::iterator& iteratorCB, bool includeCurrentLiteral);
+
+
 	/// A total substitution is found, so we can jump
 	/// to the closest literal binding a variable in head
 	void backFromSolutionFound();
@@ -60,8 +65,11 @@ private:
 	Status current_status;
 	/// The set of variables appearing in the head of the current rule
 	set_term outputVariables;
-	/// Set containing variables that give failure
-	set_term failureSet;
+//	/// Set containing variables that give failure
+//	set_term failureSet;
+
+	/// Map of variables bool. If the boolean is true the variable is in the failure set
+	map_term_bool failureMap;
 };
 
 } /* namespace grounder */
