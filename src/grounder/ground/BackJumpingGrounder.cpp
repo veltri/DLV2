@@ -67,15 +67,14 @@ bool BackJumpingGrounder::nextMatch() {
 }
 
 void BackJumpingGrounder::inizialize(Rule* rule) {
-
+#ifdef DEBUG_GROUNDING
+	cout<<endl<<"---> INIZIALIZE"<<endl;
+#endif
 	BackTrackingGrounder::inizialize(rule);
 
 	closestSuccessfulBinder_it=currentRule->getBeginBody();
 	closestSuccessfulBinder_index=0;
 	current_status=SUCCESSFULL;
-
-//	dependencySets.clear();
-//	computeDependencySets();
 
 	outputVariables.clear();
 	for (unsigned i = 0; i < currentRule->getSizeHead(); ++i) {
@@ -100,20 +99,14 @@ void BackJumpingGrounder::inizialize(Rule* rule) {
 		}
 	}
 
-//		for(auto var: outputVariables){
-//			var->print();
-//		}
-//		cout<<endl;
-//	for (int i = 0; i < rule->getSizeBody(); ++i) {
-//		set_term dep=dependencySets[i];
-//		for(auto term: dep){
-//			term->print(cout);
-//		}
-//		cout<<endl;
-//	}
+#ifdef DEBUG_GROUNDING
+	cout<<"OUTPUT VARIABLES: ";
+	for(auto var: outputVariables){
+		var->print();cout<<" ";
+	}
+	cout<<endl;
+#endif
 
-//	set_term var=currentRule->getAtomInHead(0)->getVariable();
-//	cout<<closestBinder(2,var)<<endl;
 }
 
 void BackJumpingGrounder::closestBinder(vector<Atom*>::iterator literal_it, int literal_pos, set_term& variables,int& positionCB,vector<Atom*>::iterator& iteratorCB, bool includeCurrentLiteral) {
@@ -127,36 +120,19 @@ void BackJumpingGrounder::closestBinder(vector<Atom*>::iterator literal_it, int 
 	for(;i>=0;i--,iteratorCB--){
 		Atom* atom=currentRule->getAtomInBody(i);
 		if(!is_ground_atom[i] || (atom->isBuiltIn() && atom->isAssignment())){
-//			if(variables.size()==0){
-//				positionCB=i;
-//				break;
-//			}
 			set_term literal_variables=atom->getVariable();
 			if(!Utils::isDisjoint(literal_variables,variables)){
 				positionCB=i;
 				break;
 			}
 		}
-		//TODO Altri tipi di atomi
 	}
 }
 
-//void BackJumpingGrounder::computeDependencySets() {
-//	for (unsigned i = 0; i < currentRule->getSizeBody(); ++i) {
-//		Atom* atom=currentRule->getAtomInBody(i);
-//		set_term dependencySet=atom->getVariable();
-//		for (unsigned j = i+1; j < currentRule->getSizeBody(); ++j) {
-//			Atom* atom2=currentRule->getAtomInBody(j);
-//			set_term atom_variables=atom2->getVariable();
-//			if(!Utils::isDisjoint(atom_variables,dependencySet))
-//				dependencySet.insert(atom_variables.begin(),atom_variables.end());
-//		}
-//		dependencySets.push_back(dependencySet);
-//	}
-//}
-
 void BackJumpingGrounder::backFromSolutionFound() {
-//	cout<<"---> BACK SOLUTION FOUND"<<endl;
+#ifdef DEBUG_GROUNDING
+	cout<<endl<<"---> BACK SOLUTION FOUND"<<endl;
+#endif
 	current_status=NEXT_MATCH;
 
 	vector<Atom*>::iterator closestBinder_it;
@@ -167,15 +143,16 @@ void BackJumpingGrounder::backFromSolutionFound() {
 	index_current_atom=closestBinder_pos;
 	closestBinder(current_atom_it,index_current_atom,outputVariables,closestSuccessfulBinder_index,closestSuccessfulBinder_it,false);
 
-//	cout<<"CSB "<<closestSuccessfulBinder_index<<endl;
-//	cout<<"CURRENT ATOM "<<index_current_atom<<endl;
+#ifdef DEBUG_GROUNDING
+	cout<<"CSB "<<closestSuccessfulBinder_index<<endl;
+	cout<<"CURRENT ATOM "<<index_current_atom<<endl;
+#endif
 }
 
 void BackJumpingGrounder::backFromFirstMatch() {
-//	cout<<"---> BACK FIRST MATCH"<<endl;
-//	cout<<"CURRENT ATOM "<<index_current_atom<<endl;
-//	(*current_atom_it)->print();
-//	ground_rule->getAtomInBody(index_current_atom)->print();
+#ifdef DEBUG_GROUNDING
+	cout<<endl<<"---> BACK FIRST MATCH"<<endl;
+#endif
 
 	vector<Atom*>::iterator closestBinder_it;
 	int closestBinder_pos;
@@ -185,14 +162,11 @@ void BackJumpingGrounder::backFromFirstMatch() {
 	current_atom_it=closestBinder_it;
 	index_current_atom=closestBinder_pos;
 
-//	for(auto var: failureSet){
-//		var->print();
-//	}
-//	cout<<endl;
-//
-//	cout<<"CSB "<<closestSuccessfulBinder_index<<endl;
-//	cout<<"CB "<<closestBinder_pos<<endl;
-//	cout<<"CURRENT ATOM "<<index_current_atom<<endl;
+#ifdef DEBUG_GROUNDING
+	cout<<"CSB "<<closestSuccessfulBinder_index<<endl;
+	cout<<"CB "<<closestBinder_pos<<endl;
+	cout<<"CURRENT ATOM "<<index_current_atom<<endl;
+#endif
 }
 
 bool BackJumpingGrounder::match() {
@@ -213,12 +187,22 @@ bool BackJumpingGrounder::match() {
 			failureSet.erase(var);
 		}
 	}
+#ifdef DEBUG_GROUNDING
+	cout<<"MATCH RESULT: "<<result<<endl;
+	cout<<"FAILURE SET: ";
+	for(auto var: failureSet){
+		var->print();cout<<" ";
+	}
+	cout<<endl;
+#endif
 
 	return result;
 }
 
 void BackJumpingGrounder::backFromNextMatch() {
-//	cout<<"---> BACK NEXT MATCH"<<endl;
+#ifdef DEBUG_GROUNDING
+	cout<<endl<<"---> BACK NEXT MATCH"<<endl;
+#endif
 
 	vector<Atom*>::iterator closestBinder_it;
 	int closestBinder_pos;
@@ -237,9 +221,16 @@ void BackJumpingGrounder::backFromNextMatch() {
 		closestBinder(current_atom_it,index_current_atom,outputVariables,closestSuccessfulBinder_index,closestSuccessfulBinder_it,false);
 	}
 
-//	cout<<"CSB "<<closestSuccessfulBinder_index<<endl;
-//	cout<<"CB "<<closestBinder_pos<<endl;
-//	cout<<"CURRENT ATOM "<<index_current_atom<<endl;
+#ifdef DEBUG_GROUNDING
+	cout<<"FAILURE SET: ";
+	for(auto var: failureSet){
+		var->print();cout<<" ";
+	}
+	cout<<endl;
+	cout<<"CSB "<<closestSuccessfulBinder_index<<endl;
+	cout<<"CB "<<closestBinder_pos<<endl;
+	cout<<"CURRENT ATOM "<<index_current_atom<<endl;
+#endif
 }
 
 } /* namespace grounder */
