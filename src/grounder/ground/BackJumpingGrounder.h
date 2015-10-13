@@ -13,6 +13,8 @@
 namespace DLV2 {
 namespace grounder {
 
+using pair_unsigned_iterator=pair<unsigned,vector<Atom*>::iterator>;
+
 enum Status {SUCCESSFULL,FIRST_MATCH,NEXT_MATCH};
 
 class BackJumpingGrounder: public BackTrackingGrounder {
@@ -35,7 +37,7 @@ protected:
 
 	/// Given a literal and a set of variables
 	/// computes the closest binder to that literal for that variables
-	void closestBinder(vector<Atom*>::iterator literal_it, int literal_pos, set_term& variables,int& positionCB,vector<Atom*>::iterator& iteratorCB, bool includeCurrentLiteral);
+	void closestBinder(vector<Atom*>::iterator literal_it, int literal_pos, const set_term& variables,int& positionCB,vector<Atom*>::iterator& iteratorCB, bool includeCurrentLiteral);
 
 	/// Given a literal
 	/// computes the closest binder to that literal for that variables (on failure set)
@@ -65,11 +67,14 @@ private:
 	Status current_status;
 	/// The set of variables appearing in the head of the current rule
 	set_term outputVariables;
-//	/// Set containing variables that give failure
-//	set_term failureSet;
-
 	/// Map of variables bool. If the boolean is true the variable is in the failure set
 	map_term_bool failureMap;
+
+	pair<int,vector<Atom*>::iterator> historyBackFromSolutionFound;
+	unordered_map<unsigned,pair_unsigned_iterator> historyBackOutputVars;
+
+	unordered_map<unsigned,pair_unsigned_iterator> historyBackFromFirst;
+
 };
 
 } /* namespace grounder */

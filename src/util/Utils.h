@@ -59,7 +59,7 @@ namespace DLV2
          * @param set2 unordered_set
          */
         template<class T>
-        static bool isDisjoint(T& set1,T& set2){
+        static bool isDisjoint(const T& set1,const T& set2){
         	for(auto element:set1)
         		if(set2.count(element))
         			return false;
