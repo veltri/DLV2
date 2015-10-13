@@ -37,11 +37,11 @@ protected:
 
 	/// Given a literal and a set of variables
 	/// computes the closest binder to that literal for that variables
-	void closestBinder(vector<Atom*>::iterator literal_it, int literal_pos, const set_term& variables, int& positionCB,vector<Atom*>::iterator& iteratorCB);
+	void closestBinder(vector<Atom*>::iterator literal_it, int literal_pos, const set_term& variables, int& positionCB,vector<Atom*>::iterator& iteratorCB, bool includeCurrentLiteral);
 
 	/// Given a literal computes the closest binder
 	/// to that literal for the variables in the failure set
-	void closestBinder(vector<Atom*>::iterator literal_it, int literal_pos, int& positionCB, vector<Atom*>::iterator& iteratorCB);
+	void closestBinder(vector<Atom*>::iterator literal_it, int literal_pos, int& positionCB, vector<Atom*>::iterator& iteratorCB, bool includeCurrentLiteral);
 
 	/// A total substitution is found, so we can jump
 	/// to the closest literal binding a variable in head

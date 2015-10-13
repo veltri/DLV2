@@ -72,6 +72,7 @@ void BackJumpingGrounder::inizialize(Rule* rule) {
 #endif
 	BackTrackingGrounder::inizialize(rule);
 	closestSuccessfulBinder_it=currentRule->getBeginBody();
+	closestSuccessfulBinder_index=0;
 	current_status=SUCCESSFULL;
 
 	historyBackFromFirst.clear();
@@ -112,10 +113,15 @@ void BackJumpingGrounder::inizialize(Rule* rule) {
 
 }
 
-void BackJumpingGrounder::closestBinder(vector<Atom*>::iterator literal_it, int literal_pos, const set_term& variables,int& positionCB,vector<Atom*>::iterator& iteratorCB) {
+void BackJumpingGrounder::closestBinder(vector<Atom*>::iterator literal_it, int literal_pos, const set_term& variables,int& positionCB,vector<Atom*>::iterator& iteratorCB, bool includeCurrentLiteral) {
 	iteratorCB=literal_it;
 	positionCB=-1;
-	for(int i=literal_pos;i>=0;i--,iteratorCB--){
+	int i=literal_pos;
+	if(!includeCurrentLiteral){
+		i--;
+		iteratorCB--;
+	}
+	for(;i>=0;i--,iteratorCB--){
 		Atom* atom=currentRule->getAtomInBody(i);
 		if(!is_ground_atom[i] || (atom->isBuiltIn() && atom->isAssignment())){
 			set_term literal_variables=atom->getVariable();
@@ -127,12 +133,14 @@ void BackJumpingGrounder::closestBinder(vector<Atom*>::iterator literal_it, int 
 	}
 }
 
-void BackJumpingGrounder::closestBinder(vector<Atom*>::iterator literal_it, int literal_pos, int& positionCB, vector<Atom*>::iterator& iteratorCB) {
+void BackJumpingGrounder::closestBinder(vector<Atom*>::iterator literal_it, int literal_pos,int& positionCB,vector<Atom*>::iterator& iteratorCB, bool includeCurrentLiteral) {
+	iteratorCB=literal_it;
 	positionCB=-1;
 	int i=literal_pos;
-	i--;
-	iteratorCB=literal_it;
-	iteratorCB--;
+	if(!includeCurrentLiteral){
+		i--;
+		iteratorCB--;
+	}
 	bool findVariable=false;
 	for(;i>=0;i--,iteratorCB--){
 		Atom* atom=currentRule->getAtomInBody(i);
@@ -167,12 +175,12 @@ void BackJumpingGrounder::backFromSolutionFound() {
 	else{
 		vector<Atom*>::iterator closestBinder_it;
 		int closestBinder_pos;
-		closestBinder(current_atom_it,index_current_atom,outputVariables,closestBinder_pos,closestBinder_it);
+		closestBinder(current_atom_it,index_current_atom,outputVariables,closestBinder_pos,closestBinder_it,true);
 		historyBackFromSolutionFound.first=closestBinder_pos;
 		historyBackFromSolutionFound.second=closestBinder_it;
 		current_atom_it=closestBinder_it;
 		index_current_atom=closestBinder_pos;
-		closestBinder(current_atom_it,index_current_atom,outputVariables,closestSuccessfulBinder_index,closestSuccessfulBinder_it);
+		closestBinder(current_atom_it,index_current_atom,outputVariables,closestSuccessfulBinder_index,closestSuccessfulBinder_it,false);
 		historyBackOutputVars.insert({index_current_atom,{closestSuccessfulBinder_index,closestSuccessfulBinder_it}});
 	}
 
@@ -197,7 +205,7 @@ void BackJumpingGrounder::backFromFirstMatch() {
 		vector<Atom*>::iterator closestBinder_it;
 		int closestBinder_pos;
 		set_term variables=(*current_atom_it)->getVariable();
-		closestBinder(current_atom_it,index_current_atom,variables,closestBinder_pos,closestBinder_it);
+		closestBinder(current_atom_it,index_current_atom,variables,closestBinder_pos,closestBinder_it,false);
 		historyBackFromFirst.insert({index_current_atom,{closestBinder_pos,closestBinder_it}});
 		current_atom_it=closestBinder_it;
 		index_current_atom=closestBinder_pos;
@@ -243,7 +251,7 @@ void BackJumpingGrounder::backFromNextMatch() {
 
 	vector<Atom*>::iterator closestBinder_it;
 	int closestBinder_pos;
-	closestBinder(current_atom_it,index_current_atom,closestBinder_pos,closestBinder_it);
+	closestBinder(current_atom_it,index_current_atom,closestBinder_pos,closestBinder_it,false);
 
 	if(closestSuccessfulBinder_it>closestBinder_it){
 		current_atom_it=closestSuccessfulBinder_it;
@@ -261,7 +269,7 @@ void BackJumpingGrounder::backFromNextMatch() {
 			closestSuccessfulBinder_it=((*it).second).second;
 		}
 		else{
-			closestBinder(current_atom_it,index_current_atom,outputVariables,closestSuccessfulBinder_index,closestSuccessfulBinder_it);
+			closestBinder(current_atom_it,index_current_atom,outputVariables,closestSuccessfulBinder_index,closestSuccessfulBinder_it,false);
 			historyBackOutputVars.insert({index_current_atom,{closestSuccessfulBinder_index,closestSuccessfulBinder_it}});
 		}
 	}
