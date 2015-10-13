@@ -46,7 +46,7 @@ namespace DLV2
          * @param set2 unordered_set
          */
         template<class T>
-        static bool isContained(T& set1,T& set2){
+        static bool isContained(const T& set1,const T& set2){
         	for(auto element:set1)
         		if(!set2.count(element))
         			return false;
@@ -73,7 +73,7 @@ namespace DLV2
          * @param union_set unordered_set
          */
         template<class T>
-        static void unionSet(T& set1,T& set2,T& union_set){
+        static void unionSet(const T& set1,const T& set2,T& union_set){
         	union_set.insert(set1.begin(),set2.begin());
         }
 
@@ -84,7 +84,7 @@ namespace DLV2
          * @param intersection_set unordered_set
          */
         template<class T>
-        static bool intersectionSet(T& set1,T& set2,T& intersection_set){
+        static bool intersectionSet(const T& set1,const T& set2,T& intersection_set){
         	bool isIntersection=false;
         	if(set1.size()<set2.size()){
             	for(auto element:set1)
@@ -109,7 +109,7 @@ namespace DLV2
          * @param difference_set unordered_set
          */
         template<class T>
-        static void differenceSet(T& set1,T& set2,T& difference_set){
+        static void differenceSet(const T& set1,const T& set2,T& difference_set){
 			for(auto element:set1)
 				if(!set2.count(element))
 					difference_set.insert(element);

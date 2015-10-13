@@ -75,7 +75,7 @@ public:
 
 	///Return the term of variable present in the Atom
 	///If the guard is true add also the variable in the guard
-	virtual set_term getVariable(bool guard=true);
+	virtual const set_term& getVariable(bool guard=true);
 
 	/// Return true if is ground, each term is constant term
 	virtual bool isGround(){

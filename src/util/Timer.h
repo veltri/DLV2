@@ -50,9 +50,9 @@ public:
 	}
 
 	void print(){
-		cout<<"TIME:"<<endl;
+		cerr<<"TIME:"<<endl;
 		for(auto& time_pair:map_elapse_time)
-			cout<<time_pair.first<<" "<<(time_pair.second/ (double) CLOCKS_PER_SEC)<<endl;
+			cerr<<time_pair.first<<" "<<(time_pair.second/ (double) CLOCKS_PER_SEC)<<endl;
 	}
 
 	void clear(){

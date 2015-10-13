@@ -76,21 +76,23 @@ set_term Choice::getGuardVariable(){
 	return terms_variable;
 }
 
-set_term Choice::getVariable(bool guard) {
-	set_term terms_variable;
+const set_term& Choice::getVariable(bool guard) {
+	if(calculatedVariables)
+		return variables;
+
 
 	if(guard)
-		terms_variable=getGuardVariable();
+		variables=getGuardVariable();
 
 	for(auto choice_element:choiceElements){
 		for(unsigned i=0;i<choice_element->getSize();++i)
 		{
-			auto variables=choice_element->getAtom(i)->getVariable();
-			terms_variable.insert(variables.begin(),variables.end());
+			const set_term& var=choice_element->getAtom(i)->getVariable();
+			variables.insert(var.begin(),var.end());
 		}
 	}
-
-	return terms_variable;
+	calculatedVariables=true;
+	return variables;
 }
 
 
@@ -100,7 +102,7 @@ set_term Choice::getVariableToSave(){
 		for(unsigned i=0;i<choice_element->getSize();++i)
 		{
 			if(i==0 || choice_element->getAtom(i)->isNegative()){
-				auto variables=choice_element->getAtom(i)->getVariable();
+				const set_term& variables=choice_element->getAtom(i)->getVariable();
 				terms_variable.insert(variables.begin(),variables.end());
 			}
 		}

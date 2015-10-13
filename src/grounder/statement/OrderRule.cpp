@@ -72,7 +72,7 @@ bool OrderRule::order() {
 bool OrderRule::checkHeadSafety(){
 	set_term variableToCheck;
 	for(auto atom=rule->getBeginHead();atom!=rule->getEndHead();++atom){
-		set_term tempVariables=(*atom)->getVariable();
+		const set_term& tempVariables=(*atom)->getVariable();
 		variableToCheck.insert(tempVariables.begin(),tempVariables.end());
 	}
 	if(rule->isChoiceRule()){

@@ -63,8 +63,7 @@ namespace grounder{
 			if(term->isGround())continue;
 			bool ok=false;
 			for(auto atom:nafLiterals){
-				set_term variables=atom->getVariable();
-				if(variables.count(term)){
+				if(atom->getVariable().count(term)){
 					ok=true;
 				}
 			}
@@ -100,7 +99,7 @@ bool AggregateElement::isAllAggregateTermShared(set_term& shared_variable)const{
 void AggregateElement::getUnsolvedPredicateVariable(set_term& vars) {
 	for(auto atom:nafLiterals){
 		if(atom->isClassicalLiteral() && !atom->getPredicate()->isSolved()){
-			set_term variables=atom->getVariable();
+			const set_term& variables=atom->getVariable();
 			vars.insert(variables.begin(),variables.end());
 		}
 	}

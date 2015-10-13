@@ -147,7 +147,7 @@ void BaseInputRewriter::translateChoice(Rule*& rule,vector<Rule*>& ruleRewrited)
 	bool isRewriteBody=rule->getSizeBody()>1 || ( rule->getSizeBody()==1 && rule->getAtomInBody(0)->isAggregateAtom());
 	if(isRewriteBody){
 
-		set_term variables_in_choice=choice->getVariable();
+		const set_term& variables_in_choice=choice->getVariable();
 		set_term variables_in_body;
 
 		for(unsigned i=0;i<rule->getSizeBody();++i){
@@ -235,7 +235,7 @@ vector<AggregateElement*> BaseInputRewriter::rewriteChoiceElements(unsigned& id,
 		set_term terms_in_bodychoice;
 		if(auxiliaryAtomBody!=nullptr){
 			set_term terms_in_body(auxiliaryAtomBody->getTerms().begin(),auxiliaryAtomBody->getTerms().end());
-			set_term variable_in_choice=choice->getVariable(false);
+			const set_term& variable_in_choice=choice->getVariable(false);
 			Utils::intersectionSet(terms_in_body,variable_in_choice,terms_in_bodychoice);
 		}
 		AggregateElement* element;
@@ -279,7 +279,7 @@ void BaseInputRewriter::createBodyRuleChoice(unsigned& id, unsigned& counter,Cho
 	//ps: if the choice have the default guard we don't have the constraint then we don't have to do the additional rewriting
 
 	vector<Atom*> naf_in_aux;
-	set_term terms_in_first=first_atom->getVariable();
+	const set_term& terms_in_first=first_atom->getVariable();
 	set_term terms_missed,terms_in_naf;
 	for(unsigned i=1;i<choiceElement->getSize();i++){
 		set_term variables=choiceElement->getAtom(i)->getVariable();
@@ -348,7 +348,7 @@ vector<AggregateElement*> ChoiceBaseInputRewriter::rewriteChoiceElements(unsigne
 	set_term terms_in_bodychoice;
 	if(auxiliaryAtomBody!=nullptr){
 		set_term terms_in_body(auxiliaryAtomBody->getTerms().begin(),auxiliaryAtomBody->getTerms().end());
-		set_term variable_in_choice=choice->getVariable(false);
+		const set_term& variable_in_choice=choice->getVariable(false);
 		Utils::intersectionSet(terms_in_body,variable_in_choice,terms_in_bodychoice);
 	}
 
