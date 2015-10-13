@@ -36,7 +36,7 @@ bool BackJumpingGrounder::back() {
 
 	for (int i=index_current_atom; i<=current_index; ++i){
 		removeBindValueInAssignment(current_variables_atoms[i]);
-		if(i>index_current_atom){
+		if(i>index_current_atom && !is_ground_atom[i]){
 			for (unsigned j = 0; j < current_id_match[i].size(); ++j) {
 				current_id_match[i][j].second=NO_MATCH;
 			}
@@ -81,13 +81,13 @@ void BackJumpingGrounder::inizialize(Rule* rule) {
 
 	failureMap.clear();
 	outputVariables.clear();
-	for (unsigned i = 0; i < currentRule->getSizeHead(); ++i) {
-		Atom* atom=currentRule->getAtomInHead(i);
+	for (auto it=currentRule->getBeginHead();it!=currentRule->getEndHead(); ++it) {
+		Atom* atom=*it;
 		const set_term& variables=atom->getVariable();
 		outputVariables.insert(variables.begin(),variables.end());
 	}
-	for (unsigned i = 0; i < currentRule->getSizeBody(); ++i) {
-		Atom* atom=currentRule->getAtomInBody(i);
+	for (auto it=currentRule->getBeginBody();it!=currentRule->getEndBody(); ++it) {
+		Atom* atom=*it;
 		if(atom->isClassicalLiteral() && !atom->getPredicate()->isSolved()){
 			const set_term& variables=atom->getVariable();
 			outputVariables.insert(variables.begin(),variables.end());
@@ -133,14 +133,12 @@ void BackJumpingGrounder::closestBinder(vector<Atom*>::iterator literal_it, int 
 	}
 }
 
-void BackJumpingGrounder::closestBinder(vector<Atom*>::iterator literal_it, int literal_pos,int& positionCB,vector<Atom*>::iterator& iteratorCB, bool includeCurrentLiteral) {
+void BackJumpingGrounder::closestBinder(vector<Atom*>::iterator literal_it, int literal_pos,int& positionCB,vector<Atom*>::iterator& iteratorCB) {
 	iteratorCB=literal_it;
 	positionCB=-1;
 	int i=literal_pos;
-	if(!includeCurrentLiteral){
-		i--;
-		iteratorCB--;
-	}
+	i--;
+	iteratorCB--;
 	bool findVariable=false;
 	for(;i>=0;i--,iteratorCB--){
 		Atom* atom=currentRule->getAtomInBody(i);
@@ -251,7 +249,7 @@ void BackJumpingGrounder::backFromNextMatch() {
 
 	vector<Atom*>::iterator closestBinder_it;
 	int closestBinder_pos;
-	closestBinder(current_atom_it,index_current_atom,closestBinder_pos,closestBinder_it,false);
+	closestBinder(current_atom_it,index_current_atom,closestBinder_pos,closestBinder_it);
 
 	if(closestSuccessfulBinder_it>closestBinder_it){
 		current_atom_it=closestSuccessfulBinder_it;
