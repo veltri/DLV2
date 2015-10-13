@@ -97,6 +97,10 @@ namespace DLV2
 
         ~Options() { /*if (instance != NULL) delete instance;*/ }
 
+	unsigned getInstantiationProcedure() const {
+		return instantiationProcedure;
+	}
+
     private:
 
         static Options* instance;
@@ -158,6 +162,8 @@ namespace DLV2
     	unsigned rewritingType;
 
     	unsigned outputFormat;
+
+    	unsigned instantiationProcedure;
     };
     
 };

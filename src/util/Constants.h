@@ -84,7 +84,7 @@ namespace grounder{
 	#define PERL_DJ 4
 	#define PERL_B 5
 
-	#define DEFAULT 0
+	#define DEFAULT 1
 	#define MAP 1
 	#define MULTIMAP 2
 	#define HASHSET 3
@@ -96,6 +96,9 @@ namespace grounder{
 
 	#define OUTPUT_NUMERIC 0
 	#define OUTPUT_TEXTUAL 1
+
+	#define BACKTRACKING 0
+	#define BACKJUMPING 1
 
 	typedef unsigned index_object;
 

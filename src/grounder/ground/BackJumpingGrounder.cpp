@@ -34,7 +34,7 @@ bool BackJumpingGrounder::back() {
 	if (index_current_atom <  0)
 		return false;
 
-	for (unsigned i=index_current_atom; i<=current_index; ++i){
+	for (int i=index_current_atom; i<=current_index; ++i){
 		removeBindValueInAssignment(current_variables_atoms[i]);
 		if(i>index_current_atom){
 			for (unsigned j = 0; j < current_id_match[i].size(); ++j) {
@@ -213,7 +213,6 @@ void BackJumpingGrounder::backFromFirstMatch() {
 
 #ifdef DEBUG_GROUNDING
 	cout<<"CSB "<<closestSuccessfulBinder_index<<endl;
-	cout<<"CB "<<closestBinder_pos<<endl;
 	cout<<"CURRENT ATOM "<<index_current_atom<<endl;
 #endif
 }
@@ -232,17 +231,13 @@ bool BackJumpingGrounder::match() {
 			failureMap[variableInFailurSet]=true;
 	}
 	else{
-		set_term bindVars=current_variables_atoms[index_current_atom];
-		for(auto var: bindVars){
+		for(auto var: current_variables_atoms[index_current_atom]){
 			failureMap[var]=false;
 		}
 	}
 #ifdef DEBUG_GROUNDING
 	cout<<"MATCH RESULT: "<<result<<endl;
 	cout<<"FAILURE SET: ";
-	for(auto var: failureSet){
-		var->print();cout<<" ";
-	}
 	cout<<endl;
 #endif
 
@@ -281,10 +276,6 @@ void BackJumpingGrounder::backFromNextMatch() {
 
 #ifdef DEBUG_GROUNDING
 	cout<<"FAILURE SET: ";
-	for(auto var: failureSet){
-		var->print();cout<<" ";
-	}
-	cout<<endl;
 	cout<<"CSB "<<closestSuccessfulBinder_index<<endl;
 	cout<<"CB "<<closestBinder_pos<<endl;
 	cout<<"CURRENT ATOM "<<index_current_atom<<endl;

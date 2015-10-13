@@ -64,9 +64,8 @@ namespace DLV2
 #define OPTIONID_printRewrite ('z' + 38)
 #define OPTIONID_rewritingType ('z' + 39)
 #define OPTIONID_outputFormat ('z' + 40)
-
-
-
+#define OPTIONID_textual ('z' + 41)
+#define OPTIONID_instantiationProcedure ('z' + 42)
 
 
 };
@@ -112,7 +111,8 @@ Options::Options():
 		nofacts(false),
 		printRewrittenProgram(false),
 		rewritingType(NATIVE_CHOICE),
-		outputFormat(0)
+		outputFormat(OUTPUT_NUMERIC),
+		instantiationProcedure(BACKJUMPING)
 {
 
 }
@@ -132,7 +132,8 @@ Options::Options(
 		nofacts(o.nofacts),
 		printRewrittenProgram(o.printRewrittenProgram),
 		rewritingType(o.rewritingType),
-		outputFormat(o.outputFormat)
+		outputFormat(o.outputFormat),
+		instantiationProcedure(o.instantiationProcedure)
 
 {
 
@@ -182,6 +183,8 @@ Options::init(
 		{"printRewrite",no_argument, NULL, OPTIONID_printRewrite},
 		{"rewritingtype",required_argument, NULL, OPTIONID_rewritingType},
 		{"outputformat",required_argument, NULL, OPTIONID_outputFormat},
+		{"t",no_argument, NULL, OPTIONID_textual},
+		{"instantiate",required_argument, NULL, OPTIONID_instantiationProcedure},
 
         // Required at end of array. 
         { NULL, 0, NULL, 0 }
@@ -295,6 +298,14 @@ Options::init(
             case OPTIONID_outputFormat:
             	outputFormat=atoi(optarg);
             	break;
+
+            case OPTIONID_textual:
+            	outputFormat=OUTPUT_TEXTUAL;
+            	break;
+
+            case OPTIONID_instantiationProcedure:
+            	instantiationProcedure=atoi(optarg);
+				break;
 
             default:
                 ErrorMessage::errorGeneric( "This option is not supported." );

@@ -199,8 +199,12 @@ DLV2Facade::solve()
     if( getOptions().getInputBuilderPolicy() == BUILDER_IN_MEMORY )
     {
 
-//    	DLV2::grounder::ProgramGrounder *grounder= new DLV2::grounder::BackTrackingGrounder();
-    	DLV2::grounder::ProgramGrounder *grounder= new DLV2::grounder::BackJumpingGrounder();
+    	DLV2::grounder::ProgramGrounder *grounder;
+    	if(getOptions().getInstantiationProcedure()==BACKTRACKING)
+    		grounder = new DLV2::grounder::BackTrackingGrounder();
+    	else
+    		grounder =  new DLV2::grounder::BackJumpingGrounder();
+
 
     	grounder->ground();
     	delete grounder;
