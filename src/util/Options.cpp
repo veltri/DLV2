@@ -105,7 +105,7 @@ Options::Options():
         inputPolicy(BUILDER_IN_MEMORY),
         outputPolicy(OUTPUT_ASPCORE2),
 		hashType(STL_HASH),
-		indexType(DEFAULT),
+		indexType(MAP),
 		predicatesIndexTerm(""),
 		predicatesIndexType(""),
 		nofacts(false),

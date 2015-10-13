@@ -84,7 +84,7 @@ namespace grounder{
 	#define PERL_DJ 4
 	#define PERL_B 5
 
-	#define DEFAULT 1
+	#define DEFAULT 0
 	#define MAP 1
 	#define MULTIMAP 2
 	#define HASHSET 3

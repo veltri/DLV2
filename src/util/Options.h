@@ -97,9 +97,9 @@ namespace DLV2
 
         ~Options() { /*if (instance != NULL) delete instance;*/ }
 
-	unsigned getInstantiationProcedure() const {
-		return instantiationProcedure;
-	}
+		unsigned getInstantiationProcedure() const {
+			return instantiationProcedure;
+		}
 
     private:
 
