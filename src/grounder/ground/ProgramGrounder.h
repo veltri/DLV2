@@ -138,7 +138,6 @@ protected:
 	///		-If it was not derived, then (since is false) the atom is true, so it can be simplified
 	void substituteIndicesInRulesWithPossibleUndefAtoms();
 
-
 private:
 	///Print the program rule
 	void printProgram(const vector<vector<Rule*> >& exitRules,const vector<vector<Rule*> >& recursiveRules);

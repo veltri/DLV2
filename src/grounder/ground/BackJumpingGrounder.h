@@ -13,7 +13,7 @@
 namespace DLV2 {
 namespace grounder {
 
-using pair_unsigned_iterator=pair<unsigned,vector<Atom*>::iterator>;
+//using pair_unsigned_iterator=pair<unsigned,vector<Atom*>::iterator>;
 
 enum Status {SUCCESSFULL,FIRST_MATCH,NEXT_MATCH};
 
@@ -69,11 +69,11 @@ private:
 	/// Map of variables bool. If the boolean is true the variable is in the failure set
 	map_term<bool> failureMap;
 
-	pair<int,vector<Atom*>::iterator> historyBackFromSolutionFound;
+	int historyBackFromSolutionFound;
 
-	unordered_map<unsigned,pair_unsigned_iterator> historyBackOutputVars;
+	unordered_map<unsigned,int> historyBackOutputVars;
 
-	unordered_map<unsigned,pair_unsigned_iterator> historyBackFromFirst;
+	unordered_map<unsigned,int> historyBackFromFirst;
 
 };
 

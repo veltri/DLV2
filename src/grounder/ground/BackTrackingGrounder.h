@@ -101,6 +101,7 @@ protected:
 
 	/// Is 1 if forward, 0 if backward
 	bool direction;
+
 };
 
 } /* namespace grounder */

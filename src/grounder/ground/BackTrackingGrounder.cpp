@@ -228,7 +228,6 @@ bool BackTrackingGrounder::next() {
 #ifdef DEBUG_RULE_TIME
 		Timer::getInstance()->start("Next");
 #endif
-
 	direction=1;
 	callFoundAssignment = false;
 	if( unsigned(index_current_atom+1)>=currentRule->getSizeBody()){
