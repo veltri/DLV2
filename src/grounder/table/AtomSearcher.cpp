@@ -18,9 +18,9 @@ namespace grounder{
 
 /******************************************************* ATOM SEARCHER ***************************************************/
 
-bool AtomSearcher::checkMatch(Atom *genericAtom, Atom *templateAtom, map_term_term& currentAssignment){
+bool AtomSearcher::checkMatch(Atom *genericAtom, Atom *templateAtom, map_term<Term*>& currentAssignment){
 	// Checks the match for each term and, if all the terms match, updates the current assignment accordingly
-	map_term_term assignInTerm;
+	map_term<Term*> assignInTerm;
 
 	for(unsigned int i=0;i<genericAtom->getTermsSize();++i){
 		if(!matchTerm(genericAtom->getTerm(i),templateAtom->getTerm(i),assignInTerm))
@@ -34,7 +34,7 @@ bool AtomSearcher::checkMatch(Atom *genericAtom, Atom *templateAtom, map_term_te
 
 }
 
-bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, map_term_term& varAssignment){
+bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, map_term<Term*>& varAssignment){
 
 	if (termToMatch->getType()==TermType::VARIABLE) {
 		auto find_it=varAssignment.find(termToMatch);
@@ -67,7 +67,7 @@ bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, map_term_term
 		if(termToMatch->getType()!=TermType::FUNCTION) return false;
 		if(termToMatch->getName().compare(genericTerm->getName()) != 0)return false;
 		if(termToMatch->getTermsSize() != genericTerm->getTermsSize())return false;
-		map_term_term assignInTerm(varAssignment);
+		map_term<Term*> assignInTerm(varAssignment);
 		for(unsigned int i=0;i<genericTerm->getTermsSize();++i)
 			if(!matchTerm(genericTerm->getTerm(i),termToMatch->getTerm(i),assignInTerm))
 				return false;
@@ -84,7 +84,7 @@ bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, map_term_term
 
 /****************************************************** BASE ATOM SEARCHER ***************************************************/
 
-unsigned int BaseAtomSearcher::firstMatch(Atom *templateAtom, map_term_term& currentAssignment, Atom*& atomFound) {
+unsigned int BaseAtomSearcher::firstMatch(Atom *templateAtom, map_term<Term*>& currentAssignment, Atom*& atomFound) {
 	unsigned int id = ++counter;
 	GeneralIterator* currentMatch=computeGenericIterator(templateAtom);
 	if(searchForFirstMatch(currentMatch, templateAtom, currentAssignment,atomFound)){
@@ -96,7 +96,7 @@ unsigned int BaseAtomSearcher::firstMatch(Atom *templateAtom, map_term_term& cur
 	return id;
 }
 
-bool BaseAtomSearcher::searchForFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term_term& currentAssignment, Atom*& atomFound){
+bool BaseAtomSearcher::searchForFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term<Term*>& currentAssignment, Atom*& atomFound){
 	//Call findIfAFactExist only if all the terms are bound
 	if(templateAtom->isGround()){
 		bool find=0;
@@ -109,7 +109,7 @@ bool BaseAtomSearcher::searchForFirstMatch(GeneralIterator* currentMatch, Atom *
 	return find;
 }
 
-bool BaseAtomSearcher::computeMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term_term& currentAssignment, Atom*& atomFound){
+bool BaseAtomSearcher::computeMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term<Term*>& currentAssignment, Atom*& atomFound){
 	for(;!currentMatch->isDone();currentMatch->next()){
 		if (checkMatch(currentMatch->currentItem(),templateAtom,currentAssignment)){
 			atomFound=currentMatch->currentItem();
@@ -120,7 +120,7 @@ bool BaseAtomSearcher::computeMatch(GeneralIterator* currentMatch, Atom *templat
 	return false;
 }
 
-void BaseAtomSearcher::nextMatch(unsigned int id, Atom *templateAtom, map_term_term& currentAssignment, Atom*& atomFound) {
+void BaseAtomSearcher::nextMatch(unsigned int id, Atom *templateAtom, map_term<Term*>& currentAssignment, Atom*& atomFound) {
 	GeneralIterator* currentMatch=resultMap.find(id)->second;
 	currentMatch->next();
 	computeMatch(currentMatch,templateAtom,currentAssignment,atomFound);

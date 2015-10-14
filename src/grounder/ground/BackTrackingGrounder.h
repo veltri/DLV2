@@ -65,7 +65,7 @@ protected:
 
 	/// Current assignment for grounding rule
 	/// The map of the assignment, map each variables to its assigned value
-	map_term_term current_var_assign;
+	map_term<Term*> current_var_assign;
 	/// Current id of first match for grounding rule
 	/// map of id of the atom and vector of pair : table to search and id of firstMatch (if is NOMATCH call first else next)
 	unordered_map<unsigned,vector<pair<unsigned,int>>> current_id_match;
@@ -74,6 +74,8 @@ protected:
 
 	/// Current variables for each atom for grounding rule
 	vector<set_term> current_variables_atoms;
+	///Map each variable to its binder
+	map_term<int> variablesBinder;
 	/// Current rule
 	Rule* currentRule;
 	/// Current atom iterator for grounding rule

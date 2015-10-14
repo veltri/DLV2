@@ -17,7 +17,7 @@ namespace DLV2{
 namespace grounder{
 
 
-bool BuiltInAtom::evaluate(map_term_term& substitutionTerm){
+bool BuiltInAtom::evaluate(map_term<Term*>& substitutionTerm){
 	Term* firstTerm=terms[0];
 	Term* secondTerm=terms[1];
 
@@ -84,7 +84,7 @@ void BuiltInAtom::print(){
 }
 
 
-void BuiltInAtom::substitute(map_term_term& substitutionTerm,Atom*& templateAtom){
+void BuiltInAtom::substitute(map_term<Term*>& substitutionTerm,Atom*& templateAtom){
 	if(templateAtom==nullptr){
 		vector<Term*> terms_substitute(terms.size());
 		for(unsigned int i=0;i<terms.size();i++){

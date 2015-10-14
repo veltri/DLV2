@@ -96,7 +96,7 @@ Operator ArithTerm::getOperatorName(char op) {
 	return true;
 }
 
-Term* ArithTerm::substitute(map_term_term& substritutionTerm) {
+Term* ArithTerm::substitute(map_term<Term*>& substritutionTerm) {
 	// Create a new arithmetic term replacing the term in a vector
 	// Recursively call substitute for nested function
 	// At the end add a new term in a table and return index

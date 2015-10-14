@@ -122,7 +122,7 @@ void FunctionTerm::print(ostream& stream) {
 	stream<<")";
 }
 
-Term* FunctionTerm::substitute(map_term_term& substritutionTerm) {
+Term* FunctionTerm::substitute(map_term<Term*>& substritutionTerm) {
 	// Create a new function replacing the term in a vector
 	// Recursively call substitute for nested function
 	// At the end add a new function in a table and return index

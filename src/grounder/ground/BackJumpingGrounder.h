@@ -20,7 +20,7 @@ enum Status {SUCCESSFULL,FIRST_MATCH,NEXT_MATCH};
 class BackJumpingGrounder: public BackTrackingGrounder {
 
 public:
-	BackJumpingGrounder():BackTrackingGrounder(),current_status(SUCCESSFULL),closestSuccessfulBinder_index(0){};
+	BackJumpingGrounder():BackTrackingGrounder(),closestSuccessfulBinder_index(0),current_status(SUCCESSFULL){};
 	virtual ~BackJumpingGrounder(){};
 
 protected:
@@ -67,7 +67,7 @@ private:
 	/// The set of variables appearing in the head of the current rule
 	set_term outputVariables;
 	/// Map of variables bool. If the boolean is true the variable is in the failure set
-	map_term_bool failureMap;
+	map_term<bool> failureMap;
 
 	pair<int,vector<Atom*>::iterator> historyBackFromSolutionFound;
 

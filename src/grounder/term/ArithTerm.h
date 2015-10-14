@@ -56,7 +56,7 @@ public:
 	/// Calculate the value based on the operators and terms
 	virtual Term* calculate();
 	virtual void popTerm(){terms.pop_back();};
-	virtual Term* substitute(map_term_term& substritutionTerm);
+	virtual Term* substitute(map_term<Term*>& substritutionTerm);
 
 	virtual TermType getType()const{return TermType::ARITH;};
 	virtual bool contain(TermType type){

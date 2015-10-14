@@ -412,6 +412,7 @@ void BackTrackingGrounder::findBindVariablesRule() {
 	set_term total_variable;
 	unsigned int index_current_atom = 0;
 	current_variables_atoms.clear();
+	variablesBinder.clear();
 
 	//For each atom determines the bound and the bind variables
 	for (auto current_atom_it = currentRule->getBeginBody(); current_atom_it != currentRule->getEndBody(); ++current_atom_it,++index_current_atom) {
@@ -426,8 +427,10 @@ void BackTrackingGrounder::findBindVariablesRule() {
 		current_variables_atoms.push_back(set_term());
 
 		for (auto variable : variablesInAtom) {
-			if (!total_variable.count(variable))
+			if (!total_variable.count(variable)){
 				current_variables_atoms[index_current_atom].insert(variable);
+				variablesBinder.insert({variable,index_current_atom});
+			}
 		}
 
 		total_variable.insert(variablesInAtom.begin(),variablesInAtom.end());
@@ -528,7 +531,7 @@ bool BackTrackingGrounder::groundAggregate() {
 			AtomSearcher *searcher=predicateExtTable->getPredicateExt(predicate_atom)->getAtomSearcher(table);
 			bool find=false;
 			Atom* atomFound=nullptr;
-			map_term_term copy_current_var_assign(current_var_assign);
+			map_term<Term*> copy_current_var_assign(current_var_assign);
 			unsigned id = searcher->firstMatch(atom,copy_current_var_assign,atomFound);
 			find=(atomFound!=nullptr);
 			while(find){

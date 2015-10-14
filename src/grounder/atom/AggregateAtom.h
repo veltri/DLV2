@@ -130,7 +130,7 @@ public:
 	/// Substitute the term with constant term and calculate the arithmetic terms
 	/// The subclasses have to implement the substitute method for create correct type class of Atom
 	/// Similiar to ground(map_term_term& substritutionTerm) but not create new atom
-	virtual void ground(map_term_term& substritutionTerm,Atom*& templateAtom);
+	virtual void ground(map_term<Term*>& substritutionTerm,Atom*& templateAtom);
 
 	///Update the evaluation of the aggregate with the last aggregate element
 	/// Return the result of the evaluation

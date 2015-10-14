@@ -70,7 +70,7 @@ public:
 	virtual bool operator==(const Atom& a)const;
 
 	///This method evaluate the truth value of the built-in atom
-	bool evaluate(map_term_term& substitutionTerm);
+	bool evaluate(map_term<Term*>& substitutionTerm);
 
 	/// Return true if is BuiltInAtom
 	virtual bool isBuiltIn()const{return true;};
@@ -79,7 +79,7 @@ public:
 	void print();
 
 	/// Substitute the term and return a new Atom with term substituted
-	virtual void substitute(map_term_term& substritutionTerm,Atom*& templateAtom);
+	virtual void substitute(map_term<Term*>& substritutionTerm,Atom*& templateAtom);
 
 	virtual bool isAssignment(){return assignment;};
 	virtual void setAssignment(bool assignment){this->assignment=assignment;};

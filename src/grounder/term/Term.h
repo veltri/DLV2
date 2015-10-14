@@ -37,8 +37,8 @@ enum TermType{
 
 class Term;
 
-using map_term_term = unordered_map<Term*, Term*,IndexForTable<Term>,IndexForTable<Term>>;
-using map_term_bool = unordered_map<Term*, bool,IndexForTable<Term>,IndexForTable<Term>>;
+template<typename T>
+using map_term = unordered_map<Term*, T, IndexForTable<Term>, IndexForTable<Term>>;
 using set_term = hashIndexSet<Term>;
 
 
@@ -145,7 +145,7 @@ public:
 	virtual void getGroundTerm(set_term& variables){void(0);};
 	/// Substitute the term with the given terms and return the term of substitute term
 	/// @param substritutionTerm map of index_object. The first index is the ID of term to substitute and second the value
-	virtual Term* substitute(map_term_term& substritutionTerm){return nullptr;};
+	virtual Term* substitute(map_term<Term*>& substritutionTerm){return nullptr;};
 	/// Print with the cout the term
 	virtual void print(ostream& stream=cout){};
 

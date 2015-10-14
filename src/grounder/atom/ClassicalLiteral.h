@@ -76,7 +76,7 @@ public:
 	void print();
 
 	/// Substitute the term and return a new Atom with term substituted
-	virtual void substitute(map_term_term& substritutionTerm,Atom*& templateAtom);
+	virtual void substitute(map_term<Term*>& substritutionTerm,Atom*& templateAtom);
 
 	virtual bool isFact() const { return fact; }
 	virtual void setFact(bool isFact) { this->fact=isFact; }

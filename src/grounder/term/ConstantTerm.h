@@ -36,7 +36,7 @@ public:
 	virtual bool isGround() {return true;}
 
 	/// Return the itself as constant term
-	virtual Term* substitute(map_term_term& substritutionTerm){
+	virtual Term* substitute(map_term<Term*>& substritutionTerm){
 //		auto find_it=substritutionTerm.find(this);
 //		if(find_it!=substritutionTerm.end())
 //			return (*find_it).second;
