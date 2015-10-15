@@ -90,6 +90,9 @@ public:
 	/// It have to find if the given atom exist. This atom must be ground.
 	virtual void findIfExist(Atom *templateAtom, Atom*& atomFound)=0;
 
+	///Remove the data referred at the id of the match
+	virtual void removeId(unsigned id)=0;
+
 	/// This method implementation is demanded to sub-classes.
 	/// It have to find if the given atom exist and returns it, else returns nullptr.
 	virtual Atom* findAtom(Atom *atom)=0;
@@ -133,6 +136,13 @@ public:
 	virtual unsigned int firstMatch(Atom* templateAtom, map_term<Term*>& currentAssignment, Atom*& atomFound);
 	virtual void nextMatch(unsigned int id, Atom* templateAtom, map_term<Term*>& currentAssignment, Atom*& atomFound);
 	virtual void findIfExist(Atom *templateAtom, Atom*& atomFound);
+
+	virtual void removeId(unsigned id){
+		auto it=resultMap.find(id);
+		if(it==resultMap.end())return;
+		delete ((*it).second);
+		resultMap.erase(id);
+	};
 
 	virtual Atom* findAtom(Atom *atom);
 	virtual void add(Atom* atom){};
