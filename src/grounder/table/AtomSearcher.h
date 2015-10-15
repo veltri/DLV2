@@ -131,7 +131,7 @@ protected:
  */
 class BaseAtomSearcher: public AtomSearcher {
 public:
-	BaseAtomSearcher(AtomVector* table) : AtomSearcher(table), counter(0) {};
+	BaseAtomSearcher(AtomVector* table) : AtomSearcher(table), counter(0), createdAnIndex(false) {};
 
 	virtual unsigned int firstMatch(Atom* templateAtom, map_term<Term*>& currentAssignment, Atom*& atomFound);
 	virtual void nextMatch(unsigned int id, Atom* templateAtom, map_term<Term*>& currentAssignment, Atom*& atomFound);
@@ -168,6 +168,8 @@ protected:
 	bool computeMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term<Term*>& currentAssignment, Atom*& atomFound);
 	/// This method computes an iterator pointing to the starting point of the search
 	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom){return new VectorIterator(table->begin(),table->end());}
+
+	bool createdAnIndex;
 };
 
 class SingleTermAtomSearcher : public BaseAtomSearcher{
@@ -204,6 +206,8 @@ protected:
 	virtual void initializeIndexMaps(unsigned int indexingTerm) = 0;
 
 	int computePossibleIndexingTermTable(const vector<pair<int,index_object>>& possibleTableToSearch);
+
+	virtual int getPositionWithBestSelectivity(const vector<pair<int,index_object>>& possibleTableToSearch);
 
 };
 

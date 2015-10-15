@@ -10,6 +10,7 @@
 #include "AtomSearcher.h"
 #include "../../util/Timer.h"
 #include <boost/lexical_cast.hpp>
+#include "PredicateExtension.h"
 
 namespace DLV2{
 
@@ -179,6 +180,23 @@ int SingleTermAtomSearcher::computePossibleIndexingTermTable(const vector<pair<i
 	return -1;
 }
 
+int SingleTermAtomSearcher::getPositionWithBestSelectivity(const vector<pair<int,index_object>>& possibleTableToSearch){
+	int index=-1;
+	if(possibleTableToSearch.size()==1)
+		return (*possibleTableToSearch.begin()).first;
+	unsigned maxSelectivity=0;
+	for(auto pair:possibleTableToSearch){
+		PredicateInformation* predInfo=PredicateExtTable::getInstance()->getPredicateExt(predicate)->getPredicateInformation();
+		unsigned selectivity=predInfo->getSelectivity(pair.first);
+		if(selectivity>maxSelectivity){
+			maxSelectivity=selectivity;
+			index=pair.first;
+		}
+	}
+//	cout<<"Predicate "<<predicate->getName()<<" Indice "<<index<<" Selettivita' "<<maxSelectivity<<endl;
+	return index;
+}
+
 /****************************************************** SINGLE TERM MAP ATOM SEARCH ***************************************************/
 
 void SingleTermMapAtomSearcher::add(Atom* atom) {
@@ -230,21 +248,34 @@ Atom* SingleTermMapAtomSearcher::findAtom(Atom *atom){
 }
 
 unsigned int SingleTermMapAtomSearcher::selectBestIndex(const vector<pair<int,index_object>>& possibleTableToSearch){
-	computePossibleIndexingTermTable(possibleTableToSearch);
+	/* The choosing policy is the following:
+		- if the position set by the user can be chosen, then chose that one
+		- if none indexing structure has been created, then chose the position
+			with the best selectivity among the position of indexing available
+		- if more positions of indexing are available then chose the data structure
+			with the smaller size
+	*/
+	int index=computePossibleIndexingTermTable(possibleTableToSearch);
+	if(index!=-1) return index;
 
-	auto it=possibleTableToSearch.begin();
-	unsigned tableMinSize=(*it).first;
-	unsigned minSize=INT_MAX;
-	for(it++;it!=possibleTableToSearch.end();++it){
-		if(createdSearchingTables[(*it).first]){
-			unsigned currentSize=(searchingTables[(*it).first][(*it).second]).size();
-			if(minSize>currentSize){
-				minSize=currentSize;
-				tableMinSize=(*it).first;
+	if(!createdAnIndex){
+		return getPositionWithBestSelectivity(possibleTableToSearch);
+	}
+	else{
+		auto it=possibleTableToSearch.begin();
+		unsigned tableMinSize=(*it).first;
+		unsigned minSize=INT_MAX;
+		for(it++;it!=possibleTableToSearch.end();++it){
+			if(createdSearchingTables[(*it).first]){
+				unsigned currentSize=(searchingTables[(*it).first][(*it).second]).size();
+				if(minSize>currentSize){
+					minSize=currentSize;
+					tableMinSize=(*it).first;
+				}
 			}
 		}
+		return tableMinSize;
 	}
-	return tableMinSize;
 }
 
 GeneralIterator* SingleTermMapAtomSearcher::computeGenericIterator(Atom* templateAtom) {
@@ -277,7 +308,7 @@ void SingleTermMapAtomSearcher::initializeIndexMaps(unsigned int indexingTerm){
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("Create index "+predicate->getName()+" index "+boost::lexical_cast<string>(indexingTerm));
 #endif
-
+	createdAnIndex=true;
 	createdSearchingTables[indexingTerm]=true;
 	for (Atom* a : *table) {
 		index_object termIndex=a->getTerm(indexingTerm)->getIndex();
@@ -346,21 +377,35 @@ Atom* SingleTermMultiMapAtomSearcher::findAtom(Atom *atom){
 }
 
 unsigned int SingleTermMultiMapAtomSearcher::selectBestIndex(const vector<pair<int,index_object>>& possibleTableToSearch){
-	computePossibleIndexingTermTable(possibleTableToSearch);
+	/* The choosing policy is the following:
+		- if the position set by the user can be chosen, then chose that one
+		- if none indexing structure has been created, then chose the position
+			with the best selectivity among the position of indexing available
+		- if more positions of indexing are available then chose the data structure
+			with the smaller size
+	*/
+	int index=computePossibleIndexingTermTable(possibleTableToSearch);
+	if(index!=-1) return index;
 
-	auto it=possibleTableToSearch.begin();
-	unsigned tableMinSize=(*it).first;
-	unsigned minSize=INT_MAX;
-	for(it++;it!=possibleTableToSearch.end();++it){
-		if(createdSearchingTables[(*it).first]){
-			unsigned currentSize=searchingTables[(*it).first].count((*it).second);
-			if(minSize>currentSize){
-				minSize=currentSize;
-				tableMinSize=(*it).first;
+	if(!createdAnIndex){
+		return getPositionWithBestSelectivity(possibleTableToSearch);
+	}
+	else{
+		auto it=possibleTableToSearch.begin();
+		unsigned tableMinSize=(*it).first;
+		unsigned minSize=INT_MAX;
+		for(it++;it!=possibleTableToSearch.end();++it){
+			if(createdSearchingTables[(*it).first]){
+				unsigned currentSize=searchingTables[(*it).first].count((*it).second);
+				if(minSize>currentSize){
+					minSize=currentSize;
+					tableMinSize=(*it).first;
+				}
 			}
 		}
+
+		return tableMinSize;
 	}
-	return tableMinSize;
 }
 
 
@@ -390,6 +435,7 @@ void SingleTermMultiMapAtomSearcher::initializeIndexMaps(unsigned int indexingTe
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("Compute iterator "+predicate->getName());
 #endif
+	createdAnIndex=true;
 	createdSearchingTables[indexingTerm]=true;
 	for (Atom* a : *table) {
 		index_object termIndex=a->getTerm(indexingTerm)->getIndex();
@@ -504,25 +550,50 @@ int DoubleTermMapAtomSearcher::computePossibleIndexingTermTable(const vector<pai
 }
 
 unsigned int DoubleTermMapAtomSearcher::selectBestIndex(const vector<pair<int,pair<index_object,int>>>& possibleTableToSearch){
-	computePossibleIndexingTermTable(possibleTableToSearch);
+	/* The choosing policy is the following:
+		- if the position set by the user can be chosen, then chose that one
+		- if none indexing structure has been created, then chose the position
+			with the best selectivity among the position of indexing available
+		- if more positions of indexing are available then chose the data structure
+			with the smaller size
+	*/
+	int index=computePossibleIndexingTermTable(possibleTableToSearch);
+	if(index!=-1) return index;
 
-	unsigned tableMinSize=possibleTableToSearch[0].first, termIndex=possibleTableToSearch[0].second.first, minSize=INT_MAX;
-	int nextTermIndex=possibleTableToSearch[0].second.second;
-
-	for(auto it=possibleTableToSearch.begin();it!=possibleTableToSearch.end();++it){
-		if(unsigned((*it).first)<createdSearchingTables.size() && createdSearchingTables[(*it).first]){
-			termIndex=(*it).second.first;
-			nextTermIndex=(*it).second.first;
-			unsigned currentSize=searchingTables[(*it).first][termIndex].size();
-			if(nextTermIndex!=-1)
-				currentSize=searchingTables[tableMinSize][termIndex].count(nextTermIndex);
-			if(minSize>currentSize){
-				minSize=currentSize;
-				tableMinSize=(*it).first;
+	if(!createdAnIndex){
+		if(possibleTableToSearch.size()==1)
+			return (*possibleTableToSearch.begin()).first;
+		unsigned maxSelectivity=0;
+		for(auto pair:possibleTableToSearch){
+			PredicateInformation* predInfo=PredicateExtTable::getInstance()->getPredicateExt(predicate)->getPredicateInformation();
+			unsigned selectivity=predInfo->getSelectivity(pair.first);
+			if(selectivity>maxSelectivity){
+				maxSelectivity=selectivity;
+				index=pair.first;
 			}
 		}
+//		cout<<"Predicate "<<predicate->getName()<<" Indice "<<index<<" Selettivita' "<<maxSelectivity<<endl;
+		return index;
 	}
-	return tableMinSize;
+	else{
+		unsigned tableMinSize=possibleTableToSearch[0].first, termIndex=possibleTableToSearch[0].second.first, minSize=INT_MAX;
+		int nextTermIndex=possibleTableToSearch[0].second.second;
+
+		for(auto it=possibleTableToSearch.begin();it!=possibleTableToSearch.end();++it){
+			if(unsigned((*it).first)<createdSearchingTables.size() && createdSearchingTables[(*it).first]){
+				termIndex=(*it).second.first;
+				nextTermIndex=(*it).second.first;
+				unsigned currentSize=searchingTables[(*it).first][termIndex].size();
+				if(nextTermIndex!=-1)
+					currentSize=searchingTables[tableMinSize][termIndex].count(nextTermIndex);
+				if(minSize>currentSize){
+					minSize=currentSize;
+					tableMinSize=(*it).first;
+				}
+			}
+		}
+		return tableMinSize;
+	}
 }
 
 GeneralIterator* DoubleTermMapAtomSearcher::computeGenericIterator(Atom* templateAtom) {
@@ -558,6 +629,7 @@ void DoubleTermMapAtomSearcher::initializeIndexMaps(unsigned int indexingTerm){
 #ifdef DEBUG_ATOM_SEARCHER
 	cout<<"Predicate: "<<predicate->getName()<<" Created Index on term: "<<indexingTerm<<endl;
 #endif
+	createdAnIndex=true;
 	createdSearchingTables[indexingTerm]=true;
 	for (Atom* a : *table) {
 		index_object termIndex=a->getTerm(indexingTerm)->getIndex();
