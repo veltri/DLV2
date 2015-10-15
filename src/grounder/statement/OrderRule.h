@@ -20,11 +20,13 @@ private:
 	set_term safeVariables;
 	list<unsigned> builtInAtoms;
 	list<unsigned> negativeAtoms;
+	list<unsigned> positiveAtoms;
 	list<unsigned> aggregatesAtoms;
 	unordered_map<unsigned,set_term> mapAtomsVariables;
 	vector<Atom*> orderedBody;
-	unordered_map<Term*,unsigned,IndexForTable<Term>,IndexForTable<Term>> mapVariablesAtoms;
+	map_term<unsigned> mapVariablesAtoms;
 	vector<unordered_set<unsigned>> bindAtomsDependency;
+
 
 	//Utility methods
 	void computeAtomsVariables();

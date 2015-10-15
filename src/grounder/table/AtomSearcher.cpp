@@ -181,7 +181,7 @@ int SingleTermAtomSearcher::computePossibleIndexingTermTable(const vector<pair<i
 }
 
 int SingleTermAtomSearcher::getPositionWithBestSelectivity(const vector<pair<int,index_object>>& possibleTableToSearch){
-	int index=-1;
+	int index=0;
 	if(possibleTableToSearch.size()==1)
 		return (*possibleTableToSearch.begin()).first;
 	unsigned maxSelectivity=0;
@@ -561,6 +561,7 @@ unsigned int DoubleTermMapAtomSearcher::selectBestIndex(const vector<pair<int,pa
 	if(index!=-1) return index;
 
 	if(!createdAnIndex){
+		index=0;
 		if(possibleTableToSearch.size()==1)
 			return (*possibleTableToSearch.begin()).first;
 		unsigned maxSelectivity=0;

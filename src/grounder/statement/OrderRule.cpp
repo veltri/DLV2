@@ -9,6 +9,7 @@
 #include "../../util/Assert.h"
 #include "../../util/Options.h"
 #include "../atom/Choice.h"
+#include "../../util/Utils.h"
 
 namespace DLV2 {
 namespace grounder {
@@ -20,11 +21,15 @@ OrderRule::OrderRule(Rule* r):rule(r){
 	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();++atom,++atom_counter){
 		bindAtomsDependency.push_back(unordered_set<unsigned>());
 		Atom* current_atom=*atom;
-		if(current_atom->isClassicalLiteral() && current_atom->isNegative())
-			 negativeAtoms.push_back(atom_counter);
-		 else if(current_atom->isBuiltIn())
+		if(current_atom->isClassicalLiteral()){
+			if(current_atom->isNegative())
+				negativeAtoms.push_back(atom_counter);
+			else
+				positiveAtoms.push_back(atom_counter);
+		}
+		else if(current_atom->isBuiltIn())
 			 builtInAtoms.push_back(atom_counter);
-		 else if(current_atom->isAggregateAtom())
+		else if(current_atom->isAggregateAtom())
 			 aggregatesAtoms.push_back(atom_counter);
 	}
 }
@@ -32,14 +37,14 @@ OrderRule::OrderRule(Rule* r):rule(r){
 bool OrderRule::order() {
 	// A first attempt to order the body ignoring cyclic dependencies
 	// by iterating the atoms in the body and resolving their dependencies when are not cyclic
-	unsigned atom_counter=0;
-	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();++atom,++atom_counter){
-		Atom* current_atom=*atom;
-		if(current_atom->isClassicalLiteral() && !current_atom->isNegative()){
-			addSafeVariablesInAtom(current_atom, atom_counter);
-			unlockAtoms(negativeAtoms);
-			unlockAtoms(builtInAtoms);
-		}
+	while(positiveAtoms.size()>0){
+		unsigned atom_counter=positiveAtoms.front();
+		Atom* current_atom=rule->getAtomInBody(atom_counter);
+		addSafeVariablesInAtom(current_atom, atom_counter);
+		positiveAtoms.pop_front();
+		unlockAtoms(positiveAtoms);
+		unlockAtoms(negativeAtoms);
+		unlockAtoms(builtInAtoms);
 	}
 
 	// Second, solve the cyclic dependencies
@@ -117,6 +122,10 @@ void OrderRule::unlockAtoms(list<unsigned>& atoms) {
 	for(auto it=atoms.begin();it!=atoms.end();++it){
 		Atom* atom=rule->getAtomInBody(*it);
 		set_term variables=mapAtomsVariables[*it];
+		if(atom->isClassicalLiteral() && !atom->isNegative() && Utils::isContained(variables,safeVariables)){
+			orderedBody.push_back(atom);
+			atomsUnlocked.push_back(it);
+		}
 		// If the atom is negative or is not an assignment or is an aggregate
 		// then if every variable is safe, the atom is safe
 		// and thus it can be added to the new body
