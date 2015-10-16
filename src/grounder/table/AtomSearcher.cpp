@@ -463,12 +463,21 @@ void DoubleTermMapAtomSearcher::add(Atom* atom) {
 	for (unsigned int i = 0; i < predicate->getArity(); ++i) {
 		if(createdSearchingTables[i]){
 			index_object termIndex=atom->getTerm(i)->getIndex();
-			index_object nextTermIndex=atom->getTerm(i+1)->getIndex();
-			if(searchingTables[i].count(termIndex))
-				searchingTables[i][termIndex].insert({nextTermIndex,atom});
+			int nextTermIndex=-1;
+			if(i<(predicate->getArity()-1))
+				nextTermIndex=atom->getTerm(i+1)->getIndex();
+			if(searchingTables[i].count(termIndex)){
+				if(nextTermIndex>-1)
+					searchingTables[i][termIndex].insert({nextTermIndex,atom});
+				else
+					searchingTables[i][termIndex].insert({termIndex,atom});
+			}
 			else{
 				Multimap_Atom values;
-				values.insert({nextTermIndex,atom});
+				if(nextTermIndex>-1)
+					values.insert({nextTermIndex,atom});
+				else
+					values.insert({termIndex,atom});
 				searchingTables[i].insert({termIndex,values});
 			}
 		}
@@ -479,9 +488,16 @@ void DoubleTermMapAtomSearcher::remove(Atom* atom) {
 	for (unsigned int i = 0; i < predicate->getArity(); ++i) {
 		if(createdSearchingTables[i]){
 			index_object termIndex=atom->getTerm(i)->getIndex();
-			index_object nextTermIndex=atom->getTerm(i+1)->getIndex();
-			if(searchingTables[i].count(termIndex))
-				searchingTables[termIndex][i].erase(nextTermIndex);
+			int nextTermIndex=-1;
+			if(i<(predicate->getArity()-1))
+				nextTermIndex=atom->getTerm(i+1)->getIndex();
+			if(searchingTables[i].count(termIndex)){
+				if(nextTermIndex>-1)
+					searchingTables[i][termIndex].erase(nextTermIndex);
+				else
+					searchingTables[i][termIndex].erase(termIndex);
+			}
+
 		}
 	}
 }
@@ -573,7 +589,6 @@ unsigned int DoubleTermMapAtomSearcher::selectBestIndex(const vector<pair<int,pa
 				index=pair.first;
 			}
 		}
-//		cout<<"Predicate "<<predicate->getName()<<" Indice "<<index<<" Selettivita' "<<maxSelectivity<<endl;
 		return index;
 	}
 	else{
@@ -630,6 +645,7 @@ void DoubleTermMapAtomSearcher::initializeIndexMaps(unsigned int indexingTerm){
 #ifdef DEBUG_ATOM_SEARCHER
 	cout<<"Predicate: "<<predicate->getName()<<" Created Index on term: "<<indexingTerm<<endl;
 #endif
+
 	createdAnIndex=true;
 	createdSearchingTables[indexingTerm]=true;
 	for (Atom* a : *table) {

@@ -60,7 +60,7 @@ private:
 
 class PredicateExtension {
 public:
-	///Constructors
+	///Constructor
 	PredicateExtension(Predicate* predicate, unsigned tableNumber = 2): predicate(predicate), predicateInformation(new PredicateInformation(predicate->getArity())){
 		if(MAX_TABLE_NUMBER){
 			tables.reserve(MAX_TABLE_NUMBER);
