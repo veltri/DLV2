@@ -131,7 +131,7 @@ protected:
  */
 class BaseAtomSearcher: public AtomSearcher {
 public:
-	BaseAtomSearcher(AtomVector* table) : AtomSearcher(table), counter(0), createdAnIndex(false) {};
+	BaseAtomSearcher(AtomVector* table) : AtomSearcher(table), counter(0) {};
 
 	virtual unsigned int firstMatch(Atom* templateAtom, map_term<Term*>& currentAssignment, Atom*& atomFound);
 	virtual void nextMatch(unsigned int id, Atom* templateAtom, map_term<Term*>& currentAssignment, Atom*& atomFound);
@@ -168,8 +168,6 @@ protected:
 	bool computeMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term<Term*>& currentAssignment, Atom*& atomFound);
 	/// This method computes an iterator pointing to the starting point of the search
 	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom){return new VectorIterator(table->begin(),table->end());}
-
-	bool createdAnIndex;
 };
 
 class SingleTermAtomSearcher : public BaseAtomSearcher{
