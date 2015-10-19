@@ -38,7 +38,7 @@ void BackTrackingGrounder::printAssignment(){
 bool BackTrackingGrounder::isGroundCurrentAtom(){
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("Is Ground");
-	bool isGround = ((*current_atom_it)->isBuiltIn() || (*current_atom_it)->isNegative() || current_variables_atoms[index_current_atom].size()==0);
+	bool isGround = (is_ground_atom[index_current_atom]);
 	Timer::getInstance()->stop("Is Ground");
 	return isGround;
 #endif
@@ -57,14 +57,15 @@ bool BackTrackingGrounder::match() {
 
 	if(templateSetAtom[index_current_atom]->isBuiltIn() ){
 
+		current_id_match[index_current_atom][0].second=1;
+		ground_rule->setAtomToSimplifyInBody(index_current_atom);
+
 #ifdef DEBUG_RULE_TIME
 		bool evaluate=templateSetAtom[index_current_atom] -> evaluate(current_var_assign);
 		Timer::getInstance()->stop("Match");
 		return evaluate;
 #endif
 
-		current_id_match[index_current_atom][0].second=1;
-		ground_rule->setAtomToSimplifyInBody(index_current_atom);
 		return templateSetAtom[index_current_atom] -> evaluate(current_var_assign);
 
 	}else if(templateSetAtom[index_current_atom]->isAggregateAtom()){

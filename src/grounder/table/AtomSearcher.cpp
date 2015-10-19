@@ -56,15 +56,15 @@ bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, map_term<Term
 		termToMatch=new_term->calculate();
 	}
 
+	if (termToMatch->getType()==TermType::ANONYMOUS) return true;
+
 	if((genericTerm->getType()==TermType::NUMERIC_CONSTANT || genericTerm->getType()==TermType::STRING_CONSTANT
 			 || genericTerm->getType()==TermType::SYMBOLIC_CONSTANT)){
 
-		if (termToMatch->getType()==TermType::ANONYMOUS) return true;
-		if ((termToMatch->getType()==TermType::NUMERIC_CONSTANT || termToMatch->getType()==TermType::STRING_CONSTANT || termToMatch->getType()==TermType::SYMBOLIC_CONSTANT) && termToMatch->getIndex() == genericTerm->getIndex()) return true;
+		if (termToMatch->getIndex() == genericTerm->getIndex()) return true;
 
 	}else if(genericTerm->getType()==TermType::FUNCTION){
 
-		if(termToMatch->getType()==TermType::ANONYMOUS) return true;
 		if(termToMatch->getType()!=TermType::FUNCTION) return false;
 		if(termToMatch->getName().compare(genericTerm->getName()) != 0)return false;
 		if(termToMatch->getTermsSize() != genericTerm->getTermsSize())return false;
@@ -100,14 +100,12 @@ unsigned int BaseAtomSearcher::firstMatch(Atom *templateAtom, map_term<Term*>& c
 bool BaseAtomSearcher::searchForFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term<Term*>& currentAssignment, Atom*& atomFound){
 	//Call findIfAFactExist only if all the terms are bound
 	if(templateAtom->isGround()){
-		bool find=0;
 		findIfExist(templateAtom,atomFound);
-		return find;
+		return false;
 	}
 
 	//Compute the first match
-	bool find=computeMatch(currentMatch,templateAtom,currentAssignment,atomFound);
-	return find;
+	return computeMatch(currentMatch,templateAtom,currentAssignment,atomFound);
 }
 
 bool BaseAtomSearcher::computeMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term<Term*>& currentAssignment, Atom*& atomFound){
@@ -130,7 +128,6 @@ void BaseAtomSearcher::nextMatch(unsigned int id, Atom *templateAtom, map_term<T
 	if(currentMatch->isDone()){
 		delete currentMatch;
 		resultMap.erase(id);
-		return;
 	}
 
 }

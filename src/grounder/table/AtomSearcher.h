@@ -40,35 +40,35 @@ public:
 ///This class implements and hides an iterator for atom vector
 class VectorIterator : public GeneralIterator {
 public:
-	VectorIterator(const AtomVector::iterator& s, const AtomVector::iterator& e): start(s), end(e){};
+	VectorIterator(const AtomVector::const_iterator& s, const AtomVector::const_iterator& e): start(s), end(e){};
 	virtual void next(){ if(start!=end) ++start;}
 	virtual bool isDone(){return start==end;}
 	virtual Atom* currentItem(){return *(start);}
 private:
-	AtomVector::iterator start;
-	AtomVector::iterator end;
+	AtomVector::const_iterator start;
+	AtomVector::const_iterator end;
 };
 ///This class implements and hides an iterator for atom unordered set
 class UnorderedSetIterator : public GeneralIterator {
 public:
-	UnorderedSetIterator(const AtomTable::iterator& s, const AtomTable::iterator& e): start(s), end(e){};
+	UnorderedSetIterator(const AtomTable::const_iterator& s, const AtomTable::const_iterator& e): start(s), end(e){};
 	virtual void next(){ if(start!=end) ++start;}
 	virtual bool isDone(){return start==end;}
 	virtual Atom* currentItem(){return *(start);}
 private:
-	AtomTable::iterator start;
-	AtomTable::iterator end;
+	AtomTable::const_iterator start;
+	AtomTable::const_iterator end;
 };
 ///This class implements and hides an iterator for atom unordered multimap
 class UnorderedMultiMapIterator : public GeneralIterator {
 public:
-	UnorderedMultiMapIterator(const Multimap_Atom::iterator& s, const Multimap_Atom::iterator& e): start(s), end(e){};
+	UnorderedMultiMapIterator(const Multimap_Atom::const_iterator& s, const Multimap_Atom::const_iterator& e): start(s), end(e){};
 	virtual void next(){ if(start!=end) ++start;}
 	virtual bool isDone(){return start==end;}
 	virtual Atom* currentItem(){return start->second;}
 private:
-	Multimap_Atom::iterator start;
-	Multimap_Atom::iterator end;
+	Multimap_Atom::const_iterator start;
+	Multimap_Atom::const_iterator end;
 };
 
 
