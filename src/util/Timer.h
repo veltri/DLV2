@@ -34,6 +34,10 @@ public:
 
 	}
 
+	void start(){
+		temp_clock=clock();
+	}
+
 	void stop(string label){
 		clock_t clock_end=clock();
 		clock_t clock_start=map_clock[label];
@@ -43,7 +47,22 @@ public:
 		if(it==map_elapse_time.end())
 			map_elapse_time.insert({label,time_elapsed});
 		else{
-			double previus_time=map_elapse_time[label];
+			double previus_time=(*it).second;
+			map_elapse_time.erase(label);
+			map_elapse_time.insert({label,previus_time+time_elapsed});
+		}
+	}
+
+	clock_t stop(){
+		return (clock()-temp_clock);
+	}
+
+	void add(string label,clock_t time_elapsed){
+		auto it=map_elapse_time.find(label);
+		if(it==map_elapse_time.end())
+			map_elapse_time.insert({label,time_elapsed});
+		else{
+			double previus_time=(*it).second;
 			map_elapse_time.erase(label);
 			map_elapse_time.insert({label,previus_time+time_elapsed});
 		}
@@ -66,13 +85,15 @@ public:
 		return timer_instance;
 	}
 
+
+
 private:
 	Timer(){};
 
 	static Timer* timer_instance;
 
 
-
+	clock_t temp_clock;
 	unordered_map<string,clock_t> map_clock;
 	unordered_map<string,clock_t> map_elapse_time;
 
