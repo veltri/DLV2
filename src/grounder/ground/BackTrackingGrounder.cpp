@@ -38,7 +38,7 @@ void BackTrackingGrounder::printAssignment(){
 bool BackTrackingGrounder::isGroundCurrentAtom(){
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("Is Ground");
-	bool isGround = ((*current_atom_it)->isBuiltIn() || (*current_atom_it)->isNegative() || current_variables_atoms[index_current_atom].size()==0);
+	bool isGround = (is_ground_atom[index_current_atom]);
 	Timer::getInstance()->stop("Is Ground");
 	return isGround;
 #endif
@@ -51,26 +51,10 @@ bool BackTrackingGrounder::match() {
 #endif
 
 	//Avoid call multiple time method match for the ground atom in the last position of the rule
-	if(isGroundCurrentAtom() && !direction){
+	if(isGroundCurrentAtom() && !direction)
 		return false;
-	}
 
-	if(templateSetAtom[index_current_atom]->isBuiltIn() ){
-
-#ifdef DEBUG_RULE_TIME
-		bool evaluate=templateSetAtom[index_current_atom] -> evaluate(current_var_assign);
-		Timer::getInstance()->stop("Match");
-		return evaluate;
-#endif
-
-		current_id_match[index_current_atom][0].second=1;
-		ground_rule->setAtomToSimplifyInBody(index_current_atom);
-		return templateSetAtom[index_current_atom] -> evaluate(current_var_assign);
-
-	}else if(templateSetAtom[index_current_atom]->isAggregateAtom()){
-		return groundAggregate();
-
-	}else if(templateSetAtom[index_current_atom]->isClassicalLiteral()){
+	 if(templateSetAtom[index_current_atom]->isClassicalLiteral()){
 
 		bool match;
 		unsigned current_table=current_id_match_iterator[index_current_atom];
@@ -86,6 +70,23 @@ bool BackTrackingGrounder::match() {
 #endif
 
 		return match;
+
+	}else if(templateSetAtom[index_current_atom]->isBuiltIn() ){
+
+		current_id_match[index_current_atom][0].second=1;
+		ground_rule->setAtomToSimplifyInBody(index_current_atom);
+
+#ifdef DEBUG_RULE_TIME
+		bool evaluate=templateSetAtom[index_current_atom] -> evaluate(current_var_assign);
+		Timer::getInstance()->stop("Match");
+		return evaluate;
+#endif
+
+		return templateSetAtom[index_current_atom] -> evaluate(current_var_assign);
+
+	}else if(templateSetAtom[index_current_atom]->isAggregateAtom()){
+		return groundAggregate();
+
 	}
 
 	return false;
