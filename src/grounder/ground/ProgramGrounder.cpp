@@ -53,7 +53,6 @@ void ProgramGrounder::ground() {
 	vector<unordered_set<index_object>> componentPredicateInHead;
 	statementDependency->createComponentGraphAndComputeAnOrdering(exitRules, recursiveRules, componentPredicateInHead,constraintRules,remainedConstraint);
 
-
 //	if (Options::globalOptions()->isPrintRewrittenProgram())
 //		printProgram(exitRules, recursiveRules);
 
@@ -73,7 +72,9 @@ void ProgramGrounder::ground() {
 			if(nonGroundSimplificator.simplifyRule(r))
 				continue;
 			inizializeSearchInsertPredicate(r);
+//			r->sortPositiveLiteralInBody(predicate_searchInsert_table);
 			groundRule(r);
+
 #ifdef DEBUG_RULE_TIME
 			Timer::getInstance()->print();
 #endif
@@ -90,6 +91,7 @@ void ProgramGrounder::ground() {
 				if(nonGroundSimplificator.simplifyRule(rule))
 					continue;
 				inizializeSearchInsertPredicate(rule,componentPredicateInHead[component]);
+//				rule->sortPositiveLiteralInBody(predicate_searchInsert_table);
 				if(groundRule(rule))
 					found_something=true;
 			}
@@ -110,9 +112,9 @@ void ProgramGrounder::ground() {
 					for(unsigned i=0;i<pow(2,predicate_combination.size())-1;i++){
 						computeRecursiveCombinationPredicate();
 						nextSearchInsertPredicate(r,componentPredicateInHead[component]);
-						if (groundRule(r)){
+//						r->sortPositiveLiteralInBody(predicate_searchInsert_table);
+						if (groundRule(r))
 							found_something = true;
-						}
 					}
 				}
 
@@ -262,6 +264,7 @@ void ProgramGrounder::swapInDelta(Rule *rule){
 			if (predicateExt != nullptr){
 				predicateExt->swapTables(DELTA,NOFACT);
 				predicateExt->swapTables(NEXTDELTA,DELTA);
+//				predicateExt->swapPointersTables(NEXTDELTA,DELTA);
 			}
 		}
 	}

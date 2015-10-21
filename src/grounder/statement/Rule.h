@@ -159,6 +159,8 @@ public:
 
 	void setUnsolvedPredicates();
 
+	void sortPositiveLiteralInBody(vector<vector<unsigned>>& predicate_searchInsert_table);
+
 private:
 
 	/// Return the predicate in atoms vector, if checkNegative is true compare the negative of atom with the parameter

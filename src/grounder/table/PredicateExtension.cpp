@@ -166,7 +166,27 @@ void PredicateInformation::addInDictionary(unsigned position, Term* term) {
 	termDictionary[position].insert(term);
 }
 
+//FIXME TODO
+void PredicateExtension::swapPointersTables(unsigned tableFrom, unsigned tableTo) {
+	assert_msg(tableFrom<tables.size(),"The specified table doesn't exist.");
+	assert_msg(tableTo<tables.size(),"The specified table doesn't exist.");
+
+	AtomSearcher *seacher_from=getAtomSearcher(tableFrom);
+	AtomSearcher *seacher_to=getAtomSearcher(tableTo);
+	AtomSearcher *searcher_tmp=seacher_from;
+	seacher_from=seacher_to;
+	seacher_to=searcher_tmp;
+
+	AtomVector *table_from=tables[tableFrom];
+	AtomVector *table_to=tables[tableTo];
+	AtomVector *table_tmp=table_from;
+	table_from=table_to;
+	table_to=table_tmp;
+	cout<<endl;
+}
+
 
 }
 }
+
 
