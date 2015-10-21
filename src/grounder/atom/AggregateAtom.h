@@ -80,7 +80,7 @@ public:
 
 	bool operator==(const Atom& a)const;
 
-	virtual const set_term& getVariable(bool guard=true);
+	virtual const set_term getVariable(bool guard=true);
 
 	virtual set_term getGuardVariable();
 

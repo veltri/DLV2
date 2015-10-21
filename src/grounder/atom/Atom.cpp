@@ -28,10 +28,8 @@ void Atom::ground(map_term<Term*>& substritutionTerm,Atom*& templateAtom){
 
 };
 
-const set_term& Atom::getVariable(bool guard){
-	if(calculatedVariables)
-		return variables;
-	calculatedVariables=true;
+const set_term Atom::getVariable(bool guard){
+	set_term variables;
 	getVariables(this,variables);
 	return variables;
 }

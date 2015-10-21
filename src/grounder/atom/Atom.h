@@ -55,17 +55,17 @@ public:
 
 
 	///Default constructor
-	Atom():Indexable(0),calculatedVariables(false) {};
+	Atom():Indexable(0) {};
 
 	/** Constructor
 	 * @param termsVec set the terms vector
 	 */
-	Atom(vector<Term*>& termsVec) : terms(move(termsVec)),calculatedVariables(false) {};
+	Atom(vector<Term*>& termsVec) : terms(move(termsVec)) {};
 
 	/** Constructor
 	 * @param negative set whether the atom is negated with negation as failure
 	 */
-	Atom(bool negative):calculatedVariables(false) {this->setNegative(negative);};
+	Atom(bool negative) {this->setNegative(negative);};
 
 	virtual Atom* clone() = 0;
 
@@ -75,7 +75,7 @@ public:
 
 	///Return the term of variable present in the Atom
 	///If the guard is true add also the variable in the guard
-	virtual const set_term& getVariable(bool guard=true);
+	virtual const set_term getVariable(bool guard=true);
 
 	/// Return true if is ground, each term is constant term
 	virtual bool isGround(){
@@ -287,8 +287,6 @@ public:
 
 protected:
 	vector<Term*> terms;
-	set_term variables;
-	bool calculatedVariables;
 };
 
 using AtomTable = hashSet<Atom> ;

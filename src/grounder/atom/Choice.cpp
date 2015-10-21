@@ -76,10 +76,8 @@ set_term Choice::getGuardVariable(){
 	return terms_variable;
 }
 
-const set_term& Choice::getVariable(bool guard) {
-	if(calculatedVariables)
-		return variables;
-
+const set_term Choice::getVariable(bool guard) {
+	set_term variables;
 
 	if(guard)
 		variables=getGuardVariable();
@@ -91,7 +89,6 @@ const set_term& Choice::getVariable(bool guard) {
 			variables.insert(var.begin(),var.end());
 		}
 	}
-	calculatedVariables=true;
 	return variables;
 }
 

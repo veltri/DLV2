@@ -32,7 +32,7 @@ public:
 		: Atom(t), firstBinop(fB), secondBinop(sB), choiceElements(cE) {};
 
 	///Return the term of variable present in the Atom
-	virtual const set_term& getVariable(bool guard=true);
+	virtual const set_term getVariable(bool guard=true);
 
 	///Getter method for the first binary operation
 	Binop getFirstBinop() const {return firstBinop;};
