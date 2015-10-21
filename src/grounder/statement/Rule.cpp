@@ -8,6 +8,7 @@
 #include "Rule.h"
 #include "iostream"
 #include "OrderRule.h"
+#include "../table/PredicateExtension.h"
 
 namespace DLV2{
 
@@ -168,6 +169,54 @@ void Rule::setUnsolvedPredicates() {
 	}
 }
 
+//FIXME TODO
+void Rule::sortPositiveLiteralInBody(vector<vector<unsigned>>& predicate_searchInsert_table) {
+	vector<Atom*> newBody;
+	newBody.reserve(body.size());
+
+	vector<int> sizeExtensions;
+	sizeExtensions.reserve(body.size());
+
+	for(unsigned i=0;i<body.size();++i){
+		Atom* atom=body[i];
+		if(atom->isClassicalLiteral() && !atom->isNegative()){
+			unsigned extensionSize=0;
+			for(auto table:predicate_searchInsert_table[head.size()+i])
+				extensionSize+=PredicateExtTable::getInstance()->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(table);
+			sizeExtensions.push_back(extensionSize);
+		}
+		else
+			sizeExtensions.push_back(-1);
+		newBody.push_back(atom);
+	}
+
+	bool sort=true;
+	while(sort){
+		sort=false;
+		for(unsigned i=0;i<body.size()-1;++i){
+			Atom* atom1=newBody[i];
+			Atom* atom2=newBody[i+1];
+			bool atom1Positive=atom1->isClassicalLiteral() && !atom1->isNegative();
+			bool atom2Positive=atom2->isClassicalLiteral() && !atom2->isNegative();
+			if(atom1Positive && atom2Positive && sizeExtensions[i] > sizeExtensions[i+1]){
+				newBody[i]=atom2;
+				newBody[i+1]=atom1;
+
+				int ttmp=sizeExtensions[i];
+				sizeExtensions[i]=sizeExtensions[i+1];
+				sizeExtensions[i+1]=ttmp;
+
+				vector<unsigned> vtmp=predicate_searchInsert_table[head.size()+i];
+				predicate_searchInsert_table[head.size()+i]=predicate_searchInsert_table[head.size()+i+1];
+				predicate_searchInsert_table[head.size()+i+1]=vtmp;
+
+				sort=true;
+			}
+		}
+	}
+	body=newBody;
+
+}
 
 }
 }

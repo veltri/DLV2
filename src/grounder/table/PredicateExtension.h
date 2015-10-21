@@ -74,7 +74,7 @@ public:
 	Predicate* getPredicate() const {return predicate;}
 
 	///Returns the i-th AtomSeacher in atomSearchers
-	AtomSearcher* getAtomSearcher(unsigned i){
+	AtomSearcher*& getAtomSearcher(unsigned i){
 		setAtomSearchers();
 		assert_msg(i<atomSearchers.size(),"The specified AtomSearche doesn't exist.");
 		return atomSearchers[i];
@@ -139,6 +139,9 @@ public:
 	 //Moves the content of the tableFrom (source) to the tableTo (destination)
 	 void swapTables(unsigned tableFrom,unsigned tableTo);
 
+	 //Swap the pointers of the tableFrom (source) to the tableTo (destination)
+	 void swapPointersTables(unsigned tableFrom,unsigned tableTo);
+
 	///Printer method for a single table
 	inline void print(unsigned table){for(auto fact:*tables[table]){cout<<fact->getIndex()<<" ";ClassicalLiteral::print(predicate,fact->getTerms(),false,false,cout);cout<<endl;}}
 
@@ -153,7 +156,7 @@ public:
 
 	PredicateInformation* getPredicateInformation() const {return predicateInformation;}
 
-	unsigned getPredicateExtentionSize(unsigned table)const{return tables[table]->size();}
+	unsigned getPredicateExtentionSize(unsigned table)const{if(table<tables.size()) return tables[table]->size(); return 0;}
 
 private:
 	///The predicate
