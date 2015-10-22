@@ -52,7 +52,7 @@ bool BackTrackingGrounder::match() {
 
 	//Avoid call multiple time method match for the ground atom in the last position of the rule
 	if(isGroundCurrentAtom() && !direction)
-		return false;
+ 		return false;
 
 	 if(templateSetAtom[index_current_atom]->isClassicalLiteral()){
 
@@ -61,6 +61,7 @@ bool BackTrackingGrounder::match() {
 		//if is the first table to visit and the id of first match is NO_MATCH
 		if(current_table==0 && current_id_match[index_current_atom][current_table].second==NO_MATCH){
 			match = firstMatch() == !templateSetAtom[index_current_atom]->isNegative();
+
 		}else{
 			match = nextMatch() == !templateSetAtom[index_current_atom]->isNegative();
 		}

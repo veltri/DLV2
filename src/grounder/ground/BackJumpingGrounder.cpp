@@ -73,7 +73,7 @@ void BackJumpingGrounder::inizialize(Rule* rule) {
 #endif
 	BackTrackingGrounder::inizialize(rule);
 	closestSuccessfulBinder_it=currentRule->getBeginBody();
-	closestSuccessfulBinder_index=0;
+	closestSuccessfulBinder_index=-1;
 	current_status=SUCCESSFULL;
 
 	historyBackFromFirst.clear();
@@ -239,7 +239,7 @@ void BackJumpingGrounder::backFromNextMatch() {
 	int closestBinder_pos;
 	closestBinder(index_current_atom,closestBinder_pos,closestBinder_it);
 
-	if(closestSuccessfulBinder_it>closestBinder_it){
+	if(closestSuccessfulBinder_index>closestBinder_pos){
 		current_atom_it=closestSuccessfulBinder_it;
 		index_current_atom=closestSuccessfulBinder_index;
 	}

@@ -20,7 +20,7 @@ enum Status {SUCCESSFULL,FIRST_MATCH,NEXT_MATCH};
 class BackJumpingGrounder: public BackTrackingGrounder {
 
 public:
-	BackJumpingGrounder():BackTrackingGrounder(),closestSuccessfulBinder_index(0),current_status(SUCCESSFULL),historyBackFromSolutionFound(-1){};
+	BackJumpingGrounder():BackTrackingGrounder(),closestSuccessfulBinder_index(-1),current_status(SUCCESSFULL),historyBackFromSolutionFound(-1){};
 	virtual ~BackJumpingGrounder(){};
 
 protected:
