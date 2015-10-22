@@ -73,12 +73,11 @@ void BackJumpingGrounder::inizialize(Rule* rule) {
 	cout<<endl<<"---> INIZIALIZE"<<endl;
 #endif
 	BackTrackingGrounder::inizialize(rule);
-	closestSuccessfulBinder_it=currentRule->getBeginBody();
 	closestSuccessfulBinder_index=-1;
 	current_status=SUCCESSFULL;
 
 	historyBackFromFirst.clear();
-	historyBackFromSolutionFound=-1;
+	historyBackFromSolutionFound=-2;
 	historyBackOutputVars.clear();
 
 	failureMap.clear();
@@ -145,7 +144,7 @@ void BackJumpingGrounder::backFromSolutionFound() {
 #endif
 	current_status=NEXT_MATCH;
 
-	if(historyBackFromSolutionFound!=-1){
+	if(historyBackFromSolutionFound!=-2){
 		index_current_atom=historyBackFromSolutionFound;
 		current_atom_it=currentRule->getBeginBody()+historyBackFromSolutionFound;
 		closestSuccessfulBinder_index=historyBackOutputVars[index_current_atom];
