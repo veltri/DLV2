@@ -54,6 +54,8 @@ bool BackTrackingGrounder::match() {
 	if(isGroundCurrentAtom() && !direction)
  		return false;
 
+
+
 	 if(templateSetAtom[index_current_atom]->isClassicalLiteral()){
 
 		bool match;
@@ -326,8 +328,6 @@ bool BackTrackingGrounder::foundAssignment() {
 
 	if(ground_rule->isAStrongConstraint() && !ground_rule->areThereUndefinedAtomInBody()){throw ConstrainException{};};
 
-	if(currentRule->getSizeBody() > 0)
-		removeBindValueInAssignment(current_variables_atoms[index_current_atom]);
 	return ground_new_atom;
 }
 
@@ -336,6 +336,7 @@ bool BackTrackingGrounder::back() {
 	direction=0;
 	if(callFoundAssignment){
 		callFoundAssignment=false;
+		removeBindValueInAssignment(current_variables_atoms[index_current_atom]);
 		return true;
 	}
 
@@ -427,15 +428,16 @@ void BackTrackingGrounder::findBindVariablesRule() {
 
 		current_variables_atoms.push_back(set_term());
 
+
 		for (auto variable : variablesInAtom) {
 			if (!total_variable.count(variable)){
+
 				current_variables_atoms[index_current_atom].insert(variable);
 				variablesBinder.insert({variable,index_current_atom});
 			}
 		}
 
 		total_variable.insert(variablesInAtom.begin(),variablesInAtom.end());
-
 		///Set true if is ground
 		if(is_ground_atom.size()<=index_current_atom)
 			is_ground_atom.push_back((current_atom->isBuiltIn() || (current_atom->isClassicalLiteral() && current_atom->isNegative()) || current_variables_atoms[index_current_atom].size()==0));

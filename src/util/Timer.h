@@ -85,6 +85,13 @@ public:
 		return timer_instance;
 	}
 
+	static void printClock(string label){
+		cerr<<label<<" "<<clock()<<endl;
+	}
+
+	static void printClockPerSecond(){
+		cerr<<((double) CLOCKS_PER_SEC)<<endl;
+	}
 
 
 private:

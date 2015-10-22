@@ -34,7 +34,8 @@ bool BackJumpingGrounder::back() {
 		return false;
 
 	for (int i=index_current_atom; i<=current_index; ++i){
-		removeBindValueInAssignment(current_variables_atoms[i]);
+		if(current_variables_atoms[i].size()>0)
+			removeBindValueInAssignment(current_variables_atoms[i]);
 		if(i>index_current_atom && !is_ground_atom[i]){
 			Predicate *currentPredicate=currentRule->getAtomInBody(i)->getPredicate();
 			for (unsigned j = 0; j < current_id_match[i].size()&&currentPredicate!=nullptr; ++j) {
