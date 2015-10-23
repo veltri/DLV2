@@ -275,7 +275,8 @@ bool ProgramGrounder::groundRule(Rule* rule) {
 	if (Options::globalOptions()->isPrintRewrittenProgram())
 		{cout<<"RULE: ";rule->print();}
 #ifdef DEBUG_RULE_TIME
-	Timer::getInstance()->start("RULE");
+	rule->print();
+	Timer::getInstance()->start();
 #endif
 
 	inizialize(rule);
@@ -306,8 +307,10 @@ bool ProgramGrounder::groundRule(Rule* rule) {
 			}
 
 	}
+
 #ifdef DEBUG_RULE_TIME
-	Timer::getInstance()->stop("RULE");
+	clock_t time=Timer::getInstance()->stop();
+	cout<<"TIME: "<<time/(double) CLOCKS_PER_SEC<<endl;
 #endif
 
 	return find_assignment;

@@ -110,6 +110,7 @@ void BackJumpingGrounder::inizialize(Rule* rule) {
 		var->print();cout<<" ";
 	}
 	cout<<endl;
+	cout<<"VARIABLES BINDER:"<<endl;
 	for(auto it:variablesBinder){
 		it.first->print();cout<<"\t";cout<<it.second<<endl;
 	}
@@ -223,6 +224,7 @@ bool BackJumpingGrounder::match() {
 		}
 	}
 	cout<<endl;
+	cout<<"ASSIGNMENT:"<<endl;
 	printAssignment();
 #endif
 

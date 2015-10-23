@@ -17,14 +17,7 @@ namespace DLV2 {
 namespace grounder {
 
 void BackTrackingGrounder::generateTemplateAtom(){
-#ifdef DEBUG_RULE_TIME
-	Timer::getInstance()->start("Generate Template");
-#endif
-
 	(*current_atom_it)->ground(current_var_assign,templateSetAtom[index_current_atom]);
-#ifdef DEBUG_RULE_TIME
-	Timer::getInstance()->stop("Generate Template");
-#endif
 }
 
 void BackTrackingGrounder::printAssignment(){
@@ -36,19 +29,10 @@ void BackTrackingGrounder::printAssignment(){
 }
 
 bool BackTrackingGrounder::isGroundCurrentAtom(){
-#ifdef DEBUG_RULE_TIME
-	Timer::getInstance()->start("Is Ground");
-	bool isGround = (is_ground_atom[index_current_atom]);
-	Timer::getInstance()->stop("Is Ground");
-	return isGround;
-#endif
 	return (is_ground_atom[index_current_atom]);
 
 }
 bool BackTrackingGrounder::match() {
-#ifdef DEBUG_RULE_TIME
-	Timer::getInstance()->start("Match");
-#endif
 
 	//Avoid call multiple time method match for the ground atom in the last position of the rule
 	if(isGroundCurrentAtom() && !direction)
@@ -68,22 +52,17 @@ bool BackTrackingGrounder::match() {
 			match = nextMatch() == !templateSetAtom[index_current_atom]->isNegative();
 		}
 
-#ifdef DEBUG_RULE_TIME
-		Timer::getInstance()->stop("Match");
-#endif
 
 		return match;
 
 	}else if(templateSetAtom[index_current_atom]->isBuiltIn() ){
 
+#ifdef DEBUG_GROUNDING
+	cout<<"MATCH BUILT-IN:";templateSetAtom[index_current_atom]->print();cout<<endl;
+#endif
 		current_id_match[index_current_atom][0].second=1;
 		ground_rule->setAtomToSimplifyInBody(index_current_atom);
 
-#ifdef DEBUG_RULE_TIME
-		bool evaluate=templateSetAtom[index_current_atom] -> evaluate(current_var_assign);
-		Timer::getInstance()->stop("Match");
-		return evaluate;
-#endif
 
 		return templateSetAtom[index_current_atom] -> evaluate(current_var_assign);
 
@@ -99,12 +78,11 @@ bool BackTrackingGrounder::match() {
 
 
 bool BackTrackingGrounder::firstMatch(){
-#ifdef DEBUG_RULE_TIME
-		Timer::getInstance()->start("F-Match "+boost::lexical_cast<string>(index_current_atom));
+
+
+#ifdef DEBUG_GROUNDING
+	cout<<"FIRST MATCH ON:";templateSetAtom[index_current_atom]->print();cout<<endl;
 #endif
-
-
-
 	// For each table to search call the first match until one table return find
 	bool find=false;
 	unsigned current_table=current_id_match_iterator[index_current_atom];
@@ -154,9 +132,6 @@ bool BackTrackingGrounder::firstMatch(){
 			substiteInGroundRule(index_current_atom,atomFound);
 			ground_rule->setAtomToSimplifyInBody(index_current_atom,!undef);
 
-#ifdef DEBUG_RULE_TIME
-		Timer::getInstance()->stop("F-Match "+boost::lexical_cast<string>(index_current_atom));
-#endif
 			return find;
 		}
 		current_id_match[index_current_atom][current_table].second = NO_MATCH;
@@ -177,16 +152,14 @@ bool BackTrackingGrounder::firstMatch(){
 
 	current_id_match_iterator[index_current_atom]=0;
 
-#ifdef DEBUG_RULE_TIME
-		Timer::getInstance()->stop("F-Match "+boost::lexical_cast<string>(index_current_atom));
-#endif
 	return false;
 }
 
 bool BackTrackingGrounder::nextMatch(){
-#ifdef DEBUG_RULE_TIME
-		Timer::getInstance()->start("N-Match "+boost::lexical_cast<string>(index_current_atom));
+#ifdef DEBUG_GROUNDING
+	cout<<"NEXT MATCH ON:";templateSetAtom[index_current_atom]->print();cout<<endl;
 #endif
+
 	bool find=false;
 	unsigned current_table=current_id_match_iterator[index_current_atom];
 	unsigned n_table=current_id_match[index_current_atom].size();
@@ -212,9 +185,7 @@ bool BackTrackingGrounder::nextMatch(){
 			substiteInGroundRule(index_current_atom,atomFound);
 			current_id_match[index_current_atom][current_table].second = current_id;
 			ground_rule->setAtomToSimplifyInBody(index_current_atom,!undef);
-#ifdef DEBUG_RULE_TIME
-		Timer::getInstance()->stop("N-Match "+boost::lexical_cast<string>(index_current_atom));
-#endif
+
 			return find;
 		}
 		current_id_match[index_current_atom][current_table].second = NO_MATCH;
@@ -222,22 +193,15 @@ bool BackTrackingGrounder::nextMatch(){
 	}
 	current_id_match_iterator[index_current_atom]=0;
 
-#ifdef DEBUG_RULE_TIME
-		Timer::getInstance()->stop("N-Match "+boost::lexical_cast<string>(index_current_atom));
-#endif
 	return false;
 }
 
 bool BackTrackingGrounder::next() {
-#ifdef DEBUG_RULE_TIME
-		Timer::getInstance()->start("Next");
-#endif
+
 	direction=1;
 	callFoundAssignment = false;
 	if( unsigned(index_current_atom+1)>=currentRule->getSizeBody()){
-#ifdef DEBUG_RULE_TIME
-		Timer::getInstance()->stop("Next");return false;
-#endif
+
 		return false;
 	}
 
@@ -247,9 +211,7 @@ bool BackTrackingGrounder::next() {
 
 
 	generateTemplateAtom();
-#ifdef DEBUG_RULE_TIME
-		Timer::getInstance()->stop("Next");
-#endif
+
 	return true;
 }
 
@@ -296,9 +258,7 @@ bool BackTrackingGrounder::foundAssignment() {
 		}
 	}
 
-#ifdef DEBUG_RULE_TIME
-		Timer::getInstance()->stop("Head");
-#endif
+
 
 	// If the rule has possible undef atoms in its body its printing is postponed to the end of grounding
 	// So that:
@@ -344,18 +304,13 @@ bool BackTrackingGrounder::back() {
 	if (index_current_atom <=  0)
 		return false;
 
-#ifdef DEBUG_RULE_TIME
-		Timer::getInstance()->start("Back");
-#endif
 
 	--current_atom_it;
 	--index_current_atom;
 
 	while (isGroundCurrentAtom()){
 		if (index_current_atom <= 0){
-#ifdef DEBUG_RULE_TIME
-		Timer::getInstance()->stop("Back");return false;
-#endif
+
 			return false;
 		}
 
@@ -368,17 +323,12 @@ bool BackTrackingGrounder::back() {
 	removeBindValueInAssignment(current_variables_atoms[index_current_atom]);
 	generateTemplateAtom();
 
-#ifdef DEBUG_RULE_TIME
-		Timer::getInstance()->stop("Back");
-#endif
+
 
 	return true;
 }
 
 void BackTrackingGrounder::inizialize(Rule* rule) {
-#ifdef DEBUG_RULE_TIME
-		Timer::getInstance()->start("Init");
-#endif
 	direction=1;
 	currentRule=rule;
 	current_var_assign.clear();
@@ -394,9 +344,7 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 	findSearchTable();
 	if(rule->getSizeBody()>0)
 		generateTemplateAtom();
-#ifdef DEBUG_RULE_TIME
-		Timer::getInstance()->stop("Init");
-#endif
+
 	if(ground_rule==0)
 		ground_rule=new Rule(true, rule->getSizeHead(), rule->getSizeBody());
 	else{
@@ -407,9 +355,6 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 }
 
 void BackTrackingGrounder::findBindVariablesRule() {
-#ifdef DEBUG_RULE_TIME
-		Timer::getInstance()->start("Find Bind");
-#endif
 
 	set_term total_variable;
 	unsigned int index_current_atom = 0;
@@ -443,15 +388,9 @@ void BackTrackingGrounder::findBindVariablesRule() {
 			is_ground_atom.push_back((current_atom->isBuiltIn() || (current_atom->isClassicalLiteral() && current_atom->isNegative()) || current_variables_atoms[index_current_atom].size()==0));
 
 	}
-#ifdef DEBUG_RULE_TIME
-		Timer::getInstance()->stop("Find Bind");
-#endif
 }
 
 void BackTrackingGrounder::findSearchTable() {
-#ifdef DEBUG_RULE_TIME
-		Timer::getInstance()->start("Find Search");
-#endif
 
 
 	for (unsigned index_current_atom = 0; index_current_atom < currentRule->getSizeBody(); ++index_current_atom) {
@@ -464,22 +403,13 @@ void BackTrackingGrounder::findSearchTable() {
 
 	}
 
-#ifdef DEBUG_RULE_TIME
-		Timer::getInstance()->stop("Find Search");
-#endif
 }
 
 void BackTrackingGrounder::removeBindValueInAssignment(const set_term& bind_variables) {
-#ifdef DEBUG_RULE_TIME
-		Timer::getInstance()->start("Remove Assignment");
-#endif
 
 	for (auto variable : bind_variables)
 		current_var_assign.erase(variable);
 
-#ifdef DEBUG_RULE_TIME
-		Timer::getInstance()->stop("Remove Assignment");
-#endif
 
 }
 
