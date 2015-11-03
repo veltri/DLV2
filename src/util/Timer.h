@@ -38,6 +38,11 @@ public:
 		temp_clock=clock();
 	}
 
+	clock_t getClock(){
+		clock_t cl=clock();
+		return cl;
+	}
+
 	void stop(string label){
 		clock_t clock_end=clock();
 		clock_t clock_start=map_clock[label];

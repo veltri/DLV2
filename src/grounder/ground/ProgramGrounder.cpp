@@ -270,19 +270,28 @@ void ProgramGrounder::swapInDelta(Rule *rule){
 	}
 }
 
+void printTimeElapsed(clock_t time,ostream& stream){
+	stream<<"TIME: \t"<<((time)/(double) CLOCKS_PER_SEC)<<endl;
+	stream<<"----------------------"<<endl;
+}
+
 bool ProgramGrounder::groundRule(Rule* rule) {
 
 	if (Options::globalOptions()->isPrintRewrittenProgram())
 		{cout<<"RULE: ";rule->print();}
-#ifdef DEBUG_RULE_TIME
-	rule->print();
-	Timer::getInstance()->start();
+#ifdef DEBUG_GRULE_TIME
+	cerr<<endl<<"RULE ORDERED: \t";rule->print(cerr);
+	clock_t start=Timer::getInstance()->getClock();
 #endif
 
 	inizialize(rule);
 
 	if(rule->getSizeBody()==0){
 		foundAssignment();
+#ifdef DEBUG_GRULE_TIME
+	clock_t end=Timer::getInstance()->getClock();
+	printTimeElapsed(end-start,cerr);
+#endif
 		return true;
 	}
 
@@ -308,9 +317,9 @@ bool ProgramGrounder::groundRule(Rule* rule) {
 
 	}
 
-#ifdef DEBUG_RULE_TIME
-	clock_t time=Timer::getInstance()->stop();
-	cout<<"TIME: "<<time/(double) CLOCKS_PER_SEC<<endl;
+#ifdef DEBUG_GRULE_TIME
+	clock_t end=Timer::getInstance()->getClock();
+	printTimeElapsed(end-start,cerr);
 #endif
 
 	return find_assignment;
