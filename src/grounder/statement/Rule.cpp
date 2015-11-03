@@ -36,17 +36,17 @@ unordered_set<index_object> Rule::calculatePredicateIndex(vector<Atom*>& atoms,b
 	return predicates;
 }
 
-void Rule::print(){
+void Rule::print(ostream& stream){
 
 	//Print for debug
-	if(!ground){printNonGround();return;}
+	if(!ground){printNonGround(stream);return;}
 	unsigned int i=0;
 	bool firstAtomPrinted=false;
 	for (auto atom:head) {
 		if(firstAtomPrinted && !simplifiedHead[i])
-			cout<<";";
+			stream<<";";
 		if(!simplifiedHead[i]){
-			atom->print();
+			atom->print(stream);
 			if(!firstAtomPrinted)
 				firstAtomPrinted=true;
 		}
@@ -54,41 +54,41 @@ void Rule::print(){
 	}
 	firstAtomPrinted=false;
 	if(areThereUndefinedAtomInBody() || isAStrongConstraint()){
-		cout<<":-";
+		stream<<":-";
 		unsigned int i=0;
 		for (auto atom:body) {
 			if(firstAtomPrinted && !simplifiedBody[i])
-				cout<<";";
+				stream<<";";
 			if(!simplifiedBody[i]){
-				atom->print();
+				atom->print(stream);
 				if(!firstAtomPrinted)
 					firstAtomPrinted=true;
 			}
 			i++;
 		}
 	}
-	cout<<"."<<endl;
+	stream<<"."<<endl;
 }
 
-void Rule::printNonGround(){
+void Rule::printNonGround(ostream& stream){
 	unsigned int i=0;
 	for (auto atom:head) {
-		atom->print();
+		atom->print(stream);
 		if(i!=head.size()-1)
-			cout<<";";
+			stream<<";";
 		i++;
 	}
 	if(body.size()>0 || isAStrongConstraint()){
-		cout<<":-";
+		stream<<":-";
 		unsigned int i=0;
 		for (auto atom:body) {
-			atom->print();
+			atom->print(stream);
 			if(i!=body.size()-1)
-				cout<<";";
+				stream<<";";
 			i++;
 		}
 	}
-	cout<<"."<<endl;
+	stream<<"."<<endl;
 }
 
 

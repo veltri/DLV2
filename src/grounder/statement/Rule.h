@@ -124,7 +124,7 @@ public:
 	void clear(){head.clear();body.clear();};
 
 	///Printer method
-	void print();
+	void print(ostream& stream=cout);
 
 	/** @brief Equal-to operator for rules
 	 *  @details Two rules are equal if they have the same atoms in the body and in the head regardless the order in which they appear
@@ -182,7 +182,7 @@ private:
 	///An array containing true at a position in the body if that atom has to be simplified, false otherwise
 	bool* simplifiedBody;
 
-	void printNonGround();
+	void printNonGround(ostream& stream=cout);
 
 	bool mustBeRewritedForAggregates;
 };
