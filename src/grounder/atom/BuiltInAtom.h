@@ -76,7 +76,7 @@ public:
 	virtual bool isBuiltIn()const{return true;};
 
 	///Printer Method
-	void print();
+	void print(ostream& stream=cout);
 
 	/// Substitute the term and return a new Atom with term substituted
 	virtual void substitute(map_term<Term*>& substritutionTerm,Atom*& templateAtom);

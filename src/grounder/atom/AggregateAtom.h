@@ -176,7 +176,7 @@ public:
 	virtual Term* generateNextCombination(bool& finish);
 
 	///Printer method
-	void print();
+	void print(ostream& stream=cout);
 
 	virtual void deleteAtoms() {for(auto& aggregateElem:aggregateElements) aggregateElem->deleteAtoms();};
 

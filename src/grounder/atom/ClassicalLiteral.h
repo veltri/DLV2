@@ -73,7 +73,7 @@ public:
 	static void print(Predicate* predicate,const vector<Term*>& terms,bool negative,bool hasMinus,ostream& stream);
 
 	///Printer Method
-	void print();
+	void print(ostream& stream=cout);
 
 	/// Substitute the term and return a new Atom with term substituted
 	virtual void substitute(map_term<Term*>& substritutionTerm,Atom*& templateAtom);

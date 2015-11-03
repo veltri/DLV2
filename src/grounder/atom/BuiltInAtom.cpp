@@ -63,24 +63,24 @@ bool BuiltInAtom::operator==(const Atom& a) const {
 	return true;
 }
 
-void BuiltInAtom::print(){
+void BuiltInAtom::print(ostream& stream){
 	Term* firstTerm=terms[0];
 	Term* secondTerm=terms[1];
 
-	firstTerm->print();
+	firstTerm->print(stream);
 	if(binop==Binop::EQUAL)
-		cout<<"=";
+		stream<<"=";
 	if(binop==Binop::UNEQUAL)
-		cout<<"!=";
+		stream<<"!=";
 	if(binop==Binop::LESS)
-		cout<<"<";
+		stream<<"<";
 	if(binop==Binop::LESS_OR_EQ)
-		cout<<"<=";
+		stream<<"<=";
 	if(binop==Binop::GREATER)
-		cout<<">";
+		stream<<">";
 	if(binop==Binop::GREATER_OR_EQ)
-		cout<<">=";
-	secondTerm->print();
+		stream<<">=";
+	secondTerm->print(stream);
 }
 
 

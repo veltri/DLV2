@@ -72,7 +72,7 @@ public:
 	///This method compute the resulting hash of a choice atom TODO
 	size_t getHash() const {return 0;};
 
-	virtual void print();
+	virtual void print(ostream& stream=cout);
 
 	virtual bool operator==(const Atom& a)const ;
 	virtual size_t hash(){return 0;};

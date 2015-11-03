@@ -272,7 +272,7 @@ public:
 	/// Similiar to ground(map_term_term& substritutionTerm) but not create new atom
 	virtual void ground(map_term<Term*>& substritutionTerm,Atom*& templateAtom);
 	///Printer method
-	virtual void print() = 0;
+	virtual void print(ostream& stream=cout) = 0;
 
 	virtual void deleteAtoms() {};
 

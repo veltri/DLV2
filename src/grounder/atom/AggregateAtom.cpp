@@ -422,43 +422,43 @@ ResultEvaluation AggregateAtom::finalEvaluateSum() {
 
 }
 
-void AggregateAtom::print() {
+void AggregateAtom::print(ostream& stream) {
 	if(negative)
-		cout<<"not ";
+		stream<<"not ";
 	if(firstGuard!=nullptr){
 		firstGuard->print();
-		cout<<getBinopToStrng(firstBinop);
+		stream<<getBinopToStrng(firstBinop);
 	}
-	cout<<"#";
+	stream<<"#";
 	if(aggregateFunction==AggregateFunction::COUNT){
-		cout<<"count";
+		stream<<"count";
 	}else if(aggregateFunction==AggregateFunction::MIN){
-		cout<<"min";
+		stream<<"min";
 	}else if(aggregateFunction==AggregateFunction::MAX){
-		cout<<"max";
+		stream<<"max";
 	}else if(aggregateFunction==AggregateFunction::SUM){
-		cout<<"sum";
+		stream<<"sum";
 	}
-	cout<<"{";
+	stream<<"{";
 	bool first=true;
 	bool firstElement=true;
 	for(auto& element:aggregateElements){
-		if(!firstElement)cout<<";";else firstElement=false;
+		if(!firstElement)stream<<";";else firstElement=false;
 		for(auto& term:element->getTerms()){
-			if(!first)cout<<",";else first=false;
-			term->print();
+			if(!first)stream<<",";else first=false;
+			term->print(stream);
 		}
-		cout<<":";first=true;
+		stream<<":";first=true;
 		for(auto& naf:element->getNafLiterals()){
-			if(!first)cout<<",";else first=false;
+			if(!first)stream<<",";else first=false;
 			naf->print();
 		}
 		first=true;
 	}
-	cout<<"}";
+	stream<<"}";
 	if(secondGuard!=nullptr){
-		cout<<getBinopToStrng(secondBinop);
-		secondGuard->print();
+		stream<<getBinopToStrng(secondBinop);
+		secondGuard->print(stream);
 	}
 }
 

@@ -23,8 +23,8 @@ size_t ClassicalLiteral::hash(){
 }
 
 
-void ClassicalLiteral::print(){
-	print(predicate,terms,negative,hasMinus,cout);
+void ClassicalLiteral::print(ostream& stream){
+	print(predicate,terms,negative,hasMinus,stream);
 }
 
 void ClassicalLiteral::print(Predicate* predicate,const vector<Term*>& terms,bool negative,bool hasMinus,ostream& stream){

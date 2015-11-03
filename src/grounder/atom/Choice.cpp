@@ -11,34 +11,34 @@ namespace DLV2{
 
 namespace grounder{
 
-void Choice::print() {
+void Choice::print(ostream& stream) {
 	if(terms[0]!=nullptr){
-		terms[0]->print();
-		cout<<getBinopToStrng(firstBinop);
+		terms[0]->print(stream);
+		stream<<getBinopToStrng(firstBinop);
 	}
-	cout<<"{";
+	stream<<"{";
 	bool first=true;
 	bool second=true;
 	bool firstElement=true;
 	for(auto& element:choiceElements){
-		if(!firstElement)cout<<";";else firstElement=false;
+		if(!firstElement)stream<<";";else firstElement=false;
 		for(auto& naf:element->getChoiceElement()){
-			if(!second)cout<<",";
-			naf->print();
+			if(!second)stream<<",";
+			naf->print(stream);
 			if(!first && second) second=false;
-			if(first && element->getSize()>1) {cout<<":";first=false;}
+			if(first && element->getSize()>1) {stream<<":";first=false;}
 		}
 		first=true;
 		second=true;
 	}
-	cout<<"}";
+	stream<<"}";
 
 	//Avoid print >=0, because is the default guard
 	if(terms[0]==nullptr && secondBinop==GREATER_OR_EQ && terms[1]->getIndex()==TermTable::getInstance()->term_zero->getIndex())return;
 
 	if(terms[1]!=nullptr){
-		cout<<getBinopToStrng(secondBinop);
-		terms[1]->print();
+		stream<<getBinopToStrng(secondBinop);
+		terms[1]->print(stream);
 	}
 }
 
