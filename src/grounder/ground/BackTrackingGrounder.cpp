@@ -23,9 +23,9 @@ void BackTrackingGrounder::generateTemplateAtom(){
 void BackTrackingGrounder::printAssignment(){
 
 	for(auto assignment : current_var_assign){
-		cout<<"VAR ";assignment.first->print();cout<<" = ";assignment.second->print();cout<<endl;
+		cerr<<"VAR ";assignment.first->print(cerr);cerr<<" = ";assignment.second->print(cerr);cerr<<" - ";
 	}
-
+	cerr<<endl;
 }
 
 bool BackTrackingGrounder::isGroundCurrentAtom(){

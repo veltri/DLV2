@@ -13,13 +13,13 @@
 #include "../atom/ClassicalLiteral.h"
 #include "../../util/Timer.h"
 #include "../../util/Utils.h"
+#include "../../util/Options.h"
+
 
 
 namespace DLV2{
 
 namespace grounder{
-
-#define DEBUG 0
 
 void ProgramGrounder::printProgram(const vector<vector<Rule*> >& exitRules,	const vector<vector<Rule*> >& recursiveRules) {
 	for (unsigned int component = 0; component < exitRules.size();
@@ -53,19 +53,14 @@ void ProgramGrounder::ground() {
 	vector<unordered_set<index_object>> componentPredicateInHead;
 	statementDependency->createComponentGraphAndComputeAnOrdering(exitRules, recursiveRules, componentPredicateInHead,constraintRules,remainedConstraint);
 
-//	if (Options::globalOptions()->isPrintRewrittenProgram())
-//		printProgram(exitRules, recursiveRules);
-
 	// Ground each module according to the ordering:
 	// For each component, each rule is either recursive or exit,
 	// Exit rules are grounded just once, while recursive rules are grounded until no more knowledge is derived
 	for (unsigned int component = 0; component < exitRules.size()&&!foundEmptyConstraint; component++) {
 
-#if DEBUG == 1
-		cout<<"Component: "<<component;
-		cout<<"\tExit rules: "<<exitRules[component].size();
-		cout<<"\tRecursive rules: "<<recursiveRules[component].size()<<endl;
-#endif
+		trace_msg(grounding,1,"Component: "<<component);
+		trace_msg(grounding,1,"Exit rules: "<<exitRules[component].size());
+		trace_msg(grounding,1,"Recursive rules: "<<recursiveRules[component].size());
 
 		// Ground exit rules
 		for (Rule* r : exitRules[component]){
@@ -73,6 +68,7 @@ void ProgramGrounder::ground() {
 				continue;
 			inizializeSearchInsertPredicate(r);
 //			r->sortPositiveLiteralInBody(predicate_searchInsert_table);
+			trace_action_tag(grounding,1,cerr<<"Grounding Exit Rule: ";r->print(cerr););
 			groundRule(r);
 
 #ifdef DEBUG_RULE_TIME
@@ -86,6 +82,7 @@ void ProgramGrounder::ground() {
 			bool found_something = false;
 
 			// First iteration
+			trace_msg(grounding,1,"First Iteration");
 			for (unsigned int i = 0; i < n_rules; i++) {
 				Rule *rule=recursiveRules[component][i];
 				if(nonGroundSimplificator.simplifyRule(rule))
@@ -94,8 +91,10 @@ void ProgramGrounder::ground() {
 //				rule->sortPositiveLiteralInBody(predicate_searchInsert_table);
 				if(groundRule(rule))
 					found_something=true;
+				trace_action_tag(grounding,1,cerr<<"Found New Knowledge: "<<found_something<<" Grounding Recursive Rule: ";rule->print(cerr););
 			}
 			while (found_something) {
+				trace_msg(grounding,1,"Further Iterations");
 				found_something = false;
 
 				// Since in the first iteration search is performed in facts and no facts tables,
@@ -104,9 +103,6 @@ void ProgramGrounder::ground() {
 				for (unsigned int i = 0; i < n_rules; i++) {
 					Rule* r = recursiveRules[component][i];
 					//If no more knowledge is derived the grounding of this component can stop
-	#if DEBUG == 1
-					r->print();
-	#endif
 
 					inizializeRecursiveCombinationPredicate(r,componentPredicateInHead[component]);
 					for(unsigned i=0;i<pow(2,predicate_combination.size())-1;i++){
@@ -115,14 +111,16 @@ void ProgramGrounder::ground() {
 //						r->sortPositiveLiteralInBody(predicate_searchInsert_table);
 						if (groundRule(r))
 							found_something = true;
+						trace_action_tag(grounding,1,cerr<<"Found New Knowledge: "<<found_something<<" Grounding Recursive Rule: ";r->print(cerr););
 					}
 				}
 
-				for (unsigned int i = 0; i < n_rules; i++)
+				for (unsigned int i = 0; i < n_rules; i++){
 					// Move the content of the delta table in the no fact table,
 					// and fill delta with the content of the next delta table.
 					swapInDelta(recursiveRules[component][i]);
-
+					trace_action_tag(grounding,1,cerr<<"Swap Delta Rule: ";recursiveRules[component][i]->print(cerr););
+				}
 			}
 		}
 
@@ -132,7 +130,11 @@ void ProgramGrounder::ground() {
 			if(nonGroundSimplificator.simplifyRule(r))
 				continue;
 			inizializeSearchInsertPredicate(r);
-			try{groundRule(r);}catch (exception& e){
+			try{
+				groundRule(r);
+				trace_action_tag(grounding,1,cerr<<"Grounding Constraint Rule: ";r->print(cerr););
+			}
+			catch (exception& e){
 				foundEmptyConstraint=true;
 			}
 		}
@@ -147,7 +149,10 @@ void ProgramGrounder::ground() {
 				if(nonGroundSimplificator.simplifyRule(rule))
 					continue;
 				inizializeSearchInsertPredicate(rule);
-				try{groundRule(rule);}catch (exception& e){
+				try{
+					groundRule(rule);
+					trace_action_tag(grounding,1,cerr<<"Grounding Constraint Rule: ";rule->print(cerr););
+				}catch (exception& e){
 					break;
 				}
 			}

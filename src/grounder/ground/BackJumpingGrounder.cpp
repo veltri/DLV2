@@ -69,9 +69,8 @@ bool BackJumpingGrounder::nextMatch() {
 }
 
 void BackJumpingGrounder::inizialize(Rule* rule) {
-#ifdef DEBUG_GROUNDING
-	cout<<endl<<"---> INIZIALIZE"<<endl;
-#endif
+	trace_msg(backjumping,1,"---> INIZIALIZE");
+
 	BackTrackingGrounder::inizialize(rule);
 	closestSuccessfulBinder_index=-1;
 	current_status=SUCCESSFULL;
@@ -104,18 +103,17 @@ void BackJumpingGrounder::inizialize(Rule* rule) {
 		}
 	}
 
-#ifdef DEBUG_GROUNDING
-	cout<<"OUTPUT VARIABLES: ";
-	for(auto var: outputVariables){
-		var->print();cout<<" ";
-	}
-	cout<<endl;
-	cout<<"VARIABLES BINDER:"<<endl;
-	for(auto it:variablesBinder){
-		it.first->print();cout<<"\t";cout<<it.second<<endl;
-	}
-#endif
-
+	trace_action_tag(backjumping,1,
+		cerr<<"OUTPUT VARIABLES: ";
+		for(auto var: outputVariables){
+			var->print(cerr);cerr<<" ";
+		}
+		cerr<<endl;);
+	trace_action_tag(backjumping,1,cerr<<"VARIABLES BINDER: ";
+		for(auto it:variablesBinder){
+			it.first->print(cerr);cerr<<" ";cerr<<it.second<<endl;
+		}
+	);
 }
 
 void BackJumpingGrounder::closestBinder( int literal_pos, const set_term& variables,int& positionCB,vector<Atom*>::iterator& iteratorCB, bool includeCurrentLiteral) {
@@ -140,9 +138,7 @@ void BackJumpingGrounder::closestBinder( int literal_pos,int& positionCB,vector<
 }
 
 void BackJumpingGrounder::backFromSolutionFound() {
-#ifdef DEBUG_GROUNDING
-	cout<<endl<<"---> BACK SOLUTION FOUND"<<endl;
-#endif
+	trace_msg(backjumping,1,"---> BACK SOLUTION FOUND");
 	current_status=NEXT_MATCH;
 
 	if(historyBackFromSolutionFound!=-2){
@@ -162,16 +158,12 @@ void BackJumpingGrounder::backFromSolutionFound() {
 		historyBackOutputVars.insert({index_current_atom,closestSuccessfulBinder_index});
 	}
 
-#ifdef DEBUG_GROUNDING
-	cout<<"CSB "<<closestSuccessfulBinder_index<<endl;
-	cout<<"CURRENT ATOM "<<index_current_atom<<endl;
-#endif
+	trace_msg(backjumping,1,"CSB "<<closestSuccessfulBinder_index);
+	trace_msg(backjumping,1,"CURRENT ATOM "<<index_current_atom);
 }
 
 void BackJumpingGrounder::backFromFirstMatch() {
-#ifdef DEBUG_GROUNDING
-	cout<<endl<<"---> BACK FIRST MATCH"<<endl;
-#endif
+	trace_msg(backjumping,1,"---> BACK FIRST MATCH");
 
 	auto it=historyBackFromFirst.find(index_current_atom);
 
@@ -190,13 +182,12 @@ void BackJumpingGrounder::backFromFirstMatch() {
 		index_current_atom=closestBinder_pos;
 	}
 
-#ifdef DEBUG_GROUNDING
-	cout<<"CSB "<<closestSuccessfulBinder_index<<endl;
-	cout<<"CURRENT ATOM "<<index_current_atom<<endl;
-#endif
+	trace_msg(backjumping,1,"CSB "<<closestSuccessfulBinder_index);
+	trace_msg(backjumping,1,"CURRENT ATOM "<<index_current_atom);
 }
 
 bool BackJumpingGrounder::match() {
+	trace_msg(backjumping,1,"---> MATCH");
 	bool result = true;
 	if((*current_atom_it)->isBuiltIn() && (*current_atom_it)->isAssignment() && !direction )
 		result = false;
@@ -214,28 +205,27 @@ bool BackJumpingGrounder::match() {
 			failureMap[var]=false;
 	}
 
-#ifdef DEBUG_GROUNDING
-	cout<<"MATCH RESULT: "<<result<<endl;
-	cout<<"CURRENT ATOM: "<<index_current_atom<<endl;
-	cout<<"FAILURE SET: ";
-	for(auto pair:failureMap){
-		if(pair.second){
-			pair.first->print();cout<<" ";
+	trace_msg(backjumping,1,"MATCH RESULT: "<<result);
+	trace_msg(backjumping,1,"CURRENT ATOM: "<<index_current_atom);
+	trace_action_tag(backjumping,1,
+		cerr<<"FAILURE SET: ";
+		for(auto pair:failureMap){
+			if(pair.second){
+				pair.first->print(cerr);cerr<<" ";
+			}
 		}
-	}
-	cout<<endl;
-	cout<<"ASSIGNMENT:"<<endl;
-	printAssignment();
-#endif
+		cerr<<endl;
+	);
+	trace_action_tag(backjumping,1,
+		cerr<<"ASSIGNMENT: ";
+		printAssignment();
+	);
 
 	return result;
 }
 
 void BackJumpingGrounder::backFromNextMatch() {
-#ifdef DEBUG_GROUNDING
-	cout<<endl<<"---> BACK NEXT MATCH"<<endl;
-	cout<<"CSB "<<closestSuccessfulBinder_index<<endl;
-#endif
+	trace_msg(backjumping,1,"---> BACK NEXT MATCH");
 
 	vector<Atom*>::iterator closestBinder_it;
 	int closestBinder_pos;
@@ -262,18 +252,19 @@ void BackJumpingGrounder::backFromNextMatch() {
 		}
 	}
 
-#ifdef DEBUG_GROUNDING
-	cout<<"FAILURE SET: ";
-	for(auto pair:failureMap){
-		if(pair.second){
-			pair.first->print();cout<<" ";
+	trace_action_tag(backjumping,1,
+		cerr<<"FAILURE SET: ";
+		for(auto pair:failureMap){
+			if(pair.second){
+				pair.first->print(cerr);cerr<<" ";
+			}
 		}
-	}
-	cout<<endl;
-	cout<<"CSB "<<closestSuccessfulBinder_index<<endl;
-	cout<<"CB "<<closestBinder_pos<<endl;
-	cout<<"CURRENT ATOM "<<index_current_atom<<endl;
-#endif
+		cerr<<endl;
+	);
+
+	trace_msg(backjumping,1,"CSB "<<closestSuccessfulBinder_index);
+	trace_msg(backjumping,1,"CB "<<closestBinder_pos);
+	trace_msg(backjumping,1,"CURRENT ATOM: "<<index_current_atom);
 }
 
 } /* namespace grounder */

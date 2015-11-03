@@ -31,6 +31,7 @@
 #include <string>
 #include <unordered_map>
 #include "Constants.h"
+#include "Trace.h"
 
 namespace DLV2
 {
@@ -38,6 +39,10 @@ namespace DLV2
 
     class Options{
     public:
+
+		#ifdef TRACE_ON
+			static TraceLevels traceLevels;
+		#endif
 
         void init( int argc, char* const* argv );
 

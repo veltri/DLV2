@@ -76,6 +76,10 @@ using namespace DLV2;
 // Initialize singleton
 Options* Options::instance = NULL;
 
+#ifdef TRACE_ON
+	TraceLevels Options::traceLevels;
+#endif
+
 Options* 
 Options::globalOptions() 
 {
