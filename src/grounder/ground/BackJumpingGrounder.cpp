@@ -79,6 +79,8 @@ void BackJumpingGrounder::inizialize(Rule* rule) {
 	historyBackFromSolutionFound=-2;
 	historyBackOutputVars.clear();
 
+	atomsVariables.clear();
+
 	failureMap.clear();
 	outputVariables.clear();
 	for (auto it=currentRule->getBeginHead();it!=currentRule->getEndHead(); ++it) {
@@ -88,15 +90,16 @@ void BackJumpingGrounder::inizialize(Rule* rule) {
 	}
 	for (auto it=currentRule->getBeginBody();it!=currentRule->getEndBody(); ++it) {
 		Atom* atom=*it;
+		const set_term& variablesInAtom=atom->getVariable();
+		atomsVariables.push_back(variablesInAtom);
 		if(atom->isClassicalLiteral() && !atom->getPredicate()->isSolved()){
-			const set_term& variables=atom->getVariable();
-			outputVariables.insert(variables.begin(),variables.end());
+			outputVariables.insert(variablesInAtom.begin(),variablesInAtom.end());
 		}
 		else if(atom->isAggregateAtom()){ //&& atom->isAssignment()
-			set_term variables;
-			atom->getUnsolvedPredicateVariable(variables);
-			outputVariables.insert(variables.begin(),variables.end());
-			if(!variables.empty()){
+			set_term variablesUnsolved;
+			atom->getUnsolvedPredicateVariable(variablesUnsolved);
+			outputVariables.insert(variablesUnsolved.begin(),variablesUnsolved.end());
+			if(!variablesUnsolved.empty()){
 				set_term guards=atom->getGuardVariable();
 				outputVariables.insert(guards.begin(),guards.end());
 			}
@@ -174,7 +177,7 @@ void BackJumpingGrounder::backFromFirstMatch() {
 	else{
 		vector<Atom*>::iterator closestBinder_it;
 		int closestBinder_pos;
-		const set_term& variables=(*current_atom_it)->getVariable();
+		const set_term& variables=atomsVariables[index_current_atom];
 
 		closestBinder(index_current_atom,variables,closestBinder_pos,closestBinder_it,false);
 		historyBackFromFirst.insert({index_current_atom,closestBinder_pos});
@@ -196,7 +199,7 @@ bool BackJumpingGrounder::match() {
 		result = BackTrackingGrounder::match();
 
 	if(!result){
-		const set_term& vars=(*current_atom_it)->getVariable();
+		const set_term& vars=atomsVariables[index_current_atom];
 		for(auto var:vars)
 			failureMap[var]=true;
 	}

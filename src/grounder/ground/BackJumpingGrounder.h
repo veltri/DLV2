@@ -75,6 +75,8 @@ private:
 
 	unordered_map<unsigned,int> historyBackFromFirst;
 
+	vector<set_term> atomsVariables;
+
 };
 
 } /* namespace grounder */
