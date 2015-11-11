@@ -25,6 +25,7 @@ public:
 		for(auto atom:templateSetAtom) {if(atom!=nullptr){atom->deleteAtoms(); delete atom;}}
 		if(ground_rule!=0)
 			ground_rule->deleteGroundRule();
+
 	};
 
 protected:
