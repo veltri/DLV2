@@ -16,7 +16,7 @@ namespace DLV2{
 namespace grounder{
 
 
-void Atom::ground(map_term<Term*>& substritutionTerm,Atom*& templateAtom){
+void Atom::ground(var_assignment& substritutionTerm,Atom*& templateAtom){
 	substitute(substritutionTerm,templateAtom);
 
 	for(unsigned int i=0;i<templateAtom->getTermsSize();i++){

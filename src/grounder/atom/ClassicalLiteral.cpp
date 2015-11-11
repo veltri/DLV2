@@ -58,7 +58,7 @@ bool ClassicalLiteral::operator==(const Atom& a)const {
 	return true;
 }
 
-void ClassicalLiteral::substitute(map_term<Term*>& substitutionTerm,Atom*& templateAtom){
+void ClassicalLiteral::substitute(var_assignment& substitutionTerm,Atom*& templateAtom){
 	if(templateAtom==nullptr){
 		vector<Term*> terms_substitute(terms.size());
 		for(unsigned int i=0;i<terms.size();i++){

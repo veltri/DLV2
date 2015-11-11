@@ -77,7 +77,7 @@ public:
 	virtual bool operator<=(const Term& term)const;
 
 	virtual Term* calculate();
-	virtual Term* substitute(map_term<Term*>& substritutionTerm);
+	virtual Term* substitute(var_assignment& substitutionTerm);
 	/// Return the name of the function concatenated with '*' and the id of the composites term
 	virtual size_t hash();
 

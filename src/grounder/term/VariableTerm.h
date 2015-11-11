@@ -25,10 +25,10 @@ namespace grounder{
  */
 class VariableTerm: public Term {
 public:
-	VariableTerm():Term(),isAnonymous(0){};
-	VariableTerm(bool negative):Term(negative),isAnonymous(0){};
-	VariableTerm(bool negative,index_object index,string& name):Term(negative,index),name(name){setAnonymous();};
-	VariableTerm(bool negative,string& name):Term(negative),name(name){setAnonymous();};
+	VariableTerm():Term(),isAnonymous(0),localIndex(0){};
+	VariableTerm(bool negative):Term(negative),isAnonymous(0),localIndex(0){};
+	VariableTerm(bool negative,index_object index,string& name):Term(negative,index),name(name),localIndex(0){setAnonymous();};
+	VariableTerm(bool negative,string& name):Term(negative),name(name),localIndex(0){setAnonymous();};
 
 	virtual string getName()const{return name;};
 	virtual void setName(const string& name){setAnonymous();};
@@ -45,10 +45,10 @@ public:
 
 	virtual void getVariable(set_term& variables){if(!isAnonymous)variables.insert(this);};
 	virtual size_t hash(){	return HashString::getHashString()->computeHash(name);};
-	virtual Term* substitute(map_term<Term*>& substitutionTerm){
-		auto find_it=substitutionTerm.find(this);
-		if(find_it!=substitutionTerm.end())
-			return (*find_it).second;
+	virtual Term* substitute(var_assignment& substitutionTerm){
+		Term *findTerm=substitutionTerm[localIndex];
+		if(findTerm!=nullptr)
+			return findTerm;
 		return this;
 	};
 
@@ -76,6 +76,9 @@ public:
 		return getName()<=getName();
 	};
 
+	inline virtual index_object getLocalVariableIndex()const{return localIndex;};
+	inline virtual void setLocalVariableIndex(index_object index){localIndex=index;};
+
 
 private:
 	void setAnonymous(){
@@ -93,6 +96,8 @@ private:
 	 *  True if is an anonymous variable ''_''
 	 */
 	bool isAnonymous;
+
+	index_object localIndex;
 
 };
 

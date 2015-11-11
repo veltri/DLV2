@@ -82,10 +82,10 @@ public:
 	/// This method implementation is demanded to sub-classes.
 	/// It have to find all the matching atoms and return just the first of those.
 	/// The returned integer will be used to get the other ones through nextMatch method (@See nextMatch)
-	virtual unsigned int firstMatch(Atom *templateAtom, map_term<Term*>& currentAssignment, Atom*& atomFound)=0;
+	virtual unsigned int firstMatch(Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound)=0;
 	/// This method implementation is demanded to sub-classes.
 	/// It is used to get the further matching atoms one by one each time it is invoked.
-	virtual void nextMatch(unsigned int id, Atom* templateAtom, map_term<Term*>& currentAssignment, Atom*& atomFound)=0;
+	virtual void nextMatch(unsigned int id, Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound)=0;
 	/// This method implementation is demanded to sub-classes.
 	/// It have to find if the given atom exist. This atom must be ground.
 	virtual void findIfExist(Atom *templateAtom, Atom*& atomFound)=0;
@@ -111,11 +111,11 @@ public:
 
 	/// This method checks if the two given atoms match according to the current assignment.
 	/// If they match the current assignment is update accordingly.
-	bool checkMatch(Atom *genericAtom, Atom *templateAtom, map_term<Term*>& currentAssignment);
+	bool checkMatch(Atom *genericAtom, Atom *templateAtom, var_assignment& currentAssignment);
 	/// Match a function with given id of term, compare the constant term and put in binds
 	/// a value of the variable term present in termToMatch
 	/// Return true if constant term are equal, else false
-	bool matchTerm(Term *genericTerm, Term *termToMatch, map_term<Term*>& varAssignment);
+	bool matchTerm(Term *genericTerm, Term *termToMatch, var_assignment& varAssignment,vector<index_object>& addedVariables);
 
 
 	virtual ~AtomSearcher() {};
@@ -133,8 +133,8 @@ class BaseAtomSearcher: public AtomSearcher {
 public:
 	BaseAtomSearcher(AtomVector* table) : AtomSearcher(table), counter(0) {};
 
-	virtual unsigned int firstMatch(Atom* templateAtom, map_term<Term*>& currentAssignment, Atom*& atomFound);
-	virtual void nextMatch(unsigned int id, Atom* templateAtom, map_term<Term*>& currentAssignment, Atom*& atomFound);
+	virtual unsigned int firstMatch(Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound);
+	virtual void nextMatch(unsigned int id, Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound);
 	virtual void findIfExist(Atom *templateAtom, Atom*& atomFound);
 
 	virtual void removeId(unsigned id){
@@ -162,10 +162,10 @@ protected:
 
 	/// This method invokes findIfAFactExists method if all the variables are bound,
 	/// otherwise invokes the computeFirstMatch method.
-	bool searchForFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term<Term*>& currentAssignment, Atom*& atomFound);
+	bool searchForFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound);
 	/// This method given an iterator increases it in order to find matching atoms with the given atom
 	/// according to the current assignment.
-	bool computeMatch(GeneralIterator* currentMatch, Atom *templateAtom, map_term<Term*>& currentAssignment, Atom*& atomFound);
+	bool computeMatch(GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound);
 	/// This method computes an iterator pointing to the starting point of the search
 	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom){return new VectorIterator(table->begin(),table->end());}
 };

@@ -34,8 +34,8 @@ bool BackJumpingGrounder::back() {
 		return false;
 
 	for (int i=index_current_atom; i<=current_index; ++i){
-		if(current_variables_atoms[i].size()>0)
-			removeBindValueInAssignment(current_variables_atoms[i]);
+		if(current_atoms_bind[i].size()>0)
+			removeBindValueInAssignment(current_atoms_bind[i]);
 		if(i>index_current_atom && !is_ground_atom[i]){
 			Predicate *currentPredicate=currentRule->getAtomInBody(i)->getPredicate();
 			for (unsigned j = 0; j < current_id_match[i].size()&&currentPredicate!=nullptr; ++j) {
@@ -204,8 +204,8 @@ bool BackJumpingGrounder::match() {
 			failureMap[var]=true;
 	}
 	else{
-		for(auto var: current_variables_atoms[index_current_atom])
-			failureMap[var]=false;
+		for(auto var: current_atoms_bind[index_current_atom])
+			;//failureMap[var]=false;
 	}
 
 	trace_msg(backjumping,1,"MATCH RESULT: "<<result);

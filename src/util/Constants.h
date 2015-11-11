@@ -100,6 +100,8 @@ namespace grounder{
 	#define BACKTRACKING 0
 	#define BACKJUMPING 1
 
+	#define ARRAY_SIZE 64
+
 	typedef unsigned index_object;
 
 };

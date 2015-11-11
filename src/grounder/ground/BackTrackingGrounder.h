@@ -9,6 +9,7 @@
 #define SRC_GROUNDER_GROUND_BACKTRACKINGGROUNDER_H_
 
 #include "ProgramGrounder.h"
+#include "../table/AdvancedArray.h"
 
 namespace DLV2 {
 namespace grounder {
@@ -18,6 +19,8 @@ namespace grounder {
 /*
  *  Simple backtrack algorithm to ground a rule
  */
+
+
 class BackTrackingGrounder : public ProgramGrounder {
 public:
 	BackTrackingGrounder():ProgramGrounder(),currentRule(0),index_current_atom(0),callFoundAssignment(0),ground_rule(0) {};
@@ -39,7 +42,7 @@ protected:
 	/// Generate the template atom of current atom (substitute at the current atom the current assignment)
 	virtual void generateTemplateAtom();
 	/// Remove the variable in the current assignment which are in bind_variables
-	virtual void removeBindValueInAssignment(const set_term& bind_variables);
+	virtual void removeBindValueInAssignment(const vector<index_object>& bind_variables);
 	/// Call the first match with the current atom
 	virtual bool firstMatch();
 	/// Call the next match with the current atom
@@ -53,8 +56,10 @@ protected:
 	///Ground a choice in the head of the rule
 	virtual void groundChoice(bool& find_new_true_atom,bool& ground_new_atom);
 
+#ifdef TRACE_ON
 	/// Print the current assignment
 	void printAssignment();
+#endif
 
 	//Delete the atom at the given position and substitute it with the given atom at that position
 	void substiteInGroundRule(unsigned position, Atom* new_atom) {
@@ -65,8 +70,9 @@ protected:
 	}
 
 	/// Current assignment for grounding rule
-	/// The map of the assignment, map each variables to its assigned value
-	map_term<Term*> current_var_assign;
+	var_assignment current_assignment;
+
+
 	/// Current id of first match for grounding rule
 	/// map of id of the atom and vector of pair : table to search and id of firstMatch (if is NOMATCH call first else next)
 	unordered_map<unsigned,vector<pair<unsigned,int>>> current_id_match;
@@ -74,7 +80,8 @@ protected:
 	unordered_map<unsigned,unsigned> current_id_match_iterator;
 
 	/// Current variables for each atom for grounding rule
-	vector<set_term> current_variables_atoms;
+	vector<vector<index_object>> current_atoms_bind;
+
 	///Map each variable to its binder
 	map_term<int> variablesBinder;
 	/// Current rule

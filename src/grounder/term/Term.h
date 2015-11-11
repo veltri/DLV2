@@ -17,6 +17,7 @@
 
 #include "../hash/Hashable.h"
 #include "../../util/Constants.h"
+#include "../table/AdvancedArray.h"
 
 using namespace std;
 
@@ -40,6 +41,8 @@ class Term;
 template<typename T>
 using map_term = unordered_map<Term*, T, IndexForTable<Term>, IndexForTable<Term>>;
 using set_term = hashIndexSet<Term>;
+using var_assignment = AdvancedArray<Term*,ARRAY_SIZE>;
+
 
 
 /**
@@ -145,9 +148,14 @@ public:
 	virtual void getGroundTerm(set_term& variables){void(0);};
 	/// Substitute the term with the given terms and return the term of substitute term
 	/// @param substritutionTerm map of index_object. The first index is the ID of term to substitute and second the value
-	virtual Term* substitute(map_term<Term*>& substritutionTerm){return nullptr;};
+	virtual Term* substitute(var_assignment& substritutionTerm){return nullptr;};
 	/// Print with the cout the term
 	virtual void print(ostream& stream=cout){};
+
+	///Return the local index of the variable in the rule
+	inline virtual index_object getLocalVariableIndex()const{return 0;};
+	///Set the local index of the variable in the rule
+	inline virtual void setLocalVariableIndex(index_object index){};
 
 	virtual ~Term(){};
 protected:

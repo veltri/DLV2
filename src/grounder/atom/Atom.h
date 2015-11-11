@@ -143,7 +143,7 @@ public:
 	virtual bool isBuiltIn()const{return false;};
 	///This method evaluate the truth value of the built-in atom, if there is bind variable
 	/// and equal then assign that value for the bind variable
-	virtual bool evaluate(map_term<Term*>& substitutionTerm){return false;};
+	virtual bool evaluate(var_assignment& substritutionTerm ){return false;};
 	///Return true if the built in assign value in term, else compare the variable like ==
 	virtual bool isAssignment(){return false;};
 	virtual void setAssignment(bool assigment){};
@@ -264,13 +264,13 @@ public:
 	/// Substitute the terms in the atom with the given terms and return the atom with terms sobstitute
 	/// @param substritutionTerm map of index_object. The first index is the ID of term to substitute and second the value
 	/// Similiar to substitute(map_term_term& substitutionTerm) but not create new atom
-	virtual void substitute(map_term<Term*>& substitutionTerm,Atom*& templateAtom){};
+	virtual void substitute(var_assignment& substitutionTerm,Atom*& templateAtom){};
 
 
 	/// Substitute the term with constant term and calculate the arithmetic terms
 	/// The subclasses have to implement the substitute method for create correct type class of Atom
 	/// Similiar to ground(map_term_term& substritutionTerm) but not create new atom
-	virtual void ground(map_term<Term*>& substritutionTerm,Atom*& templateAtom);
+	virtual void ground(var_assignment& substritutionTerm,Atom*& templateAtom);
 	///Printer method
 	virtual void print(ostream& stream=cout) = 0;
 

@@ -68,7 +68,7 @@ bool AggregateAtom::operator ==(const Atom& a) const {
 }
 
 
-void AggregateAtom::ground(map_term<Term*>& substritutionTerm, Atom*& templateAtom) {
+void AggregateAtom::ground(var_assignment& substritutionTerm, Atom*& templateAtom) {
 	//Ground guard
 	Term* template_lowerGueard=nullptr,*template_upperGueard=nullptr;
 	if(firstBinop!=NONE_OP){

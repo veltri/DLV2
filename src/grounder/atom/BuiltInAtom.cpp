@@ -17,17 +17,17 @@ namespace DLV2{
 namespace grounder{
 
 
-bool BuiltInAtom::evaluate(map_term<Term*>& substitutionTerm){
+bool BuiltInAtom::evaluate(var_assignment& substitutionTerm){
 	Term* firstTerm=terms[0];
 	Term* secondTerm=terms[1];
 
 	// If there is equal and variable assign that value
 	if(assignment){
 		if(firstTerm->getType()==TermType::VARIABLE || secondTerm->getType()!=TermType::VARIABLE ){
-			substitutionTerm.insert({firstTerm,secondTerm->calculate()});
+			substitutionTerm[firstTerm->getLocalVariableIndex()]=secondTerm->calculate();
 			return true;
 		}if(firstTerm->getType()!=TermType::VARIABLE || secondTerm->getType()==TermType::VARIABLE ){
-			substitutionTerm.insert({secondTerm,firstTerm->calculate()});
+			substitutionTerm[secondTerm->getLocalVariableIndex()]=firstTerm->calculate();
 			return true;
 	    }
 	}
@@ -84,7 +84,7 @@ void BuiltInAtom::print(ostream& stream){
 }
 
 
-void BuiltInAtom::substitute(map_term<Term*>& substitutionTerm,Atom*& templateAtom){
+void BuiltInAtom::substitute(var_assignment& substitutionTerm,Atom*& templateAtom){
 	if(templateAtom==nullptr){
 		vector<Term*> terms_substitute(terms.size());
 		for(unsigned int i=0;i<terms.size();i++){
