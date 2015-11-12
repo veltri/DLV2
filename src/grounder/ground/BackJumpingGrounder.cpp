@@ -72,6 +72,7 @@ void BackJumpingGrounder::inizialize(Rule* rule) {
 	trace_msg(backjumping,1,"---> INIZIALIZE");
 
 	BackTrackingGrounder::inizialize(rule);
+
 	closestSuccessfulBinder_index=-1;
 	current_status=SUCCESSFULL;
 
@@ -81,7 +82,8 @@ void BackJumpingGrounder::inizialize(Rule* rule) {
 
 	atomsVariables.clear();
 
-	failureMap.clear();
+	failureMap.resize(current_assignment.size(),false);
+
 	outputVariables.clear();
 	for (auto it=currentRule->getBeginHead();it!=currentRule->getEndHead(); ++it) {
 		Atom* atom=*it;
@@ -122,7 +124,7 @@ void BackJumpingGrounder::inizialize(Rule* rule) {
 void BackJumpingGrounder::closestBinder( int literal_pos, const set_term& variables,int& positionCB,vector<Atom*>::iterator& iteratorCB, bool includeCurrentLiteral) {
 	positionCB=-1;
 	for(auto variable:variables){
-		int binder=variablesBinder[variable];
+		int binder=variablesBinder[variable->getLocalVariableIndex()];
 		if(((!includeCurrentLiteral && binder<literal_pos) || (includeCurrentLiteral && binder<=literal_pos)) && binder>positionCB)
 			positionCB=binder;
 	}
@@ -131,9 +133,9 @@ void BackJumpingGrounder::closestBinder( int literal_pos, const set_term& variab
 
 void BackJumpingGrounder::closestBinder( int literal_pos,int& positionCB,vector<Atom*>::iterator& iteratorCB) {
 	positionCB=-1;
-	for(auto pair:failureMap){
-		if(!pair.second) continue;
-		int binder=variablesBinder[pair.first];
+	for(unsigned i=0;i<failureMap.size();i++){
+		if(!failureMap[i]) continue;
+		int binder=variablesBinder[i];
 		if(binder<literal_pos && binder>positionCB)
 			positionCB=binder;
 	}
@@ -201,11 +203,11 @@ bool BackJumpingGrounder::match() {
 	if(!result){
 		const set_term& vars=atomsVariables[index_current_atom];
 		for(auto var:vars)
-			failureMap[var]=true;
+			failureMap[var->getLocalVariableIndex()]=true;
 	}
 	else{
 		for(auto var: current_atoms_bind[index_current_atom])
-			;//failureMap[var]=false;
+			failureMap[var]=false;
 	}
 
 	trace_msg(backjumping,1,"MATCH RESULT: "<<result);

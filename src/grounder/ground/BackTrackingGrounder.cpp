@@ -364,7 +364,6 @@ void BackTrackingGrounder::findBindVariablesRule() {
 	unsigned int index_current_atom = 0;
 	current_atoms_bind.clear();
 	current_atoms_bind.resize(currentRule->getSizeBody());
-	variablesBinder.clear();
 
 	map_term<index_object> variableLocalIndex;
 
@@ -392,7 +391,6 @@ void BackTrackingGrounder::findBindVariablesRule() {
 		for (auto variable : variablesInAtom) {
 			if (!total_variable.count(variable)){
 				current_atoms_bind[index_current_atom].push_back(variable->getLocalVariableIndex());
-				variablesBinder.insert({variable,index_current_atom});
 			}
 		}
 
@@ -404,6 +402,11 @@ void BackTrackingGrounder::findBindVariablesRule() {
 	}
 
 	current_assignment.setSize(variableLocalIndex.size(),nullptr);
+	variablesBinder.setSize(variableLocalIndex.size(),0);
+	for(unsigned i=0;i<current_atoms_bind.size();++i){
+		for(auto var:current_atoms_bind[i])
+			variablesBinder[var]=i;
+	}
 
 	trace_action_tag(backtracking,1,
 		cerr<<"BINDER OF ATOMS: ";int i=0;

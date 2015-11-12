@@ -43,7 +43,13 @@ public:
 		return dynamicArray[i];
 	}
 
-	inline int size(){
+	inline T operator[](unsigned i) const {
+		if(chooseStaticArray)
+			return staticArray[i];
+		return dynamicArray[i];
+	}
+
+	inline unsigned size() const{
 		if(chooseStaticArray)
 			return S;
 		return dynamicArray.size();

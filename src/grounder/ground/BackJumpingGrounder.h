@@ -67,7 +67,8 @@ private:
 	/// The set of variables appearing in the head of the current rule
 	set_term outputVariables;
 	/// Map of variables bool. If the boolean is true the variable is in the failure set
-	map_term<bool> failureMap;
+	vector<bool> failureMap;
+//	map_term<bool> failureMap;
 
 	int historyBackFromSolutionFound;
 

@@ -82,8 +82,8 @@ protected:
 	/// Current variables for each atom for grounding rule
 	vector<vector<index_object>> current_atoms_bind;
 
-	///Map each variable to its binder
-	map_term<int> variablesBinder;
+	///Map each variable to its binder atom
+	AdvancedArray<unsigned,ARRAY_SIZE> variablesBinder;
 	/// Current rule
 	Rule* currentRule;
 	/// Current atom iterator for grounding rule
