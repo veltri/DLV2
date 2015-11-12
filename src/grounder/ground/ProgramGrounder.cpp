@@ -83,6 +83,7 @@ void ProgramGrounder::ground() {
 
 			// First iteration
 			trace_msg(grounding,1,"First Iteration");
+//			Timer::getInstance()->start("First");
 			for (unsigned int i = 0; i < n_rules; i++) {
 				Rule *rule=recursiveRules[component][i];
 				if(nonGroundSimplificator.simplifyRule(rule))
@@ -93,8 +94,10 @@ void ProgramGrounder::ground() {
 					found_something=true;
 				trace_action_tag(grounding,1,cerr<<"Found New Knowledge: "<<found_something<<" Grounding Recursive Rule: ";rule->print(cerr););
 			}
+//			Timer::getInstance()->stop("First");
 			while (found_something) {
 				trace_msg(grounding,1,"Further Iterations");
+//				Timer::getInstance()->start("Other");
 				found_something = false;
 
 				// Since in the first iteration search is performed in facts and no facts tables,
@@ -114,15 +117,21 @@ void ProgramGrounder::ground() {
 						trace_action_tag(grounding,1,cerr<<"Found New Knowledge: "<<found_something<<" Grounding Recursive Rule: ";r->print(cerr););
 					}
 				}
+//				Timer::getInstance()->stop("Other");
 
+//				Timer::getInstance()->start("Swap");
 				for (unsigned int i = 0; i < n_rules; i++){
 					// Move the content of the delta table in the no fact table,
 					// and fill delta with the content of the next delta table.
 					swapInDelta(recursiveRules[component][i]);
 					trace_action_tag(grounding,1,cerr<<"Swap Delta Rule: ";recursiveRules[component][i]->print(cerr););
 				}
+//				Timer::getInstance()->stop("Swap");
 			}
 		}
+//		Timer::getInstance()->printClock("First");
+//		Timer::getInstance()->printClock("Other");
+//		Timer::getInstance()->printClock("Swap");
 
 		// Ground constraint rules
 		for (Rule* r : constraintRules[component]){
@@ -268,8 +277,8 @@ void ProgramGrounder::swapInDelta(Rule *rule){
 			PredicateExtension* predicateExt = predicateExtTable->getPredicateExt(predicate);
 			if (predicateExt != nullptr){
 				predicateExt->swapTables(DELTA,NOFACT);
-				predicateExt->swapTables(NEXTDELTA,DELTA);
-//				predicateExt->swapPointersTables(NEXTDELTA,DELTA);
+//				predicateExt->swapTables(NEXTDELTA,DELTA);
+				predicateExt->swapPointersTables(NEXTDELTA,DELTA);
 			}
 		}
 	}

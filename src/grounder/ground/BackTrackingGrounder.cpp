@@ -22,11 +22,13 @@ void BackTrackingGrounder::generateTemplateAtom(){
 
 #ifdef TRACE_ON
 void BackTrackingGrounder::printAssignment(){
-
 	for(unsigned i=0;i<current_assignment.size();i++){
 		Term *value=current_assignment[i];
-		if(value!=nullptr)continue;
-		cerr<<"VAR "<<i<<" = ";value->print(cerr);cerr<<" - ";
+		if(value!=nullptr){
+			cerr<<"VAR "<<i<<" = ";
+			value->print(cerr);
+			cerr<<" - ";
+		}
 	}
 	cerr<<endl;
 }

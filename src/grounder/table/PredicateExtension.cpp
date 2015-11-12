@@ -171,17 +171,17 @@ void PredicateExtension::swapPointersTables(unsigned tableFrom, unsigned tableTo
 	assert_msg(tableFrom<tables.size(),"The specified table doesn't exist.");
 	assert_msg(tableTo<tables.size(),"The specified table doesn't exist.");
 
-	AtomSearcher *seacher_from=getAtomSearcher(tableFrom);
-	AtomSearcher *seacher_to=getAtomSearcher(tableTo);
+	AtomSearcher *seacher_from=atomSearchers[tableFrom];
+	AtomSearcher *seacher_to=atomSearchers[tableTo];
 	AtomSearcher *searcher_tmp=seacher_from;
-	seacher_from=seacher_to;
-	seacher_to=searcher_tmp;
+	atomSearchers[tableFrom]=seacher_to;
+	atomSearchers[tableTo]=searcher_tmp;
 
 	AtomVector *table_from=tables[tableFrom];
 	AtomVector *table_to=tables[tableTo];
 	AtomVector *table_tmp=table_from;
-	table_from=table_to;
-	table_to=table_tmp;
+	tables[tableFrom]=table_to;
+	tables[tableTo]=table_tmp;
 }
 
 

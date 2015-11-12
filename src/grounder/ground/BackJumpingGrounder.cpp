@@ -123,9 +123,10 @@ void BackJumpingGrounder::inizialize(Rule* rule) {
 		}
 		cerr<<endl;);
 	trace_action_tag(backjumping,1,cerr<<"VARIABLES BINDER: ";
-		for(auto it:variablesBinder){
-			it.first->print(cerr);cerr<<" ";cerr<<it.second<<endl;
+		for(unsigned i=0;i<currentRule->getSizeBody();++i){
+			cerr<<variablesBinder[i]<<" ";
 		}
+		cerr<<endl;
 	);
 }
 
@@ -140,7 +141,7 @@ void BackJumpingGrounder::closestBinder( int literal_pos, const set_term& variab
 
 void BackJumpingGrounder::closestBinder( int literal_pos,int& positionCB) {
 	positionCB=-1;
-	for(unsigned i=0;i<failureMap.size();i++){
+	for(unsigned i=0;i<failureMap.size();++i){
 		if(!failureMap[i]) continue;
 		int binder=variablesBinder[i];
 		if(binder<literal_pos && binder>positionCB)
@@ -217,9 +218,9 @@ bool BackJumpingGrounder::match() {
 	trace_msg(backjumping,1,"CURRENT ATOM: "<<index_current_atom);
 	trace_action_tag(backjumping,1,
 		cerr<<"FAILURE SET: ";
-		for(auto pair:failureMap){
-			if(pair.second){
-				pair.first->print(cerr);cerr<<" ";
+		for(unsigned i=0;i<failureMap.size();++i){
+			if(failureMap[i]){
+				cerr<<i<<" ";
 			}
 		}
 		cerr<<endl;
@@ -259,9 +260,9 @@ void BackJumpingGrounder::backFromNextMatch() {
 
 	trace_action_tag(backjumping,1,
 		cerr<<"FAILURE SET: ";
-		for(auto pair:failureMap){
-			if(pair.second){
-				pair.first->print(cerr);cerr<<" ";
+		for(unsigned i=0;i<failureMap.size();++i){
+			if(failureMap[i]){
+				cerr<<i<<" ";
 			}
 		}
 		cerr<<endl;
