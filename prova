@@ -1,0 +1,18 @@
+%a:-sol(K1,ET1),sol(K2,ET2),ET1<ET2,p(K1,EP1),p(K1,EP2),EP1>=EP2.
+
+%sol(1,1)| d.
+%sol(1,2)| d.
+%p(1,1).
+%p(1,2).
+
+
+%a(X,Y):-b(X,Z),b(Z,Y),not c(X,Y).
+%b(1,1) | f.
+%c(1,1).
+%b(1..20,1..20) | f.
+%c(1..20,1..20) | g.
+
+true.
+
+w :- true.
+w :- not w.
