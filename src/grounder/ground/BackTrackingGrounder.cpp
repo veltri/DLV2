@@ -337,7 +337,6 @@ bool BackTrackingGrounder::back() {
 void BackTrackingGrounder::inizialize(Rule* rule) {
 	direction=1;
 	currentRule=rule;
-	current_id_match.clear();
 	current_atom_it = currentRule->getBeginBody();
 	index_current_atom = 0;
 	callFoundAssignment = false;
@@ -363,6 +362,7 @@ void BackTrackingGrounder::findBindVariablesRule() {
 
 	set_term total_variable;
 	unsigned int index_current_atom = 0;
+	current_atoms_bind.clear();
 	current_atoms_bind.resize(currentRule->getSizeBody());
 	variablesBinder.clear();
 
@@ -404,14 +404,29 @@ void BackTrackingGrounder::findBindVariablesRule() {
 	}
 
 	current_assignment.setSize(variableLocalIndex.size(),nullptr);
+
+	trace_action_tag(backtracking,1,
+		cerr<<"BINDER OF ATOMS: ";int i=0;
+		for(auto v:current_atoms_bind){
+			cerr<<"ATOM"<<i<<"[ ";
+			for(auto binder:v){
+				cerr<<binder<<" ";
+			}
+			cerr<<"] ";
+			i++;
+		}
+		cerr<<endl;
+	);
 }
 
 void BackTrackingGrounder::findSearchTable() {
 
-
+	current_id_match.clear();
+	current_id_match.reserve(currentRule->getSizeBody());
+	current_id_match_iterator.reserve(currentRule->getSizeBody());
 	for (unsigned index_current_atom = 0; index_current_atom < currentRule->getSizeBody(); ++index_current_atom) {
 		//find the table to search for each atom in the body
-		current_id_match.insert({index_current_atom,vector<pair<unsigned,int>>()});
+		current_id_match.emplace_back();
 		for(unsigned i=0;i<predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom].size();++i){
 			current_id_match[index_current_atom].push_back({predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom][i],NO_MATCH});
 		}
@@ -502,12 +517,14 @@ bool BackTrackingGrounder::groundAggregate() {
 				ground_aggregate->addAggregateElement(ground_aggregateElement);
 				result=ground_aggregate->partialEvaluate();
 
-				if(result!=UNDEF || atom->isGround())break;
 				//Remove bind variables of template atom in the ground aggregate element
 				//IF REMOVE TEMPLATE ATOM THIS NOT WORK because the variables in the template atom
 				//are bind variable
 				for(auto variableBind:variablesInAtom)
 					current_assignment[variableBind->getLocalVariableIndex()]=nullptr;
+
+				if(result!=UNDEF || atom->isGround())break;
+
 
 				searcher->nextMatch(id,atom,current_assignment,atomFound);
 				find=(atomFound!=nullptr);

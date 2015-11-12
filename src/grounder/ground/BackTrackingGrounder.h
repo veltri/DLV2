@@ -74,10 +74,10 @@ protected:
 
 
 	/// Current id of first match for grounding rule
-	/// map of id of the atom and vector of pair : table to search and id of firstMatch (if is NOMATCH call first else next)
-	unordered_map<unsigned,vector<pair<unsigned,int>>> current_id_match;
+	/// vector of the atom and vector of pair : table to search and id of firstMatch (if is NOMATCH call first else next)
+	vector<vector<pair<unsigned,int>>> current_id_match;
 	/// Map of id of the atom and table of current searching (iterator of vector in current_id_match)
-	unordered_map<unsigned,unsigned> current_id_match_iterator;
+	vector<unsigned> current_id_match_iterator;
 
 	/// Current variables for each atom for grounding rule
 	vector<vector<index_object>> current_atoms_bind;
