@@ -35,7 +35,7 @@ void BackTrackingGrounder::printAssignment(){
 bool BackTrackingGrounder::match() {
 
 	//Avoid call multiple time method match for the ground atom in the last position of the rule
-	if(is_ground_atom[index_current_atom] && !direction)
+	if(is_bound_atom[index_current_atom] && !direction)
  		return false;
 
 	 if(templateSetAtom[index_current_atom]->isClassicalLiteral()){
@@ -121,7 +121,7 @@ bool BackTrackingGrounder::firstMatch(){
 		}
 
 		if(find){
-			if(!is_ground_atom[index_current_atom]){
+			if(!is_bound_atom[index_current_atom]){
 				current_id_match[index_current_atom][current_table].second = id;
 			}else{
 				current_id_match[index_current_atom][current_table].second = NO_MATCH;
@@ -139,10 +139,10 @@ bool BackTrackingGrounder::firstMatch(){
 
 	//If at least a possible undef atom has been found then update accordingly the vector of undef atoms of this rule
 	if(negativeToClone){
-		while(indicesPossibleUndef.size()>0 && indicesPossibleUndef.back()>=index_current_atom)
-			indicesPossibleUndef.pop_back();
+		while(atomsPossibleUndef.size()>0 && atomsPossibleUndef.back()>=index_current_atom)
+			atomsPossibleUndef.pop_back();
 		if(isPossibleUndef && !ground_rule->isAtomToSimplifyInBody(index_current_atom))
-			indicesPossibleUndef.push_back(index_current_atom);
+			atomsPossibleUndef.push_back(index_current_atom);
 		Atom* atomFound=templateAtom->clone();
 		atomFound->setIndex(indexNegativeAtom);
 		substiteInGroundRule(index_current_atom,atomFound);
@@ -195,17 +195,13 @@ bool BackTrackingGrounder::nextMatch(){
 }
 
 bool BackTrackingGrounder::next() {
-
 	direction=1;
 	callFoundAssignment = false;
-	if( unsigned(index_current_atom+1)>=currentRule->getSizeBody()){
-
+	if( unsigned(index_current_atom+1)>=currentRule->getSizeBody())
 		return false;
-	}
 
 	++index_current_atom;
 	generateTemplateAtom();
-
 	return true;
 }
 
@@ -261,8 +257,8 @@ bool BackTrackingGrounder::foundAssignment() {
 	// In this case ground_rule content cannot be changed (for example, substituting atoms in its body),
 	// so after a ground rule is saved to be processed later, the ground_rule must be reinitialized coping
 	// into it, the body of the saved ground rule.
-	if(indicesPossibleUndef.size()>0){
-		atomsPossibleUndefPositions.push_back(indicesPossibleUndef);
+	if(atomsPossibleUndef.size()>0){
+		atomsPossibleUndefPositions.push_back(atomsPossibleUndef);
 		rulesWithPossibleUndefAtoms.push_back(ground_rule);
 		Rule* savedRule=ground_rule;
 		ground_rule=new Rule(true, currentRule->getSizeHead(), currentRule->getSizeBody());
@@ -290,7 +286,7 @@ bool BackTrackingGrounder::back() {
 	direction=0;
 	if(callFoundAssignment){
 		callFoundAssignment=false;
-		removeBindValueInAssignment(current_atoms_bind[index_current_atom]);
+		removeBindValueFromAssignment(atoms_bind_variables[index_current_atom]);
 		return true;
 	}
 
@@ -301,24 +297,21 @@ bool BackTrackingGrounder::back() {
 
 	--index_current_atom;
 
-	while (is_ground_atom[index_current_atom]){
+	while (is_bound_atom[index_current_atom]){
 		if (index_current_atom <= 0){
 
 			return false;
 		}
 
-		if(current_atoms_bind[index_current_atom].size()>0)
-			removeBindValueInAssignment(current_atoms_bind[index_current_atom]);
+		if(atoms_bind_variables[index_current_atom].size()>0)
+			removeBindValueFromAssignment(atoms_bind_variables[index_current_atom]);
 
 		--index_current_atom;
 
 	}
 
-	removeBindValueInAssignment(current_atoms_bind[index_current_atom]);
+	removeBindValueFromAssignment(atoms_bind_variables[index_current_atom]);
 	generateTemplateAtom();
-
-
-
 	return true;
 }
 
@@ -330,9 +323,9 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 	for(auto atom:templateSetAtom) {if(atom!=nullptr) atom->deleteAtoms(); delete atom;}
 	templateSetAtom.resize(rule->getSizeBody());
 	for(auto& atom:templateSetAtom) atom=nullptr;
-	is_ground_atom.clear();
+	is_bound_atom.clear();
 	findBindVariablesRule();
-	findSearchTable();
+	findSearchTables();
 	if(rule->getSizeBody()>0)
 		generateTemplateAtom();
 
@@ -342,15 +335,15 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 		ground_rule->deleteGroundRule();
 		ground_rule=new Rule(true, rule->getSizeHead(), rule->getSizeBody());
 	}
-	indicesPossibleUndef.clear();
+	atomsPossibleUndef.clear();
 }
 
 void BackTrackingGrounder::findBindVariablesRule() {
 
 	set_term total_variable;
 	unsigned int index_current_atom = 0;
-	current_atoms_bind.clear();
-	current_atoms_bind.resize(currentRule->getSizeBody());
+	atoms_bind_variables.clear();
+	atoms_bind_variables.resize(currentRule->getSizeBody());
 
 	map_term<index_object> variableLocalIndex;
 
@@ -374,17 +367,17 @@ void BackTrackingGrounder::findBindVariablesRule() {
 		if(current_atom->isAggregateAtom())
 			variablesInAtom=current_atom->getGuardVariable();
 
-		current_atoms_bind[index_current_atom].reserve(variablesInAtom.size());
+		atoms_bind_variables[index_current_atom].reserve(variablesInAtom.size());
 		for (auto variable : variablesInAtom) {
 			if (!total_variable.count(variable)){
-				current_atoms_bind[index_current_atom].push_back(variable->getLocalVariableIndex());
+				atoms_bind_variables[index_current_atom].push_back(variable->getLocalVariableIndex());
 			}
 		}
 
 		total_variable.insert(variablesInAtom.begin(),variablesInAtom.end());
 		///Set true if is ground
-		if(is_ground_atom.size()<=index_current_atom)
-			is_ground_atom.push_back((current_atom->isBuiltIn() || (current_atom->isClassicalLiteral() && current_atom->isNegative()) || current_atoms_bind[index_current_atom].size()==0));
+		if(is_bound_atom.size()<=index_current_atom)
+			is_bound_atom.push_back((current_atom->isBuiltIn() || (current_atom->isClassicalLiteral() && current_atom->isNegative()) || atoms_bind_variables[index_current_atom].size()==0));
 
 	}
 
@@ -392,7 +385,7 @@ void BackTrackingGrounder::findBindVariablesRule() {
 
 	trace_action_tag(backtracking,1,
 		cerr<<"BINDER OF ATOMS: ";int i=0;
-		for(auto v:current_atoms_bind){
+		for(auto v:atoms_bind_variables){
 			cerr<<"ATOM"<<i<<"[ ";
 			for(auto binder:v){
 				cerr<<binder<<" ";
@@ -404,7 +397,7 @@ void BackTrackingGrounder::findBindVariablesRule() {
 	);
 }
 
-void BackTrackingGrounder::findSearchTable() {
+void BackTrackingGrounder::findSearchTables() {
 
 	current_id_match.clear();
 	current_id_match.reserve(currentRule->getSizeBody());
@@ -421,7 +414,7 @@ void BackTrackingGrounder::findSearchTable() {
 
 }
 
-void BackTrackingGrounder::removeBindValueInAssignment(const vector<index_object>& bind_variables) {
+void BackTrackingGrounder::removeBindValueFromAssignment(const vector<index_object>& bind_variables) {
 
 	for (auto variable : bind_variables)
 		current_assignment[variable]=nullptr;

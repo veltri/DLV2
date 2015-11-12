@@ -34,9 +34,9 @@ bool BackJumpingGrounder::back() {
 		return false;
 
 	for (int i=index_current_atom; i<=current_index; ++i){
-		if(current_atoms_bind[i].size()>0)
-			removeBindValueInAssignment(current_atoms_bind[i]);
-		if(i>index_current_atom && !is_ground_atom[i]){
+		if(atoms_bind_variables[i].size()>0)
+			removeBindValueFromAssignment(atoms_bind_variables[i]);
+		if(i>index_current_atom && !is_bound_atom[i]){
 			Predicate *currentPredicate=currentRule->getAtomInBody(i)->getPredicate();
 			for (unsigned j = 0; j < current_id_match[i].size()&&currentPredicate!=nullptr; ++j) {
 				predicateExtTable->getPredicateExt(currentPredicate)->getAtomSearcher(current_id_match[i][j].first)->removeId(current_id_match[i][j].second);
@@ -81,8 +81,8 @@ void BackJumpingGrounder::inizialize(Rule* rule) {
 	historyBackFromSolutionFound=-2;
 
 	variablesBinder.setSize(current_assignment.size(),0);
-	for(unsigned i=0;i<current_atoms_bind.size();++i){
-		for(auto var:current_atoms_bind[i])
+	for(unsigned i=0;i<atoms_bind_variables.size();++i){
+		for(auto var:atoms_bind_variables[i])
 			variablesBinder[var]=i;
 	}
 
@@ -212,7 +212,7 @@ bool BackJumpingGrounder::match() {
 			failureMap[var->getLocalVariableIndex()]=true;
 	}
 	else{
-		for(auto var: current_atoms_bind[index_current_atom])
+		for(auto var: atoms_bind_variables[index_current_atom])
 			failureMap[var]=false;
 	}
 
