@@ -104,14 +104,14 @@ public:
 	vector<Atom*>::const_iterator getEndHead()const{return head.end();};
 
 	///Return the specific atom in the body
-	Atom* getAtomInBody(unsigned i) {return body[i];};
+	inline Atom* getAtomInBody(unsigned i) {return body[i];};
 	///Set the specific atom in the body
-	void setAtomInBody(unsigned i,Atom* atom) {body[i]=atom;};
+	inline void setAtomInBody(unsigned i,Atom* atom) {body[i]=atom;};
 
 	///Set the specific atom in the body
-	void setAtomInHead(unsigned i,Atom* atom) {head[i]=atom;};
+	inline void setAtomInHead(unsigned i,Atom* atom) {head[i]=atom;};
 	///Return the specific atom in the head
-	Atom* getAtomInHead(unsigned i) {return head[i];};
+	inline Atom* getAtomInHead(unsigned i) {return head[i];};
 
 	///Set the simplification of the atom in the given position in the head
 	void setAtomToSimplifyInHead(unsigned position, bool simplify = true){ simplifiedHead[position]=simplify;}

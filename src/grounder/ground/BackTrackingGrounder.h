@@ -16,11 +16,10 @@ namespace grounder {
 
 /// If the firstMatch on table has not been called
 #define NO_MATCH -1
+
 /*
  *  Simple backtrack algorithm to ground a rule
- */
-
-
+*/
 class BackTrackingGrounder : public ProgramGrounder {
 public:
 	BackTrackingGrounder():ProgramGrounder(),currentRule(0),index_current_atom(0),callFoundAssignment(0),ground_rule(0),direction(1) {};
@@ -32,7 +31,6 @@ public:
 	};
 
 protected:
-
 	virtual bool match();
 	virtual bool next();
 	virtual bool back();
@@ -47,19 +45,12 @@ protected:
 	virtual bool firstMatch();
 	/// Call the next match with the current atom
 	virtual bool nextMatch();
-	/// Return true if is ground the current atom
-	virtual bool isGroundCurrentAtom();
 
 	///Ground an aggregate atom and return true if math false otherwise
 	virtual bool groundAggregate();
 
 	///Ground a choice in the head of the rule
 	virtual void groundChoice(bool& find_new_true_atom,bool& ground_new_atom);
-
-#ifdef TRACE_ON
-	/// Print the current assignment
-	void printAssignment();
-#endif
 
 	//Delete the atom at the given position and substitute it with the given atom at that position
 	void substiteInGroundRule(unsigned position, Atom* new_atom) {
@@ -69,9 +60,21 @@ protected:
 		ground_rule->setAtomInBody(position,new_atom);
 	}
 
+	///Find the bind variable on rule
+	void findBindVariablesRule();
+
+	///Determine the table to search for each atom in the body
+	void findSearchTable();
+
+	/// Current rule
+	Rule* currentRule;
+	/// Current atom index for grounding rule
+	int index_current_atom;
+	//Partially ground rule built
+	Rule* ground_rule;
+
 	/// Current assignment for grounding rule
 	var_assignment current_assignment;
-
 
 	/// Current id of first match for grounding rule
 	/// vector of the atom and vector of pair : table to search and id of firstMatch (if is NOMATCH call first else next)
@@ -82,31 +85,26 @@ protected:
 	/// Current variables for each atom for grounding rule
 	vector<vector<index_object>> current_atoms_bind;
 
-	/// Current rule
-	Rule* currentRule;
-	/// Current atom iterator for grounding rule
-	vector<Atom*>::iterator current_atom_it;
-	/// Current atom index for grounding rule
-	int index_current_atom;
 	//vector of bool if the atom is ground
 	vector<bool> is_ground_atom;
+
 	bool callFoundAssignment;
-	//Partially ground rule built
-	Rule* ground_rule;
+
+
+
 	/// Set of current templateAtom
 	vector<Atom*> templateSetAtom;
-
-	///Find the bind variable on rule
-	void findBindVariablesRule();
-
-	///Determine the table to search for each atom in the body
-	void findSearchTable();
 
 	///The size is >0 if the current ground rule has at least a negative atom that an potentially be an undef atom (an atom without a valid index)
 	vector<unsigned> indicesPossibleUndef;
 
 	/// Is 1 if forward, 0 if backward
 	bool direction;
+
+#ifdef TRACE_ON
+	/// Print the current assignment
+	void printAssignment();
+#endif
 
 };
 

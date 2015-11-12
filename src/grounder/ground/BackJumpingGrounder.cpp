@@ -156,7 +156,6 @@ void BackJumpingGrounder::backFromSolutionFound() {
 
 	if(historyBackFromSolutionFound!=-2){
 		index_current_atom=historyBackFromSolutionFound;
-		current_atom_it=currentRule->getBeginBody()+historyBackFromSolutionFound;
 		closestSuccessfulBinder_index=historyBackOutputVars[index_current_atom];
 		closestSuccessfulBinder_it=currentRule->getBeginBody()+closestSuccessfulBinder_index;
 	}
@@ -166,7 +165,6 @@ void BackJumpingGrounder::backFromSolutionFound() {
 		closestBinder(index_current_atom,outputVariables,closestBinder_pos,closestBinder_it,true);
 		historyBackFromSolutionFound=closestBinder_pos;
 		index_current_atom=closestBinder_pos;
-		current_atom_it=closestBinder_it;
 		closestBinder(index_current_atom,outputVariables,closestSuccessfulBinder_index,closestSuccessfulBinder_it,false);
 		if(index_current_atom>=0)
 			historyBackOutputVars[index_current_atom]=closestSuccessfulBinder_index;
@@ -182,7 +180,6 @@ void BackJumpingGrounder::backFromFirstMatch() {
 
 	if(it!=-2){
 		index_current_atom=it;
-		current_atom_it=currentRule->getBeginBody()+it;
 	}
 	else{
 		vector<Atom*>::iterator closestBinder_it;
@@ -192,7 +189,6 @@ void BackJumpingGrounder::backFromFirstMatch() {
 		closestBinder(index_current_atom,variables,closestBinder_pos,closestBinder_it,false);
 		if(index_current_atom>=0)
 			historyBackFromFirst[index_current_atom]=closestBinder_pos;
-		current_atom_it=closestBinder_it;
 		index_current_atom=closestBinder_pos;
 	}
 
@@ -203,7 +199,8 @@ void BackJumpingGrounder::backFromFirstMatch() {
 bool BackJumpingGrounder::match() {
 	trace_msg(backjumping,1,"---> MATCH");
 	bool result = true;
-	if((*current_atom_it)->isBuiltIn() && (*current_atom_it)->isAssignment() && !direction )
+	Atom* current_atom=currentRule->getAtomInBody(index_current_atom);
+	if(current_atom->isBuiltIn() && current_atom->isAssignment() && !direction)
 		result = false;
 
 	if(result)
@@ -246,11 +243,9 @@ void BackJumpingGrounder::backFromNextMatch() {
 	closestBinder(index_current_atom,closestBinder_pos,closestBinder_it);
 
 	if(closestSuccessfulBinder_index>closestBinder_pos){
-		current_atom_it=closestSuccessfulBinder_it;
 		index_current_atom=closestSuccessfulBinder_index;
 	}
 	else {
-		current_atom_it=closestBinder_it;
 		index_current_atom=closestBinder_pos;
 	}
 

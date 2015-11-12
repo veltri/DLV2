@@ -17,7 +17,7 @@ namespace DLV2 {
 namespace grounder {
 
 void BackTrackingGrounder::generateTemplateAtom(){
-	(*current_atom_it)->ground(current_assignment,templateSetAtom[index_current_atom]);
+	currentRule->getAtomInBody(index_current_atom)->ground(current_assignment,templateSetAtom[index_current_atom]);
 }
 
 #ifdef TRACE_ON
@@ -32,17 +32,11 @@ void BackTrackingGrounder::printAssignment(){
 }
 #endif
 
-bool BackTrackingGrounder::isGroundCurrentAtom(){
-	return (is_ground_atom[index_current_atom]);
-
-}
 bool BackTrackingGrounder::match() {
 
 	//Avoid call multiple time method match for the ground atom in the last position of the rule
-	if(isGroundCurrentAtom() && !direction)
+	if(is_ground_atom[index_current_atom] && !direction)
  		return false;
-
-
 
 	 if(templateSetAtom[index_current_atom]->isClassicalLiteral()){
 
@@ -127,7 +121,7 @@ bool BackTrackingGrounder::firstMatch(){
 		}
 
 		if(find){
-			if(!isGroundCurrentAtom()){
+			if(!is_ground_atom[index_current_atom]){
 				current_id_match[index_current_atom][current_table].second = id;
 			}else{
 				current_id_match[index_current_atom][current_table].second = NO_MATCH;
@@ -209,11 +203,7 @@ bool BackTrackingGrounder::next() {
 		return false;
 	}
 
-
-	++current_atom_it;
 	++index_current_atom;
-
-
 	generateTemplateAtom();
 
 	return true;
@@ -309,10 +299,9 @@ bool BackTrackingGrounder::back() {
 		return false;
 
 
-	--current_atom_it;
 	--index_current_atom;
 
-	while (isGroundCurrentAtom()){
+	while (is_ground_atom[index_current_atom]){
 		if (index_current_atom <= 0){
 
 			return false;
@@ -321,7 +310,6 @@ bool BackTrackingGrounder::back() {
 		if(current_atoms_bind[index_current_atom].size()>0)
 			removeBindValueInAssignment(current_atoms_bind[index_current_atom]);
 
-		--current_atom_it;
 		--index_current_atom;
 
 	}
@@ -337,7 +325,6 @@ bool BackTrackingGrounder::back() {
 void BackTrackingGrounder::inizialize(Rule* rule) {
 	direction=1;
 	currentRule=rule;
-	current_atom_it = currentRule->getBeginBody();
 	index_current_atom = 0;
 	callFoundAssignment = false;
 	for(auto atom:templateSetAtom) {if(atom!=nullptr) atom->deleteAtoms(); delete atom;}
