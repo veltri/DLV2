@@ -80,6 +80,12 @@ void BackJumpingGrounder::inizialize(Rule* rule) {
 	historyBackFromSolutionFound=-2;
 	historyBackOutputVars.clear();
 
+	variablesBinder.setSize(current_assignment.size(),0);
+	for(unsigned i=0;i<current_atoms_bind.size();++i){
+		for(auto var:current_atoms_bind[i])
+			variablesBinder[var]=i;
+	}
+
 	atomsVariables.clear();
 
 	failureMap.resize(current_assignment.size(),false);
@@ -107,6 +113,8 @@ void BackJumpingGrounder::inizialize(Rule* rule) {
 			}
 		}
 	}
+
+
 
 	trace_action_tag(backjumping,1,
 		cerr<<"OUTPUT VARIABLES: ";

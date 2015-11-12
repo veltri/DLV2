@@ -68,7 +68,8 @@ private:
 	set_term outputVariables;
 	/// Map of variables bool. If the boolean is true the variable is in the failure set
 	vector<bool> failureMap;
-//	map_term<bool> failureMap;
+	///Map each variable to its binder atom
+	AdvancedArray<unsigned,ARRAY_SIZE> variablesBinder;
 
 	int historyBackFromSolutionFound;
 

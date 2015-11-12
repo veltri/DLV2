@@ -23,7 +23,7 @@ namespace grounder {
 
 class BackTrackingGrounder : public ProgramGrounder {
 public:
-	BackTrackingGrounder():ProgramGrounder(),currentRule(0),index_current_atom(0),callFoundAssignment(0),ground_rule(0) {};
+	BackTrackingGrounder():ProgramGrounder(),currentRule(0),index_current_atom(0),callFoundAssignment(0),ground_rule(0),direction(1) {};
 	virtual ~BackTrackingGrounder() {
 		for(auto atom:templateSetAtom) {if(atom!=nullptr){atom->deleteAtoms(); delete atom;}}
 		if(ground_rule!=0)
@@ -82,8 +82,6 @@ protected:
 	/// Current variables for each atom for grounding rule
 	vector<vector<index_object>> current_atoms_bind;
 
-	///Map each variable to its binder atom
-	AdvancedArray<unsigned,ARRAY_SIZE> variablesBinder;
 	/// Current rule
 	Rule* currentRule;
 	/// Current atom iterator for grounding rule

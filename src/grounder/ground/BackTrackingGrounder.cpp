@@ -402,11 +402,6 @@ void BackTrackingGrounder::findBindVariablesRule() {
 	}
 
 	current_assignment.setSize(variableLocalIndex.size(),nullptr);
-	variablesBinder.setSize(variableLocalIndex.size(),0);
-	for(unsigned i=0;i<current_atoms_bind.size();++i){
-		for(auto var:current_atoms_bind[i])
-			variablesBinder[var]=i;
-	}
 
 	trace_action_tag(backtracking,1,
 		cerr<<"BINDER OF ATOMS: ";int i=0;
