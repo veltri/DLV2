@@ -118,7 +118,8 @@ Utils::systemCallTo(
         perror("fork failed");
         ErrorMessage::errorGeneric("An error has occurred");
     }
-    else if ( pid == 0 )
+
+    if ( pid == 0 )
     {
         // This is the code the child runs
 
@@ -161,23 +162,23 @@ Utils::systemCallTo(
         // The child process needs EOF to complete its work.
         close(pipesEnds[TO_CHILD_PIPE][WRITE_FD]);
         // The parent process needs the child process to compute the result before reading the answer.
+        pid_t w;
         int status;
-        wait(&status);
-
-        if( status == 0 )
+        w = wait(&status);
+        if( w < 0 )
         {
-            // Now read from the pipe
-            int count = read(pipesEnds[FROM_CHILD_PIPE][READ_FD], outputBuffer, outputBufferSize*sizeof(char));
-            if (count >= 0)
-            {
-                if( (count/sizeof(char)) < outputBufferSize )
-                    outputBuffer[(count/sizeof(char))] = '\0';
-                else
-                    outputBuffer[outputBufferSize-1] = '\0';
-//                trace_msg( rewriting,3,"The output is " << outputBuffer );
-            }
+            perror("wait");
+            ErrorMessage::errorGeneric("An error has occurred while waiting for the child ending");
+        }
+        // Now read from the pipe
+        int count = read(pipesEnds[FROM_CHILD_PIPE][READ_FD], outputBuffer, outputBufferSize*sizeof(char));
+        if (count >= 0)
+        {
+            if( (count/sizeof(char)) < outputBufferSize )
+                outputBuffer[(count/sizeof(char))] = '\0';
             else
-                ErrorMessage::errorGeneric("IO Error");
+                outputBuffer[outputBufferSize-1] = '\0';
+            //                trace_msg( rewriting,3,"The output is " << outputBuffer );
         }
         else
             ErrorMessage::errorGeneric("IO Error");

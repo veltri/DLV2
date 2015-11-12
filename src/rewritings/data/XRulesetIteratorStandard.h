@@ -18,27 +18,27 @@
  */
 
 /* 
- * File:   XParallelRulesetStandard.h
+ * File:   XRulesetIteratorStandard.h
  * Author: pierfrancesco
  *
  * Created on 17 luglio 2015, 18.08
  */
 
-#ifndef XPARALLELRULESETSTANDARD_H
-#define XPARALLELRULESETSTANDARD_H
-
-#include "XParallelRuleset.h"
+#ifndef XRULESETITERATORSTANDARD_H
+#define XRULESETITERATORSTANDARD_H
 
 #include "../../util/Assert.h"
+#include "XRulesetIterator.h"
 
 namespace DLV2{ namespace REWRITERS{
 
-    class XParallelRulesetStandard : public XParallelRuleset {
+    class XRulesetIteratorStandard : public XRulesetIterator {
     public:
-        XParallelRulesetStandard( const XProgram& inputProgram ): XParallelRuleset(inputProgram), it(inputProgram.beginRules()) { }
-        XParallelRulesetStandard( const XParallelRulesetStandard& ruleset ): XParallelRuleset(ruleset.program), it(ruleset.it) { }
-        virtual ~XParallelRulesetStandard() { }
+        XRulesetIteratorStandard( const XProgram& inputProgram ): XRulesetIterator(inputProgram), it(inputProgram.beginRules()) { }
+        XRulesetIteratorStandard( const XRulesetIteratorStandard& ruleset ): XRulesetIterator(ruleset.program), it(program.beginRules()) { }
+        virtual ~XRulesetIteratorStandard() { }
 
+        virtual void pushIterator( XProgram::const_iterator it ) { assert_msg( 0, "This method has not been designed for this class" ); }
         virtual bool hasNext() { return it != program.endRules(); }
         virtual const XRule& next() { assert_msg( hasNext(), "No more items" ); return *it++; }
         virtual const size_t size() const { return program.rulesSize(); }
@@ -51,4 +51,4 @@ namespace DLV2{ namespace REWRITERS{
 
 };};
 
-#endif /* XPARALLELRULESETSTANDARD_H */
+#endif /* XRULESETITERATORSTANDARD_H */

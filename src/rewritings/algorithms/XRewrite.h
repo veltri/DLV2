@@ -108,6 +108,27 @@ namespace DLV2{ namespace REWRITERS{
                 unsigned center,
                 unsigned right ) const;
 
+        virtual void lockIO() { }
+        virtual void unlockIO() { }
+        virtual void lockProgramVariableCounter() { }
+        virtual void unlockProgramVariableCounter() { }
+        virtual void lockCanonicalRuleHashCodesCache() { }
+        virtual void unlockCanonicalRuleHashCodesCache() { }
+        virtual void lockReachabilityCache() { }
+        virtual void unlockReachabilityCache() { }
+        virtual void lockHomomorphismCache() { }
+        virtual void unlockHomomorphismCache() { }
+        virtual void lockUnifierAggregationDuration() { }
+        virtual void unlockUnifierAggregationDuration() { }
+        virtual void lockQueryNecessaryDuration() { }
+        virtual void unlockQueryNecessaryDuration() { }
+        virtual void lockQueryEliminationDuration() { }
+        virtual void unlockQueryEliminationDuration() { }
+        virtual void lockReachabilityDuration() { }
+        virtual void unlockReachabilityDuration() { }
+        virtual void lockHomomorphismDuration() { }
+        virtual void unlockHomomorphismDuration() { }
+
         IsomorphismCheckStrategy* isomorphismStrategy;
         // This vector stores hash_codes of the canonical renaming of the rewriting rules.
         std::vector< size_t > canonicalRuleHashCodesCache;

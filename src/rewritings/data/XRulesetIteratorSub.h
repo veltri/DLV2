@@ -18,29 +18,28 @@
  */
 
 /* 
- * File:   XParallelRulesetSub.h
+ * File:   XRulesetIteratorSub.h
  * Author: pierfrancesco
  *
  * Created on 17 luglio 2015, 17.55
  */
 
-#ifndef XPARALLELRULESETSUB_H
-#define XPARALLELRULESETSUB_H
-
-#include "XParallelRuleset.h"
+#ifndef XRULESETITERATORSUB_H
+#define XRULESETITERATORSUB_H
 
 #include "../../util/Assert.h"
+#include "XRulesetIterator.h"
 
 namespace DLV2{ namespace REWRITERS{
 
-    class XParallelRulesetSub : public XParallelRuleset {
+    class XRulesetIteratorSub : public XRulesetIterator {
     public:
-        XParallelRulesetSub( const XProgram& inputProgram ): XParallelRuleset(inputProgram), iterators(), index(0) { }
-        XParallelRulesetSub( const XParallelRulesetSub& ruleset ): XParallelRuleset(ruleset.program), iterators(ruleset.iterators), index(ruleset.index) { }
-        virtual ~XParallelRulesetSub() { }
+        XRulesetIteratorSub( const XProgram& inputProgram ): XRulesetIterator(inputProgram), iterators(), index(0) { }
+        XRulesetIteratorSub( const XRulesetIteratorSub& ruleset ): XRulesetIterator(ruleset.program), iterators(ruleset.iterators), index(0) { }
+        virtual ~XRulesetIteratorSub() { }
 
-        virtual void show( XProgram::const_iterator it ) { assert_msg( it != program.endRules(), "Iterator not valid" ); iterators.push_back(it); }
-        virtual bool hasNext() { return index != iterators.size(); }
+        virtual void pushIterator( XProgram::const_iterator it ) { assert_msg( it != program.endRules(), "Iterator not valid" ); iterators.push_back(it); }
+        virtual bool hasNext() { return index < iterators.size(); }
         virtual const XRule& next() { assert_msg( hasNext(), "No more items" ); return *(iterators[index++]); }
         virtual const size_t size() const { return iterators.size(); }
         virtual void reset() { index = 0; }
@@ -53,4 +52,4 @@ namespace DLV2{ namespace REWRITERS{
 
 };};
 
-#endif /* XPARALLELRULESETSUB_H */
+#endif /* XRULESETITERATORSUB_H */

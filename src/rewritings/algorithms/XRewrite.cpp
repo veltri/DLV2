@@ -540,7 +540,9 @@ XRewrite::computeSPUAggregators(
     }
     trace_msg( rewriting, 2, "SPU aggregation complete!" );
     auto eAggrTime = std::chrono::high_resolution_clock::now();
+    lockUnifierAggregationDuration();
     unifierAggregationDuration += ( eAggrTime - sAggreTime );
+    unlockUnifierAggregationDuration();
 }
 
 /* The aggregation between 2 or more single-piece aggregators is generated as follows:
@@ -651,8 +653,10 @@ XRewrite::renameInputRuleOf(
                 if( it == renaming->end() )
                 {
                     stringstream ss;
+                    lockProgramVariableCounter();
                     inputProgram.incrementVariablesCounter();
                     ss << "X" << inputProgram.getVariablesCounter();
+                    unlockProgramVariableCounter();
                     XTerm* renamedTerm = inputProgram.createStandardVariable(ss.str());
                     renaming->insert(pair< const XTerm&, const XTerm& >(head->at(i).getTerms().at(j),*renamedTerm));
                     delete renamedTerm;
@@ -669,8 +673,10 @@ XRewrite::renameInputRuleOf(
                 if( it == renaming->end() )
                 {
                     stringstream ss;
+                    lockProgramVariableCounter();
                     inputProgram.incrementVariablesCounter();
                     ss << "X" << inputProgram.getVariablesCounter();
+                    unlockProgramVariableCounter();
                     XTerm* renamedTerm = inputProgram.createStandardVariable(ss.str());
                     renaming->insert(pair< const XTerm&, const XTerm& >(body->at(i).getAtom().getTerms().at(j),*renamedTerm));
                     delete renamedTerm;
@@ -909,15 +915,18 @@ XRewrite::isUnnecessary(
         orderedBodyPositions[i] = i;
     mergeSort(renamedHeadAtoms,orderedHeadPositions,0,orderedHeadPositions.size()-1);
     mergeSort(renamedBodyLiterals,orderedBodyPositions,0,orderedBodyPositions.size()-1);
-
     if( isInCanonicalRenamingCache(renamedHeadAtoms,orderedHeadPositions,renamedBodyLiterals,orderedBodyPositions) )
     {
         auto eUnnecessityTestTime = std::chrono::high_resolution_clock::now();
+        lockQueryNecessaryDuration();
         queryNecessaryDuration += (eUnnecessityTestTime - sUnnecessityTestTime );
+        unlockQueryNecessaryDuration();
         return true;
     }
     auto eUnnecessityTestTime = std::chrono::high_resolution_clock::now();
+    lockQueryNecessaryDuration();
     queryNecessaryDuration += (eUnnecessityTestTime - sUnnecessityTestTime );
+    unlockQueryNecessaryDuration();
     return false;
 }
 
@@ -970,11 +979,15 @@ XRewrite::isInCanonicalRenamingCache(
 
     hash< string > strHash;
     size_t currentHash = strHash(canonicalRenamingStream.str());
+    lockCanonicalRuleHashCodesCache();
     for( index_t i=0; i<canonicalRuleHashCodesCache.size(); i++ )
         if( currentHash == canonicalRuleHashCodesCache[i] )
+        {
+            unlockCanonicalRuleHashCodesCache();
             return true;
-
+        }
     canonicalRuleHashCodesCache.push_back(currentHash);
+    unlockCanonicalRuleHashCodesCache();
     return false;
 }
 
@@ -1116,14 +1129,20 @@ XRewrite::queryElimination(
                                     );
                                 // DLV is called in order to solve the reachability problem.
                                 char outputBuffer[BUFFER_MAX_LENGTH];
+                                lockReachabilityCache();
                                 if( !isInReachabilityCache(inputStream.str(),outputBuffer) )
                                 {
                                     auto sReachabilityTime = std::chrono::high_resolution_clock::now();
+//                                    lockIO();
                                     Utils::systemCallTo("./executables/dlNofinitecheck",inputStream.str(),outputBuffer,BUFFER_MAX_LENGTH);
+//                                    unlockIO();
                                     auto eReachabilityTime = std::chrono::high_resolution_clock::now();
+                                    lockReachabilityDuration();
                                     reachabilityDuration += ( eReachabilityTime - sReachabilityTime );
+                                    unlockReachabilityDuration();
                                     addToReachabilityCache(inputStream.str(),outputBuffer);
                                 }
+                                unlockReachabilityCache();
                                 trace_action( rewriting, 2,
                                         trace_tag( cerr, rewriting, 2 );
                                         cerr << "The output from DLV is the following: ";
@@ -1177,6 +1196,7 @@ XRewrite::queryElimination(
                                     const XAtom& tgdListFirstAtom = tgdIterator->getBody()->at(0).getAtom();
                                     trace_msg( rewriting, 3, "Check whether the current sequence is compatible with 'coveringCandidate', i.e., "
                                             "whether " << tgdListFirstAtom << " is homomorphic to " << coveringCandidate );
+                                    lockHomomorphismCache();
                                     pair< bool, bool > resCache = homomorphismCache.inCache(
                                             pair< const XAtom&, const XAtom& >(coveringCandidate,tgdListFirstAtom));
                                     if( !resCache.first )
@@ -1186,10 +1206,14 @@ XRewrite::queryElimination(
                                         vector< XAtom > coveringCandidateAtomList;
                                         coveringCandidateAtomList.push_back(coveringCandidate);
                                         auto sHomomorphismTime = std::chrono::high_resolution_clock::now();
+//                                        lockIO();
                                         pair< XMapping*, bool  > resHomomorphism =
                                                 isomorphismStrategy->isHomomorphicTo(coveringCandidateAtomList,tgdAtomList);
+//                                        unlockIO();
                                         auto eHomomorphismTime = std::chrono::high_resolution_clock::now();
+                                        lockHomomorphismDuration();
                                         homomorphismDuration += ( eHomomorphismTime - sHomomorphismTime );
+                                        unlockHomomorphismDuration();
                                         if( resHomomorphism.second )
                                             delete resHomomorphism.first;
                                         homomorphismCache.cache(
@@ -1197,6 +1221,7 @@ XRewrite::queryElimination(
                                             resHomomorphism.second);
                                         resCache.second = resHomomorphism.second;
                                     }
+                                    unlockHomomorphismCache();
                                     if( resCache.second )
                                     {
                                         // 'atom' is eliminable, because its covering set is not empty.
@@ -1238,7 +1263,9 @@ XRewrite::queryElimination(
         rewrittenQuery = inputProgram.createRule(head,body);
     }
     auto eQueryEliminationTime = std::chrono::high_resolution_clock::now();
+    lockQueryEliminationDuration();
     queryEliminationDuration += ( eQueryEliminationTime - sQueryEliminationTime );
+    unlockQueryEliminationDuration();
     return rewrittenQuery;
 }
 

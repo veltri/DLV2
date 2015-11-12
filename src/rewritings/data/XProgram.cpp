@@ -33,6 +33,7 @@
 #include "XStickyExpandedRule.h"
 #include "XPartition.h"
 #include "XPieceUnifier.h"
+#include "XQuery.h"
 #include "../../util/ErrorMessage.h"
 #include "../../util/Trace.h"
 #include "../../util/Options.h"
@@ -260,6 +261,14 @@ XProgram::createPieceUnifier(
     const std::unordered_set< unsigned >& subQueryAtomPos ) const
 {
     return new XPieceUnifier(q,h,p,query,rule,subQueryAtomPos);
+}
+
+XQuery*
+XProgram::createQuery(
+    XRule* qRule,
+    const XRandomAccessSet< index_t >& sNulls ) const
+{
+    return new XQuery(qRule,sNulls);
 }
 
 void

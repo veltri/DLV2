@@ -57,6 +57,7 @@ namespace DLV2{ namespace REWRITERS{
     class XEquivalenceClass;
     class XPartition;
     class XPieceUnifier;
+    class XQuery;
 
     class XProgram {
     public:
@@ -100,6 +101,8 @@ namespace DLV2{ namespace REWRITERS{
                 const XRule& query,
                 const XRule& rule,
                 const std::unordered_set< unsigned >& subQueryAtomPos ) const;
+        XQuery* createQuery( XRule* qRule, const XRandomAccessSet< index_t >& sNulls = XRandomAccessSet< index_t >() ) const;
+
 
         void addRule( const XRule& r );
         void addQuery( const XAtom& q );

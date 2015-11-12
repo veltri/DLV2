@@ -18,24 +18,25 @@
  */
 
 /* 
- * File:   XParallelRuleset.h
+ * File:   XRulesetIterator.h
  * Author: pierfrancesco
  *
  * Created on 17 luglio 2015, 17.31
  */
 
-#ifndef XPARALLELRULESET_H
-#define XPARALLELRULESET_H
+#ifndef XRULESETITERATOR_H
+#define XRULESETITERATOR_H
 
 #include "XProgram.h"
 
 namespace DLV2{ namespace REWRITERS{
 
-    class XParallelRuleset {
+    class XRulesetIterator {
     public:
-        XParallelRuleset( const XProgram& inputProgram ): program(inputProgram) { }
-        virtual ~XParallelRuleset() { }
+        XRulesetIterator( const XProgram& inputProgram ): program(inputProgram) { }
+        virtual ~XRulesetIterator() { }
 
+        virtual void pushIterator( XProgram::const_iterator it ) = 0;
         virtual bool hasNext() = 0;
         virtual const XRule& next() = 0;
         virtual const size_t size() const = 0;
@@ -48,4 +49,4 @@ namespace DLV2{ namespace REWRITERS{
 
 };};
 
-#endif /* XPARALLELRULESET_H */
+#endif /* XRULESETITERATOR_H */
