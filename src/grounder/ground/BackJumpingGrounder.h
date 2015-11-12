@@ -73,9 +73,9 @@ private:
 
 	int historyBackFromSolutionFound;
 
-	unordered_map<unsigned,int> historyBackOutputVars;
+	AdvancedArray<int,ARRAY_SIZE> historyBackOutputVars;
 
-	unordered_map<unsigned,int> historyBackFromFirst;
+	AdvancedArray<int,ARRAY_SIZE> historyBackFromFirst;
 
 	vector<set_term> atomsVariables;
 
