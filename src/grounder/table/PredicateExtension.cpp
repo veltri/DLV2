@@ -182,7 +182,6 @@ void PredicateExtension::swapPointersTables(unsigned tableFrom, unsigned tableTo
 	AtomVector *table_tmp=table_from;
 	table_from=table_to;
 	table_to=table_tmp;
-	cout<<endl;
 }
 
 
