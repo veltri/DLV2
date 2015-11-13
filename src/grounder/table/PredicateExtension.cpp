@@ -84,8 +84,8 @@ void PredicateExtension::swapTables(unsigned tableFrom,unsigned tableTo){
 	AtomVector *table_from=tables[tableFrom];
 	AtomVector *table_to=tables[tableTo];
 
-	AtomSearcher* seacher_from=getAtomSearcher(tableFrom);
-	AtomSearcher* seacher_to=getAtomSearcher(tableTo);
+	AtomSearcher* seacher_from=atomSearchers[tableFrom];
+	AtomSearcher* seacher_to=atomSearchers[tableTo];
 	unsigned size=table_from->size();
 	table_to->reserve(size+table_to->size());
 	for (int i = size-1; i >= 0; --i) {
