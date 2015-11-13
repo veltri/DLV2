@@ -410,8 +410,10 @@ void BackTrackingGrounder::findSearchTables() {
 		current_id_match.emplace_back();
 		Predicate *predicate=currentRule->getAtomInBody(index_current_atom)->getPredicate();
 		for(unsigned i=0;i<predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom].size();++i){
-			int tableToSearch=predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom][i];
-			predicateExtTable->getPredicateExt(predicate)->getAtomSearcher(tableToSearch)->setSizeResultVector(sizeRule);
+			if(predicate!=nullptr){
+				int tableToSearch=predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom][i];
+				predicateExtTable->getPredicateExt(predicate)->getAtomSearcher(tableToSearch)->setSizeResultVector(sizeRule);
+			}
 			current_id_match[index_current_atom].push_back({predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom][i],NO_MATCH});
 		}
 		current_id_match_iterator[index_current_atom]=0;

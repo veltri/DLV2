@@ -129,9 +129,7 @@ void ProgramGrounder::ground() {
 //				Timer::getInstance()->stop("Swap");
 			}
 		}
-//		Timer::getInstance()->printClock("First");
-//		Timer::getInstance()->printClock("Other");
-//		Timer::getInstance()->printClock("Swap");
+//		Timer::getInstance()->print();
 
 		// Ground constraint rules
 		for (Rule* r : constraintRules[component]){
@@ -223,7 +221,6 @@ void ProgramGrounder::inizializeSearchInsertPredicate(Rule* rule) {
 	for(auto atom=rule->getBeginHead();atom!=rule->getEndHead();atom++){
 		vector<unsigned> tableToInsert(1,NOFACT);
 		predicate_searchInsert_table.push_back(tableToInsert);
-
 	}
 
 	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();atom++){
