@@ -101,6 +101,7 @@ namespace grounder{
 	#define BACKJUMPING 1
 
 	#define ARRAY_SIZE 64
+	#define ATOMS_IN_RULE 32
 
 	typedef unsigned index_object;
 

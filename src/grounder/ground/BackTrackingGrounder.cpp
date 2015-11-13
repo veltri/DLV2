@@ -101,7 +101,7 @@ bool BackTrackingGrounder::firstMatch(){
 		bool undef=false;
 
 		Atom* atomFound=nullptr;
-		unsigned id = searcher->firstMatch(templateAtom,current_assignment,atomFound);
+		searcher->firstMatch(index_current_atom,templateAtom,current_assignment,atomFound);
 		find=(atomFound!=nullptr);
 		if(atomFound!=nullptr)
 			undef=!atomFound->isFact();
@@ -124,7 +124,7 @@ bool BackTrackingGrounder::firstMatch(){
 
 		if(find){
 			if(!is_bound_atom[index_current_atom]){
-				current_id_match[index_current_atom][current_table].second = id;
+				current_id_match[index_current_atom][current_table].second = MATCH;
 			}else{
 				current_id_match[index_current_atom][current_table].second = NO_MATCH;
 				current_id_match_iterator[index_current_atom]=0;
@@ -167,14 +167,14 @@ bool BackTrackingGrounder::nextMatch(){
 	while(current_table<n_table){
 
 		unsigned tableToSearch = current_id_match[index_current_atom][current_table].first;
-		int current_id = current_id_match[index_current_atom][current_table].second;
+		bool match = current_id_match[index_current_atom][current_table].second;
 		AtomSearcher *searcher=predicateExtTable->getPredicateExt(templateAtom->getPredicate())->getAtomSearcher(tableToSearch);
 		Atom* atomFound=nullptr;
 
-		if(current_id != NO_MATCH)
-			searcher->nextMatch(current_id,templateAtom,current_assignment,atomFound);
+		if(match != NO_MATCH)
+			searcher->nextMatch(index_current_atom,templateAtom,current_assignment,atomFound);
 		else
-			current_id = searcher->firstMatch(templateAtom,current_assignment,atomFound);
+			searcher->firstMatch(index_current_atom,templateAtom,current_assignment,atomFound);
 
 		find=(atomFound!=nullptr);
 		bool undef=false;
@@ -183,7 +183,7 @@ bool BackTrackingGrounder::nextMatch(){
 
 		if(find){
 			substiteInGroundRule(index_current_atom,atomFound);
-			current_id_match[index_current_atom][current_table].second = current_id;
+			current_id_match[index_current_atom][current_table].second = MATCH;
 			ground_rule->setAtomToSimplifyInBody(index_current_atom,!undef);
 
 			return find;
@@ -400,14 +400,18 @@ void BackTrackingGrounder::findBindVariablesRule() {
 }
 
 void BackTrackingGrounder::findSearchTables() {
-
+	unsigned sizeRule=currentRule->getSizeBody();
+	//TODO AVOID CLEAR
 	current_id_match.clear();
-	current_id_match.reserve(currentRule->getSizeBody());
-	current_id_match_iterator.reserve(currentRule->getSizeBody());
-	for (unsigned index_current_atom = 0; index_current_atom < currentRule->getSizeBody(); ++index_current_atom) {
+	current_id_match.reserve(sizeRule);
+	current_id_match_iterator.reserve(sizeRule);
+	for (unsigned index_current_atom = 0; index_current_atom < sizeRule; ++index_current_atom) {
 		//find the table to search for each atom in the body
 		current_id_match.emplace_back();
+		Predicate *predicate=currentRule->getAtomInBody(index_current_atom)->getPredicate();
 		for(unsigned i=0;i<predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom].size();++i){
+			int tableToSearch=predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom][i];
+			predicateExtTable->getPredicateExt(predicate)->getAtomSearcher(tableToSearch)->setSizeResultVector(sizeRule);
 			current_id_match[index_current_atom].push_back({predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom][i],NO_MATCH});
 		}
 		current_id_match_iterator[index_current_atom]=0;
@@ -477,7 +481,9 @@ bool BackTrackingGrounder::groundAggregate() {
 			AtomSearcher *searcher=predicateExtTable->getPredicateExt(predicate_atom)->getAtomSearcher(table);
 			bool find=false;
 			Atom* atomFound=nullptr;
-			unsigned id = searcher->firstMatch(atom,current_assignment,atomFound);
+			//Each aggregate element have one atom with no relation with the other atoms in the aggregate elements, then we can
+			//overwrite the general iterator in the Atom Searcher with index_current_atom
+			searcher->firstMatch(index_current_atom,atom,current_assignment,atomFound);
 			find=(atomFound!=nullptr);
 			while(find){
 				counter++;
@@ -506,7 +512,7 @@ bool BackTrackingGrounder::groundAggregate() {
 				if(result!=UNDEF || atom->isGround())break;
 
 
-				searcher->nextMatch(id,atom,current_assignment,atomFound);
+				searcher->nextMatch(index_current_atom,atom,current_assignment,atomFound);
 				find=(atomFound!=nullptr);
 			}
 		}

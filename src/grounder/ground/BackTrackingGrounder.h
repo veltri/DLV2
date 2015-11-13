@@ -15,7 +15,8 @@ namespace DLV2 {
 namespace grounder {
 
 /// If the firstMatch on table has not been called
-#define NO_MATCH -1
+#define NO_MATCH 0
+#define MATCH 1
 
 /*
  *  Simple backtrack algorithm to ground a rule
@@ -86,7 +87,7 @@ protected:
 
 	/// Current id of first match for grounding rule
 	/// Vector of the atom and vector of pair : table to search and id of firstMatch (if is NOMATCH call first else next)
-	vector<vector<pair<unsigned,int>>> current_id_match;
+	vector<vector<pair<unsigned,bool>>> current_id_match;
 	/// Map of id of the atom and table of current searching (iterator of vector in current_id_match)
 	vector<unsigned> current_id_match_iterator;
 

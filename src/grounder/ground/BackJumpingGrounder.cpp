@@ -39,7 +39,6 @@ bool BackJumpingGrounder::back() {
 		if(i>index_current_atom && !is_bound_atom[i]){
 			Predicate *currentPredicate=currentRule->getAtomInBody(i)->getPredicate();
 			for (unsigned j = 0; j < current_id_match[i].size()&&currentPredicate!=nullptr; ++j) {
-				predicateExtTable->getPredicateExt(currentPredicate)->getAtomSearcher(current_id_match[i][j].first)->removeId(current_id_match[i][j].second);
 				current_id_match[i][j].second=NO_MATCH;
 			}
 			current_id_match_iterator[i]=0;

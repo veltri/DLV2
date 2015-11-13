@@ -89,16 +89,15 @@ bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, var_assignmen
 
 /****************************************************** BASE ATOM SEARCHER ***************************************************/
 
-unsigned int BaseAtomSearcher::firstMatch(Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound) {
-	unsigned int id = ++counter;
+void BaseAtomSearcher::firstMatch(unsigned id,Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound) {
 	GeneralIterator* currentMatch=computeGenericIterator(templateAtom);
 	if(searchForFirstMatch(currentMatch, templateAtom, currentAssignment,atomFound)){
-		resultMap.insert({id,currentMatch});
-		return id;
+		delete resultVector[id];
+		resultVector[id]=currentMatch;
+		return ;
 	}
 
 	delete currentMatch;
-	return id;
 }
 
 bool BaseAtomSearcher::searchForFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound){
@@ -124,15 +123,9 @@ bool BaseAtomSearcher::computeMatch(GeneralIterator* currentMatch, Atom *templat
 }
 
 void BaseAtomSearcher::nextMatch(unsigned int id, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound) {
-	GeneralIterator* currentMatch=resultMap.find(id)->second;
+	GeneralIterator* currentMatch=resultVector[id];
 	currentMatch->next();
 	computeMatch(currentMatch,templateAtom,currentAssignment,atomFound);
-
-	///Return the next matching atom retrieved from the integer identifier assigned by the firstMatch method
-	if(currentMatch->isDone()){
-		delete currentMatch;
-		resultMap.erase(id);
-	}
 
 }
 

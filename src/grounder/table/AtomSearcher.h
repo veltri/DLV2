@@ -82,16 +82,13 @@ public:
 	/// This method implementation is demanded to sub-classes.
 	/// It have to find all the matching atoms and return just the first of those.
 	/// The returned integer will be used to get the other ones through nextMatch method (@See nextMatch)
-	virtual unsigned int firstMatch(Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound)=0;
+	virtual void firstMatch(unsigned id,Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound)=0;
 	/// This method implementation is demanded to sub-classes.
 	/// It is used to get the further matching atoms one by one each time it is invoked.
-	virtual void nextMatch(unsigned int id, Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound)=0;
+	virtual void nextMatch(unsigned id, Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound)=0;
 	/// This method implementation is demanded to sub-classes.
 	/// It have to find if the given atom exist. This atom must be ground.
 	virtual void findIfExist(Atom *templateAtom, Atom*& atomFound)=0;
-
-	///Remove the data referred at the id of the match
-	virtual void removeId(unsigned id)=0;
 
 	/// This method implementation is demanded to sub-classes.
 	/// It have to find if the given atom exist and returns it, else returns nullptr.
@@ -118,6 +115,8 @@ public:
 	bool matchTerm(Term *genericTerm, Term *termToMatch, var_assignment& varAssignment,vector<index_object>& addedVariables);
 
 
+	virtual void setSizeResultVector(unsigned int size)=0;
+
 	virtual ~AtomSearcher() {};
 
 protected:
@@ -131,18 +130,17 @@ protected:
  */
 class BaseAtomSearcher: public AtomSearcher {
 public:
-	BaseAtomSearcher(AtomVector* table) : AtomSearcher(table), counter(0) {};
+	BaseAtomSearcher(AtomVector* table) : AtomSearcher(table) {resultVector.resize(ATOMS_IN_RULE,nullptr);};
 
-	virtual unsigned int firstMatch(Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound);
-	virtual void nextMatch(unsigned int id, Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound);
+	virtual void setSizeResultVector(unsigned int size){
+		if(size>resultVector.size())
+			resultVector.resize(size,nullptr);
+	};
+
+	virtual void firstMatch(unsigned id,Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound);
+	virtual void nextMatch(unsigned id, Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound);
 	virtual void findIfExist(Atom *templateAtom, Atom*& atomFound);
 
-	virtual void removeId(unsigned id){
-		auto it=resultMap.find(id);
-		if(it==resultMap.end())return;
-		delete ((*it).second);
-		resultMap.erase(id);
-	};
 
 	virtual Atom* findAtom(Atom *atom);
 	virtual void add(Atom* atom){};
@@ -151,14 +149,12 @@ public:
 
 	virtual void print(){for(auto atom:*table)atom->print();}
 
-	virtual ~BaseAtomSearcher() {for(auto pair:resultMap) delete pair.second;};
+	virtual ~BaseAtomSearcher() {for(auto it:resultVector) delete it;};
 
 protected:
 	/// This maps stores the calls to the firstMatch method.
 	/// Indeed, for each call it stores a pair with the counter and the iterator to the next matching atoms.
-	unordered_map<unsigned int, GeneralIterator*> resultMap;
-	/// This is a counter used to identify the different calls to the firstMatch method.
-	unsigned int counter;
+	vector<GeneralIterator*> resultVector;
 
 	/// This method invokes findIfAFactExists method if all the variables are bound,
 	/// otherwise invokes the computeFirstMatch method.
