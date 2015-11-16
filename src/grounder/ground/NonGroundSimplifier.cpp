@@ -21,7 +21,6 @@ bool NonGroundSimplifier::simplifyRule(Rule* r) {
 			atoms_to_delete.push_back(i);
 		if(checkOpposite(it+1,r->getEndBody(),it))
 			return true;
-
 		if(checkFalsity(it)){
 			if(!(*it)->isNegative())
 				return true;
@@ -42,8 +41,6 @@ bool NonGroundSimplifier::simplifyRule(Rule* r) {
 				return true;
 			atoms_to_delete.push_back(i);
 		}
-
-
 	}
 
 
@@ -102,5 +99,49 @@ bool NonGroundSimplifier::checkAggregateAllAggTermShared(Rule *rule,vector<Atom*
 	return atom->checkAggregateAllAggTermShared(rule->getBeginBody(),rule->getEndBody(),alwaysTrue);
 }
 
+bool NonGroundSimplifier::checkPredicateExtensionsNotEmpty(Rule*r,vector<vector<unsigned> >& predicate_searchInsert_table) const {
+	unsigned i=0;
+	for(auto it=r->getBeginBody();it!=r->getEndBody();it++,i++){
+		Predicate* predicate=(*it)->getPredicate();
+		if((*it)->isNegative() || predicate==nullptr)
+			continue;
+		bool allEmpty=true;
+		for(auto tableToSearch:predicate_searchInsert_table[i+r->getSizeHead()]){
+			if(predicateExtTable->getPredicateExt(predicate)->getPredicateExtentionSize(tableToSearch)>0){
+				allEmpty=false;
+				break;
+			}
+		}
+		if(allEmpty)
+			return true;
+	}
+	return false;
+}
+
 } /* namespace grounder */
 } /* namespace DLV2 */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

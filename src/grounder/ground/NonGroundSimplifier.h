@@ -19,8 +19,9 @@ namespace grounder {
 class NonGroundSimplifier {
 public:
 	NonGroundSimplifier():predicateExtTable(PredicateExtTable::getInstance()),statementDependency(StatementDependency::getInstance()){};
-	///Simplify the rules and constraints in the statement Dependency
+	///Simplify the given rule according to the simplification methods
 	bool simplifyRule(Rule *r);
+	bool checkPredicateExtensionsNotEmpty(Rule *rule,vector<vector<unsigned>>& predicate_searchInsert_table)const;
 	virtual ~NonGroundSimplifier(){};
 
 protected:
@@ -30,7 +31,6 @@ protected:
 	bool checkAggregateSumCountStringGuard(vector<Atom*>::const_iterator currentIt,bool& alwaysTrue) const ;
 	bool checkAggregateAllAggTermShared(Rule *rule,vector<Atom*>::const_iterator currentIt,bool& alwaysTrue) const ;
 	bool checkAggregateCountNegativeGuard(vector<Atom*>::const_iterator currentIt,bool& alwaysTrue)const;
-
 private:
 	///A pointer to the instances table
 	PredicateExtTable* predicateExtTable;

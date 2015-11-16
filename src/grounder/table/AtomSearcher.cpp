@@ -179,8 +179,8 @@ int SingleTermAtomSearcher::getPositionWithBestSelectivity(const vector<pair<int
 	if(possibleTableToSearch.size()==1)
 		return (*possibleTableToSearch.begin()).first;
 	unsigned maxSelectivity=0;
+	PredicateInformation* predInfo=PredicateExtTable::getInstance()->getPredicateExt(predicate)->getPredicateInformation();
 	for(auto pair:possibleTableToSearch){
-		PredicateInformation* predInfo=PredicateExtTable::getInstance()->getPredicateExt(predicate)->getPredicateInformation();
 		unsigned selectivity=predInfo->getSelectivity(pair.first);
 		if(selectivity>maxSelectivity){
 			maxSelectivity=selectivity;
@@ -580,8 +580,8 @@ unsigned int DoubleTermMapAtomSearcher::selectBestIndex(const vector<pair<int,pa
 	if(possibleTableToSearch.size()==1)
 		return (*possibleTableToSearch.begin()).first;
 	unsigned maxSelectivity=0;
+	PredicateInformation* predInfo=PredicateExtTable::getInstance()->getPredicateExt(predicate)->getPredicateInformation();
 	for(auto pair:possibleTableToSearch){
-		PredicateInformation* predInfo=PredicateExtTable::getInstance()->getPredicateExt(predicate)->getPredicateInformation();
 		unsigned selectivity=predInfo->getSelectivity(pair.first);
 		if(selectivity>maxSelectivity){
 			maxSelectivity=selectivity;
