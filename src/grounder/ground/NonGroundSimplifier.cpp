@@ -100,13 +100,13 @@ bool NonGroundSimplifier::checkAggregateAllAggTermShared(Rule *rule,vector<Atom*
 }
 
 bool NonGroundSimplifier::checkPredicateExtensionsNotEmpty(Rule*r,vector<vector<unsigned> >& predicate_searchInsert_table) const {
-	unsigned i=0;
+	unsigned i=r->getSizeHead();
 	for(auto it=r->getBeginBody();it!=r->getEndBody();it++,i++){
 		Predicate* predicate=(*it)->getPredicate();
 		if((*it)->isNegative() || predicate==nullptr)
 			continue;
 		bool allEmpty=true;
-		for(auto tableToSearch:predicate_searchInsert_table[i+r->getSizeHead()]){
+		for(auto tableToSearch:predicate_searchInsert_table[i]){
 			if(predicateExtTable->getPredicateExt(predicate)->getPredicateExtentionSize(tableToSearch)>0){
 				allEmpty=false;
 				break;
