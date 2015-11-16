@@ -64,10 +64,8 @@ void ProgramGrounder::ground() {
 
 		// Ground exit rules
 		for (Rule* rule : exitRules[component]){
-			if(nonGroundSimplificator.simplifyRule(rule))
-				continue;
 			inizializeSearchInsertPredicate(rule);
-			if(nonGroundSimplificator.checkPredicateExtensionsNotEmpty(rule,predicate_searchInsert_table))
+			if(nonGroundSimplificator.simplifyRule(rule,predicate_searchInsert_table))
 				continue;
 //			r->sortPositiveLiteralInBody(predicate_searchInsert_table);
 			trace_action_tag(grounding,1,cerr<<"Grounding Exit Rule: ";r->print(cerr););
@@ -87,10 +85,8 @@ void ProgramGrounder::ground() {
 			trace_msg(grounding,1,"First Iteration");
 			for (unsigned int i = 0; i < n_rules; i++) {
 				Rule *rule=recursiveRules[component][i];
-				if(nonGroundSimplificator.simplifyRule(rule))
-					continue;
 				inizializeSearchInsertPredicate(rule,componentPredicateInHead[component]);
-				if(nonGroundSimplificator.checkPredicateExtensionsNotEmpty(rule,predicate_searchInsert_table))
+				if(nonGroundSimplificator.simplifyRule(rule,predicate_searchInsert_table))
 					continue;
 //				rule->sortPositiveLiteralInBody(predicate_searchInsert_table);
 				if(groundRule(rule))
@@ -111,7 +107,7 @@ void ProgramGrounder::ground() {
 					for(unsigned i=0;i<pow(2,predicate_combination.size())-1;i++){
 						computeRecursiveCombinationPredicate();
 						nextSearchInsertPredicate(rule,componentPredicateInHead[component]);
-						if(nonGroundSimplificator.checkPredicateExtensionsNotEmpty(rule,predicate_searchInsert_table))
+						if(nonGroundSimplificator.simplifyIfPredicateExtensionsEmpty(rule,predicate_searchInsert_table))
 							continue;
 //						r->sortPositiveLiteralInBody(predicate_searchInsert_table);
 						if (groundRule(rule))
@@ -132,10 +128,8 @@ void ProgramGrounder::ground() {
 		// Ground constraint rules
 		for (Rule* rule : constraintRules[component]){
 			if (rule->getSizeBody() == 0) continue;
-			if(nonGroundSimplificator.simplifyRule(rule))
-				continue;
 			inizializeSearchInsertPredicate(rule);
-			if(nonGroundSimplificator.checkPredicateExtensionsNotEmpty(rule,predicate_searchInsert_table))
+			if(nonGroundSimplificator.simplifyRule(rule,predicate_searchInsert_table))
 				continue;
 			try{
 				groundRule(rule);
@@ -153,10 +147,8 @@ void ProgramGrounder::ground() {
 	{
 		for (auto rule:remainedConstraint)
 			if (rule->getSizeBody() > 0){
-				if(nonGroundSimplificator.simplifyRule(rule))
-					continue;
 				inizializeSearchInsertPredicate(rule);
-				if(nonGroundSimplificator.checkPredicateExtensionsNotEmpty(rule,predicate_searchInsert_table))
+				if(nonGroundSimplificator.simplifyRule(rule,predicate_searchInsert_table))
 					continue;
 				try{
 					groundRule(rule);

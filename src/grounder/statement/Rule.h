@@ -82,11 +82,9 @@ public:
 	///Remove atom in body
 	void removeInBody(unsigned position){body.erase(body.begin()+position);};
 	///Remove atoms in body
-	///@position the index of the body atoms to remove from the vector
-	void removeInBody(vector<unsigned>& position){
-		sort(position.begin(),position.end());
-		for(unsigned i=0;i<position.size();i++){body.erase(body.begin()+(position[i]-i));};
-	};
+	///@positions the index of the body atoms to remove from the vector
+	/// WARNING: POSITIONS MUST BE ORDERED
+	void removeInBody(vector<unsigned>& positions){for(unsigned i=0;i<positions.size();i++){body.erase(body.begin()+(positions[i]-i));}}
 	///Remove atom in body
 	void removeInBody(vector<Atom*>::iterator it){body.erase(it);};
 	///Insert an element in the body at specified position

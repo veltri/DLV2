@@ -16,26 +16,37 @@ using namespace std;
 namespace DLV2 {
 namespace grounder {
 
+enum Simplify {SIMPLIFY_RULE,SIMPLIFY_ATOM,NO_SIMPLIFY};
+
 class NonGroundSimplifier {
+
 public:
 	NonGroundSimplifier():predicateExtTable(PredicateExtTable::getInstance()),statementDependency(StatementDependency::getInstance()){};
-	///Simplify the given rule according to the simplification methods
-	bool simplifyRule(Rule *r);
-	bool checkPredicateExtensionsNotEmpty(Rule *rule,vector<vector<unsigned>>& predicate_searchInsert_table)const;
 	virtual ~NonGroundSimplifier(){};
 
+	///Simplify the given rule according to the simplification methods
+	//TODO to safely remove atoms check if their predicates are stratified
+	bool simplifyRule(Rule *r,vector<vector<unsigned> >& predicate_searchInsert_table);
+	///Simplify the given rule if is there an atom with a predicate extension empty
+	//TODO to safely remove atoms check if their predicates are stratified
+	bool simplifyIfPredicateExtensionsEmpty(Rule *r,vector<vector<unsigned> >& predicate_searchInsert_table);
+
 protected:
-	bool checkDuplicate(vector<Atom*>::const_iterator begin,vector<Atom*>::const_iterator end,vector<Atom*>::const_iterator currentIt)const;
-	bool checkOpposite(vector<Atom*>::const_iterator begin,vector<Atom*>::const_iterator end,vector<Atom*>::const_iterator currentIt)const;
-	bool checkFalsity(vector<Atom*>::const_iterator currentIt)const;
-	bool checkAggregateSumCountStringGuard(vector<Atom*>::const_iterator currentIt,bool& alwaysTrue) const ;
-	bool checkAggregateAllAggTermShared(Rule *rule,vector<Atom*>::const_iterator currentIt,bool& alwaysTrue) const ;
-	bool checkAggregateCountNegativeGuard(vector<Atom*>::const_iterator currentIt,bool& alwaysTrue)const;
+	Simplify checkPredicateExtensionsNotEmpty(vector<Atom*>::const_iterator currentIt, unsigned i,vector<vector<unsigned> >& predicate_searchInsert_table) const;
+	bool checkDuplicate(vector<Atom*>::const_iterator begin,vector<Atom*>::const_iterator end,vector<Atom*>::const_iterator currentIt) const;
+	bool checkOpposite(vector<Atom*>::const_iterator begin,vector<Atom*>::const_iterator end,vector<Atom*>::const_iterator currentIt) const;
+	bool checkFalsity(vector<Atom*>::const_iterator currentIt) const;
+	bool checkAggregateSumCountStringGuard(vector<Atom*>::const_iterator currentIt,bool& alwaysTrue) const;
+	bool checkAggregateAllAggTermShared(Rule *rule,vector<Atom*>::const_iterator currentIt,bool& alwaysTrue) const;
+	bool checkAggregateCountNegativeGuard(vector<Atom*>::const_iterator currentIt,bool& alwaysTrue) const;
+
 private:
 	///A pointer to the instances table
 	PredicateExtTable* predicateExtTable;
 	///A pointer to the statement table
 	StatementDependency* statementDependency;
+
+	void removeSimplifiedLiterals(Rule* r,vector<unsigned> atoms_to_delete, vector<vector<unsigned> >& predicate_searchInsert_table);
 };
 
 } /* namespace grounder */

@@ -71,9 +71,8 @@ PredicateExtension::~PredicateExtension() {
 		delete table;
 	}
 
-	for(unsigned int i=0;i<atomSearchers.size();++i){
+	for(unsigned int i=0;i<atomSearchers.size();++i)
 		delete atomSearchers[i];
-	}
 	delete predicateInformation;
 }
 
@@ -166,7 +165,6 @@ void PredicateInformation::addInDictionary(unsigned position, Term* term) {
 	termDictionary[position].insert(term);
 }
 
-//FIXME TODO
 void PredicateExtension::swapPointersTables(unsigned tableFrom, unsigned tableTo) {
 	assert_msg(tableFrom<tables.size(),"The specified table doesn't exist.");
 	assert_msg(tableTo<tables.size(),"The specified table doesn't exist.");
