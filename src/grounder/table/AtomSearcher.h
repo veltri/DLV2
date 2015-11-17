@@ -104,7 +104,7 @@ public:
 	virtual void clear() = 0;
 
 	///Printer method. Useful mainly for debug purpose.
-	virtual void print(){};
+	virtual void print(ostream& stream=cout){};
 
 	/// This method checks if the two given atoms match according to the current assignment.
 	/// If they match the current assignment is update accordingly.
@@ -147,7 +147,7 @@ public:
 	virtual void remove(Atom* atom){};
 	virtual void clear(){};
 
-	virtual void print(){for(auto atom:*table)atom->print();}
+	virtual void print(ostream& stream=cout){for(auto atom:*table)atom->print(stream);}
 
 	virtual ~BaseAtomSearcher() {for(auto it:resultVector) delete it;};
 

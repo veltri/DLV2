@@ -14,6 +14,7 @@
 #include "../../util/Timer.h"
 #include "../../util/Utils.h"
 #include "../../util/Options.h"
+#include "../../util/Trace.h"
 
 
 
@@ -34,6 +35,23 @@ void ProgramGrounder::printProgram(const vector<vector<Rule*> >& exitRules,	cons
 			statementDependency->getConstraint(i)->print();
 
 
+}
+
+void printTableInRule(Rule *rule,vector<vector<unsigned>>& predicate_searchInsert_table){
+	rule->sortPositiveLiteralInBody(predicate_searchInsert_table);
+	PredicateExtTable *predicateExtTable=PredicateExtTable::getInstance();
+	cerr<<"GROUND ";
+	rule->print(cerr);
+	for(unsigned i=0;i<rule->getSizeBody();i++){
+		Predicate* p=rule->getAtomInBody(i)->getPredicate();
+		if(p==nullptr) continue;
+		rule->getAtomInBody(i)->print(cerr);cerr<<endl;
+		for(auto tableToSearch:predicate_searchInsert_table[i+rule->getSizeHead()]){
+			cerr<<"TABLE: "<<tableToSearch<<" --> ";
+			predicateExtTable->getPredicateExt(p)->getAtomSearcher(tableToSearch)->print(cerr);
+			cerr<<endl;
+		}
+	}
 }
 
 void ProgramGrounder::ground() {
@@ -68,7 +86,7 @@ void ProgramGrounder::ground() {
 			if(nonGroundSimplificator.simplifyRule(rule,predicate_searchInsert_table))
 				continue;
 //			r->sortPositiveLiteralInBody(predicate_searchInsert_table);
-			trace_action_tag(grounding,1,cerr<<"Grounding Exit Rule: ";r->print(cerr););
+			trace_action_tag(grounding,1,cerr<<"Grounding Exit Rule: ";rule->print(cerr););
 			groundRule(rule);
 
 #ifdef DEBUG_RULE_TIME
@@ -88,13 +106,19 @@ void ProgramGrounder::ground() {
 				inizializeSearchInsertPredicate(rule,componentPredicateInHead[component]);
 				if(nonGroundSimplificator.simplifyRule(rule,predicate_searchInsert_table))
 					continue;
-//				rule->sortPositiveLiteralInBody(predicate_searchInsert_table);
+
+				trace_action_tag(grounding,2,
+						printTableInRule(rule,predicate_searchInsert_table);
+				);
+
 				if(groundRule(rule))
 					found_something=true;
-				trace_action_tag(grounding,1,cerr<<"Found New Knowledge: "<<found_something<<" Grounding Recursive Rule: ";rule->print(cerr););
+
+
+//				trace_action_tag(grounding,1,cerr<<"Found New Knowledge: "<<found_something<<" Grounding Recursive Rule: ";rule->print(cerr););
 			}
 			while (found_something) {
-				trace_msg(grounding,1,"Further Iterations");
+//				trace_msg(grounding,1,"Further Iterations");
 				found_something = false;
 
 				// Since in the first iteration search is performed in facts and no facts tables,
@@ -109,10 +133,16 @@ void ProgramGrounder::ground() {
 						nextSearchInsertPredicate(rule,componentPredicateInHead[component]);
 						if(nonGroundSimplificator.simplifyIfPredicateExtensionsEmpty(rule,predicate_searchInsert_table))
 							continue;
-//						r->sortPositiveLiteralInBody(predicate_searchInsert_table);
+						rule->sortPositiveLiteralInBody(predicate_searchInsert_table);
+
+						trace_action_tag(grounding,2,
+								printTableInRule(rule,predicate_searchInsert_table);
+						);
+
 						if (groundRule(rule))
 							found_something = true;
-						trace_action_tag(grounding,1,cerr<<"Found New Knowledge: "<<found_something<<" Grounding Recursive Rule: ";r->print(cerr););
+
+						trace_action_tag(grounding,1,cerr<<"Found New Knowledge: "<<found_something<<" Grounding Recursive Rule: ";rule->print(cerr););
 					}
 				}
 
@@ -122,6 +152,7 @@ void ProgramGrounder::ground() {
 					swapInDelta(recursiveRules[component][i]);
 					trace_action_tag(grounding,1,cerr<<"Swap Delta Rule: ";recursiveRules[component][i]->print(cerr););
 				}
+
 			}
 		}
 
@@ -161,6 +192,7 @@ void ProgramGrounder::ground() {
 	}
 
 	outputBuilder->onEnd();
+
 
 	//Print and simplify the rule
 //	evaluator.printAndSimplify(predicateExtTable);

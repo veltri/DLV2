@@ -100,7 +100,7 @@ class TraceLevels
 TraceLevels::TraceLevels()
 {
     types.push_back( pair< string, unsigned >( "parser", 0 ) );
-    types.push_back( pair< string, unsigned >( "grounding", 1 ) );
+    types.push_back( pair< string, unsigned >( "grounding", 2 ) );
     types.push_back( pair< string, unsigned >( "aggregates", 0 ) );
     types.push_back( pair< string, unsigned >( "weakconstraints", 0 ) );
     types.push_back( pair< string, unsigned >( "backjumping", 0 ) );
