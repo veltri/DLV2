@@ -26,13 +26,9 @@ public:
 
 	///Simplify the given rule according to the simplification methods
 	//TODO to safely remove atoms check if their predicates are stratified
-	bool simplifyRule(Rule *r,vector<vector<unsigned> >& predicate_searchInsert_table);
-	///Simplify the given rule if is there an atom with a predicate extension empty
-	//TODO to safely remove atoms check if their predicates are stratified
-	bool simplifyIfPredicateExtensionsEmpty(Rule *r,vector<vector<unsigned> >& predicate_searchInsert_table);
+	bool simplifyRule(Rule *r);
 
 protected:
-	Simplify checkPredicateExtensionsNotEmpty(vector<Atom*>::const_iterator currentIt, unsigned i,vector<vector<unsigned> >& predicate_searchInsert_table) const;
 	bool checkDuplicate(vector<Atom*>::const_iterator begin,vector<Atom*>::const_iterator end,vector<Atom*>::const_iterator currentIt) const;
 	bool checkOpposite(vector<Atom*>::const_iterator begin,vector<Atom*>::const_iterator end,vector<Atom*>::const_iterator currentIt) const;
 	bool checkFalsity(vector<Atom*>::const_iterator currentIt) const;
@@ -46,7 +42,7 @@ private:
 	///A pointer to the statement table
 	StatementDependency* statementDependency;
 
-	void removeSimplifiedLiterals(Rule* r,vector<unsigned> atoms_to_delete, vector<vector<unsigned> >& predicate_searchInsert_table);
+	void removeSimplifiedLiterals(Rule* r,vector<unsigned> atoms_to_delete);
 };
 
 } /* namespace grounder */

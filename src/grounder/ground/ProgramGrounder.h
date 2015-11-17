@@ -103,11 +103,13 @@ protected:
 	/* Initialize the vector of predicate_searchInsert_table with:
 	 * 		Atom in head: if is recursive predicate DELTA table else NOFACT table
 	 * 		Atom in body: FACT and NOFACT table
+	 * 		Returns true if there is at least one atom in the body with all tables to search empty.
+	 * 		In this case the rule has not to be grounded.
 	*/
-	void inizializeSearchInsertPredicate(Rule* rule,unordered_set<index_object>& componentPredicateInHead);
-	void inizializeSearchInsertPredicate(Rule* rule);
+	bool inizializeSearchInsertPredicate(Rule* rule,unordered_set<index_object>& componentPredicateInHead);
+	bool inizializeSearchInsertPredicate(Rule* rule);
 	/// Based on the sequence of searching table set the table to search and insert for grounding process
-	void nextSearchInsertPredicate(Rule* rule,unordered_set<index_object>& componentPredicateInHead);
+	bool nextSearchInsertPredicate(Rule* rule,unordered_set<index_object>& componentPredicateInHead);
 	/// Initialize the combination of searching table, FACT and NOFACT
 	void inizializeRecursiveCombinationPredicate(Rule* rule,unordered_set<index_object>& componentPredicateInHead);
 	/// Calculate the next sequence of searching table during the grounding of recursive rule
@@ -141,6 +143,7 @@ protected:
 private:
 	///Print the program rule
 	void printProgram(const vector<vector<Rule*> >& exitRules,const vector<vector<Rule*> >& recursiveRules);
+	bool inizializeSearchInsertPredicateBody(Rule* rule);
 };
 
 };

@@ -409,12 +409,17 @@ void BackTrackingGrounder::findSearchTables() {
 		//find the table to search for each atom in the body
 		current_id_match.emplace_back();
 		Predicate *predicate=currentRule->getAtomInBody(index_current_atom)->getPredicate();
-		for(unsigned i=0;i<predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom].size();++i){
-			if(predicate!=nullptr){
-				int tableToSearch=predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom][i];
-				predicateExtTable->getPredicateExt(predicate)->getAtomSearcher(tableToSearch)->setSizeResultVector(sizeRule);
+		if(predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom].size()==0){
+			current_id_match[index_current_atom].push_back({0,NO_MATCH});
+		}
+		else{
+			for(unsigned i=0;i<predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom].size();++i){
+				if(predicate!=nullptr){
+					int tableToSearch=predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom][i];
+					predicateExtTable->getPredicateExt(predicate)->getAtomSearcher(tableToSearch)->setSizeResultVector(sizeRule);
+				}
+				current_id_match[index_current_atom].push_back({predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom][i],NO_MATCH});
 			}
-			current_id_match[index_current_atom].push_back({predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom][i],NO_MATCH});
 		}
 		current_id_match_iterator[index_current_atom]=0;
 

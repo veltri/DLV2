@@ -11,7 +11,7 @@
 namespace DLV2 {
 namespace grounder {
 
-void NonGroundSimplifier::removeSimplifiedLiterals(Rule* r,vector<unsigned> atoms_to_delete, vector<vector<unsigned> >& predicate_searchInsert_table){
+void NonGroundSimplifier::removeSimplifiedLiterals(Rule* r,vector<unsigned> atoms_to_delete){
 	for (auto i : atoms_to_delete) {
 		Atom* atom = r->getAtomInBody(i);
 		atom->deleteAtoms();
@@ -19,18 +19,14 @@ void NonGroundSimplifier::removeSimplifiedLiterals(Rule* r,vector<unsigned> atom
 	}
 	sort(atoms_to_delete.begin(),atoms_to_delete.end());
 	r->removeInBody(atoms_to_delete);
-	for(unsigned i=0;i<atoms_to_delete.size();i++)
-		predicate_searchInsert_table.erase(predicate_searchInsert_table.begin()+r->getSizeHead()+(atoms_to_delete[i]-i));
 }
 
-bool NonGroundSimplifier::simplifyRule(Rule* r,vector<vector<unsigned> >& predicate_searchInsert_table) {
+bool NonGroundSimplifier::simplifyRule(Rule* r) {
 	vector<unsigned> atoms_to_delete;
 	bool boolean;
 	int i=0;
 	unsigned sizeHead=r->getSizeHead();
 	for(auto it=r->getBeginBody();it!=r->getEndBody();it++,i++){
-		if(checkPredicateExtensionsNotEmpty(it,i+sizeHead,predicate_searchInsert_table)==SIMPLIFY_RULE)
-			return true;
 		if(checkOpposite(it+1,r->getEndBody(),it))
 			return true;
 		if(checkDuplicate(it+1,r->getEndBody(),it))
@@ -59,29 +55,9 @@ bool NonGroundSimplifier::simplifyRule(Rule* r,vector<vector<unsigned> >& predic
 		}
 	}
 
-	removeSimplifiedLiterals(r,atoms_to_delete,predicate_searchInsert_table);
+	removeSimplifiedLiterals(r,atoms_to_delete);
 	return false;
 
-}
-
-bool NonGroundSimplifier::simplifyIfPredicateExtensionsEmpty(Rule *r,vector<vector<unsigned> >& predicate_searchInsert_table) {
-	unsigned i=r->getSizeHead();
-	for(auto it=r->getBeginBody();it!=r->getEndBody();it++,i++)
-		if(checkPredicateExtensionsNotEmpty(it,i,predicate_searchInsert_table)==SIMPLIFY_RULE)
-			return true;
-	return false;
-}
-
-Simplify NonGroundSimplifier::checkPredicateExtensionsNotEmpty(vector<Atom*>::const_iterator currentIt, unsigned i,vector<vector<unsigned> >& predicate_searchInsert_table) const {
-	Predicate* predicate=(*currentIt)->getPredicate();
-	if(predicate==nullptr)
-		return NO_SIMPLIFY;
-	for(auto tableToSearch:predicate_searchInsert_table[i])
-		if(predicateExtTable->getPredicateExt(predicate)->getPredicateExtentionSize(tableToSearch)>0)
-			return NO_SIMPLIFY;
-	if((*currentIt)->isNegative())
-		return SIMPLIFY_ATOM;
-	return SIMPLIFY_RULE;
 }
 
 bool NonGroundSimplifier::checkDuplicate(vector<Atom*>::const_iterator begin,vector<Atom*>::const_iterator end, vector<Atom*>::const_iterator currentIt) const {
