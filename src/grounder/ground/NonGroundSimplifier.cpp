@@ -25,7 +25,6 @@ bool NonGroundSimplifier::simplifyRule(Rule* r) {
 	vector<unsigned> atoms_to_delete;
 	bool boolean;
 	int i=0;
-	unsigned sizeHead=r->getSizeHead();
 	for(auto it=r->getBeginBody();it!=r->getEndBody();it++,i++){
 		if(checkOpposite(it+1,r->getEndBody(),it))
 			return true;

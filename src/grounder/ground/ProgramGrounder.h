@@ -90,8 +90,6 @@ protected:
 //	/// Manage the output and simplification
 //	ProgramEvaluator evaluator;
 
-	/// Vector that stores the combination of searching table with the predicates of current rule
-	vector<bool> predicate_combination;
 	/// For each predicate in the current rule this vector stores the table of insert for the atom in head and
 	/// searching table for the predicate in the body
 	vector<vector<unsigned>> predicate_searchInsert_table;
@@ -109,11 +107,7 @@ protected:
 	bool inizializeSearchInsertPredicate(Rule* rule,unordered_set<index_object>& componentPredicateInHead);
 	bool inizializeSearchInsertPredicate(Rule* rule);
 	/// Based on the sequence of searching table set the table to search and insert for grounding process
-	bool nextSearchInsertPredicate(Rule* rule,unordered_set<index_object>& componentPredicateInHead);
-	/// Initialize the combination of searching table, FACT and NOFACT
-	void inizializeRecursiveCombinationPredicate(Rule* rule,unordered_set<index_object>& componentPredicateInHead);
-	/// Calculate the next sequence of searching table during the grounding of recursive rule
-	void computeRecursiveCombinationPredicate();
+	bool nextSearchInsertPredicate(Rule* rule,unordered_set<index_object>& componentPredicateInHead,unsigned token,const vector<unsigned>& originalOrderBody);
 
 
 	/// Initialization of grounding rule r
@@ -144,6 +138,7 @@ private:
 	///Print the program rule
 	void printProgram(const vector<vector<Rule*> >& exitRules,const vector<vector<Rule*> >& recursiveRules);
 	bool inizializeSearchInsertPredicateBody(Rule* rule);
+	void findRecursivePredicatesInComponentRules(const unordered_set<index_object>& componentPredicateInHead, vector<unsigned>& recursivePredicatesPositions, Rule* rule, vector<unsigned >& orderedBody);
 };
 
 };

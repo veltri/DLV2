@@ -157,7 +157,7 @@ public:
 
 	void setUnsolvedPredicates();
 
-	void sortPositiveLiteralInBody(vector<vector<unsigned>>& predicate_searchInsert_table);
+	void sortPositiveLiteralInBody(vector<vector<unsigned>>& predicate_searchInsert_table,vector<unsigned>& originalOrderMapping);
 
 private:
 

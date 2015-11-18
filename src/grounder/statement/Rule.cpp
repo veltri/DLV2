@@ -170,7 +170,7 @@ void Rule::setUnsolvedPredicates() {
 }
 
 //FIXME TODO
-void Rule::sortPositiveLiteralInBody(vector<vector<unsigned>>& predicate_searchInsert_table) {
+void Rule::sortPositiveLiteralInBody(vector<vector<unsigned>>& predicate_searchInsert_table,vector<unsigned>& originalOrderMapping) {
 	vector<Atom*> newBody;
 	newBody.reserve(body.size());
 
@@ -201,6 +201,9 @@ void Rule::sortPositiveLiteralInBody(vector<vector<unsigned>>& predicate_searchI
 			if(atom1Positive && atom2Positive && sizeExtensions[i] > sizeExtensions[i+1]){
 				newBody[i]=atom2;
 				newBody[i+1]=atom1;
+
+				originalOrderMapping[i]=i+1;
+				originalOrderMapping[i+1]=i;
 
 				int ttmp=sizeExtensions[i];
 				sizeExtensions[i]=sizeExtensions[i+1];
