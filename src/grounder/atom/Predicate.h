@@ -25,7 +25,7 @@ class Predicate : public Hashable,public Indexable{
 public:
 
 	///Default constructor
-	Predicate() : Indexable(), arity(0), edb(true), hiddenForPrinting(false) {};
+	Predicate() : Indexable(), arity(0), edb(true), hiddenForPrinting(false), solved(true) {};
 
 	/** Constructor
 	 * @param name set the name of the predicate
@@ -71,8 +71,8 @@ public:
 
 	~Predicate() {}
 
-	bool isSolved() const {	return solved;}
-	void setSolved(bool solved) { this->solved = solved; }
+	inline bool isSolved() const {	return solved;}
+	inline void setSolved(bool solved) { this->solved = solved; }
 
 private:
 	///Arity

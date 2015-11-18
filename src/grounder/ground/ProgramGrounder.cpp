@@ -146,7 +146,7 @@ void ProgramGrounder::ground() {
 					for(auto token: recursivePredicatesPositions[i]){
 						if(nextSearchInsertPredicate(rule,componentPredicateInHead[component],token,originalOrderBody[i]))
 							continue;
-//						rule->sortPositiveLiteralInBody(predicate_searchInsert_table,originalOrderBody[i]);
+						rule->sortPositiveLiteralInBody(predicate_searchInsert_table,originalOrderBody[i]);
 						trace_action_tag(grounding,2,printTableInRule(rule,predicate_searchInsert_table););
 
 						if (groundRule(rule))

@@ -180,9 +180,16 @@ void Rule::sortPositiveLiteralInBody(vector<vector<unsigned>>& predicate_searchI
 	for(unsigned i=0;i<body.size();++i){
 		Atom* atom=body[i];
 		if(atom->isClassicalLiteral() && !atom->isNegative()){
-			unsigned extensionSize=0;
-			for(auto table:predicate_searchInsert_table[head.size()+i])
-				extensionSize+=PredicateExtTable::getInstance()->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(table);
+			unsigned extensionSize=INT_MAX;
+			for(auto table:predicate_searchInsert_table[head.size()+i]){
+				unsigned size=PredicateExtTable::getInstance()->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(table);
+				if(size<extensionSize)
+					extensionSize=size;
+			}
+//			unsigned extensionSize=0;
+//			for(auto table:predicate_searchInsert_table[head.size()+i]){
+//				extensionSize+=PredicateExtTable::getInstance()->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(table);
+//			}
 			sizeExtensions.push_back(extensionSize);
 		}
 		else
@@ -202,8 +209,9 @@ void Rule::sortPositiveLiteralInBody(vector<vector<unsigned>>& predicate_searchI
 				newBody[i]=atom2;
 				newBody[i+1]=atom1;
 
-				originalOrderMapping[i]=i+1;
-				originalOrderMapping[i+1]=i;
+				unsigned otmp=originalOrderMapping[i];
+				originalOrderMapping[i]=originalOrderMapping[i+1];
+				originalOrderMapping[i+1]=otmp;
 
 				int ttmp=sizeExtensions[i];
 				sizeExtensions[i]=sizeExtensions[i+1];
@@ -218,6 +226,14 @@ void Rule::sortPositiveLiteralInBody(vector<vector<unsigned>>& predicate_searchI
 		}
 	}
 	body=newBody;
+
+//	cout<<"ORDERED BODY: ";
+//	for(unsigned i=0;i<body.size();++i){
+//		body[i]->print();
+//		cout<<" "<<sizeExtensions[i]<<" "<<originalOrderMapping[i];
+//		cout<<" --- ";
+//	}
+//	cout<<endl;
 
 }
 

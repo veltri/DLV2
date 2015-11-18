@@ -682,12 +682,7 @@ void StatementDependency::createComponentGraphAndComputeAnOrdering(vector<vector
 							for(auto p:r->getPredicateInHead()){
 								if(componentPredicateInHead[i].insert(p->getIndex()).second){
 									//If a predicate is recursive add delta and next delta tables
-
-
-									PredicateExtTable::getInstance()->getPredicateExt(p->getIndex())->addTable();
-									PredicateExtTable::getInstance()->getPredicateExt(p->getIndex())->addTable();
-
-
+									PredicateExtTable::getInstance()->getPredicateExt(p->getIndex())->addTables(2);
 								}
 							}
 						}

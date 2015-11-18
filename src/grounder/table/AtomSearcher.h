@@ -92,7 +92,7 @@ public:
 
 	/// This method implementation is demanded to sub-classes.
 	/// It have to find if the given atom exist and returns it, else returns nullptr.
-	virtual Atom* findAtom(Atom *atom)=0;
+	virtual Atom* findGroundAtom(Atom *atom)=0;
 	/// This method implementation is demanded to sub-classes.
 	/// It updates the searching data-structure(s) by adding the given atom
 	virtual void add(Atom* atom) = 0;
@@ -142,7 +142,7 @@ public:
 	virtual void findIfExist(Atom *templateAtom, Atom*& atomFound);
 
 
-	virtual Atom* findAtom(Atom *atom);
+	virtual Atom* findGroundAtom(Atom *atom);
 	virtual void add(Atom* atom){};
 	virtual void remove(Atom* atom){};
 	virtual void clear(){};
@@ -190,11 +190,14 @@ protected:
 	/// A vector of boolean used in order to determine if the data-structure for a particular indexing terms has been created.
 	vector<bool> createdSearchingTables;
 
-	/// This method determines the possible indexing terms for the given atoms.
+	/// This method determines the possible indexing terms for the given NOT GROUND atom.
 	/// Then invokes the selectBestIndex method to determine the best one among them.
 	/// If the data-structure for the best indexing term is not created, then it fills in
 	/// the data structures by means of initializeIndexMaps method.
 	int manageIndex(Atom* templateAtom);
+
+	/// This method determines the possible indexing terms for totally GROUND atoms.
+	int manageIndexGround();
 
 	///This method fills in the searching data structure for the given indexing term
 	virtual void initializeIndexMaps(unsigned int indexingTerm) = 0;
@@ -224,7 +227,7 @@ public:
 		}
 	};
 
-	virtual Atom* findAtom(Atom *atom);
+	virtual Atom* findGroundAtom(Atom *atom);
 	virtual void add(Atom* atom);
 	virtual void remove(Atom* atom);
 	virtual void clear(){for(auto table:searchingTables) table.clear();};
@@ -262,7 +265,7 @@ public:
 		}
 	};
 
-	virtual Atom* findAtom(Atom *atom);
+	virtual Atom* findGroundAtom(Atom *atom);
 	virtual void add(Atom* atom);
 	virtual void remove(Atom* atom);
 	virtual void clear(){for(auto table:searchingTables) table.clear();};
@@ -284,7 +287,7 @@ private:
 class HashSetAtomSearcher: public BaseAtomSearcher {
 public:
 	HashSetAtomSearcher(AtomVector* table, Predicate *p) : BaseAtomSearcher(table), createdSearchingTable(false) {}
-	virtual Atom* findAtom(Atom *atom);
+	virtual Atom* findGroundAtom(Atom *atom);
 	virtual void add(Atom* atom) { searchingTable.insert(atom); }
 	virtual void remove(Atom* atom) { searchingTable.erase(atom); }
 	virtual void clear() { searchingTable.clear(); }
@@ -332,7 +335,7 @@ public:
 #endif
 	};
 
-	virtual Atom* findAtom(Atom *atom);
+	virtual Atom* findGroundAtom(Atom *atom);
 	virtual void add(Atom* atom);
 	virtual void remove(Atom* atom);
 	virtual void clear(){for(auto table:searchingTables) table.clear();};
@@ -351,6 +354,7 @@ private:
 	vector<unordered_map<index_object,Multimap_Atom>> searchingTables;
 
 	int manageIndex(Atom* templateAtom);
+	int manageIndexGround();
 
 	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom);
 

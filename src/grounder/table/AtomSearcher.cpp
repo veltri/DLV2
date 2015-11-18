@@ -129,7 +129,7 @@ void BaseAtomSearcher::nextMatch(unsigned int id, Atom *templateAtom, var_assign
 
 }
 
-Atom* BaseAtomSearcher::findAtom(Atom *atom){
+Atom* BaseAtomSearcher::findGroundAtom(Atom *atom){
 	for(auto genericAtom:(*table)){
 		if(*genericAtom==*atom){
 			return genericAtom;
@@ -139,7 +139,7 @@ Atom* BaseAtomSearcher::findAtom(Atom *atom){
 }
 
 void BaseAtomSearcher::findIfExist(Atom *templateAtom, Atom*& atomFound) {
-	atomFound=findAtom(templateAtom);
+	atomFound=findGroundAtom(templateAtom);
 }
 
 /****************************************************** SINGLE TERM ATOM SEARCH ***************************************************/
@@ -152,14 +152,18 @@ int SingleTermAtomSearcher::manageIndex(Atom* templateAtom) {
 			possibleTableToSearch.push_back({i,t->getIndex()});
 	}
 
-
 	int indexSelected=-1;
-	if(!possibleTableToSearch.empty()){
+	unsigned size=possibleTableToSearch.size();
+
+	if(size==0)
+		return indexSelected;
+
+	if(size==1)
+		indexSelected=possibleTableToSearch.front().first;
+	else
 		indexSelected=selectBestIndex(possibleTableToSearch);
-		if(!createdSearchingTables[indexSelected]){
-			initializeIndexMaps(indexSelected);
-		}
-	}
+	if(!createdSearchingTables[indexSelected])
+		initializeIndexMaps(indexSelected);
 	return indexSelected;
 }
 
@@ -221,13 +225,24 @@ void SingleTermMapAtomSearcher::remove(Atom* atom) {
 	}
 }
 
-Atom* SingleTermMapAtomSearcher::findAtom(Atom *atom){
+int SingleTermAtomSearcher::manageIndexGround() {
+	int tableToSearch = 0;
+	for (unsigned int i = 0; i < predicate->getArity(); ++i)
+		if (createdSearchingTables[i]) {
+			tableToSearch = i;
+			break;
+		}
+	if (!createdSearchingTables[tableToSearch])
+		initializeIndexMaps(tableToSearch);
+
+	return tableToSearch;
+}
+
+Atom* SingleTermMapAtomSearcher::findGroundAtom(Atom *atom){
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("Find "+predicate->getName());
 #endif
-	int tableToSearch=manageIndex(atom);
-	assert_msg(tableToSearch>-1, "Invalid index");
-
+	int tableToSearch = manageIndexGround();
 	index_object term = atom->getTerm(tableToSearch)->getIndex();
 	AtomTable* matchingTable=&searchingTables[tableToSearch][term];
 
@@ -261,9 +276,11 @@ unsigned int SingleTermMapAtomSearcher::selectBestIndex(const vector<pair<int,in
 			}
 		}
 	}
+
 	if(index!=-1)
 		return index;
-	return getPositionWithBestSelectivity(possibleTableToSearch);
+	return possibleTableToSearch.front().first;
+	//return getPositionWithBestSelectivity(possibleTableToSearch);
 }
 
 GeneralIterator* SingleTermMapAtomSearcher::computeGenericIterator(Atom* templateAtom) {
@@ -343,12 +360,11 @@ void SingleTermMultiMapAtomSearcher::remove(Atom* atom) {
 	}
 }
 
-Atom* SingleTermMultiMapAtomSearcher::findAtom(Atom *atom){
+Atom* SingleTermMultiMapAtomSearcher::findGroundAtom(Atom *atom){
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("Find "+predicate->getName());
 #endif
-	int indexingTerm=manageIndex(atom);
-	assert_msg(indexingTerm>-1, "Invalid index");
+	int indexingTerm = manageIndexGround();
 
 	index_object term = atom->getTerm(indexingTerm)->getIndex();
 	auto pair=searchingTables[indexingTerm].equal_range(term);
@@ -385,10 +401,8 @@ unsigned int SingleTermMultiMapAtomSearcher::selectBestIndex(const vector<pair<i
 		}
 	}
 
-	if(index!=-1)
-		return index;
-
-	return getPositionWithBestSelectivity(possibleTableToSearch);
+	return index;
+//	return getPositionWithBestSelectivity(possibleTableToSearch);
 }
 
 
@@ -430,7 +444,7 @@ void SingleTermMultiMapAtomSearcher::initializeIndexMaps(unsigned int indexingTe
 
 /****************************************************** HASH SET ATOM SEARCH ***************************************************/
 
-Atom* HashSetAtomSearcher::findAtom(Atom* atom) {
+Atom* HashSetAtomSearcher::findGroundAtom(Atom* atom) {
 	manageIndex();
 	auto atomFound_it=searchingTable.find(atom);
 	if(atomFound_it!=searchingTable.end())
@@ -484,9 +498,21 @@ void DoubleTermMapAtomSearcher::remove(Atom* atom) {
 	}
 }
 
-Atom* DoubleTermMapAtomSearcher::findAtom(Atom *atom){
-	int tableToSearch=manageIndex(atom);
-	assert_msg(tableToSearch>-1, "Invalid index");
+int DoubleTermMapAtomSearcher::manageIndexGround() {
+	int tableToSearch = 0;
+	for (unsigned int i = 0; i < predicate->getArity(); ++i)
+		if (createdSearchingTables[i]) {
+			tableToSearch = i;
+			break;
+		}
+	if (!createdSearchingTables[tableToSearch])
+		initializeIndexMaps(tableToSearch);
+
+	return tableToSearch;
+}
+
+Atom* DoubleTermMapAtomSearcher::findGroundAtom(Atom *atom){
+	int tableToSearch=manageIndexGround();
 
 	index_object term = atom->getTerm(tableToSearch)->getIndex();
 	Multimap_Atom::iterator start;
@@ -573,22 +599,21 @@ unsigned int DoubleTermMapAtomSearcher::selectBestIndex(const vector<pair<int,pa
 		}
 	}
 
-	if(index!=-1)
-		return index;
-
-	index=0;
-	if(possibleTableToSearch.size()==1)
-		return (*possibleTableToSearch.begin()).first;
-	unsigned maxSelectivity=0;
-	PredicateInformation* predInfo=PredicateExtTable::getInstance()->getPredicateExt(predicate)->getPredicateInformation();
-	for(auto pair:possibleTableToSearch){
-		unsigned selectivity=predInfo->getSelectivity(pair.first);
-		if(selectivity>maxSelectivity){
-			maxSelectivity=selectivity;
-			index=pair.first;
-		}
-	}
 	return index;
+
+//	index=0;
+//	if(possibleTableToSearch.size()==1)
+//		return (*possibleTableToSearch.begin()).first;
+//	unsigned maxSelectivity=0;
+//	PredicateInformation* predInfo=PredicateExtTable::getInstance()->getPredicateExt(predicate)->getPredicateInformation();
+//	for(auto pair:possibleTableToSearch){
+//		unsigned selectivity=predInfo->getSelectivity(pair.first);
+//		if(selectivity>maxSelectivity){
+//			maxSelectivity=selectivity;
+//			index=pair.first;
+//		}
+//	}
+//	return index;
 }
 
 GeneralIterator* DoubleTermMapAtomSearcher::computeGenericIterator(Atom* templateAtom) {

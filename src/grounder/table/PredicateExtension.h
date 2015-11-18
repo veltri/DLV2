@@ -66,8 +66,7 @@ public:
 			tables.reserve(MAX_TABLE_NUMBER);
 			atomSearchers.reserve(MAX_TABLE_NUMBER);
 		}
-		for(unsigned i=0;i<tableNumber;++i)
-			tables.push_back(new AtomVector());
+		addTables(tableNumber);
 	}
 
 	///Getter for the predicate
@@ -75,44 +74,39 @@ public:
 
 	///Returns the i-th AtomSeacher in atomSearchers
 	AtomSearcher*& getAtomSearcher(unsigned i){
-		setAtomSearchers();
-		assert_msg(i<atomSearchers.size(),"The specified AtomSearche doesn't exist.");
+		if(i>=atomSearchers.size()) setAtomSearchers();
 		return atomSearchers[i];
 	}
 
 	/// Add table and an AtomSearcher
-	void addTable(){
-		tables.push_back(new AtomVector());
-		setAtomSearchers();
+	void addTables(unsigned numTables=1){
+		for(unsigned i=0;i<numTables;i++)
+			tables.push_back(new AtomVector());
 	}
 
 	///Add a given atom in specified table
 	bool addAtom(unsigned table, Atom* genericAtom, bool search = false){
-		assert_msg(table<tables.size(),"The specified table doesn't exist.");
-		if(!genericAtom->isFact()){
+		if(predicate->isSolved() && !genericAtom->isFact()){
 			predicate->setSolved(false);
 		}
 		if(search){
-			AtomSearcher *atomSearcher=getAtomSearcher(table);
-			if((atomSearcher->findAtom(genericAtom))!=nullptr)
+			if((getAtomSearcher(table)->findGroundAtom(genericAtom))!=nullptr)
 				return false;
 		}
 		if(atomSearchers.size()>table){
-			AtomSearcher *atomSearcher=getAtomSearcher(table);
-			atomSearcher->add(genericAtom);
+			getAtomSearcher(table)->add(genericAtom);
 		}
 		tables[table]->push_back(genericAtom);
 		predicateInformation->update(genericAtom);
-		setIndexOfAtom(genericAtom);
+		if(genericAtom->getIndex()==0) setIndexOfAtom(genericAtom);
 		return true;
 	}
 
 	///Get an atom in specified table
 	Atom* getAtom(unsigned table, Atom* genericAtom){
-		assert_msg(table<tables.size(),"The specified table doesn't exist.");
 		if(tables[table]->size()==0) return nullptr;
 		AtomSearcher* atomSearcher=getAtomSearcher(table);
-		Atom* atomFound=atomSearcher->findAtom(genericAtom);
+		Atom* atomFound=atomSearcher->findGroundAtom(genericAtom);
 		return atomFound;
 	}
 
@@ -129,11 +123,9 @@ public:
 
 	///Set the index of the atom with new id if the atom is not yet indexed, and send it to the output builder
 	void setIndexOfAtom(Atom* atom){
-		if(atom->getIndex()==0){
-			atom->setIndex(IdGenerator::getInstance()->getNewId(1));
-			if(!atom->getPredicate()->isHiddenForPrinting())
-				OutputBuilder::getInstance()->appendToStreamAtomTable(atom);
-		}
+		atom->setIndex(IdGenerator::getInstance()->getNewId(1));
+		if(!atom->getPredicate()->isHiddenForPrinting())
+			OutputBuilder::getInstance()->appendToStreamAtomTable(atom);
 	}
 
 	 //Moves the content of the tableFrom (source) to the tableTo (destination)
@@ -147,7 +139,6 @@ public:
 
 	///Printer method for a single table
 	inline void print(){for(unsigned table=0;table<tables.size();table++) print(table);}
-
 
 	///Destructor
 	~PredicateExtension();
