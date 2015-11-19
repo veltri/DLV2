@@ -401,7 +401,9 @@ unsigned int SingleTermMultiMapAtomSearcher::selectBestIndex(const vector<pair<i
 		}
 	}
 
-	return index;
+	if(index!=-1)
+		return index;
+	return possibleTableToSearch.front().first;
 //	return getPositionWithBestSelectivity(possibleTableToSearch);
 }
 
@@ -599,7 +601,9 @@ unsigned int DoubleTermMapAtomSearcher::selectBestIndex(const vector<pair<int,pa
 		}
 	}
 
-	return index;
+	if(index!=-1)
+		return index;
+	return possibleTableToSearch.front().first;
 
 //	index=0;
 //	if(possibleTableToSearch.size()==1)
