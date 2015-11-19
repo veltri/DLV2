@@ -103,7 +103,7 @@ void BaseAtomSearcher::firstMatch(unsigned id,Atom *templateAtom, var_assignment
 bool BaseAtomSearcher::searchForFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound){
 	//Call findIfAFactExist only if all the terms are bound
 	if(templateAtom->isGround()){
-		findIfExist(templateAtom,atomFound);
+		atomFound=findGroundAtom(templateAtom);
 		return false;
 	}
 
@@ -136,10 +136,6 @@ Atom* BaseAtomSearcher::findGroundAtom(Atom *atom){
 		}
 	}
 	return nullptr;
-}
-
-void BaseAtomSearcher::findIfExist(Atom *templateAtom, Atom*& atomFound) {
-	atomFound=findGroundAtom(templateAtom);
 }
 
 /****************************************************** SINGLE TERM ATOM SEARCH ***************************************************/
