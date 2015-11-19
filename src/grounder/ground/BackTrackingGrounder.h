@@ -31,6 +31,8 @@ public:
 
 	};
 
+	bool findGroundMatch();
+
 protected:
 	virtual bool match();
 	virtual bool next();
@@ -44,6 +46,7 @@ protected:
 	virtual void removeBindValueFromAssignment(const vector<index_object>& bind_variables);
 	/// Call the first match with the current atom
 	virtual bool firstMatch();
+
 	/// Call the next match with the current atom
 	virtual bool nextMatch();
 

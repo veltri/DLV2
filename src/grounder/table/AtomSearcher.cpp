@@ -91,25 +91,27 @@ bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, var_assignmen
 
 void BaseAtomSearcher::firstMatch(unsigned id,Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound) {
 	GeneralIterator* currentMatch=computeGenericIterator(templateAtom);
-	if(searchForFirstMatch(currentMatch, templateAtom, currentAssignment,atomFound)){
+//	if(searchForFirstMatch(currentMatch, templateAtom, currentAssignment,atomFound)){
+	if(computeMatch(currentMatch,templateAtom,currentAssignment,atomFound)){
 		delete resultVector[id];
 		resultVector[id]=currentMatch;
-		return ;
+		return;
 	}
 
 	delete currentMatch;
 }
 
-bool BaseAtomSearcher::searchForFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound){
+//bool BaseAtomSearcher::searchForFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound){
 	//Call findIfAFactExist only if all the terms are bound
-	if(templateAtom->isGround()){
-		atomFound=findGroundAtom(templateAtom);
-		return false;
-	}
+//	if(templateAtom->isGround()){
+//		atomFound=findGroundAtom(templateAtom);
+////		if(atomFound!=nullptr){ cout<<"*** ";atomFound->print();cout<<endl;}
+//		return false;
+//	}
 
 	//Compute the first match
-	return computeMatch(currentMatch,templateAtom,currentAssignment,atomFound);
-}
+//	return computeMatch(currentMatch,templateAtom,currentAssignment,atomFound);
+//}
 
 bool BaseAtomSearcher::computeMatch(GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound){
 	for(;!currentMatch->isDone();currentMatch->next()){
@@ -163,16 +165,16 @@ int SingleTermAtomSearcher::manageIndex(Atom* templateAtom) {
 	return indexSelected;
 }
 
-int SingleTermAtomSearcher::computePossibleIndexingTermTable(const vector<pair<int,index_object>>& possibleTableToSearch){
-	if(indexingTermSetByUser>-1 && createdSearchingTables[indexingTermSetByUser])
-		for(unsigned int i=0;i<possibleTableToSearch.size();++i){
-			if(possibleTableToSearch[i].first==indexingTermSetByUser)
-				return indexingTermSetByUser;
-			if(possibleTableToSearch[i].first>indexingTermSetByUser)
-				return -1;
-		}
-	return -1;
-}
+//int SingleTermAtomSearcher::computePossibleIndexingTermTable(const vector<pair<int,index_object>>& possibleTableToSearch){
+//	if(indexingTermSetByUser>-1 && createdSearchingTables[indexingTermSetByUser])
+//		for(unsigned int i=0;i<possibleTableToSearch.size();++i){
+//			if(possibleTableToSearch[i].first==indexingTermSetByUser)
+//				return indexingTermSetByUser;
+//			if(possibleTableToSearch[i].first>indexingTermSetByUser)
+//				return -1;
+//		}
+//	return -1;
+//}
 
 int SingleTermAtomSearcher::getPositionWithBestSelectivity(const vector<pair<int,index_object>>& possibleTableToSearch){
 	int index=0;
@@ -259,8 +261,9 @@ unsigned int SingleTermMapAtomSearcher::selectBestIndex(const vector<pair<int,in
 		- if none indexing structure has been created (among the ones allowed), then chose the position
 		with the best selectivity among the position of indexing available
 	*/
-	int index=computePossibleIndexingTermTable(possibleTableToSearch);
-	if(index!=-1) return index;
+//	int index=computePossibleIndexingTermTable(possibleTableToSearch);
+//	if(index!=-1) return index;
+	int index=-1;
 
 	unsigned minSize=INT_MAX;
 	for(auto it=possibleTableToSearch.begin();it!=possibleTableToSearch.end();++it){
@@ -383,8 +386,9 @@ unsigned int SingleTermMultiMapAtomSearcher::selectBestIndex(const vector<pair<i
 		- if none indexing structure has been created (among the ones allowed), then chose the position
 		with the best selectivity among the position of indexing available
 	*/
-	int index=computePossibleIndexingTermTable(possibleTableToSearch);
-	if(index!=-1) return index;
+//	int index=computePossibleIndexingTermTable(possibleTableToSearch);
+//	if(index!=-1) return index;
+	int index=-1;
 
 	unsigned minSize=INT_MAX;
 	for(auto it=possibleTableToSearch.begin();it!=possibleTableToSearch.end();++it){
@@ -560,16 +564,16 @@ int DoubleTermMapAtomSearcher::manageIndex(Atom* templateAtom) {
 	return indexSelected;
 }
 
-int DoubleTermMapAtomSearcher::computePossibleIndexingTermTable(const vector<pair<int,pair<index_object,int>>>& possibleTableToSearch){
-	if(indexingTermSetByUser>-1 && createdSearchingTables[indexingTermSetByUser])
-		for(unsigned int i=0;i<possibleTableToSearch.size();++i){
-			if(possibleTableToSearch[i].first==indexingTermSetByUser)
-				return indexingTermSetByUser;
-			if(possibleTableToSearch[i].first>indexingTermSetByUser)
-				return -1;
-		}
-	return -1;
-}
+//int DoubleTermMapAtomSearcher::computePossibleIndexingTermTable(const vector<pair<int,pair<index_object,int>>>& possibleTableToSearch){
+//	if(indexingTermSetByUser>-1 && createdSearchingTables[indexingTermSetByUser])
+//		for(unsigned int i=0;i<possibleTableToSearch.size();++i){
+//			if(possibleTableToSearch[i].first==indexingTermSetByUser)
+//				return indexingTermSetByUser;
+//			if(possibleTableToSearch[i].first>indexingTermSetByUser)
+//				return -1;
+//		}
+//	return -1;
+//}
 
 unsigned int DoubleTermMapAtomSearcher::selectBestIndex(const vector<pair<int,pair<index_object,int>>>& possibleTableToSearch){
 	/* The choosing policy is the following:
@@ -579,8 +583,9 @@ unsigned int DoubleTermMapAtomSearcher::selectBestIndex(const vector<pair<int,pa
 		- if none indexing structure has been created (among the ones allowed), then chose the position
 		with the best selectivity among the position of indexing available
 	*/
-	int index=computePossibleIndexingTermTable(possibleTableToSearch);
-	if(index!=-1) return index;
+//	int index=computePossibleIndexingTermTable(possibleTableToSearch);
+//	if(index!=-1) return index;
+	int index=-1;
 
 	unsigned minSize=INT_MAX;
 	for(auto it=possibleTableToSearch.begin();it!=possibleTableToSearch.end();++it){

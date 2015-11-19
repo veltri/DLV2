@@ -146,7 +146,7 @@ void ProgramGrounder::ground() {
 					for(auto token: recursivePredicatesPositions[i]){
 						if(nextSearchInsertPredicate(rule,componentPredicateInHead[component],token,originalOrderBody[i]))
 							continue;
-						rule->sortPositiveLiteralInBody(predicate_searchInsert_table,originalOrderBody[i]);
+//						rule->sortPositiveLiteralInBody(predicate_searchInsert_table,originalOrderBody[i]);
 						trace_action_tag(grounding,2,printTableInRule(rule,predicate_searchInsert_table););
 
 						if (groundRule(rule))
@@ -213,10 +213,16 @@ bool ProgramGrounder::inizializeSearchInsertPredicateBody(Rule* rule) {
 		vector<unsigned> tableToInsert;
 		Predicate* pred = (*atom)->getPredicate();
 		if (pred != nullptr){
-			if (PredicateExtTable::getInstance()->getPredicateExt(pred)->getPredicateExtentionSize(FACT) > 0)
+			if(!(*atom)->isNegative()){
+				if (PredicateExtTable::getInstance()->getPredicateExt(pred)->getPredicateExtentionSize(FACT) > 0)
+					tableToInsert.push_back(FACT);
+				if(!pred->isEdb() && PredicateExtTable::getInstance()->getPredicateExt(pred)->getPredicateExtentionSize(NOFACT) > 0)
+					tableToInsert.push_back(NOFACT);
+			}
+			else{
 				tableToInsert.push_back(FACT);
-			if(!pred->isEdb() && PredicateExtTable::getInstance()->getPredicateExt(pred)->getPredicateExtentionSize(NOFACT) > 0)
 				tableToInsert.push_back(NOFACT);
+			}
 		}
 		else{
 			tableToInsert.push_back(0);
@@ -344,7 +350,7 @@ void printTimeElapsed(clock_t time,ostream& stream){
 bool ProgramGrounder::groundRule(Rule* rule) {
 
 	if (Options::globalOptions()->isPrintRewrittenProgram())
-		{cerr<<"RULE: ";rule->print(cerr);}
+		{cout<<"RULE: ";rule->print(cout);}
 #ifdef DEBUG_GRULE_TIME
 	cerr<<endl<<"RULE ORDERED: \t";rule->print(cerr);
 	clock_t start=Timer::getInstance()->getClock();
@@ -368,7 +374,6 @@ bool ProgramGrounder::groundRule(Rule* rule) {
 
 		if(match()){
 			if(!next()) {
-
 				if(foundAssignment()){
 					find_assignment=true;
 				}

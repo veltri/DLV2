@@ -151,7 +151,7 @@ protected:
 
 	/// This method invokes findIfAFactExists method if all the variables are bound,
 	/// otherwise invokes the computeFirstMatch method.
-	bool searchForFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound);
+//	bool searchForFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound);
 	/// This method given an iterator increases it in order to find matching atoms with the given atom
 	/// according to the current assignment.
 	bool computeMatch(GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound);
@@ -165,9 +165,9 @@ public:
 		createdSearchingTables.reserve(predicate->getArity());
 		for(unsigned int i=0;i<predicate->getArity();++i)
 			createdSearchingTables.push_back(false);
-		indexingTermSetByUser = Options::globalOptions()->getPredicateIndexTerm(this->predicate->getName());
-		if(indexingTermSetByUser>=0)
-			assert_msg(unsigned(indexingTermSetByUser)<this->predicate->getArity(), "The specified index for the predicate \""+(this->predicate)->getName()+"\" is not valid.");
+//		indexingTermSetByUser = Options::globalOptions()->getPredicateIndexTerm(this->predicate->getName());
+//		if(indexingTermSetByUser>=0)
+//			assert_msg(unsigned(indexingTermSetByUser)<this->predicate->getArity(), "The specified index for the predicate \""+(this->predicate)->getName()+"\" is not valid.");
 #ifdef DEBUG_ATOM_SEARCHER
 		cout<<"Predicate: "<<predicate->getName()<<"  Index Term Set By User: "<<indexingTermSetByUser<<endl;
 #endif
@@ -179,7 +179,7 @@ protected:
 	/// The predicate
 	Predicate* predicate;
 	///The indexing term set by user. It is -1 if not set.
-	int indexingTermSetByUser;
+//	int indexingTermSetByUser;
 	/// A vector of boolean used in order to determine if the data-structure for a particular indexing terms has been created.
 	vector<bool> createdSearchingTables;
 
@@ -195,7 +195,7 @@ protected:
 	///This method fills in the searching data structure for the given indexing term
 	virtual void initializeIndexMaps(unsigned int indexingTerm) = 0;
 
-	int computePossibleIndexingTermTable(const vector<pair<int,index_object>>& possibleTableToSearch);
+//	int computePossibleIndexingTermTable(const vector<pair<int,index_object>>& possibleTableToSearch);
 
 	virtual int getPositionWithBestSelectivity(const vector<pair<int,index_object>>& possibleTableToSearch);
 
@@ -215,9 +215,8 @@ class SingleTermMapAtomSearcher: public SingleTermAtomSearcher {
 public:
 	SingleTermMapAtomSearcher(AtomVector* table, Predicate* p) : SingleTermAtomSearcher(table,p) {
 		searchingTables.reserve(predicate->getArity());
-		for(unsigned int i=0;i<predicate->getArity();++i){
+		for(unsigned int i=0;i<predicate->getArity();++i)
 			searchingTables.push_back(unordered_map<index_object,AtomTable>());
-		}
 	};
 
 	virtual Atom* findGroundAtom(Atom *atom);
@@ -253,9 +252,8 @@ class SingleTermMultiMapAtomSearcher: public SingleTermAtomSearcher {
 public:
 	SingleTermMultiMapAtomSearcher(AtomVector* table, Predicate *p) : SingleTermAtomSearcher(table,p) {
 		searchingTables.reserve(predicate->getArity());
-		for(unsigned int i=0;i<predicate->getArity();++i){
+		for(unsigned int i=0;i<predicate->getArity();++i)
 			searchingTables.push_back(Multimap_Atom());
-		}
 	};
 
 	virtual Atom* findGroundAtom(Atom *atom);
@@ -320,9 +318,9 @@ public:
 			searchingTables.push_back(unordered_map<index_object,Multimap_Atom>());
 			createdSearchingTables.push_back(false);
 		}
-		indexingTermSetByUser = Options::globalOptions()->getPredicateIndexTerm(this->predicate->getName());
-		if(indexingTermSetByUser>=0)
-			assert_msg(unsigned(indexingTermSetByUser)<this->predicate->getArity(), "The specified index for the predicate \""+(this->predicate)->getName()+"\" is not valid.");
+//		indexingTermSetByUser = Options::globalOptions()->getPredicateIndexTerm(this->predicate->getName());
+//		if(indexingTermSetByUser>=0)
+//			assert_msg(unsigned(indexingTermSetByUser)<this->predicate->getArity(), "The specified index for the predicate \""+(this->predicate)->getName()+"\" is not valid.");
 #ifdef DEBUG_ATOM_SEARCHER
 		cout<<"Predicate: "<<predicate->getName()<<"  Index Term Set By User: "<<indexingTermSetByUser<<endl;
 #endif
@@ -340,7 +338,7 @@ private:
 	/// The predicate
 	Predicate* predicate;
 	///The indexing term set by user. It is -1 if not set.
-	int indexingTermSetByUser;
+//	int indexingTermSetByUser;
 	/// A vector of boolean used in order to determine if the data-structure for a particular indexing terms has been created.
 	vector<bool> createdSearchingTables;
 	///A vector of chosen searching data structure for this kind of indexing strategies, one for each possible indexing term.
@@ -353,7 +351,7 @@ private:
 
 	void initializeIndexMaps(unsigned int indexingTerm);
 
-	int computePossibleIndexingTermTable(const vector<pair<int,pair<index_object,int>>>& possibleTableToSearch);
+//	int computePossibleIndexingTermTable(const vector<pair<int,pair<index_object,int>>>& possibleTableToSearch);
 
 };
 
