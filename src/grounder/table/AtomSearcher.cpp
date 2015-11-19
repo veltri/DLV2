@@ -223,26 +223,17 @@ void SingleTermMapAtomSearcher::remove(Atom* atom) {
 	}
 }
 
-int SingleTermAtomSearcher::manageIndexGround() {
-	int tableToSearch = 0;
-	for (unsigned int i = 0; i < predicate->getArity(); ++i)
-		if (createdSearchingTables[i]) {
-			tableToSearch = i;
-			break;
-		}
-	if (!createdSearchingTables[tableToSearch])
-		initializeIndexMaps(tableToSearch);
-
-	return tableToSearch;
-}
-
 Atom* SingleTermMapAtomSearcher::findGroundAtom(Atom *atom){
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("Find "+predicate->getName());
 #endif
-	int tableToSearch = manageIndexGround();
-	index_object term = atom->getTerm(tableToSearch)->getIndex();
-	AtomTable* matchingTable=&searchingTables[tableToSearch][term];
+	if (defaultIndexingTerm==-1){
+		defaultIndexingTerm=0;
+		initializeIndexMaps(0);
+	}
+
+	index_object term = atom->getTerm(defaultIndexingTerm)->getIndex();
+	AtomTable* matchingTable=&searchingTables[defaultIndexingTerm][term];
 
 	auto atomFound_it=matchingTable->find(atom);
 #ifdef DEBUG_RULE_TIME
@@ -312,6 +303,9 @@ void SingleTermMapAtomSearcher::initializeIndexMaps(unsigned int indexingTerm){
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("Create index "+predicate->getName()+" index "+boost::lexical_cast<string>(indexingTerm));
 #endif
+	if(defaultIndexingTerm==-1)
+		defaultIndexingTerm=indexingTerm;
+
 	createdSearchingTables[indexingTerm]=true;
 	for (Atom* a : *table) {
 		index_object termIndex=a->getTerm(indexingTerm)->getIndex();
@@ -363,15 +357,18 @@ Atom* SingleTermMultiMapAtomSearcher::findGroundAtom(Atom *atom){
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("Find "+predicate->getName());
 #endif
-	int indexingTerm = manageIndexGround();
+	if (defaultIndexingTerm==-1){
+		defaultIndexingTerm=0;
+		initializeIndexMaps(0);
+	}
 
-	index_object term = atom->getTerm(indexingTerm)->getIndex();
-	auto pair=searchingTables[indexingTerm].equal_range(term);
+	index_object term = atom->getTerm(defaultIndexingTerm)->getIndex();
+	auto pair=searchingTables[defaultIndexingTerm].equal_range(term);
 
-	for(auto it=pair.first;it!=pair.second;++it){
+	for(auto it=pair.first;it!=pair.second;++it)
 		if(*(it->second)==*atom)
 			return it->second;
-	}
+
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->stop("Find "+predicate->getName());
 #endif
@@ -434,6 +431,9 @@ void SingleTermMultiMapAtomSearcher::initializeIndexMaps(unsigned int indexingTe
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("Compute iterator "+predicate->getName());
 #endif
+	if(defaultIndexingTerm==-1)
+		defaultIndexingTerm=indexingTerm;
+
 	createdSearchingTables[indexingTerm]=true;
 	for (Atom* a : *table) {
 		index_object termIndex=a->getTerm(indexingTerm)->getIndex();
@@ -514,21 +514,24 @@ int DoubleTermMapAtomSearcher::manageIndexGround() {
 }
 
 Atom* DoubleTermMapAtomSearcher::findGroundAtom(Atom *atom){
-	int tableToSearch=manageIndexGround();
+	if (defaultIndexingTerm==-1){
+		defaultIndexingTerm=0;
+		initializeIndexMaps(0);
+	}
 
-	index_object term = atom->getTerm(tableToSearch)->getIndex();
+	index_object term = atom->getTerm(defaultIndexingTerm)->getIndex();
 	Multimap_Atom::iterator start;
 	Multimap_Atom::iterator end;
 
-	if(unsigned(tableToSearch) < predicate->getArity()-1){
-		index_object nextTerm=atom->getTerm(tableToSearch+1)->getIndex();
-		auto pair=searchingTables[tableToSearch][term].equal_range(nextTerm);
+	if(unsigned(defaultIndexingTerm) < predicate->getArity()-1){
+		index_object nextTerm=atom->getTerm(defaultIndexingTerm+1)->getIndex();
+		auto pair=searchingTables[defaultIndexingTerm][term].equal_range(nextTerm);
 		start=pair.first;
 		end=pair.second;
 	}
 	else{
-		start=searchingTables[tableToSearch][term].begin();
-		end=searchingTables[tableToSearch][term].end();
+		start=searchingTables[defaultIndexingTerm][term].begin();
+		end=searchingTables[defaultIndexingTerm][term].end();
 	}
 
 	for(auto it=start;it!=end;++it){
@@ -654,6 +657,9 @@ void DoubleTermMapAtomSearcher::initializeIndexMaps(unsigned int indexingTerm){
 #ifdef DEBUG_ATOM_SEARCHER
 	cout<<"Predicate: "<<predicate->getName()<<" Created Index on term: "<<indexingTerm<<endl;
 #endif
+	if(defaultIndexingTerm==-1 || defaultIndexingTerm==predicate->getArity()-1)
+		defaultIndexingTerm=indexingTerm;
+
 	createdSearchingTables[indexingTerm]=true;
 	for (Atom* a : *table) {
 		index_object termIndex=a->getTerm(indexingTerm)->getIndex();

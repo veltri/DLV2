@@ -161,7 +161,7 @@ protected:
 
 class SingleTermAtomSearcher : public BaseAtomSearcher{
 public:
-	SingleTermAtomSearcher(AtomVector* table, Predicate* p) : BaseAtomSearcher(table), predicate(p) {
+	SingleTermAtomSearcher(AtomVector* table, Predicate* p) : BaseAtomSearcher(table), predicate(p), defaultIndexingTerm(-1) {
 		createdSearchingTables.reserve(predicate->getArity());
 		for(unsigned int i=0;i<predicate->getArity();++i)
 			createdSearchingTables.push_back(false);
@@ -183,14 +183,14 @@ protected:
 	/// A vector of boolean used in order to determine if the data-structure for a particular indexing terms has been created.
 	vector<bool> createdSearchingTables;
 
+	///The first indexing position for which an indexing structure is created
+	int defaultIndexingTerm;
+
 	/// This method determines the possible indexing terms for the given NOT GROUND atom.
 	/// Then invokes the selectBestIndex method to determine the best one among them.
 	/// If the data-structure for the best indexing term is not created, then it fills in
 	/// the data structures by means of initializeIndexMaps method.
 	int manageIndex(Atom* templateAtom);
-
-	/// This method determines the possible indexing terms for totally GROUND atoms.
-	int manageIndexGround();
 
 	///This method fills in the searching data structure for the given indexing term
 	virtual void initializeIndexMaps(unsigned int indexingTerm) = 0;
@@ -310,7 +310,7 @@ private:
 
 class DoubleTermMapAtomSearcher: public BaseAtomSearcher{
 public:
-	DoubleTermMapAtomSearcher(AtomVector* table, Predicate* p) : BaseAtomSearcher(table) {
+	DoubleTermMapAtomSearcher(AtomVector* table, Predicate* p) : BaseAtomSearcher(table),defaultIndexingTerm(-1) {
 		this->predicate=p;
 		searchingTables.reserve(predicate->getArity());
 		createdSearchingTables.reserve(predicate->getArity());
@@ -343,6 +343,10 @@ private:
 	vector<bool> createdSearchingTables;
 	///A vector of chosen searching data structure for this kind of indexing strategies, one for each possible indexing term.
 	vector<unordered_map<index_object,Multimap_Atom>> searchingTables;
+
+	///The first indexing position for which an indexing structure is created
+	int defaultIndexingTerm;
+
 
 	int manageIndex(Atom* templateAtom);
 	int manageIndexGround();
