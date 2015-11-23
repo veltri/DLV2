@@ -73,7 +73,7 @@ public:
 	Predicate* getPredicate() const {return predicate;}
 
 	///Returns the i-th AtomSeacher in atomSearchers
-	AtomSearcher*& getAtomSearcher(unsigned i){
+	inline AtomSearcher*& getAtomSearcher(unsigned i){
 		if(i>=atomSearchers.size()) setAtomSearchers();
 		return atomSearchers[i];
 	}

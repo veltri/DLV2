@@ -63,7 +63,7 @@ void PredicateExtension::setAtomSearchers(){
 }
 
 PredicateExtension::~PredicateExtension() {
-	for(unsigned int i=0;i<tables.size();i++){
+	for(unsigned int i=0;i<tables.size();++i){
 		AtomVector* table=tables[i];
 		for (auto it = table->begin(); it != table->end(); ++it){
 			delete *it;
