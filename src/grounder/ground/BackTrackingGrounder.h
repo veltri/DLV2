@@ -23,7 +23,7 @@ namespace grounder {
 */
 class BackTrackingGrounder : public ProgramGrounder {
 public:
-	BackTrackingGrounder():ProgramGrounder(),currentRule(0),index_current_atom(0),ground_rule(0),callFoundAssignment(0),direction(1) {};
+	BackTrackingGrounder():ProgramGrounder(),currentRule(0),index_current_atom(0),ground_rule(0),callFoundAssignment(0),direction(1),isDone(false) {};
 	virtual ~BackTrackingGrounder() {
 		for(auto atom:templateSetAtom) {if(atom!=nullptr){atom->deleteAtoms(); delete atom;}}
 		if(ground_rule!=0)
@@ -103,6 +103,7 @@ protected:
 	/// The size is >0 if the current ground rule has at least a negative atom that an potentially be an undef atom (an atom without a valid index)
 	vector<unsigned> atomsPossibleUndef;
 
+	bool isDone;
 
 #ifdef TRACE_ON
 	/// Print the current assignment

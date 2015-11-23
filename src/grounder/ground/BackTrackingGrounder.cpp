@@ -35,10 +35,7 @@ void BackTrackingGrounder::printAssignment(){
 #endif
 
 bool BackTrackingGrounder::findGroundMatch(){
-
-#ifdef DEBUG_GROUNDING
-	cout<<"FIRST MATCH ON:";templateSetAtom[index_current_atom]->print();cout<<endl;
-#endif
+	trace_action_tag(grounding,1,cerr<<"FIND GROUND ATOM ON: ";templateSetAtom[index_current_atom]->print(cerr);cerr<<endl;);
 	// For each table to search call the first match until one table return find
 	bool find=false;
 	unsigned current_table=current_id_match_iterator[index_current_atom];
@@ -79,6 +76,7 @@ bool BackTrackingGrounder::findGroundMatch(){
 		}
 
 		if(find){
+			trace_action_tag(grounding,1,cerr<<"Match OK: ";atomFound->print(cerr);cerr<<endl;);
 			if(!is_bound_atom[index_current_atom]){
 				current_id_match[index_current_atom][current_table].second = MATCH;
 			}else{
@@ -120,15 +118,17 @@ bool BackTrackingGrounder::match() {
 
 	 if(templateSetAtom[index_current_atom]->isClassicalLiteral()){
 		if(is_bound_atom[index_current_atom]){
+			trace_action_tag(grounding,1,cerr<<"MATCH GROUND CLASSICAL LIT: ";templateSetAtom[index_current_atom]->print(cerr);cerr<<endl;);
 			return findGroundMatch() == !templateSetAtom[index_current_atom]->isNegative();
 		}
 		else{
+			trace_action_tag(grounding,1,cerr<<"MATCH CLASSICAL LIT: ";templateSetAtom[index_current_atom]->print(cerr);cerr<<endl;);
 			bool match;
 			unsigned current_table=current_id_match_iterator[index_current_atom];
+
 			//if is the first table to visit and the id of first match is NO_MATCH
 			if(current_table==0 && current_id_match[index_current_atom][current_table].second==NO_MATCH){
 				match = firstMatch() == !templateSetAtom[index_current_atom]->isNegative();
-
 			}else{
 				match = nextMatch() == !templateSetAtom[index_current_atom]->isNegative();
 			}
@@ -137,10 +137,7 @@ bool BackTrackingGrounder::match() {
 		}
 
 	}else if(templateSetAtom[index_current_atom]->isBuiltIn() ){
-
-#ifdef DEBUG_GROUNDING
-	cout<<"MATCH BUILT-IN:";templateSetAtom[index_current_atom]->print();cout<<endl;
-#endif
+		trace_action_tag(grounding,1,cerr<<"MATCH BUILT-IN: ";templateSetAtom[index_current_atom]->print(cerr);cerr<<endl;);
 		current_id_match[index_current_atom][0].second=1;
 		ground_rule->setAtomToSimplifyInBody(index_current_atom);
 
@@ -148,6 +145,7 @@ bool BackTrackingGrounder::match() {
 		return templateSetAtom[index_current_atom] -> evaluate(current_assignment);
 
 	}else if(templateSetAtom[index_current_atom]->isAggregateAtom()){
+		trace_action_tag(grounding,1,cerr<<"MATCH AGGREGATE: ";templateSetAtom[index_current_atom]->print(cerr);cerr<<endl;);
 		return groundAggregate();
 
 	}
@@ -159,24 +157,15 @@ bool BackTrackingGrounder::match() {
 
 
 bool BackTrackingGrounder::firstMatch(){
-
-
-#ifdef DEBUG_GROUNDING
-	cout<<"FIRST MATCH ON:";templateSetAtom[index_current_atom]->print();cout<<endl;
-#endif
+	trace_action_tag(grounding,1,cerr<<"FIRST MATCH ON: ";templateSetAtom[index_current_atom]->print(cerr);cerr<<endl;);
 	// For each table to search call the first match until one table return find
 	bool find=false;
 	unsigned current_table=current_id_match_iterator[index_current_atom];
 	unsigned n_table=current_id_match[index_current_atom].size();
 	Atom* templateAtom=templateSetAtom[index_current_atom];
-
-//	// Avoid to clone template atom for each table for negative atoms
-//	bool isPossibleUndef=true;
-//	index_object indexNegativeAtom=0;
-//	bool negativeToClone=false;
-
 	while(current_table<n_table){
 		unsigned tableToSearch = current_id_match[index_current_atom][current_table].first;
+//		cerr<<"TABLE: "<<tableToSearch<<endl;
 		AtomSearcher *searcher=predicateExtTable->getPredicateExt(templateAtom->getPredicate())->getAtomSearcher(tableToSearch);
 		//Initialize false for negative atom
 		bool undef=false;
@@ -187,23 +176,8 @@ bool BackTrackingGrounder::firstMatch(){
 		if(atomFound!=nullptr)
 			undef=!atomFound->isFact();
 
-//		if(templateAtom->isNegative() && find)
-//			find=!undef;
-//
-//		if(templateAtom->isNegative() && !find){
-//			if(atomFound!=nullptr){
-//				indexNegativeAtom=atomFound->getIndex();
-//				isPossibleUndef=false;
-//			}
-//			//We can avoid to clone the template atom for each table and do it just at the end
-//			negativeToClone=true;
-//			if(StatementDependency::getInstance()->isPredicateNotStratified(templateAtom->getPredicate()->getIndex()))
-//				ground_rule->setAtomToSimplifyInBody(index_current_atom,false);
-//			else
-//				ground_rule->setAtomToSimplifyInBody(index_current_atom,!undef);
-//		}
-
 		if(find){
+			trace_action_tag(grounding,1,cerr<<"Match OK: ";atomFound->print(cerr);cerr<<endl;);
 			if(!is_bound_atom[index_current_atom]){
 				current_id_match[index_current_atom][current_table].second = MATCH;
 			}else{
@@ -220,26 +194,13 @@ bool BackTrackingGrounder::firstMatch(){
 
 	}
 
-//	//If at least a possible undef atom has been found then update accordingly the vector of undef atoms of this rule
-//	if(negativeToClone){
-//		while(!atomsPossibleUndef.empty() && atomsPossibleUndef.back()>=index_current_atom)
-//			atomsPossibleUndef.pop_back();
-//		if(isPossibleUndef && !ground_rule->isAtomToSimplifyInBody(index_current_atom))
-//			atomsPossibleUndef.push_back(index_current_atom);
-//		Atom* atomFound=templateAtom->clone();
-//		atomFound->setIndex(indexNegativeAtom);
-//		substiteInGroundRule(index_current_atom,atomFound);
-//	}
-
 	current_id_match_iterator[index_current_atom]=0;
 
 	return false;
 }
 
 bool BackTrackingGrounder::nextMatch(){
-#ifdef DEBUG_GROUNDING
-	cout<<"NEXT MATCH ON:";templateSetAtom[index_current_atom]->print();cout<<endl;
-#endif
+	trace_action_tag(grounding,1,cerr<<"NEXT MATCH ON: ";templateSetAtom[index_current_atom]->print(cerr);cerr<<endl;);
 
 	bool find=false;
 	unsigned current_table=current_id_match_iterator[index_current_atom];
@@ -251,26 +212,36 @@ bool BackTrackingGrounder::nextMatch(){
 		bool match = current_id_match[index_current_atom][current_table].second;
 		AtomSearcher *searcher=predicateExtTable->getPredicateExt(templateAtom->getPredicate())->getAtomSearcher(tableToSearch);
 		Atom* atomFound=nullptr;
-
-		if(match != NO_MATCH)
-			searcher->nextMatch(index_current_atom,templateAtom,current_assignment,atomFound);
-		else
+		if(match != NO_MATCH){
+			trace_action_tag(grounding,2,cerr<<"Invoked Next Match on table: "<<tableToSearch<<endl;);
+			searcher->nextMatch(index_current_atom,templateAtom,current_assignment,atomFound,isDone);
+		}
+		else{
+			trace_action_tag(grounding,2,cerr<<"Invoked First Match on table: "<<tableToSearch<<endl;);
 			searcher->firstMatch(index_current_atom,templateAtom,current_assignment,atomFound);
+		}
 
 		find=(atomFound!=nullptr);
 		bool undef=false;
-		if(atomFound!=nullptr)
+		if(find)
 			undef=!atomFound->isFact();
 
 		if(find){
+			trace_action_tag(grounding,1,cerr<<"Match OK: ";atomFound->print(cerr);cerr<<endl;);
 			substiteInGroundRule(index_current_atom,atomFound);
-			current_id_match[index_current_atom][current_table].second = MATCH;
 			ground_rule->setAtomToSimplifyInBody(index_current_atom,!undef);
-
+			if(isDone){
+				current_id_match[index_current_atom][current_table].second = NO_MATCH;
+				current_id_match_iterator[index_current_atom]=++current_table;
+				isDone=false;
+			}
+			else
+				current_id_match[index_current_atom][current_table].second = MATCH;
 			return find;
 		}
 		current_id_match[index_current_atom][current_table].second = NO_MATCH;
 		current_id_match_iterator[index_current_atom]=++current_table;
+		isDone=false;
 	}
 	current_id_match_iterator[index_current_atom]=0;
 
@@ -330,6 +301,8 @@ bool BackTrackingGrounder::foundAssignment() {
 			ground_rule->setAtomInHead(atom_counter,searchAtom);
 		}
 	}
+
+	trace_action_tag(grounding,1,cerr<<"Ground Rule Produced: ";ground_rule->print(cerr);cerr<<endl;);
 
 
 	// If the rule has possible undef atoms in its body its printing is postponed to the end of grounding
@@ -398,6 +371,7 @@ bool BackTrackingGrounder::back() {
 }
 
 void BackTrackingGrounder::inizialize(Rule* rule) {
+	isDone=false;
 	direction=1;
 	currentRule=rule;
 	index_current_atom = 0;
@@ -568,6 +542,7 @@ bool BackTrackingGrounder::groundAggregate() {
 			AtomSearcher *searcher=predicateExtTable->getPredicateExt(predicate_atom)->getAtomSearcher(table);
 			bool find=false;
 			Atom* atomFound=nullptr;
+
 			//Each aggregate element have one atom with no relation with the other atoms in the aggregate elements, then we can
 			//overwrite the general iterator in the Atom Searcher with index_current_atom
 			searcher->firstMatch(index_current_atom,atom,current_assignment,atomFound);
@@ -598,8 +573,8 @@ bool BackTrackingGrounder::groundAggregate() {
 
 				if(result!=UNDEF || atom->isGround())break;
 
-
-				searcher->nextMatch(index_current_atom,atom,current_assignment,atomFound);
+				bool isDone=false;
+				searcher->nextMatch(index_current_atom,atom,current_assignment,atomFound,isDone);
 				find=(atomFound!=nullptr);
 			}
 		}

@@ -85,7 +85,7 @@ public:
 	virtual void firstMatch(unsigned id,Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound)=0;
 	/// This method implementation is demanded to sub-classes.
 	/// It is used to get the further matching atoms one by one each time it is invoked.
-	virtual void nextMatch(unsigned id, Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound)=0;
+	virtual void nextMatch(unsigned id, Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound, bool& isDone)=0;
 	/// This method implementation is demanded to sub-classes.
 	/// It have to find if the given atom exist and returns it, else returns nullptr.
 	virtual Atom* findGroundAtom(Atom *atom)=0;
@@ -134,7 +134,7 @@ public:
 	};
 
 	virtual void firstMatch(unsigned id,Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound);
-	virtual void nextMatch(unsigned id, Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound);
+	virtual void nextMatch(unsigned id, Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound, bool& isDone);
 	virtual Atom* findGroundAtom(Atom *atom);
 	virtual void add(Atom* atom){};
 	virtual void remove(Atom* atom){};

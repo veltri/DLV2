@@ -91,27 +91,15 @@ bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, var_assignmen
 
 void BaseAtomSearcher::firstMatch(unsigned id,Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound) {
 	GeneralIterator* currentMatch=computeGenericIterator(templateAtom);
-//	if(searchForFirstMatch(currentMatch, templateAtom, currentAssignment,atomFound)){
 	if(computeMatch(currentMatch,templateAtom,currentAssignment,atomFound)){
 		delete resultVector[id];
 		resultVector[id]=currentMatch;
+		currentMatch->next();
 		return;
 	}
-
 	delete currentMatch;
+
 }
-
-//bool BaseAtomSearcher::searchForFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound){
-	//Call findIfAFactExist only if all the terms are bound
-//	if(templateAtom->isGround()){
-//		atomFound=findGroundAtom(templateAtom);
-////		if(atomFound!=nullptr){ cout<<"*** ";atomFound->print();cout<<endl;}
-//		return false;
-//	}
-
-	//Compute the first match
-//	return computeMatch(currentMatch,templateAtom,currentAssignment,atomFound);
-//}
 
 bool BaseAtomSearcher::computeMatch(GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound){
 	for(;!currentMatch->isDone();currentMatch->next()){
@@ -124,11 +112,11 @@ bool BaseAtomSearcher::computeMatch(GeneralIterator* currentMatch, Atom *templat
 	return false;
 }
 
-void BaseAtomSearcher::nextMatch(unsigned int id, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound) {
+void BaseAtomSearcher::nextMatch(unsigned int id, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound, bool& isDone) {
 	GeneralIterator* currentMatch=resultVector[id];
-	currentMatch->next();
 	computeMatch(currentMatch,templateAtom,currentAssignment,atomFound);
-
+	currentMatch->next();
+	isDone=currentMatch->isDone();
 }
 
 Atom* BaseAtomSearcher::findGroundAtom(Atom *atom){
