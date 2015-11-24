@@ -214,7 +214,7 @@ bool BackTrackingGrounder::nextMatch(){
 		Atom* atomFound=nullptr;
 		if(match != NO_MATCH){
 			trace_action_tag(grounding,2,cerr<<"Invoked Next Match on table: "<<tableToSearch<<endl;);
-			searcher->nextMatch(index_current_atom,templateAtom,current_assignment,atomFound,isDone);
+			searcher->nextMatch(index_current_atom,templateAtom,current_assignment,atomFound);
 		}
 		else{
 			trace_action_tag(grounding,2,cerr<<"Invoked First Match on table: "<<tableToSearch<<endl;);
@@ -230,18 +230,11 @@ bool BackTrackingGrounder::nextMatch(){
 			trace_action_tag(grounding,1,cerr<<"Match OK: ";atomFound->print(cerr);cerr<<endl;);
 			substiteInGroundRule(index_current_atom,atomFound);
 			ground_rule->setAtomToSimplifyInBody(index_current_atom,!undef);
-			if(isDone){
-				current_id_match[index_current_atom][current_table].second = NO_MATCH;
-				current_id_match_iterator[index_current_atom]=++current_table;
-				isDone=false;
-			}
-			else
-				current_id_match[index_current_atom][current_table].second = MATCH;
+			current_id_match[index_current_atom][current_table].second = MATCH;
 			return find;
 		}
 		current_id_match[index_current_atom][current_table].second = NO_MATCH;
 		current_id_match_iterator[index_current_atom]=++current_table;
-		isDone=false;
 	}
 	current_id_match_iterator[index_current_atom]=0;
 
@@ -371,7 +364,6 @@ bool BackTrackingGrounder::back() {
 }
 
 void BackTrackingGrounder::inizialize(Rule* rule) {
-	isDone=false;
 	direction=1;
 	currentRule=rule;
 	index_current_atom = 0;
@@ -573,8 +565,7 @@ bool BackTrackingGrounder::groundAggregate() {
 
 				if(result!=UNDEF || atom->isGround())break;
 
-				bool isDone=false;
-				searcher->nextMatch(index_current_atom,atom,current_assignment,atomFound,isDone);
+				searcher->nextMatch(index_current_atom,atom,current_assignment,atomFound);
 				find=(atomFound!=nullptr);
 			}
 		}

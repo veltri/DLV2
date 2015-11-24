@@ -94,7 +94,6 @@ void BaseAtomSearcher::firstMatch(unsigned id,Atom *templateAtom, var_assignment
 	if(computeMatch(currentMatch,templateAtom,currentAssignment,atomFound)){
 		delete resultVector[id];
 		resultVector[id]=currentMatch;
-		currentMatch->next();
 		return;
 	}
 	delete currentMatch;
@@ -112,11 +111,11 @@ bool BaseAtomSearcher::computeMatch(GeneralIterator* currentMatch, Atom *templat
 	return false;
 }
 
-void BaseAtomSearcher::nextMatch(unsigned int id, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound, bool& isDone) {
+void BaseAtomSearcher::nextMatch(unsigned int id, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound) {
 	GeneralIterator* currentMatch=resultVector[id];
-	computeMatch(currentMatch,templateAtom,currentAssignment,atomFound);
 	currentMatch->next();
-	isDone=currentMatch->isDone();
+	computeMatch(currentMatch,templateAtom,currentAssignment,atomFound);
+
 }
 
 Atom* BaseAtomSearcher::findGroundAtom(Atom *atom){

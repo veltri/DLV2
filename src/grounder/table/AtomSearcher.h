@@ -85,7 +85,7 @@ public:
 	virtual void firstMatch(unsigned id,Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound)=0;
 	/// This method implementation is demanded to sub-classes.
 	/// It is used to get the further matching atoms one by one each time it is invoked.
-	virtual void nextMatch(unsigned id, Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound, bool& isDone)=0;
+	virtual void nextMatch(unsigned id, Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound)=0;
 	/// This method implementation is demanded to sub-classes.
 	/// It have to find if the given atom exist and returns it, else returns nullptr.
 	virtual Atom* findGroundAtom(Atom *atom)=0;
@@ -134,7 +134,7 @@ public:
 	};
 
 	virtual void firstMatch(unsigned id,Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound);
-	virtual void nextMatch(unsigned id, Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound, bool& isDone);
+	virtual void nextMatch(unsigned id, Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound);
 	virtual Atom* findGroundAtom(Atom *atom);
 	virtual void add(Atom* atom){};
 	virtual void remove(Atom* atom){};
@@ -168,9 +168,9 @@ public:
 //		indexingTermSetByUser = Options::globalOptions()->getPredicateIndexTerm(this->predicate->getName());
 //		if(indexingTermSetByUser>=0)
 //			assert_msg(unsigned(indexingTermSetByUser)<this->predicate->getArity(), "The specified index for the predicate \""+(this->predicate)->getName()+"\" is not valid.");
-#ifdef DEBUG_ATOM_SEARCHER
-		cout<<"Predicate: "<<predicate->getName()<<"  Index Term Set By User: "<<indexingTermSetByUser<<endl;
-#endif
+//#ifdef DEBUG_ATOM_SEARCHER
+//		cout<<"Predicate: "<<predicate->getName()<<"  Index Term Set By User: "<<indexingTermSetByUser<<endl;
+//#endif
 		};
 	///This method chooses the best indexing term among the one allowed.
 	virtual unsigned int selectBestIndex(const vector<pair<int,index_object>>& possibleTableToSearch) = 0;
@@ -321,9 +321,9 @@ public:
 //		indexingTermSetByUser = Options::globalOptions()->getPredicateIndexTerm(this->predicate->getName());
 //		if(indexingTermSetByUser>=0)
 //			assert_msg(unsigned(indexingTermSetByUser)<this->predicate->getArity(), "The specified index for the predicate \""+(this->predicate)->getName()+"\" is not valid.");
-#ifdef DEBUG_ATOM_SEARCHER
-		cout<<"Predicate: "<<predicate->getName()<<"  Index Term Set By User: "<<indexingTermSetByUser<<endl;
-#endif
+//#ifdef DEBUG_ATOM_SEARCHER
+//		cout<<"Predicate: "<<predicate->getName()<<"  Index Term Set By User: "<<indexingTermSetByUser<<endl;
+//#endif
 	};
 
 	virtual Atom* findGroundAtom(Atom *atom);
