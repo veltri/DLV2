@@ -426,7 +426,7 @@ void AggregateAtom::print(ostream& stream) {
 	if(negative)
 		stream<<"not ";
 	if(firstGuard!=nullptr){
-		firstGuard->print();
+		firstGuard->print(stream);
 		stream<<getBinopToStrng(firstBinop);
 	}
 	stream<<"#";
@@ -451,7 +451,7 @@ void AggregateAtom::print(ostream& stream) {
 		stream<<":";first=true;
 		for(auto& naf:element->getNafLiterals()){
 			if(!first)stream<<",";else first=false;
-			naf->print();
+			naf->print(stream);
 		}
 		first=true;
 	}
@@ -540,6 +540,7 @@ void AggregateAtom::changeInStandardFormat() {
 }
 
 set_term AggregateAtom::getSharedVariable(vector<Atom*>::iterator begin,vector<Atom*>::iterator end,bool alsoGuards) {
+	//TODO Check if guards are considered
 	set_term sharedTerms;
 	if(alsoGuards && (negative || firstBinop!=EQUAL))
 		sharedTerms=getGuardVariable();

@@ -24,7 +24,10 @@ public:
 	/// This method assigns to each remained atom (to be added in the sorted body) a weight,
 	/// and returns the iterator to the atom with the best weight.
 	/// It is virtual pure, because it has to be defined in each concrete class.
-	virtual list<unsigned>::iterator assignWeights(Rule* rule, list<unsigned>& atomsToInsert,set_term& variableInTheBody) = 0;
+	virtual list<unsigned>::iterator assignWeights(Rule* rule, list<unsigned>& atomsToInsert, set_term& variableInTheBody) = 0;
+
+
+	virtual bool isBound(Atom* atom, Rule* rule, set_term& variableInTheBody);
 };
 
 class AllOrderRuleGroundable : public OrderRuleGroundable{
@@ -34,9 +37,16 @@ public:
 
 	virtual double assignWeightPositiveClassicalLit(Atom* atom){return 0;};
 	virtual double assignWeightNegativeClassicalLit(Atom* atom){return 1;};
-	virtual double assignWeightAggregateAtom(Atom* atom){if(atom->isAssignment()) return 0; return 2;};
-	virtual double assignWeightBuiltInAtom(Atom* atom){if(atom->isAssignment()) return 0; return 3;};
-	virtual bool isBound(set_term& variableInTheBody, Atom* atom);
+	virtual double assignWeightBuiltInAtom(Atom* atom){return 2;};
+	virtual double assignWeightAggregateAtom(Atom* atom){return 3;};
+};
+
+class CombinedCriterion : public AllOrderRuleGroundable {
+public:
+	virtual double assignWeightPositiveClassicalLit(Atom* atom);
+	virtual double assignWeightNegativeClassicalLit(Atom* atom);
+	virtual double assignWeightAggregateAtom(Atom* atom);
+	virtual double assignWeightBuiltInAtom(Atom* atom);
 };
 
 }}

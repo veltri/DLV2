@@ -77,8 +77,6 @@ vector<unsigned> OrderRuleGroundable::order(Rule* rule,vector<vector<unsigned>>&
 
 }
 
-
-
 void OrderRuleGroundable::order(Rule* rule, vector<vector<unsigned> >& predicate_searchInsert_table, vector<unsigned>& originalOrderBody) {
 	vector<unsigned> orderedPositions=order(rule,predicate_searchInsert_table);
 	vector<unsigned> newOriginalOrderBody;
@@ -90,17 +88,59 @@ void OrderRuleGroundable::order(Rule* rule, vector<vector<unsigned> >& predicate
 	originalOrderBody=newOriginalOrderBody;
 }
 
+bool OrderRuleGroundable::isBound(Atom* atom, Rule* rule, set_term& variableInTheBody) {
+	if(atom->isBuiltIn() && atom->isAssignment()){
+		Term* firstTerm=atom->getTerm(0);
+		set_term varsFirst;
+		firstTerm->getVariable(varsFirst);
+
+		bool firstContained;
+		if(varsFirst.empty())
+			firstContained=true;
+		else
+			firstContained = Utils::isContained(varsFirst,variableInTheBody);
+		if(varsFirst.size()>1 &&  !firstContained)
+			return false;
+
+		Term* secondTerm=atom->getTerm(1);
+		set_term varsSecond;
+		secondTerm->getVariable(varsSecond);
+		bool secondContained;
+		if(varsSecond.empty())
+			secondContained=true;
+		else
+			secondContained = Utils::isContained(varsSecond,variableInTheBody);
+		if(firstContained && secondContained)
+			atom->setAssignment(false);
+		if(secondContained || firstContained)
+			return true;
+		return false;
+	}
+	else if(atom->isAggregateAtom()){
+		set_term variables=atom->getSharedVariable(rule->getBeginBody(),rule->getEndBody(),!atom->isAssignment());
+		if(atom->isAssignment())
+			variables.erase(atom->getFirstGuard());
+		return Utils::isContained(variables,variableInTheBody);
+	}
+	set_term variables=atom->getVariable();
+	return Utils::isContained(variables,variableInTheBody);
+
+}
+
+
+
+
 list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(Rule* rule, list<unsigned>& atomsToInsert, set_term& variableInTheBody) {
 	int bestWeight=INT_MAX;
 	list<unsigned>::iterator bestAtomIt;
 	for(list<unsigned>::iterator it=atomsToInsert.begin();it!=atomsToInsert.end();++it){
 		Atom* atom=rule->getAtomInBody(*it);
-		double weight=-1;
+		double weight=INT_MAX;
 
 		if(atom->isClassicalLiteral() && !atom->isNegative()){
 			weight=assignWeightPositiveClassicalLit(atom);
 		}
-		else if(!isBound(variableInTheBody,atom)){
+		else if(isBound(atom,rule,variableInTheBody)){
 			if(atom->isClassicalLiteral() && atom->isNegative()){
 				weight=assignWeightNegativeClassicalLit(atom);
 			}
@@ -111,6 +151,8 @@ list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(Rule* rule, list<
 				weight=assignWeightAggregateAtom(atom);
 			}
 		}
+//		else
+//			continue;
 
 		if(weight<bestWeight){
 			bestWeight=weight;
@@ -118,13 +160,9 @@ list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(Rule* rule, list<
 		}
 	}
 	return bestAtomIt;
-
 }
 
-bool AllOrderRuleGroundable::isBound(set_term& variableInTheBody, Atom* atom) {
-	set_term variables=atom->getVariable(); //TODO check aggregate
-	return Utils::isContained(variables,variableInTheBody);
-}
+
 
 }
 }
