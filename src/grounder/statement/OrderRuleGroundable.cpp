@@ -84,7 +84,7 @@ void OrderRuleGroundable::order(Rule* rule, vector<vector<unsigned> >& predicate
 	originalOrderBody=newOriginalOrderBody;
 }
 
-list<unsigned>::iterator SimpleOrderRuleGroundable::assignWeights(Rule* rule, list<unsigned>& atomsToInsert) {
+list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(Rule* rule, list<unsigned>& atomsToInsert) {
 	int bestWeight=INT_MAX;
 	list<unsigned>::iterator bestAtomIt;
 	for(list<unsigned>::iterator it=atomsToInsert.begin();it!=atomsToInsert.end();++it){

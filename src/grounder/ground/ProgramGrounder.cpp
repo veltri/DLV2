@@ -112,7 +112,7 @@ void ProgramGrounder::ground() {
 			if(nonGroundSimplificator.simplifyRule(rule) || inizializeSearchInsertPredicate(rule))
 				continue;
 			trace_action_tag(grounding,1,cerr<<"Grounding Exit Rule: ";rule->print(cerr););
-			SimpleOrderRuleGroundable orderRuleGroundable;
+			AllOrderRuleGroundable orderRuleGroundable;
 			orderRuleGroundable.order(rule,predicate_searchInsert_table);
 			groundRule(rule);
 
@@ -147,7 +147,7 @@ void ProgramGrounder::ground() {
 				trace_action_tag(grounding,2,printTableInRule(rule,predicate_searchInsert_table););
 
 				findRecursivePredicatesInComponentRules(componentPredicateInHead[component], recursivePredicatesPositions[i], rule, originalOrderBody[i]);
-				SimpleOrderRuleGroundable orderRuleGroundable;
+				AllOrderRuleGroundable orderRuleGroundable;
 				orderRuleGroundable.order(rule,predicate_searchInsert_table,originalOrderBody[i]);
 				if(groundRule(rule))
 					found_something=true;
@@ -178,7 +178,7 @@ void ProgramGrounder::ground() {
 						trace_msg(grounding,1,"At this iteration the tables to search in  are: ");
 						trace_action_tag(grounding,2,printTableInRule(rule,predicate_searchInsert_table););
 
-						SimpleOrderRuleGroundable orderRuleGroundable;
+						AllOrderRuleGroundable orderRuleGroundable;
 						orderRuleGroundable.order(rule,predicate_searchInsert_table,originalOrderBody[i]);
 						if (groundRule(rule))
 							found_something = true;
@@ -205,7 +205,7 @@ void ProgramGrounder::ground() {
 			if(nonGroundSimplificator.simplifyRule(rule) || inizializeSearchInsertPredicate(rule))
 				continue;
 			try{
-				SimpleOrderRuleGroundable orderRuleGroundable;
+				AllOrderRuleGroundable orderRuleGroundable;
 				orderRuleGroundable.order(rule,predicate_searchInsert_table);
 				groundRule(rule);
 				trace_action_tag(grounding,1,cerr<<"Grounding Constraint Rule: ";rule->print(cerr););
@@ -225,7 +225,7 @@ void ProgramGrounder::ground() {
 				if(nonGroundSimplificator.simplifyRule(rule) || inizializeSearchInsertPredicate(rule))
 					continue;
 				try{
-					SimpleOrderRuleGroundable orderRuleGroundable;
+					AllOrderRuleGroundable orderRuleGroundable;
 					orderRuleGroundable.order(rule,predicate_searchInsert_table);
 					groundRule(rule);
 					trace_action_tag(grounding,1,cerr<<"Grounding Constraint Rule: ";rule->print(cerr););
