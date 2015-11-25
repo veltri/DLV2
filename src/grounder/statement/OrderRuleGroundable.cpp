@@ -9,6 +9,7 @@
 #include <list>
 #include "../../util/Trace.h"
 #include "../../util/Options.h"
+#include "../../util/Utils.h"
 
 namespace DLV2 {
 namespace grounder {
@@ -24,6 +25,8 @@ vector<unsigned> OrderRuleGroundable::order(Rule* rule,vector<vector<unsigned>>&
 
 	vector<vector<unsigned>> orderdedPredicateSearchInsertTable;
 	orderdedPredicateSearchInsertTable.reserve(predicate_searchInsert_table.size());
+
+	set_term variablesInBody;
 
 	unsigned sizeHead=predicate_searchInsert_table.size()-sizeBody;
 
@@ -46,10 +49,13 @@ vector<unsigned> OrderRuleGroundable::order(Rule* rule,vector<vector<unsigned>>&
 	);
 
 	while(!atomsToInsert.empty()){
-		list<unsigned>::iterator bestAtom=assignWeights(rule,atomsToInsert);
+		list<unsigned>::iterator bestAtom=assignWeights(rule,atomsToInsert,variablesInBody);
 		orderdedPredicateSearchInsertTable.push_back(predicate_searchInsert_table[sizeHead+*bestAtom]);
-		orderedBody.push_back(rule->getAtomInBody((*bestAtom)));
+		Atom* atom=rule->getAtomInBody((*bestAtom));
+		orderedBody.push_back(atom);
 		orderedPositions.push_back(*bestAtom);
+		set_term variables=atom->getVariable();
+		variablesInBody.insert(variables.begin(),variables.end());
 		atomsToInsert.erase(bestAtom);
 	}
 
@@ -84,30 +90,26 @@ void OrderRuleGroundable::order(Rule* rule, vector<vector<unsigned> >& predicate
 	originalOrderBody=newOriginalOrderBody;
 }
 
-list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(Rule* rule, list<unsigned>& atomsToInsert) {
+list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(Rule* rule, list<unsigned>& atomsToInsert, set_term& variableInTheBody) {
 	int bestWeight=INT_MAX;
 	list<unsigned>::iterator bestAtomIt;
 	for(list<unsigned>::iterator it=atomsToInsert.begin();it!=atomsToInsert.end();++it){
 		Atom* atom=rule->getAtomInBody(*it);
-		int weight=-1;
+		double weight=-1;
 
 		if(atom->isClassicalLiteral() && !atom->isNegative()){
-			weight=0;
+			weight=assignWeightPositiveClassicalLit(atom);
 		}
-		else if(atom->isClassicalLiteral() && atom->isNegative()){
-			weight=1;
-		}
-		else if(atom->isBuiltIn()){
-			if(atom->isAssignment())
-				weight=0;
-			else
-				weight=2;
-		}
-		else if(atom->isAggregateAtom()){
-			if(atom->isAssignment())
-				weight=0;
-			else
-				weight=3;
+		else if(!isBound(variableInTheBody,atom)){
+			if(atom->isClassicalLiteral() && atom->isNegative()){
+				weight=assignWeightNegativeClassicalLit(atom);
+			}
+			else if(atom->isBuiltIn()){
+				weight=assignWeightBuiltInAtom(atom);
+			}
+			else if(atom->isAggregateAtom()){
+				weight=assignWeightAggregateAtom(atom);
+			}
 		}
 
 		if(weight<bestWeight){
@@ -117,6 +119,11 @@ list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(Rule* rule, list<
 	}
 	return bestAtomIt;
 
+}
+
+bool AllOrderRuleGroundable::isBound(set_term& variableInTheBody, Atom* atom) {
+	set_term variables=atom->getVariable(); //TODO check aggregate
+	return Utils::isContained(variables,variableInTheBody);
 }
 
 }
