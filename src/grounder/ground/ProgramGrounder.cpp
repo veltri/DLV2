@@ -15,6 +15,7 @@
 #include "../../util/Utils.h"
 #include "../../util/Options.h"
 #include "../../util/Trace.h"
+#include "../statement/OrderRuleGroundable.h"
 
 
 
@@ -111,6 +112,8 @@ void ProgramGrounder::ground() {
 			if(nonGroundSimplificator.simplifyRule(rule) || inizializeSearchInsertPredicate(rule))
 				continue;
 			trace_action_tag(grounding,1,cerr<<"Grounding Exit Rule: ";rule->print(cerr););
+			SimpleOrderRuleGroundable orderRuleGroundable;
+			orderRuleGroundable.order(rule,rule->getBody(),predicate_searchInsert_table);
 			groundRule(rule);
 
 #ifdef DEBUG_RULE_TIME

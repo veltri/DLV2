@@ -46,7 +46,7 @@ public:
 		statementDependency(StatementDependency::getInstance()), termsMap(TermTable::getInstance()),outputBuilder(OutputBuilder::getInstance()){
 	};
 
-	///This method executes the overall grounding process
+	/// This method executes the overall grounding process
 	virtual void ground();
 
 	/// This method executes the grounding of a rule
@@ -58,7 +58,7 @@ public:
 	///Printer method
 	void print() {	statementDependency->print();};
 
-	//Printer method for facts
+	/// Printer method for facts
 	void printFact() {	predicateExtTable->print(FACT);};
 
 	/// Return the InstanceTable
