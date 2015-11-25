@@ -16,14 +16,15 @@ namespace grounder {
 class OrderRuleGroundable {
 public:
 	virtual ~OrderRuleGroundable(){};
-	void order(Rule* rule,const vector<Atom*>& ruleBody,vector<vector<unsigned>>& predicate_searchInsert_table);
-	virtual list<unsigned>::iterator assignWeights(const vector<Atom*>& ruleBody, list<unsigned>& atomsToInsert) = 0;
+	vector<unsigned> order(Rule* rule, vector<vector<unsigned>>& predicate_searchInsert_table);
+	void order(Rule* rule, vector<vector<unsigned>>& predicate_searchInsert_table, vector<unsigned>& originalOrderBody);
+	virtual list<unsigned>::iterator assignWeights(Rule* rule, list<unsigned>& atomsToInsert) = 0;
 };
 
 class SimpleOrderRuleGroundable : public OrderRuleGroundable{
 public:
 	virtual ~SimpleOrderRuleGroundable(){};
-	virtual list<unsigned>::iterator assignWeights(const vector<Atom*>& ruleBody, list<unsigned>& atomsToInsert);
+	virtual list<unsigned>::iterator assignWeights(Rule* rule, list<unsigned>& atomsToInsert);
 };
 
 }}
