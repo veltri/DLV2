@@ -168,7 +168,11 @@ void OrderRule::computeAtomsVariables() {
 		if (!atom->isAggregateAtom())
 			mapAtomsVariables.insert( { i, atom->getVariable() });
 		else{
-			mapAtomsVariables.insert( { i, atom->getSharedVariable(rule->getBeginBody(),rule->getEndBody(),true) });
+			mapAtomsVariables.insert( { i, atom->getSharedVariable(rule->getBeginBody(),rule->getEndBody()) });
+			if(atom->isNegative() || atom->getFirstBinop()!=EQUAL){
+				set_term guards=atom->getGuardVariable();
+				mapAtomsVariables[i].insert(guards.begin(),guards.end());
+			}
 		}
 	}
 }

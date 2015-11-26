@@ -224,7 +224,7 @@ public:
 	 ///The function return true if we can simplify and set alwaysTrue true if the aggregate is always true else false if is always false
 	virtual bool checkAggregateCountNegativeGuard(bool& alwaysTrue)const{return false;};
 
-	virtual set_term getSharedVariable(vector<Atom*>::iterator begin,vector<Atom*>::iterator end,bool alsoGuards){return set_term();};
+	virtual set_term getSharedVariable(vector<Atom*>::iterator begin,vector<Atom*>::iterator end){return set_term();};
 	/// Set the aggregate atom to standard format:
 	/// - if it has an EQUAL binop, its first binop is set to EQUAL
 	/// - else the first binop is LESS_EQUAL and the second LESS

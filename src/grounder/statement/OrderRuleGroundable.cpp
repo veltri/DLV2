@@ -23,8 +23,11 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<unsigned>>& predicate_
 	atomsVariables.resize(sizeBody);
 	for(unsigned i=0;i<sizeBody;i++){
 		Atom* atom=rule->getAtomInBody(i);
-		if(atom->isAggregateAtom())
-			atomsVariables[i]=atom->getSharedVariable(rule->getBeginBody(),rule->getEndBody(),true);
+		if(atom->isAggregateAtom()){
+			atomsVariables[i]=atom->getSharedVariable(rule->getBeginBody(),rule->getEndBody());
+			set_term guards=atom->getGuardVariable();
+			atomsVariables[i].insert(guards.begin(),guards.end());
+		}
 		else
 			atomsVariables[i]=atom->getVariable();
 	}
@@ -126,8 +129,11 @@ bool OrderRuleGroundable::isBound(Atom* atom, unsigned orginalPosition) {
 		return false;
 	}
 	else if(atom->isAggregateAtom()){
-		set_term variables=atom->getSharedVariable(rule->getBeginBody(),rule->getEndBody(),!atom->isAssignment());
-		if(atom->isAssignment())
+		set_term variables=atom->getSharedVariable(rule->getBeginBody(),rule->getEndBody());
+		set_term guards=atom->getGuardVariable();
+		if(!atom->isAssignment())
+			variables.insert(guards.begin(),guards.end());
+		else
 			variables.erase(atom->getFirstGuard());
 		return Utils::isContained(variables,variablesInTheBody);
 	}
@@ -139,7 +145,7 @@ bool OrderRuleGroundable::isBound(Atom* atom, unsigned orginalPosition) {
 
 list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(list<unsigned>& atomsToInsert) {
 	double bestWeight=INT_MAX;
-	list<unsigned>::iterator bestAtomIt;
+	list<unsigned>::iterator bestAtomIt=atomsToInsert.begin();
 	for(list<unsigned>::iterator it=atomsToInsert.begin();it!=atomsToInsert.end();++it){
 		Atom* atom=rule->getAtomInBody(*it);
 		double weight=INT_MAX;
@@ -158,8 +164,8 @@ list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(list<unsigned>& a
 				weight=assignWeightAggregateAtom(atom,*it);
 			}
 		}
-//		else
-//			continue;
+		else
+			continue;
 
 		if(weight<bestWeight){
 			bestWeight=weight;

@@ -183,7 +183,7 @@ public:
 	virtual bool isAssignment(){return assignment;};
 	virtual void setAssignment(bool assignment){this->assignment=assignment;};
 
-	set_term getSharedVariable(vector<Atom*>::iterator begin,vector<Atom*>::iterator end,bool alsoGuards);
+	set_term getSharedVariable(vector<Atom*>::iterator begin,vector<Atom*>::iterator end);
 
 	virtual void getUnsolvedPredicateVariable(set_term& vars);
 

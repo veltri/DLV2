@@ -539,11 +539,11 @@ void AggregateAtom::changeInStandardFormat() {
 //	}
 }
 
-set_term AggregateAtom::getSharedVariable(vector<Atom*>::iterator begin,vector<Atom*>::iterator end,bool alsoGuards) {
+set_term AggregateAtom::getSharedVariable(vector<Atom*>::iterator begin,vector<Atom*>::iterator end) {
 	//TODO Check if guards are considered
 	set_term sharedTerms;
-	if(alsoGuards && (negative || firstBinop!=EQUAL))
-		sharedTerms=getGuardVariable();
+//	if(alsoGuards && (negative || firstBinop!=EQUAL))
+//		sharedTerms=getGuardVariable();
 	set_term terms=getVariable();
 	for(auto atom=begin;atom!=end;++atom){
 		Atom* current_atom=*atom;
@@ -566,7 +566,11 @@ set_term AggregateAtom::getSharedVariable(vector<Atom*>::iterator begin,vector<A
 }
 
 bool AggregateAtom::isAllAggregateTermShared(vector<Atom*>::iterator begin,vector<Atom*>::iterator end) {
-	set_term shared_variable=getSharedVariable(begin,end,false);
+	set_term shared_variable=getSharedVariable(begin,end);
+	if(negative || firstBinop!=EQUAL){
+		set_term guards=getGuardVariable();
+		shared_variable.insert(guards.begin(),guards.end());
+	}
 	for(auto element:aggregateElements){
 		if(!element->isAllAggregateTermShared(shared_variable))
 			return false;
