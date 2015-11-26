@@ -14,6 +14,8 @@
 namespace DLV2 {
 namespace grounder {
 
+
+
 /****************************************** OrderRuleGroundable ***********************************************/
 
 vector<unsigned> OrderRuleGroundable::order(vector<vector<unsigned>>& predicate_searchInsert_table) {

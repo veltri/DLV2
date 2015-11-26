@@ -103,6 +103,9 @@ namespace grounder{
 	#define ARRAY_SIZE 64
 	#define ATOMS_IN_RULE 32
 
+	#define NO_POSITIVE_ORDERING 0
+	#define COMBINED_POSITIVE_ORDERING 1
+
 	typedef unsigned index_object;
 
 };

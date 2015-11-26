@@ -14,6 +14,8 @@
 namespace DLV2 {
 namespace grounder {
 
+
+
 class OrderRuleGroundable {
 public:
 	OrderRuleGroundable(Rule* rule):predicateExtTable(PredicateExtTable::getInstance()),rule(rule){}
@@ -65,6 +67,30 @@ private:
 	void updateVariableSelectivity(Atom* atomAdded);
 	map_term<unsigned> variablesDomains;
 	map_term<double> variablesSelectivities;
+
+};
+
+
+/**
+ * Return the instance of OrderRuleGroundable based on the Option parameter
+ */
+
+class OrderRuleGroundableFactory{
+public:
+	static OrderRuleGroundable* getInstance(Rule *rule){
+		switch (Options::globalOptions()->getPositiveOrderingProcedure()) {
+			case NO_POSITIVE_ORDERING:
+				return	nullptr;
+				break;
+			case COMBINED_POSITIVE_ORDERING:
+				return	new CombinedCriterion(rule);
+				break;
+
+			default:
+				return	new CombinedCriterion(rule);
+				break;
+		}
+	}
 
 };
 

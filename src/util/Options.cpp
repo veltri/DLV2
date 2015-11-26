@@ -66,6 +66,7 @@ namespace DLV2
 #define OPTIONID_outputFormat ('z' + 40)
 #define OPTIONID_textual ('z' + 41)
 #define OPTIONID_instantiationProcedure ('z' + 42)
+#define OPTIONID_positiveOrderingProcedure ('z' + 43)
 
 
 };
@@ -116,7 +117,8 @@ Options::Options():
 		printRewrittenProgram(false),
 		rewritingType(NATIVE_CHOICE),
 		outputFormat(OUTPUT_NUMERIC),
-		instantiationProcedure(BACKJUMPING)
+		instantiationProcedure(BACKJUMPING),
+		positiveOrderingProcedure(COMBINED_POSITIVE_ORDERING)
 {
 
 }
@@ -137,7 +139,8 @@ Options::Options(
 		printRewrittenProgram(o.printRewrittenProgram),
 		rewritingType(o.rewritingType),
 		outputFormat(o.outputFormat),
-		instantiationProcedure(o.instantiationProcedure)
+		instantiationProcedure(o.instantiationProcedure),
+		positiveOrderingProcedure(COMBINED_POSITIVE_ORDERING)
 
 {
 
@@ -189,6 +192,7 @@ Options::init(
 		{"outputformat",required_argument, NULL, OPTIONID_outputFormat},
 		{"t",no_argument, NULL, OPTIONID_textual},
 		{"instantiate",required_argument, NULL, OPTIONID_instantiationProcedure},
+		{"positiveOrdering",required_argument, NULL, OPTIONID_positiveOrderingProcedure},
 
         // Required at end of array. 
         { NULL, 0, NULL, 0 }
@@ -309,6 +313,10 @@ Options::init(
 
             case OPTIONID_instantiationProcedure:
             	instantiationProcedure=atoi(optarg);
+				break;
+
+            case OPTIONID_positiveOrderingProcedure:
+            	positiveOrderingProcedure=atoi(optarg);
 				break;
 
             default:

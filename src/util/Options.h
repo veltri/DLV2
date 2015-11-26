@@ -106,6 +106,10 @@ namespace DLV2
 			return instantiationProcedure;
 		}
 
+		unsigned getPositiveOrderingProcedure() const {
+			return positiveOrderingProcedure;
+		}
+
     private:
 
         static Options* instance;
@@ -169,6 +173,8 @@ namespace DLV2
     	unsigned outputFormat;
 
     	unsigned instantiationProcedure;
+
+    	unsigned positiveOrderingProcedure;
     };
     
 };

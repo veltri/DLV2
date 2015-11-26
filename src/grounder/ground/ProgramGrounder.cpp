@@ -78,6 +78,22 @@ void ProgramGrounder::findRecursivePredicatesInComponentRules(const unordered_se
 	}
 }
 
+void ProgramGrounder::orderPositiveAtomsBody(vector<unsigned>& originalOrderBody,Rule* rule) {
+	OrderRuleGroundable* orderRuleGroundable = OrderRuleGroundableFactory::getInstance(rule);
+	if (orderRuleGroundable != nullptr) {
+		orderRuleGroundable->order(predicate_searchInsert_table,originalOrderBody);
+		delete orderRuleGroundable;
+	}
+}
+
+void ProgramGrounder::orderPositiveAtomsBody(Rule* rule) {
+	OrderRuleGroundable* orderRuleGroundable = OrderRuleGroundableFactory::getInstance(rule);
+	if (orderRuleGroundable != nullptr) {
+		orderRuleGroundable->order(predicate_searchInsert_table);
+		delete orderRuleGroundable;
+	}
+}
+
 void ProgramGrounder::ground() {
 
 	//Create the dependency graph
@@ -112,8 +128,7 @@ void ProgramGrounder::ground() {
 			if(nonGroundSimplificator.simplifyRule(rule) || inizializeSearchInsertPredicate(rule))
 				continue;
 			trace_action_tag(grounding,1,cerr<<"Grounding Exit Rule: ";rule->print(cerr););
-			CombinedCriterion orderRuleGroundable(rule);
-			orderRuleGroundable.order(predicate_searchInsert_table);
+			orderPositiveAtomsBody(rule);
 			groundRule(rule);
 
 #ifdef DEBUG_RULE_TIME
@@ -147,8 +162,7 @@ void ProgramGrounder::ground() {
 				trace_action_tag(grounding,2,printTableInRule(rule,predicate_searchInsert_table););
 
 				findRecursivePredicatesInComponentRules(componentPredicateInHead[component], recursivePredicatesPositions[i], rule, originalOrderBody[i]);
-				CombinedCriterion orderRuleGroundable(rule);
-				orderRuleGroundable.order(predicate_searchInsert_table,originalOrderBody[i]);
+				orderPositiveAtomsBody(originalOrderBody[i], rule);
 				if(groundRule(rule))
 					found_something=true;
 
@@ -178,8 +192,7 @@ void ProgramGrounder::ground() {
 						trace_msg(grounding,1,"At this iteration the tables to search in  are: ");
 						trace_action_tag(grounding,2,printTableInRule(rule,predicate_searchInsert_table););
 
-						CombinedCriterion orderRuleGroundable(rule);
-						orderRuleGroundable.order(predicate_searchInsert_table,originalOrderBody[i]);
+						orderPositiveAtomsBody(originalOrderBody[i],rule);
 						if (groundRule(rule))
 							found_something = true;
 
@@ -205,8 +218,7 @@ void ProgramGrounder::ground() {
 			if(nonGroundSimplificator.simplifyRule(rule) || inizializeSearchInsertPredicate(rule))
 				continue;
 			try{
-				CombinedCriterion orderRuleGroundable(rule);
-				orderRuleGroundable.order(predicate_searchInsert_table);
+				orderPositiveAtomsBody(rule);
 				groundRule(rule);
 				trace_action_tag(grounding,1,cerr<<"Grounding Constraint Rule: ";rule->print(cerr););
 			}
@@ -225,8 +237,7 @@ void ProgramGrounder::ground() {
 				if(nonGroundSimplificator.simplifyRule(rule) || inizializeSearchInsertPredicate(rule))
 					continue;
 				try{
-					CombinedCriterion orderRuleGroundable(rule);
-					orderRuleGroundable.order(predicate_searchInsert_table);
+					orderPositiveAtomsBody(rule);
 					groundRule(rule);
 					trace_action_tag(grounding,1,cerr<<"Grounding Constraint Rule: ";rule->print(cerr););
 				}catch (exception& e){

@@ -59,6 +59,7 @@ namespace DLV2
             std::cout << "--rewritingtype                          - Set the rewriting type of the choice: 0:Native choice with all atoms in the body of the choice; 2:Rewriting with disjunction.3: Native choice avoiding unnecessary atoms in the body. " << std::endl;
             std::cout << "--printRewrite                           - Print the rewrited program." << std::endl;
             std::cout << "--outputformat                           - Set the output format: 0=NUmeric, 1=Textual." << std::endl;
+            std::cout << "--positiveOrdering                       - 0=NO ORDERING, 1=COMBINED." << std::endl;
             std::cout << separator << std::endl;
 
 
