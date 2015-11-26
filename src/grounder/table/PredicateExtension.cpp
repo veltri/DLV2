@@ -149,7 +149,7 @@ void PredicateInformation::update(Atom* atom) {
 			if(t->getConstantValue()<min[i])
 				min[i]=val;
 		}
-//		addInDictionary(i,t);
+		addInDictionary(i,t);
 	}
 }
 
