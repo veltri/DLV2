@@ -14,8 +14,6 @@
 namespace DLV2 {
 namespace grounder {
 
-
-
 /****************************************** OrderRuleGroundable ***********************************************/
 
 vector<unsigned> OrderRuleGroundable::order(vector<vector<unsigned>>& predicate_searchInsert_table) {
@@ -152,12 +150,16 @@ list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(list<unsigned>& a
 		Atom* atom=rule->getAtomInBody(*it);
 		double weight=INT_MAX;
 
-		if(atom->isClassicalLiteral() && !atom->isNegative()){
+		bool bound=isBound(atom,*it);
+		if(!bound && atom->isClassicalLiteral() && !atom->isNegative()){
 			weight=assignWeightPositiveClassicalLit(atom,*it);
 		}
-		else if(isBound(atom,*it)){
-			if(atom->isClassicalLiteral() && atom->isNegative()){
-				weight=assignWeightNegativeClassicalLit(atom,*it);
+		else if(bound){
+			if(atom->isClassicalLiteral()){
+				if(atom->isNegative())
+					weight=assignWeightNegativeClassicalLit(atom,*it);
+				else
+					weight=assignWeightBoundPositiveClassicalLit(atom,*it);
 			}
 			else if(atom->isBuiltIn()){
 				weight=assignWeightBuiltInAtom(atom,*it);
@@ -169,6 +171,10 @@ list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(list<unsigned>& a
 		else
 			continue;
 
+		trace_action_tag(grounding,2,
+			atom->print(cerr);cerr<<" Weight: "<<weight<<endl;
+		);
+
 		if(weight<bestWeight){
 			bestWeight=weight;
 			bestAtomIt=it;
@@ -176,6 +182,9 @@ list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(list<unsigned>& a
 	}
 	//TODO Add all bound atoms all together and avoid the weigh update if no bind atom has been added
 	update(rule->getAtomInBody(*bestAtomIt));
+	trace_action_tag(grounding,2,
+		cerr<<"Chosen atom: ";rule->getAtomInBody(*bestAtomIt)->print(cerr);cerr<<endl;
+	);
 	return bestAtomIt;
 }
 
@@ -264,18 +273,6 @@ double CombinedCriterion::assignWeightPositiveClassicalLit(Atom* atom, unsigned 
 
 	return sel_a*sel_b;
 
-}
-
-double CombinedCriterion::assignWeightNegativeClassicalLit(Atom* atom, unsigned originalPosition) {
-	return -3;
-}
-
-double CombinedCriterion::assignWeightAggregateAtom(Atom* atom, unsigned originalPosition) {
-	return -1;
-}
-
-double CombinedCriterion::assignWeightBuiltInAtom(Atom* atom, unsigned originalPosition) {
-	return -2;
 }
 
 }
