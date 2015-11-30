@@ -73,6 +73,9 @@ public:
 	virtual double assignWeightAggregateAtom(Atom* atom, unsigned originalPosition){return priorities.UNDEFINED_AGGREGATE_ASSIGNMENT;};
 	virtual double assignWeightBuiltInAtom(Atom* atom, unsigned originalPosition){return priorities.BUILT_IN;};
 	virtual void update(Atom* atomAdded){};
+
+private:
+	unsigned computePredicateExtensionSize(unsigned atomPosition, Predicate* p);
 };
 
 class CombinedCriterion : public AllOrderRuleGroundable {

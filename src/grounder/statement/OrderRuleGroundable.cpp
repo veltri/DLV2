@@ -101,7 +101,7 @@ void OrderRuleGroundable::order(vector<vector<unsigned> >& predicate_searchInser
 }
 
 bool OrderRuleGroundable::isBound(Atom* atom, unsigned orginalPosition) {
-	if(atom->isBuiltIn() && atom->isAssignment()){
+	if(atom->isBuiltIn() && atom->getBinop()==Binop::EQUAL){
 		Term* firstTerm=atom->getTerm(0);
 		set_term varsFirst;
 		firstTerm->getVariable(varsFirst);
@@ -122,10 +122,16 @@ bool OrderRuleGroundable::isBound(Atom* atom, unsigned orginalPosition) {
 			secondContained=true;
 		else
 			secondContained = Utils::isContained(varsSecond,variablesInTheBody);
-		if(firstContained && secondContained)
+		if(firstContained && secondContained){
 			atom->setAssignment(false);
-		if(secondContained || firstContained)
 			return true;
+		}
+		if(secondContained || firstContained){
+			if((secondContained && !firstContained && varsFirst.size()==1) || (!secondContained && firstContained && varsSecond.size()==1)){
+				atom->setAssignment(true);
+				return true;
+			}
+		}
 		return false;
 	}
 	else if(atom->isAggregateAtom()){
@@ -141,14 +147,27 @@ bool OrderRuleGroundable::isBound(Atom* atom, unsigned orginalPosition) {
 
 }
 
+unsigned AllOrderRuleGroundable::computePredicateExtensionSize(	unsigned atomPosition, Predicate* p) {
+	unsigned extensionSize = 0;
+	for (auto j : predicate_searchInsert_table[atomPosition + rule->getSizeHead()])
+		extensionSize +=
+				predicateExtTable->getInstance()->getPredicateExt(p)->getPredicateExtentionSize(
+						j);
+	return extensionSize;
+}
+
 /****************************************** AllOrderRuleGroundable ***********************************************/
 
 list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(list<unsigned>& atomsToInsert) {
 	double bestWeight=INT_MAX;
 	list<unsigned>::iterator bestAtomIt=atomsToInsert.begin();
+	unsigned bestAtomExtensionSize=0;
 	for(list<unsigned>::iterator it=atomsToInsert.begin();it!=atomsToInsert.end();++it){
 		Atom* atom=rule->getAtomInBody(*it);
 		double weight=INT_MAX;
+		trace_action_tag(grounding,2,
+			atom->print(cerr);
+		);
 
 		bool bound=isBound(atom,*it);
 		if(!bound && atom->isClassicalLiteral() && !atom->isNegative()){
@@ -171,13 +190,33 @@ list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(list<unsigned>& a
 		else
 			continue;
 
-		trace_action_tag(grounding,2,
-			atom->print(cerr);cerr<<" Weight: "<<weight<<endl;
-		);
+			trace_action_tag(grounding,2,
+				cerr<<" Weight: "<<weight<<endl;
+			);
+
 
 		if(weight<bestWeight){
 			bestWeight=weight;
 			bestAtomIt=it;
+			Predicate* p=rule->getAtomInBody(*bestAtomIt)->getPredicate();
+			if(p!=nullptr)
+				bestAtomExtensionSize = computePredicateExtensionSize(*bestAtomIt, p);
+			else
+				bestAtomExtensionSize = 0;
+		}
+//		 If two atoms have the same weight we prefer the one with the lower extension size
+		else if(weight==bestWeight){
+			Predicate* p=rule->getAtomInBody(*it)->getPredicate();
+			if(p!=nullptr){
+				unsigned extensionSize = computePredicateExtensionSize(*it, p);
+				if(extensionSize<bestAtomExtensionSize)
+				{
+					bestWeight=weight;
+					bestAtomIt=it;
+					bestAtomExtensionSize=extensionSize;
+				}
+			}
+
 		}
 	}
 	//TODO Add all bound atoms all together and avoid the weigh update if no bind atom has been added
@@ -241,9 +280,9 @@ double CombinedCriterion::assignWeightPositiveClassicalLit(Atom* atom, unsigned 
 		sizeTablesToSearch+=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(j);
 
 	double prodSelectivity_a=1;
-	unsigned prodDomains_a=1;
+	long unsigned prodDomains_a=1;
 	double prodSelectivity_b=1;
-	unsigned prodDomains_b=1;
+	long unsigned prodDomains_b=1;
 	for(unsigned i=0;i<atom->getTermsSize();++i){
 		Term* var=atom->getTerm(i);
 		if(var->getType()==TermType::VARIABLE){
