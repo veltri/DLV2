@@ -398,7 +398,7 @@ void printTimeElapsed(clock_t time,ostream& stream){
 bool ProgramGrounder::groundRule(Rule* rule) {
 
 	if (Options::globalOptions()->isPrintRewrittenProgram())
-		{cout<<"RULE: ";rule->print(cout);}
+		{cerr<<"RULE: ";rule->print(cerr);}
 #ifdef DEBUG_GRULE_TIME
 	cerr<<endl<<"RULE ORDERED: \t";rule->print(cerr);
 	clock_t start=Timer::getInstance()->getClock();
