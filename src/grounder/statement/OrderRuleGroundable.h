@@ -86,7 +86,7 @@ public:
 	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
 
 	virtual void update(Atom* atomAdded){updateVariableSelectivity(atomAdded);};
-private:
+protected:
 	void computeVariablesDomains();
 	void updateVariableSelectivity(Atom* atomAdded);
 	map_term<unsigned> variablesDomains;
@@ -94,6 +94,30 @@ private:
 
 };
 
+
+class CombinedCriterion1 : public CombinedCriterion {
+public:
+	CombinedCriterion1(Rule* rule):CombinedCriterion(rule){}
+	CombinedCriterion1(Rule* rule,Priority p):CombinedCriterion(rule,p){}
+	virtual ~CombinedCriterion1(){}
+	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
+};
+
+class CombinedCriterion3 : public CombinedCriterion {
+public:
+	CombinedCriterion3(Rule* rule):CombinedCriterion(rule){}
+	CombinedCriterion3(Rule* rule,Priority p):CombinedCriterion(rule,p){}
+	virtual ~CombinedCriterion3(){}
+	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
+};
+
+class CombinedCriterion4 : public CombinedCriterion {
+public:
+	CombinedCriterion4(Rule* rule):CombinedCriterion(rule){}
+	CombinedCriterion4(Rule* rule,Priority p):CombinedCriterion(rule,p){}
+	virtual ~CombinedCriterion4(){}
+	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
+};
 
 /**
  * Return the instance of OrderRuleGroundable based on the Option parameter

@@ -143,7 +143,7 @@ bool OrderRuleGroundable::isBound(Atom* atom, unsigned orginalPosition) {
 			variables.erase(atom->getFirstGuard());
 		return Utils::isContained(variables,variablesInTheBody);
 	}
-	return Utils::isContained(atomsVariables[orginalPosition],variablesInTheBody);
+	return !(atom->containsAnonymous()) && Utils::isContained(atomsVariables[orginalPosition],variablesInTheBody);
 
 }
 
@@ -159,7 +159,7 @@ unsigned AllOrderRuleGroundable::computePredicateExtensionSize(	unsigned atomPos
 /****************************************** AllOrderRuleGroundable ***********************************************/
 
 list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(list<unsigned>& atomsToInsert) {
-	double bestWeight=INT_MAX;
+	double bestWeight=LLONG_MAX;
 	list<unsigned>::iterator bestAtomIt=atomsToInsert.begin();
 	unsigned bestAtomExtensionSize=0;
 	for(list<unsigned>::iterator it=atomsToInsert.begin();it!=atomsToInsert.end();++it){
@@ -170,7 +170,7 @@ list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(list<unsigned>& a
 		);
 
 		bool bound=isBound(atom,*it);
-		if(!bound && atom->isClassicalLiteral() && !atom->isNegative()){
+		if(atom->isClassicalLiteral() && !atom->isNegative()){
 			weight=assignWeightPositiveClassicalLit(atom,*it);
 		}
 		else if(bound){
@@ -194,7 +194,6 @@ list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(list<unsigned>& a
 				cerr<<" Weight: "<<weight<<endl;
 			);
 
-
 		if(weight<bestWeight){
 			bestWeight=weight;
 			bestAtomIt=it;
@@ -204,7 +203,7 @@ list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(list<unsigned>& a
 			else
 				bestAtomExtensionSize = 0;
 		}
-//		 If two atoms have the same weight we prefer the one with the lower extension size
+//		If two atoms have the same weight we prefer the one with the lower extension size
 		else if(weight==bestWeight){
 			Predicate* p=rule->getAtomInBody(*it)->getPredicate();
 			if(p!=nullptr){
@@ -224,6 +223,7 @@ list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(list<unsigned>& a
 	trace_action_tag(grounding,2,
 		cerr<<"Chosen atom: ";rule->getAtomInBody(*bestAtomIt)->print(cerr);cerr<<endl;
 	);
+
 	return bestAtomIt;
 }
 
@@ -279,9 +279,9 @@ double CombinedCriterion::assignWeightPositiveClassicalLit(Atom* atom, unsigned 
 	for(auto j:predicate_searchInsert_table[originalPosition+rule->getSizeHead()])
 		sizeTablesToSearch+=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(j);
 
-	double prodSelectivity_a=1;
+	long double prodSelectivity_a=1;
 	long unsigned prodDomains_a=1;
-	double prodSelectivity_b=1;
+	long double prodSelectivity_b=1;
 	long unsigned prodDomains_b=1;
 	for(unsigned i=0;i<atom->getTermsSize();++i){
 		Term* var=atom->getTerm(i);
@@ -314,7 +314,82 @@ double CombinedCriterion::assignWeightPositiveClassicalLit(Atom* atom, unsigned 
 
 }
 
-}
+double CombinedCriterion1::assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition) {
+	if(variablesDomains.empty())
+		computeVariablesDomains();
+
+	unsigned sizeTablesToSearch=0;
+	for(auto j:predicate_searchInsert_table[originalPosition+rule->getSizeHead()])
+		sizeTablesToSearch+=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(j);
+
+	long double num1=1;
+	long unsigned  den1=1;
+	long unsigned den2=1;
+	for(unsigned i=0;i<atom->getTermsSize();++i){
+		Term* var=atom->getTerm(i);
+		if(var->getType()==TermType::VARIABLE){
+			if(variablesInTheBody.count(var)){
+				num1*=variablesSelectivities[var]*predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateInformation()->getSelectivity(i);
+				den1=pow(variablesDomains[var],4);
+			}
+			else{
+				for(unsigned j=0;j<rule->getSizeBody();++j){
+					if(j!=originalPosition && atomsVariables[j].count(var)){
+						den2=pow(variablesDomains[var],2);
+						break;
+					}
+				}
+
+			}
+		}
+	}
+	return sizeTablesToSearch*(num1/den1)*(1/den2);
 }
 
+double CombinedCriterion3::assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition) {
+	double sel_c=CombinedCriterion::assignWeightPositiveClassicalLit(atom,originalPosition);
+	long unsigned sel_f=1;
+	for(unsigned i=0;i<atom->getTermsSize();++i){
+		Term* t=atom->getTerm(i);
+		if(t->getType()==TermType::FUNCTION){
+			set_term variablesInFunction;
+			t->getVariable(variablesInFunction);
+			for(auto v:variablesInFunction){
+				if(!variablesInTheBody.count(v)){
+					if(variablesDomains.count(v))
+						sel_f*=variablesDomains[v];
+					else
+						sel_f*=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateInformation()->getSelectivity(i);
+				}
+			}
+		}
+	}
+	return sel_c*sel_f;
+}
+
+double CombinedCriterion4::assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition) {
+	double sel_c=CombinedCriterion::assignWeightPositiveClassicalLit(atom,originalPosition);
+	long unsigned sel_f=0;
+	for(unsigned i=0;i<atom->getTermsSize();++i){
+		Term* t=atom->getTerm(i);
+		if(t->getType()==TermType::FUNCTION){
+			set_term variablesInFunction;
+			t->getVariable(variablesInFunction);
+			for(auto v:variablesInFunction){
+				if(!variablesInTheBody.count(v)){
+					if(variablesDomains.count(v))
+						sel_f+=variablesDomains[v];
+					else
+						sel_f+=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateInformation()->getSelectivity(i);
+				}
+			}
+		}
+	}
+	if(sel_f>0)
+		return sel_c*sel_f;
+	return sel_c;
+}
+
+}
+}
 
