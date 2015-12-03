@@ -99,6 +99,23 @@ void PredicateExtension::swapTables(unsigned tableFrom,unsigned tableTo){
 	seacher_from->clear();
 }
 
+void PredicateExtension::swapPointersTables(unsigned tableFrom, unsigned tableTo) {
+	assert_msg(tableFrom<tables.size(),"The specified table doesn't exist.");
+	assert_msg(tableTo<tables.size(),"The specified table doesn't exist.");
+
+	AtomSearcher *seacher_from=atomSearchers[tableFrom];
+	AtomSearcher *seacher_to=atomSearchers[tableTo];
+	AtomSearcher *searcher_tmp=seacher_from;
+	atomSearchers[tableFrom]=seacher_to;
+	atomSearchers[tableTo]=searcher_tmp;
+
+	AtomVector *table_from=tables[tableFrom];
+	AtomVector *table_to=tables[tableTo];
+	AtomVector *table_tmp=table_from;
+	tables[tableFrom]=table_to;
+	tables[tableTo]=table_tmp;
+}
+
 /****************************************************** PREDICATE EXT TABLE ***************************************************/
 
 PredicateExtTable *PredicateExtTable::predicateExtTable_;
@@ -165,25 +182,12 @@ void PredicateInformation::addInDictionary(unsigned position, Term* term) {
 	termDictionary[position].insert(term);
 }
 
-void PredicateExtension::swapPointersTables(unsigned tableFrom, unsigned tableTo) {
-	assert_msg(tableFrom<tables.size(),"The specified table doesn't exist.");
-	assert_msg(tableTo<tables.size(),"The specified table doesn't exist.");
-
-	AtomSearcher *seacher_from=atomSearchers[tableFrom];
-	AtomSearcher *seacher_to=atomSearchers[tableTo];
-	AtomSearcher *searcher_tmp=seacher_from;
-	atomSearchers[tableFrom]=seacher_to;
-	atomSearchers[tableTo]=searcher_tmp;
-
-	AtomVector *table_from=tables[tableFrom];
-	AtomVector *table_to=tables[tableTo];
-	AtomVector *table_tmp=table_from;
-	tables[tableFrom]=table_to;
-	tables[tableTo]=table_tmp;
+bool PredicateInformation::isPresent(unsigned position, Term* term) const {
+	return termDictionary[position].count(term);
 }
+
 
 
 }
 }
-
 

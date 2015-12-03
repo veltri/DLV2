@@ -393,24 +393,24 @@ void BackTrackingGrounder::findBindVariablesRule() {
 	atoms_bind_variables.clear();
 	atoms_bind_variables.resize(currentRule->getSizeBody());
 
-	map_term<index_object> variableLocalIndex;
+//	map_term<index_object> variableLocalIndex;
 
 	//For each atom determines the bound and the bind variables
 	for (auto current_atom_it = currentRule->getBeginBody(); current_atom_it != currentRule->getEndBody(); ++current_atom_it,++index_current_atom) {
 		Atom *current_atom = *current_atom_it;
 
 		set_term variablesInAtom =current_atom->getVariable();
-		for(auto term:variablesInAtom){
-			auto find=variableLocalIndex.find(term);
-			if(find==variableLocalIndex.end()){
-				variableLocalIndex[term]=variableLocalIndex.size()+1;
-				term->setLocalVariableIndex(variableLocalIndex[term]);
-
-				trace_action_tag(backtracking,1,
-					cerr<<"VARIABLE-INDEX : ";term->print(cerr);cerr<<" = "<<variableLocalIndex[term]<<endl;
-				);
-			}
-		}
+//		for(auto term:variablesInAtom){
+//			auto find=variableLocalIndex.find(term);
+//			if(find==variableLocalIndex.end()){
+//				variableLocalIndex[term]=variableLocalIndex.size()+1;
+//				term->setLocalVariableIndex(variableLocalIndex[term]);
+//
+//				trace_action_tag(backtracking,1,
+//					cerr<<"VARIABLE-INDEX : ";term->print(cerr);cerr<<" = "<<variableLocalIndex[term]<<endl;
+//				);
+//			}
+//		}
 
 		if(current_atom->isAggregateAtom())
 			variablesInAtom=current_atom->getGuardVariable();
@@ -429,7 +429,7 @@ void BackTrackingGrounder::findBindVariablesRule() {
 
 	}
 
-	current_assignment.setSize(variableLocalIndex.size(),nullptr);
+	current_assignment.setSize(variablesSize,nullptr);
 
 	trace_action_tag(backtracking,1,
 		cerr<<"BINDER OF ATOMS: ";int i=0;

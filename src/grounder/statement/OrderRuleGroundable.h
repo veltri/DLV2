@@ -50,6 +50,9 @@ public:
 	virtual list<unsigned>::iterator assignWeights(list<unsigned>& atomsToInsert) = 0;
 
 	virtual bool isBound(Atom* atom, unsigned orginalPosition);
+
+	unsigned getVariablesSize() const {return variablesSize;}
+
 protected:
 	vector<vector<unsigned>> predicate_searchInsert_table;
 	PredicateExtTable* predicateExtTable;
@@ -57,6 +60,9 @@ protected:
 	set_term variablesInTheBody;
 	vector<set_term> atomsVariables;
 	const Priority priorities;
+	unsigned variablesSize;
+
+	void computeDictionaryIntersection(vector<set_term>& dictionaryIntersection, Atom* atom);
 };
 
 class AllOrderRuleGroundable : public OrderRuleGroundable{

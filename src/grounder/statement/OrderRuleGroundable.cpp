@@ -20,6 +20,7 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<unsigned>>& predicate_
 	this->predicate_searchInsert_table=predicate_searchInsert_table;
 	unsigned sizeBody=rule->getSizeBody();
 
+	map_term<index_object> variableLocalIndex;
 	atomsVariables.resize(sizeBody);
 	for(unsigned i=0;i<sizeBody;i++){
 		Atom* atom=rule->getAtomInBody(i);
@@ -30,7 +31,20 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<unsigned>>& predicate_
 		}
 		else
 			atomsVariables[i]=atom->getVariable();
+
+		for(auto term:atom->getVariable()){
+			auto find=variableLocalIndex.find(term);
+			if(find==variableLocalIndex.end()){
+				variableLocalIndex[term]=variableLocalIndex.size()+1;
+				term->setLocalVariableIndex(variableLocalIndex[term]);
+
+				trace_action_tag(backtracking,1,
+					cerr<<"VARIABLE-INDEX : ";term->print(cerr);cerr<<" = "<<variableLocalIndex[term]<<endl;
+				);
+			}
+		}
 	}
+	variablesSize=variableLocalIndex.size();
 
 	vector<Atom*> orderedBody;
 	orderedBody.reserve(sizeBody);
@@ -61,12 +75,17 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<unsigned>>& predicate_
 		cerr<<endl;
 	);
 
+	vector<set_term> dictionaryIntersection;
+	dictionaryIntersection.resize(variableLocalIndex.size()+2);
+
 	while(!atomsToInsert.empty()){
 		list<unsigned>::iterator bestAtom=assignWeights(atomsToInsert);
 		orderdedPredicateSearchInsertTable.push_back(predicate_searchInsert_table[sizeHead+*bestAtom]);
 		Atom* atom=rule->getAtomInBody((*bestAtom));
 		orderedBody.push_back(atom);
 		orderedPositions.push_back(*bestAtom);
+		if(atom->isClassicalLiteral() && !atom->isNegative())
+			computeDictionaryIntersection(dictionaryIntersection,atom);
 		variablesInTheBody.insert(atomsVariables[*bestAtom].begin(),atomsVariables[*bestAtom].end());
 		atomsToInsert.erase(bestAtom);
 	}
@@ -147,6 +166,29 @@ bool OrderRuleGroundable::isBound(Atom* atom, unsigned orginalPosition) {
 
 }
 
+void OrderRuleGroundable::computeDictionaryIntersection(vector<set_term>& dictionaryIntersection, Atom* atom) {
+	for(unsigned i=0;i<atom->getTermsSize();++i){
+		Term* var=atom->getTerm(i);
+		if(var->getType()==TermType::VARIABLE){
+			index_object localIndex=var->getLocalVariableIndex();
+			if(variablesInTheBody.count(var)){
+				for(auto it=dictionaryIntersection[localIndex].begin();it!=dictionaryIntersection[localIndex].end();){
+					if(predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateInformation()->isPresent(i,*it))
+						it++;
+					else
+						it=dictionaryIntersection[localIndex].erase(it);
+				}
+			}
+			else{
+				const set_term& set=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateInformation()->getDictionary(i);
+				dictionaryIntersection[localIndex].insert(set.begin(),set.end());
+			}
+		}
+	}
+}
+
+/****************************************** AllOrderRuleGroundable ***********************************************/
+
 unsigned AllOrderRuleGroundable::computePredicateExtensionSize(	unsigned atomPosition, Predicate* p) {
 	unsigned extensionSize = 0;
 	for (auto j : predicate_searchInsert_table[atomPosition + rule->getSizeHead()])
@@ -156,7 +198,6 @@ unsigned AllOrderRuleGroundable::computePredicateExtensionSize(	unsigned atomPos
 	return extensionSize;
 }
 
-/****************************************** AllOrderRuleGroundable ***********************************************/
 
 list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(list<unsigned>& atomsToInsert) {
 	double bestWeight=LLONG_MAX;

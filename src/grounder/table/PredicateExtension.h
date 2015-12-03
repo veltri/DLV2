@@ -44,6 +44,8 @@ public:
 	int getMin(unsigned index) const;
 	void addInDictionary(unsigned position,Term* term);
 	unsigned getSelectivity(unsigned pos)const{return termDictionary[pos].size();}
+	bool isPresent(unsigned position,Term* term)const;
+	const set_term& getDictionary(unsigned i)const {return termDictionary[i];};
 
 private:
 	vector<int> min;
