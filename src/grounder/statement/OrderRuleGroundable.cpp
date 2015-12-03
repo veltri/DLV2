@@ -170,7 +170,7 @@ list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(list<unsigned>& a
 		);
 
 		bool bound=isBound(atom,*it);
-		if(atom->isClassicalLiteral() && !atom->isNegative()){
+		if(!bound && atom->isClassicalLiteral() && !atom->isNegative()){
 			weight=assignWeightPositiveClassicalLit(atom,*it);
 		}
 		else if(bound){
