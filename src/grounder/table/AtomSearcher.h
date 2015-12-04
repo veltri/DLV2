@@ -13,6 +13,7 @@
 #include "../hash/HashVecInt.h"
 #include "../atom/ClassicalLiteral.h"
 #include "PredicateTable.h"
+#include "../statement/Rule.h"
 
 using namespace std;
 
@@ -82,10 +83,10 @@ public:
 	/// This method implementation is demanded to sub-classes.
 	/// It have to find all the matching atoms and return just the first of those.
 	/// The returned integer will be used to get the other ones through nextMatch method (@See nextMatch)
-	virtual void firstMatch(unsigned id,Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound)=0;
+	virtual void firstMatch(unsigned id,Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation)=0;
 	/// This method implementation is demanded to sub-classes.
 	/// It is used to get the further matching atoms one by one each time it is invoked.
-	virtual void nextMatch(unsigned id, Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound)=0;
+	virtual void nextMatch(unsigned id, Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation)=0;
 	/// This method implementation is demanded to sub-classes.
 	/// It have to find if the given atom exist and returns it, else returns nullptr.
 	virtual Atom* findGroundAtom(Atom *atom)=0;
@@ -104,11 +105,11 @@ public:
 
 	/// This method checks if the two given atoms match according to the current assignment.
 	/// If they match the current assignment is update accordingly.
-	bool checkMatch(Atom *genericAtom, Atom *templateAtom, var_assignment& currentAssignment);
+	bool checkMatch(Atom *genericAtom, Atom *templateAtom, var_assignment& currentAssignment,const RuleInformation& ruleInformation);
 	/// Match a function with given id of term, compare the constant term and put in binds
 	/// a value of the variable term present in termToMatch
 	/// Return true if constant term are equal, else false
-	bool matchTerm(Term *genericTerm, Term *termToMatch, var_assignment& varAssignment,vector<index_object>& addedVariables);
+	bool matchTerm(Term *genericTerm, Term *termToMatch, var_assignment& varAssignment,vector<index_object>& addedVariables,const RuleInformation& ruleInformation);
 
 
 	virtual void setSizeResultVector(unsigned int size)=0;
@@ -133,8 +134,8 @@ public:
 			resultVector.resize(size,nullptr);
 	};
 
-	virtual void firstMatch(unsigned id,Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound);
-	virtual void nextMatch(unsigned id, Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound);
+	virtual void firstMatch(unsigned id,Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation);
+	virtual void nextMatch(unsigned id, Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation);
 	virtual Atom* findGroundAtom(Atom *atom);
 	virtual void add(Atom* atom){};
 	virtual void remove(Atom* atom){};
@@ -154,7 +155,7 @@ protected:
 //	bool searchForFirstMatch(GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound);
 	/// This method given an iterator increases it in order to find matching atoms with the given atom
 	/// according to the current assignment.
-	bool computeMatch(GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound);
+	bool computeMatch(GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation);
 	/// This method computes an iterator pointing to the starting point of the search
 	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom){return new VectorIterator(table->begin(),table->end());}
 };

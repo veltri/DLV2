@@ -19,9 +19,13 @@ namespace DLV2{
 
 namespace grounder{
 
+///RuleInformation contain the information of rule relative:
+///		- The number of the variable in the body of the rule
+///		- The intersection of the dictionary for each positive classical literal
 class RuleInformation{
 
 public:
+
 	set_term::iterator getDictionaryIntersectionBegin(index_object index){
 		return dictionaryIntersection[index].begin();
 	}
@@ -35,14 +39,17 @@ public:
 
 	void insertInDictionaryIntersection(index_object index,Term* term){
 		dictionaryIntersection[index].insert(term);
+		dictionaryIntersectionCreation[index]=true;
 	}
 
 	void insertInDictionaryIntersection(index_object index,const set_term& set){
 		dictionaryIntersection[index].insert(set.begin(),set.end());
+		dictionaryIntersectionCreation[index]=true;
 	}
 
 	void setDictionaryIntersectionSize(unsigned size){
 		dictionaryIntersection.resize(size);
+		dictionaryIntersectionCreation.resize(size,false);
 	}
 
 	void setVariablesSize(unsigned size){
@@ -55,10 +62,17 @@ public:
 
 	void clearDictionaryIntersection(){
 		dictionaryIntersection.clear();
+		dictionaryIntersectionCreation.clear();
 	}
 
-	bool countInDictionaryIntersection(index_object index,Term* term)const{
+	inline bool countInDictionaryIntersection(index_object index,Term* term)const{
 		return dictionaryIntersection[index].count(term);
+	}
+
+	inline bool isCreatedDictionaryIntersection(index_object index)const{
+		if(index>dictionaryIntersectionCreation.size())
+			return false;
+		return dictionaryIntersectionCreation[index];
 	}
 
 	void print()const{
@@ -76,6 +90,7 @@ public:
 
 private:
 	vector<set_term> dictionaryIntersection;
+	vector<bool> dictionaryIntersectionCreation;
 
 	unsigned variablesSize;
 };
@@ -220,6 +235,7 @@ public:
 
 	void sortPositiveLiteralInBody(vector<vector<unsigned>>& predicate_searchInsert_table,vector<unsigned>& originalOrderMapping);
 
+	//-----------------Rule Information Interface -------------------------------
 
 	set_term::iterator getDictionaryIntersectionBegin(index_object index){
 		return ruleInformation.getDictionaryIntersectionBegin(index);

@@ -2,9 +2,9 @@
 # use 
 #   $ make BUILD=release 
 # to compile different binaries
-BUILD = debug
+BUILD = release
 cxxflags.debug = \
- -Wall -std=c++11 -g -DDEBUG_ATOM_SEARCHER
+ -Wall -std=c++11 -g3
 linkflags.debug = \
  -lm
 cxxflags.trace = \
@@ -16,13 +16,9 @@ cxxflags.release = \
 linkflags.release = \
  -lm
 cxxflags.gprof = \
- -Wall -std=c++11 -g -pg
- linkflags.gprof = \
+ -Wall -std=c++11 -DNDEBUG -O3 -g -pg
+linkflags.gprof = \
  -lm -g -pg
-cxxflags.valgrind = \
- -Wall -std=c++11 -g 
- linkflags.valgrind = \
- -lm -g
 cxxflags.stats = \
  -Wall -std=c++11 -DNDEBUG -DSTATS_ON -O3
 linkflags.stats = \
@@ -57,7 +53,7 @@ BUILD_DIR = build/$(BUILD)
 BINARY = $(BUILD_DIR)/dlv2
 GCC = g++
 #GCC = g++-fsf-4.8
-CXX = $(GCC)
+CXX = $(GCC) -isystem/usr/bin/boost155/include
 CXXFLAGS = $(cxxflags.$(BUILD))
 LINK = $(GCC)
 LINKFLAGS = $(linkflags.$(BUILD))

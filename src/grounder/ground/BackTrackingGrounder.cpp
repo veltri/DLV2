@@ -171,7 +171,7 @@ bool BackTrackingGrounder::firstMatch(){
 		bool undef=false;
 
 		Atom* atomFound=nullptr;
-		searcher->firstMatch(index_current_atom,templateAtom,current_assignment,atomFound);
+		searcher->firstMatch(index_current_atom,templateAtom,current_assignment,atomFound,currentRule->getRuleInformation());
 		find=(atomFound!=nullptr);
 		if(atomFound!=nullptr)
 			undef=!atomFound->isFact();
@@ -214,11 +214,11 @@ bool BackTrackingGrounder::nextMatch(){
 		Atom* atomFound=nullptr;
 		if(match != NO_MATCH){
 			trace_action_tag(grounding,2,cerr<<"Invoked Next Match on table: "<<tableToSearch<<endl;);
-			searcher->nextMatch(index_current_atom,templateAtom,current_assignment,atomFound);
+			searcher->nextMatch(index_current_atom,templateAtom,current_assignment,atomFound,currentRule->getRuleInformation());
 		}
 		else{
 			trace_action_tag(grounding,2,cerr<<"Invoked First Match on table: "<<tableToSearch<<endl;);
-			searcher->firstMatch(index_current_atom,templateAtom,current_assignment,atomFound);
+			searcher->firstMatch(index_current_atom,templateAtom,current_assignment,atomFound,currentRule->getRuleInformation());
 		}
 
 		find=(atomFound!=nullptr);
@@ -537,7 +537,7 @@ bool BackTrackingGrounder::groundAggregate() {
 
 			//Each aggregate element have one atom with no relation with the other atoms in the aggregate elements, then we can
 			//overwrite the general iterator in the Atom Searcher with index_current_atom
-			searcher->firstMatch(index_current_atom,atom,current_assignment,atomFound);
+			searcher->firstMatch(index_current_atom,atom,current_assignment,atomFound,currentRule->getRuleInformation());
 			find=(atomFound!=nullptr);
 			while(find){
 				counter++;
@@ -565,7 +565,7 @@ bool BackTrackingGrounder::groundAggregate() {
 
 				if(result!=UNDEF || atom->isGround())break;
 
-				searcher->nextMatch(index_current_atom,atom,current_assignment,atomFound);
+				searcher->nextMatch(index_current_atom,atom,current_assignment,atomFound,currentRule->getRuleInformation());
 				find=(atomFound!=nullptr);
 			}
 		}
