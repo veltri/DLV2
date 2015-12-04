@@ -429,7 +429,7 @@ void BackTrackingGrounder::findBindVariablesRule() {
 
 	}
 
-	current_assignment.setSize(variablesSize,nullptr);
+	current_assignment.setSize(currentRule->getRuleInformation().getVariableSize(),nullptr);
 
 	trace_action_tag(backtracking,1,
 		cerr<<"BINDER OF ATOMS: ";int i=0;

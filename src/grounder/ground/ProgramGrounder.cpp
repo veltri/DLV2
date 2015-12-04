@@ -90,7 +90,6 @@ void ProgramGrounder::orderPositiveAtomsBody(Rule* rule) {
 	OrderRuleGroundable* orderRuleGroundable = OrderRuleGroundableFactory::getInstance(rule);
 	if (orderRuleGroundable != nullptr) {
 		orderRuleGroundable->order(predicate_searchInsert_table);
-		variablesSize=orderRuleGroundable->getVariablesSize();
 		delete orderRuleGroundable;
 	}
 }

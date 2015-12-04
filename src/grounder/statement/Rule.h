@@ -19,6 +19,67 @@ namespace DLV2{
 
 namespace grounder{
 
+class RuleInformation{
+
+public:
+	set_term::iterator getDictionaryIntersectionBegin(index_object index){
+		return dictionaryIntersection[index].begin();
+	}
+	set_term::iterator getDictionaryIntersectionEnd(index_object index){
+		return dictionaryIntersection[index].end();
+	}
+
+	void removeInDictionaryIntersection(set_term::iterator& it,index_object index){
+		it=dictionaryIntersection[index].erase(it);
+	}
+
+	void insertInDictionaryIntersection(index_object index,Term* term){
+		dictionaryIntersection[index].insert(term);
+	}
+
+	void insertInDictionaryIntersection(index_object index,const set_term& set){
+		dictionaryIntersection[index].insert(set.begin(),set.end());
+	}
+
+	void setDictionaryIntersectionSize(unsigned size){
+		dictionaryIntersection.resize(size);
+	}
+
+	void setVariablesSize(unsigned size){
+		variablesSize=size;
+	}
+
+	unsigned getVariableSize() const{
+		return variablesSize;
+	}
+
+	void clearDictionaryIntersection(){
+		dictionaryIntersection.clear();
+	}
+
+	bool countInDictionaryIntersection(index_object index,Term* term)const{
+		return dictionaryIntersection[index].count(term);
+	}
+
+	void print()const{
+		cout.flush();
+		cerr<<"Dictionary Intersection"<<endl;
+		for(auto v:dictionaryIntersection){
+			for(auto t:v)
+				{t->print(cerr);cerr<<" ";}
+			cerr<<endl;
+		}
+		cerr.flush();
+
+	}
+
+
+private:
+	vector<set_term> dictionaryIntersection;
+
+	unsigned variablesSize;
+};
+
 /**
  * @brief This class represents a rule with its body and head atoms
  */
@@ -159,6 +220,42 @@ public:
 
 	void sortPositiveLiteralInBody(vector<vector<unsigned>>& predicate_searchInsert_table,vector<unsigned>& originalOrderMapping);
 
+
+	set_term::iterator getDictionaryIntersectionBegin(index_object index){
+		return ruleInformation.getDictionaryIntersectionBegin(index);
+	}
+	set_term::iterator getDictionaryIntersectionEnd(index_object index){
+		return ruleInformation.getDictionaryIntersectionEnd(index);
+	}
+
+	void removeInDictionaryIntersection(set_term::iterator& it,index_object index){
+		ruleInformation.removeInDictionaryIntersection(it,index);
+	}
+
+	const RuleInformation& getRuleInformation(){
+		return ruleInformation;
+	}
+
+	void insertInDictionaryIntersection(index_object index,Term* term){
+		ruleInformation.insertInDictionaryIntersection(index,term);
+	}
+
+	void insertInDictionaryIntersection(index_object index,const set_term& set){
+		ruleInformation.insertInDictionaryIntersection(index,set);
+	}
+
+	void setDictionaryIntersectionSize(unsigned size){
+		ruleInformation.setDictionaryIntersectionSize(size);
+	}
+
+	void clearDictionaryIntersection(){
+		ruleInformation.clearDictionaryIntersection();
+	}
+
+	void setVariablesSize(unsigned size){
+		ruleInformation.setVariablesSize(size);
+	}
+
 private:
 
 	/// Return the predicate in atoms vector, if checkNegative is true compare the negative of atom with the parameter
@@ -183,6 +280,8 @@ private:
 	void printNonGround(ostream& stream=cout);
 
 	bool mustBeRewritedForAggregates;
+
+	RuleInformation ruleInformation;
 };
 
 

@@ -14,6 +14,13 @@ namespace DLV2{
 
 namespace grounder{
 
+//-------------------------------RuleInformation---------------------
+
+
+
+
+// ------------------------------Rule---------------------------------
+
 set_predicate Rule::calculatePredicate(vector<Atom*>& atoms,bool checkNegative,bool negative){
 	set_predicate predicates;
 	for (auto atom:atoms)
@@ -168,6 +175,7 @@ void Rule::setUnsolvedPredicates() {
 			atom->getPredicate()->setSolved(false);
 	}
 }
+
 
 //FIXME TODO
 void Rule::sortPositiveLiteralInBody(vector<vector<unsigned>>& predicate_searchInsert_table,vector<unsigned>& originalOrderMapping) {

@@ -37,14 +37,14 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<unsigned>>& predicate_
 			if(find==variableLocalIndex.end()){
 				variableLocalIndex[term]=variableLocalIndex.size()+1;
 				term->setLocalVariableIndex(variableLocalIndex[term]);
-
 				trace_action_tag(backtracking,1,
 					cerr<<"VARIABLE-INDEX : ";term->print(cerr);cerr<<" = "<<variableLocalIndex[term]<<endl;
 				);
 			}
 		}
 	}
-	variablesSize=variableLocalIndex.size();
+	rule->setVariablesSize(variableLocalIndex.size());
+
 
 	vector<Atom*> orderedBody;
 	orderedBody.reserve(sizeBody);
@@ -75,8 +75,8 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<unsigned>>& predicate_
 		cerr<<endl;
 	);
 
-	vector<set_term> dictionaryIntersection;
-	dictionaryIntersection.resize(variableLocalIndex.size()+2);
+	rule->clearDictionaryIntersection();
+	rule->setDictionaryIntersectionSize(variableLocalIndex.size()+2);
 
 	while(!atomsToInsert.empty()){
 		list<unsigned>::iterator bestAtom=assignWeights(atomsToInsert);
@@ -85,7 +85,7 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<unsigned>>& predicate_
 		orderedBody.push_back(atom);
 		orderedPositions.push_back(*bestAtom);
 		if(atom->isClassicalLiteral() && !atom->isNegative())
-			computeDictionaryIntersection(dictionaryIntersection,atom);
+			computeDictionaryIntersection(atom);
 		variablesInTheBody.insert(atomsVariables[*bestAtom].begin(),atomsVariables[*bestAtom].end());
 		atomsToInsert.erase(bestAtom);
 	}
@@ -166,22 +166,22 @@ bool OrderRuleGroundable::isBound(Atom* atom, unsigned orginalPosition) {
 
 }
 
-void OrderRuleGroundable::computeDictionaryIntersection(vector<set_term>& dictionaryIntersection, Atom* atom) {
+void OrderRuleGroundable::computeDictionaryIntersection(Atom* atom) {
 	for(unsigned i=0;i<atom->getTermsSize();++i){
 		Term* var=atom->getTerm(i);
 		if(var->getType()==TermType::VARIABLE){
 			index_object localIndex=var->getLocalVariableIndex();
 			if(variablesInTheBody.count(var)){
-				for(auto it=dictionaryIntersection[localIndex].begin();it!=dictionaryIntersection[localIndex].end();){
+				for(auto it=rule->getDictionaryIntersectionBegin(localIndex);it!=rule->getDictionaryIntersectionEnd(localIndex);){
 					if(predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateInformation()->isPresent(i,*it))
 						it++;
 					else
-						it=dictionaryIntersection[localIndex].erase(it);
+						rule->removeInDictionaryIntersection(it,localIndex);
 				}
 			}
 			else{
 				const set_term& set=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateInformation()->getDictionary(i);
-				dictionaryIntersection[localIndex].insert(set.begin(),set.end());
+				rule->insertInDictionaryIntersection(localIndex,set);
 			}
 		}
 	}

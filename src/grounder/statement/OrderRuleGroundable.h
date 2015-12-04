@@ -51,7 +51,6 @@ public:
 
 	virtual bool isBound(Atom* atom, unsigned orginalPosition);
 
-	unsigned getVariablesSize() const {return variablesSize;}
 
 protected:
 	vector<vector<unsigned>> predicate_searchInsert_table;
@@ -60,9 +59,8 @@ protected:
 	set_term variablesInTheBody;
 	vector<set_term> atomsVariables;
 	const Priority priorities;
-	unsigned variablesSize;
 
-	void computeDictionaryIntersection(vector<set_term>& dictionaryIntersection, Atom* atom);
+	void computeDictionaryIntersection(Atom* atom);
 };
 
 class AllOrderRuleGroundable : public OrderRuleGroundable{

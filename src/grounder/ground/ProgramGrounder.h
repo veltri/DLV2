@@ -134,7 +134,6 @@ protected:
 	///		-If it was not derived, then (since is false) the atom is true, so it can be simplified
 	void substituteIndicesInRulesWithPossibleUndefAtoms();
 
-	unsigned variablesSize;
 
 private:
 	///Print the program rule
