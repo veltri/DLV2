@@ -92,7 +92,7 @@ bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, var_assignmen
 /****************************************************** BASE ATOM SEARCHER ***************************************************/
 
 void BaseAtomSearcher::firstMatch(unsigned id,Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation) {
-	GeneralIterator* currentMatch=computeGenericIterator(templateAtom);
+	GeneralIterator* currentMatch=computeGenericIterator(templateAtom,ruleInformation);
 	if(computeMatch(currentMatch,templateAtom,currentAssignment,atomFound,ruleInformation)){
 		delete resultVector[id];
 		resultVector[id]=currentMatch;
@@ -104,9 +104,11 @@ void BaseAtomSearcher::firstMatch(unsigned id,Atom *templateAtom, var_assignment
 
 bool BaseAtomSearcher::computeMatch(GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation){
 	for(;!currentMatch->isDone();currentMatch->next()){
-		if (checkMatch(currentMatch->currentItem(),templateAtom,currentAssignment,ruleInformation)){
-			atomFound=currentMatch->currentItem();
-			return true;
+		if(currentMatch->currentItem()!=nullptr){
+			if (checkMatch(currentMatch->currentItem(),templateAtom,currentAssignment,ruleInformation)){
+				atomFound=currentMatch->currentItem();
+				return true;
+			}
 		}
 	}
 	atomFound=nullptr;
@@ -262,7 +264,7 @@ unsigned int SingleTermMapAtomSearcher::selectBestIndex(const vector<pair<int,in
 	//return getPositionWithBestSelectivity(possibleTableToSearch);
 }
 
-GeneralIterator* SingleTermMapAtomSearcher::computeGenericIterator(Atom* templateAtom) {
+GeneralIterator* SingleTermMapAtomSearcher::computeGenericIterator(Atom* templateAtom,const RuleInformation& ruleInformation) {
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("Compute iterator "+predicate->getName());
 #endif
@@ -311,6 +313,32 @@ void SingleTermMapAtomSearcher::initializeIndexMaps(unsigned int indexingTerm){
 	Timer::getInstance()->stop("Create index "+predicate->getName()+" index "+boost::lexical_cast<string>(indexingTerm));
 #endif
 }
+
+GeneralIterator* SingleTermMapDictionaryAtomSearcher::computeGenericIterator(Atom* templateAtom,const RuleInformation& ruleInformation) {
+	int indexingTerm=manageIndex(templateAtom);
+	GeneralIterator* currentMatch;
+
+	if(indexingTerm==-1 && ruleInformation.isCreatedDictionaryIntersection(templateAtom->getTerm(0)->getLocalVariableIndex())){
+		indexingTerm=0;
+		initializeIndexMaps(indexingTerm);
+		currentMatch=new MultipleIterators();
+		index_object localIndexVar=templateAtom->getTerm(indexingTerm)->getLocalVariableIndex();
+		for(auto it=ruleInformation.getDictionaryIntersectionBegin(localIndexVar);it!=ruleInformation.getDictionaryIntersectionEnd(localIndexVar);++it){
+			index_object term = (*it)->getIndex();
+			GeneralIterator* iterator=new UnorderedSetIterator(searchingTables[indexingTerm][term].begin() ,searchingTables[indexingTerm][term].end());
+			currentMatch->add(iterator);
+		}
+	}
+	else if(indexingTerm!=-1){
+		index_object term = templateAtom->getTerm(indexingTerm)->getIndex();
+		AtomTable* matchingTable=&searchingTables[indexingTerm][term];
+		currentMatch=new UnorderedSetIterator(matchingTable->begin(),matchingTable->end());
+	}
+	else
+		currentMatch=new VectorIterator(table->begin(), table->end());
+	return currentMatch;
+}
+
 
 /****************************************************** SINGLE TERM MULTI MAP ATOM SEARCH ***************************************************/
 
@@ -394,7 +422,7 @@ unsigned int SingleTermMultiMapAtomSearcher::selectBestIndex(const vector<pair<i
 }
 
 
-GeneralIterator* SingleTermMultiMapAtomSearcher::computeGenericIterator(Atom* templateAtom) {
+GeneralIterator* SingleTermMultiMapAtomSearcher::computeGenericIterator(Atom* templateAtom,const RuleInformation& ruleInformation) {
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("Compute iterator "+predicate->getName());
 #endif
@@ -613,7 +641,7 @@ unsigned int DoubleTermMapAtomSearcher::selectBestIndex(const vector<pair<int,pa
 //	return index;
 }
 
-GeneralIterator* DoubleTermMapAtomSearcher::computeGenericIterator(Atom* templateAtom) {
+GeneralIterator* DoubleTermMapAtomSearcher::computeGenericIterator(Atom* templateAtom,const RuleInformation& ruleInformation) {
 	int indexingTerm=manageIndex(templateAtom);
 	GeneralIterator* currentMatch;
 
@@ -673,5 +701,6 @@ void DoubleTermMapAtomSearcher::initializeIndexMaps(unsigned int indexingTerm){
 }
 
 
-};
-};
+}}
+
+

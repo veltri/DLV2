@@ -33,6 +33,7 @@ using Multimap_Atom = unordered_multimap<index_object, Atom*>;
 **/
 class GeneralIterator {
 public:
+	virtual void add(GeneralIterator* g){};
 	virtual void next()=0;
 	virtual bool isDone()=0;
 	virtual Atom* currentItem()=0;
@@ -71,7 +72,27 @@ private:
 	Multimap_Atom::const_iterator start;
 	Multimap_Atom::const_iterator end;
 };
-
+///This class implements and hides an iterator for atom vector
+class MultipleIterators : public GeneralIterator{
+public:
+	MultipleIterators():currentIterator(0){};
+	virtual void add(GeneralIterator* g){iterators.push_back(g);}
+	virtual void next(){
+		iterators[currentIterator]->next();
+		if(iterators[currentIterator]->isDone())
+			currentIterator++;
+	}
+	virtual bool isDone(){return currentIterator==iterators.size();}
+	virtual Atom* currentItem(){
+		if(!iterators[currentIterator]->isDone())
+			return iterators[currentIterator]->currentItem();
+		return nullptr;
+	}
+	virtual ~MultipleIterators(){for(auto it:iterators) delete it;};
+private:
+	vector<GeneralIterator*> iterators;
+	unsigned currentIterator;
+};
 
 /**
  * This class is an abstract base class that models a general searching strategy for a predicate's extension.
@@ -157,7 +178,7 @@ protected:
 	/// according to the current assignment.
 	bool computeMatch(GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation);
 	/// This method computes an iterator pointing to the starting point of the search
-	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom){return new VectorIterator(table->begin(),table->end());}
+	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom,const RuleInformation& ruleInformation){return new VectorIterator(table->begin(),table->end());}
 };
 
 class SingleTermAtomSearcher : public BaseAtomSearcher{
@@ -228,15 +249,22 @@ public:
 	///This method chooses the best indexing term among the one allowed.
 	unsigned int selectBestIndex(const vector<pair<int,index_object>>& possibleTableToSearch);
 
-private:
+protected:
 	///A vector of chosen searching data structure for this kind of indexing strategies, one for each possible indexing term.
 	vector<unordered_map<index_object,AtomTable>> searchingTables;
 
-	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom);
+	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom,const RuleInformation& ruleInformation);
 
 	///This method fills in the searching data structure for the given indexing term
 	void initializeIndexMaps(unsigned int indexingTerm);
 
+};
+
+class SingleTermMapDictionaryAtomSearcher: public SingleTermMapAtomSearcher{
+public:
+	SingleTermMapDictionaryAtomSearcher(AtomVector* table, Predicate* p) : SingleTermMapAtomSearcher(table,p) {};
+private:
+	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom,const RuleInformation& ruleInformation);
 };
 
 /**
@@ -269,7 +297,7 @@ private:
 	/// A vector of chosen searching data structure for this kind of indexing strategies, one for each possible indexing term.
 	vector<Multimap_Atom> searchingTables;
 
- 	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom);
+ 	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom,const RuleInformation& ruleInformation);
 
  	///This method fills in the indexing data structures
 	void initializeIndexMaps(unsigned int indexTable);
@@ -290,7 +318,7 @@ private:
 	/// A boolean used in order to determine if the data-structure for a particular indexing terms has been created.
 	bool createdSearchingTable;
 
- 	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom){
+ 	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom,const RuleInformation& ruleInformation){
  		manageIndex();
  		return new UnorderedSetIterator(searchingTable.begin(), searchingTable.end());
  	}
@@ -352,7 +380,7 @@ private:
 	int manageIndex(Atom* templateAtom);
 	int manageIndexGround();
 
-	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom);
+	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom,const RuleInformation& ruleInformation);
 
 	void initializeIndexMaps(unsigned int indexingTerm);
 

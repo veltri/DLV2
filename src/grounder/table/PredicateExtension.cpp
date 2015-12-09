@@ -43,7 +43,7 @@ void PredicateExtension::setAtomSearchers(){
 
 		switch (indexType) {
 		case (MAP):
-			atomSearcher = new SingleTermMapAtomSearcher(tables[atomSearchers.size()],predicate);
+			atomSearcher = new SingleTermMapDictionaryAtomSearcher(tables[atomSearchers.size()],predicate);
 			break;
 		case (MULTIMAP):
 			atomSearcher = new SingleTermMultiMapAtomSearcher(tables[atomSearchers.size()],predicate);

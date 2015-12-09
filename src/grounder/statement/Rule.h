@@ -26,6 +26,13 @@ class RuleInformation{
 
 public:
 
+	set_term::const_iterator getDictionaryIntersectionBegin(index_object index)const{
+		return dictionaryIntersection[index].begin();
+	}
+	set_term::const_iterator getDictionaryIntersectionEnd(index_object index)const{
+		return dictionaryIntersection[index].end();
+	}
+
 	set_term::iterator getDictionaryIntersectionBegin(index_object index){
 		return dictionaryIntersection[index].begin();
 	}
@@ -237,10 +244,17 @@ public:
 
 	//-----------------Rule Information Interface -------------------------------
 
-	set_term::iterator getDictionaryIntersectionBegin(index_object index){
+	set_term::const_iterator getDictionaryIntersectionBegin(index_object index) const {
 		return ruleInformation.getDictionaryIntersectionBegin(index);
 	}
-	set_term::iterator getDictionaryIntersectionEnd(index_object index){
+	set_term::const_iterator  getDictionaryIntersectionEnd(index_object index) const{
+		return ruleInformation.getDictionaryIntersectionEnd(index);
+	}
+
+	set_term::iterator getDictionaryIntersectionBegin(index_object index) {
+		return ruleInformation.getDictionaryIntersectionBegin(index);
+	}
+	set_term::iterator  getDictionaryIntersectionEnd(index_object index) {
 		return ruleInformation.getDictionaryIntersectionEnd(index);
 	}
 
