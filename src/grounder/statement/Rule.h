@@ -76,6 +76,11 @@ public:
 		return dictionaryIntersection[index].count(term);
 	}
 
+	inline unsigned getDictionaryIntersectionSize(index_object index)const{
+		return dictionaryIntersection[index].size();
+	}
+
+
 	inline bool isCreatedDictionaryIntersection(index_object index)const{
 		if(index>dictionaryIntersectionCreation.size())
 			return false;

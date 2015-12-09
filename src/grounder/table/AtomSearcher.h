@@ -197,6 +197,11 @@ public:
 	///This method chooses the best indexing term among the one allowed.
 	virtual unsigned int selectBestIndex(const vector<pair<int,index_object>>& possibleTableToSearch) = 0;
 
+	bool isCreatedSearchingTable(unsigned position)const{return createdSearchingTables[position];}
+
+	///This method fills in the searching data structure for the given indexing term
+	virtual void initializeIndexMaps(unsigned int indexingTerm) = 0;
+
 protected:
 	/// The predicate
 	Predicate* predicate;
@@ -212,10 +217,8 @@ protected:
 	/// Then invokes the selectBestIndex method to determine the best one among them.
 	/// If the data-structure for the best indexing term is not created, then it fills in
 	/// the data structures by means of initializeIndexMaps method.
-	int manageIndex(Atom* templateAtom);
+	virtual int manageIndex(Atom* templateAtom, const RuleInformation& ruleInformation);
 
-	///This method fills in the searching data structure for the given indexing term
-	virtual void initializeIndexMaps(unsigned int indexingTerm) = 0;
 
 //	int computePossibleIndexingTermTable(const vector<pair<int,index_object>>& possibleTableToSearch);
 
@@ -249,22 +252,54 @@ public:
 	///This method chooses the best indexing term among the one allowed.
 	unsigned int selectBestIndex(const vector<pair<int,index_object>>& possibleTableToSearch);
 
+	///This method fills in the searching data structure for the given indexing term
+	void initializeIndexMaps(unsigned int indexingTerm);
+
 protected:
 	///A vector of chosen searching data structure for this kind of indexing strategies, one for each possible indexing term.
 	vector<unordered_map<index_object,AtomTable>> searchingTables;
 
 	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom,const RuleInformation& ruleInformation);
 
-	///This method fills in the searching data structure for the given indexing term
-	void initializeIndexMaps(unsigned int indexingTerm);
 
+};
+
+class BinderSelector{
+public:
+	virtual int select(Atom* templateAtom, const RuleInformation& ruleInformation,vector<pair<int,index_object>>& possibleTableToSearch,
+			vector<pair<int,index_object>>& bindVariablesWithCreatedIntersection, SingleTermAtomSearcher* atomSearcher)=0;
+	virtual ~BinderSelector(){}
+};
+
+class BinderSelector1 : public BinderSelector {
+public:
+	virtual int select(Atom* templateAtom, const RuleInformation& ruleInformation,vector<pair<int,index_object>>& possibleTableToSearch,
+			vector<pair<int,index_object>>& bindVariablesWithCreatedIntersection, SingleTermAtomSearcher* atomSearcher);
+};
+
+class BinderSelector2 : public BinderSelector {
+public:
+	virtual int select(Atom* templateAtom, const RuleInformation& ruleInformation,vector<pair<int,index_object>>& possibleTableToSearch,
+			vector<pair<int,index_object>>& bindVariablesWithCreatedIntersection, SingleTermAtomSearcher* atomSearcher);
+};
+
+
+class BinderSelector3 : public BinderSelector {
+public:
+	virtual int select(Atom* templateAtom, const RuleInformation& ruleInformation,vector<pair<int,index_object>>& possibleTableToSearch,
+			vector<pair<int,index_object>>& bindVariablesWithCreatedIntersection, SingleTermAtomSearcher* atomSearcher);
 };
 
 class SingleTermMapDictionaryAtomSearcher: public SingleTermMapAtomSearcher{
 public:
-	SingleTermMapDictionaryAtomSearcher(AtomVector* table, Predicate* p) : SingleTermMapAtomSearcher(table,p) {};
+	SingleTermMapDictionaryAtomSearcher(AtomVector* table, Predicate* p) : SingleTermMapAtomSearcher(table,p) {setBinderSelector();};
+	virtual ~SingleTermMapDictionaryAtomSearcher(){delete binderSelector;}
+
 private:
+	void setBinderSelector();
+	virtual int manageIndex(Atom* templateAtom, const RuleInformation& ruleInformation);
 	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom,const RuleInformation& ruleInformation);
+	BinderSelector* binderSelector;
 };
 
 /**
@@ -293,14 +328,15 @@ public:
 	///This method chooses the best indexing term among the one allowed.
 	unsigned int selectBestIndex(const vector<pair<int,index_object>>& possibleTableToSearch);
 
+ 	///This method fills in the indexing data structures
+	void initializeIndexMaps(unsigned int indexTable);
+
 private:
 	/// A vector of chosen searching data structure for this kind of indexing strategies, one for each possible indexing term.
 	vector<Multimap_Atom> searchingTables;
 
  	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom,const RuleInformation& ruleInformation);
 
- 	///This method fills in the indexing data structures
-	void initializeIndexMaps(unsigned int indexTable);
 
 };
 

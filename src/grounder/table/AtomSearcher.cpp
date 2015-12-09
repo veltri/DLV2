@@ -133,7 +133,7 @@ Atom* BaseAtomSearcher::findGroundAtom(Atom *atom){
 
 /****************************************************** SINGLE TERM ATOM SEARCH ***************************************************/
 
-int SingleTermAtomSearcher::manageIndex(Atom* templateAtom) {
+int SingleTermAtomSearcher::manageIndex(Atom* templateAtom, const RuleInformation& ruleInformation) {
 	vector<pair<int,index_object>> possibleTableToSearch;
 	for(unsigned int i=0;i<templateAtom->getTermsSize();++i){
 		Term* t=templateAtom->getTerm(i);
@@ -268,7 +268,7 @@ GeneralIterator* SingleTermMapAtomSearcher::computeGenericIterator(Atom* templat
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("Compute iterator "+predicate->getName());
 #endif
-	int indexingTerm=manageIndex(templateAtom);
+	int indexingTerm=manageIndex(templateAtom,ruleInformation);
 	GeneralIterator* currentMatch;
 
 	//If no searching table is available (the atom is completely unbound)
@@ -314,25 +314,100 @@ void SingleTermMapAtomSearcher::initializeIndexMaps(unsigned int indexingTerm){
 #endif
 }
 
-GeneralIterator* SingleTermMapDictionaryAtomSearcher::computeGenericIterator(Atom* templateAtom,const RuleInformation& ruleInformation) {
-	int indexingTerm=manageIndex(templateAtom);
-	GeneralIterator* currentMatch;
+int BinderSelector1::select(Atom* templateAtom,
+		const RuleInformation& ruleInformation,
+		vector<pair<int, index_object> >& possibleTableToSearch,
+		vector<pair<int,index_object>>& bindVariablesWithCreatedIntersection,
+		SingleTermAtomSearcher* atomSearcher) {
 
-	if(indexingTerm==-1 && ruleInformation.isCreatedDictionaryIntersection(templateAtom->getTerm(0)->getLocalVariableIndex())){
-		indexingTerm=0;
-		initializeIndexMaps(indexingTerm);
-		currentMatch=new MultipleIterators();
-		index_object localIndexVar=templateAtom->getTerm(indexingTerm)->getLocalVariableIndex();
-		for(auto it=ruleInformation.getDictionaryIntersectionBegin(localIndexVar);it!=ruleInformation.getDictionaryIntersectionEnd(localIndexVar);++it){
-			index_object term = (*it)->getIndex();
-			GeneralIterator* iterator=new UnorderedSetIterator(searchingTables[indexingTerm][term].begin() ,searchingTables[indexingTerm][term].end());
-			currentMatch->add(iterator);
+	int indexSelected=-1;
+	unsigned size=possibleTableToSearch.size();
+
+	if(size==0){
+		int min=INT_MAX;
+		for(auto var:bindVariablesWithCreatedIntersection){
+			unsigned currentSize=ruleInformation.getDictionaryIntersectionSize(var.second);
+			if(currentSize<min){
+				min=currentSize;
+				indexSelected=var.first;
+			}
 		}
 	}
-	else if(indexingTerm!=-1){
-		index_object term = templateAtom->getTerm(indexingTerm)->getIndex();
-		AtomTable* matchingTable=&searchingTables[indexingTerm][term];
-		currentMatch=new UnorderedSetIterator(matchingTable->begin(),matchingTable->end());
+	else if(size==1)
+		indexSelected=possibleTableToSearch.front().first;
+	else
+		indexSelected=atomSearcher->selectBestIndex(possibleTableToSearch);
+
+	if(indexSelected>=0 && !atomSearcher->isCreatedSearchingTable(indexSelected))
+		atomSearcher->initializeIndexMaps(indexSelected);
+	return indexSelected;
+}
+
+
+int BinderSelector2::select(Atom* templateAtom,
+		const RuleInformation& ruleInformation,
+		vector<pair<int, index_object> >& possibleTableToSearch,
+		vector<pair<int,index_object>>& bindVariablesWithCreatedIntersection,
+		SingleTermAtomSearcher* atomSearcher) {
+
+	int indexSelected=-1;
+	unsigned size=possibleTableToSearch.size();
+
+	if(size==0){
+		for(auto var:bindVariablesWithCreatedIntersection){
+			if(atomSearcher->isCreatedSearchingTable(var.first))
+				return var.first;
+		}
+	}
+	else if(size==1)
+		indexSelected=possibleTableToSearch.front().first;
+	else
+		indexSelected=atomSearcher->selectBestIndex(possibleTableToSearch);
+
+	if(indexSelected>=0 && !atomSearcher->isCreatedSearchingTable(indexSelected))
+		atomSearcher->initializeIndexMaps(indexSelected);
+
+	return indexSelected;
+
+}
+
+int SingleTermMapDictionaryAtomSearcher::manageIndex(Atom* templateAtom, const RuleInformation& ruleInformation) {
+	vector<pair<int,index_object>> possibleTableToSearch;
+	vector<pair<int,index_object>> bindVariablesWithCreatedIntersection;
+	for(unsigned int i=0;i<templateAtom->getTermsSize();++i){
+		Term* t=templateAtom->getTerm(i);
+		if(t->isGround())
+			possibleTableToSearch.push_back({i,t->getIndex()});
+		else if(ruleInformation.isCreatedDictionaryIntersection(t->getLocalVariableIndex()))
+			bindVariablesWithCreatedIntersection.push_back({i,t->getLocalVariableIndex()});
+	}
+
+	return binderSelector->select(templateAtom,ruleInformation,possibleTableToSearch,bindVariablesWithCreatedIntersection,this);
+}
+
+void SingleTermMapDictionaryAtomSearcher::setBinderSelector() {
+	binderSelector=new BinderSelector2();
+}
+
+GeneralIterator* SingleTermMapDictionaryAtomSearcher::computeGenericIterator(Atom* templateAtom, const RuleInformation& ruleInformation) {
+	int indexingTerm=manageIndex(templateAtom,ruleInformation);
+	GeneralIterator* currentMatch;
+
+	if(indexingTerm!=-1){
+		if(templateAtom->getTerm(indexingTerm)->getType()==VARIABLE){
+			currentMatch=new MultipleIterators();
+			index_object localIndexVar=templateAtom->getTerm(indexingTerm)->getLocalVariableIndex();
+			for(auto it=ruleInformation.getDictionaryIntersectionBegin(localIndexVar);it!=ruleInformation.getDictionaryIntersectionEnd(localIndexVar);++it){
+				index_object term = (*it)->getIndex();
+				GeneralIterator* iterator=new UnorderedSetIterator(searchingTables[indexingTerm][term].begin() ,searchingTables[indexingTerm][term].end());
+				currentMatch->add(iterator);
+			}
+		}
+		else{
+			index_object term = templateAtom->getTerm(indexingTerm)->getIndex();
+			AtomTable* matchingTable=&searchingTables[indexingTerm][term];
+			currentMatch=new UnorderedSetIterator(matchingTable->begin(),matchingTable->end());
+		}
 	}
 	else
 		currentMatch=new VectorIterator(table->begin(), table->end());
@@ -426,7 +501,7 @@ GeneralIterator* SingleTermMultiMapAtomSearcher::computeGenericIterator(Atom* te
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("Compute iterator "+predicate->getName());
 #endif
-	int indexingTerm=manageIndex(templateAtom);
+	int indexingTerm=manageIndex(templateAtom,ruleInformation);
 	GeneralIterator* currentMatch;
 
 	//If no searching table is available (the atom is completely unbound)
@@ -701,6 +776,6 @@ void DoubleTermMapAtomSearcher::initializeIndexMaps(unsigned int indexingTerm){
 }
 
 
-}}
-
+}
+}
 
