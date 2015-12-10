@@ -59,14 +59,6 @@ public:
 		dictionaryIntersectionCreation.resize(size,false);
 	}
 
-	void setVariablesSize(unsigned size){
-		variablesSize=size;
-	}
-
-	unsigned getVariableSize() const{
-		return variablesSize;
-	}
-
 	void clearDictionaryIntersection(){
 		dictionaryIntersection.clear();
 		dictionaryIntersectionCreation.clear();
@@ -82,7 +74,7 @@ public:
 
 
 	inline bool isCreatedDictionaryIntersection(index_object index)const{
-		if(index>dictionaryIntersectionCreation.size())
+		if(index>=dictionaryIntersectionCreation.size())
 			return false;
 		return dictionaryIntersectionCreation[index];
 	}
@@ -103,8 +95,6 @@ public:
 private:
 	vector<set_term> dictionaryIntersection;
 	vector<bool> dictionaryIntersectionCreation;
-
-	unsigned variablesSize;
 };
 
 /**
@@ -113,9 +103,9 @@ private:
 
 class Rule : public Indexable {
 public:
-	Rule():Indexable(), ground(false), simplifiedHead(0), simplifiedBody(0), mustBeRewritedForAggregates(false)  {};
-	Rule(bool g):Indexable(), ground(g), simplifiedHead(0), simplifiedBody(0), mustBeRewritedForAggregates(false) {};
-	Rule(bool g, unsigned sizeHead, unsigned sizeBody) : Indexable(), ground(g), simplifiedHead(0), simplifiedBody(0), mustBeRewritedForAggregates(false) {
+	Rule():Indexable(), ground(false), simplifiedHead(0), simplifiedBody(0), mustBeRewritedForAggregates(false),variablesSize(0)  {};
+	Rule(bool g):Indexable(), ground(g), simplifiedHead(0), simplifiedBody(0), mustBeRewritedForAggregates(false),variablesSize(0) {};
+	Rule(bool g, unsigned sizeHead, unsigned sizeBody) : Indexable(), ground(g), simplifiedHead(0), simplifiedBody(0), mustBeRewritedForAggregates(false),variablesSize(0) {
 		if(ground){
 			simplifiedHead=new bool[sizeHead];
 			simplifiedBody=new bool[sizeBody];
@@ -247,6 +237,12 @@ public:
 
 	void sortPositiveLiteralInBody(vector<vector<unsigned>>& predicate_searchInsert_table,vector<unsigned>& originalOrderMapping);
 
+	void computeVariablesLocalIndices();
+
+	inline unsigned getVariablesSize() const {
+		return variablesSize;
+	}
+
 	//-----------------Rule Information Interface -------------------------------
 
 	set_term::const_iterator getDictionaryIntersectionBegin(index_object index) const {
@@ -287,10 +283,6 @@ public:
 		ruleInformation.clearDictionaryIntersection();
 	}
 
-	void setVariablesSize(unsigned size){
-		ruleInformation.setVariablesSize(size);
-	}
-
 private:
 
 	/// Return the predicate in atoms vector, if checkNegative is true compare the negative of atom with the parameter
@@ -317,6 +309,8 @@ private:
 	bool mustBeRewritedForAggregates;
 
 	RuleInformation ruleInformation;
+
+	unsigned variablesSize;
 };
 
 

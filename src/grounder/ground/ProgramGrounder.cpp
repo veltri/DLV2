@@ -79,6 +79,7 @@ void ProgramGrounder::findRecursivePredicatesInComponentRules(const unordered_se
 }
 
 void ProgramGrounder::orderPositiveAtomsBody(vector<unsigned>& originalOrderBody,Rule* rule) {
+	rule->computeVariablesLocalIndices();
 	OrderRuleGroundable* orderRuleGroundable = OrderRuleGroundableFactory::getInstance(rule);
 	if (orderRuleGroundable != nullptr) {
 		orderRuleGroundable->order(predicate_searchInsert_table,originalOrderBody);
@@ -87,6 +88,7 @@ void ProgramGrounder::orderPositiveAtomsBody(vector<unsigned>& originalOrderBody
 }
 
 void ProgramGrounder::orderPositiveAtomsBody(Rule* rule) {
+	rule->computeVariablesLocalIndices();
 	OrderRuleGroundable* orderRuleGroundable = OrderRuleGroundableFactory::getInstance(rule);
 	if (orderRuleGroundable != nullptr) {
 		orderRuleGroundable->order(predicate_searchInsert_table);

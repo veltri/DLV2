@@ -20,7 +20,6 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<unsigned>>& predicate_
 	this->predicate_searchInsert_table=predicate_searchInsert_table;
 	unsigned sizeBody=rule->getSizeBody();
 
-	map_term<index_object> variableLocalIndex;
 	atomsVariables.resize(sizeBody);
 	for(unsigned i=0;i<sizeBody;i++){
 		Atom* atom=rule->getAtomInBody(i);
@@ -31,20 +30,7 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<unsigned>>& predicate_
 		}
 		else
 			atomsVariables[i]=atom->getVariable();
-
-		for(auto term:atom->getVariable()){
-			auto find=variableLocalIndex.find(term);
-			if(find==variableLocalIndex.end()){
-				variableLocalIndex[term]=variableLocalIndex.size()+1;
-				term->setLocalVariableIndex(variableLocalIndex[term]);
-				trace_action_tag(backtracking,1,
-					cerr<<"VARIABLE-INDEX : ";term->print(cerr);cerr<<" = "<<variableLocalIndex[term]<<endl;
-				);
-			}
-		}
 	}
-	rule->setVariablesSize(variableLocalIndex.size());
-
 
 	vector<Atom*> orderedBody;
 	orderedBody.reserve(sizeBody);
@@ -76,7 +62,7 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<unsigned>>& predicate_
 	);
 
 	rule->clearDictionaryIntersection();
-	rule->setDictionaryIntersectionSize(variableLocalIndex.size()+2);
+	rule->setDictionaryIntersectionSize(rule->getVariablesSize()+2);
 
 	while(!atomsToInsert.empty()){
 		list<unsigned>::iterator bestAtom=assignWeights(atomsToInsert);
