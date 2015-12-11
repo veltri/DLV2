@@ -322,17 +322,14 @@ int BinderSelector1::select(Atom* templateAtom,
 	unsigned size=possibleTableToSearch.size();
 
 	if(size==0){
-//		if(binderIndex>=0)
-//			return binderIndex;
 		int min=INT_MAX;
 		for(auto var:bindVariablesWithCreatedIntersection){
-			unsigned currentSize=ruleInformation.getDictionaryIntersectionSize(var.second);
+			int currentSize=ruleInformation.getDictionaryIntersectionSize(var.second);
 			if(currentSize<min){
 				min=currentSize;
 				indexSelected=var.first;
 			}
 		}
-//		binderIndex=indexSelected;
 	}
 	else if(size==1)
 		indexSelected=possibleTableToSearch.front().first;
@@ -354,12 +351,9 @@ int BinderSelector2::select(Atom* templateAtom,
 	int indexSelected=-1;
 	unsigned size=possibleTableToSearch.size();
 	if(size==0){
-//		if(binderIndex>=0)
-//			return binderIndex;
 		for(auto var:bindVariablesWithCreatedIntersection){
 			if(atomSearcher->isCreatedSearchingTable(var.first)){
-				binderIndex=var.first;
-				return binderIndex;
+				return var.first;
 			}
 		}
 	}
@@ -389,7 +383,7 @@ int SingleTermMapDictionaryAtomSearcher::manageIndex(Atom* templateAtom, const R
 }
 
 void SingleTermMapDictionaryAtomSearcher::setBinderSelector() {
-	binderSelector=new BinderSelector1();
+	binderSelector=new BinderSelector2();
 }
 
 GeneralIterator* SingleTermMapDictionaryAtomSearcher::computeGenericIterator(Atom* templateAtom, const RuleInformation& ruleInformation) {

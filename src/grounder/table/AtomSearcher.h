@@ -262,12 +262,10 @@ protected:
 
 class BinderSelector{
 public:
-	BinderSelector():binderIndex(-1){};
 	virtual int select(Atom* templateAtom, const RuleInformation& ruleInformation,vector<pair<int,index_object>>& possibleTableToSearch,
 			vector<pair<int,index_object>>& bindVariablesWithCreatedIntersection, SingleTermAtomSearcher* atomSearcher)=0;
 	virtual ~BinderSelector(){}
 protected:
-	int binderIndex;
 };
 
 class BinderSelector1 : public BinderSelector {
