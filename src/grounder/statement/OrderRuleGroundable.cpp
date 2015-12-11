@@ -132,7 +132,7 @@ bool OrderRuleGroundable::isBound(Atom* atom, unsigned orginalPosition) {
 			return true;
 		}
 		if(secondContained || firstContained){
-			if((secondContained && !firstContained && varsFirst.size()==1) || (!secondContained && firstContained && varsSecond.size()==1)){
+			if((secondContained && !firstContained && firstTerm->getType()==VARIABLE) || (!secondContained && firstContained && secondTerm->getType()==VARIABLE)){
 				atom->setAssignment(true);
 				return true;
 			}
