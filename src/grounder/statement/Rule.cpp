@@ -246,16 +246,23 @@ void Rule::sortPositiveLiteralInBody(vector<vector<unsigned>>& predicate_searchI
 }
 
 void Rule::computeVariablesLocalIndices() {
-	map_term<index_object> variableLocalIndex;
+	set_term variableLocalIndex;
 	for(auto atom:body){
 		for(auto term:atom->getVariable()){
-			auto find=variableLocalIndex.find(term);
-			if(find==variableLocalIndex.end()){
-				variableLocalIndex[term]=variableLocalIndex.size()+1;
-				term->setLocalVariableIndex(variableLocalIndex[term]);
+			if(!variableLocalIndex.count(term)){
+				term->setLocalVariableIndex(variableLocalIndex.size()+1);
+				variableLocalIndex.insert(term);
 				trace_action_tag(backtracking,1,
-					cerr<<"VARIABLE-INDEX : ";term->print(cerr);cerr<<" = "<<variableLocalIndex[term]<<endl;
+					cerr<<"VARIABLE-INDEX : ";term->print(cerr);cerr<<" = "<<term->getLocalVariableIndex()<<endl;
 				);
+			}
+			else{
+				if(atom->isClassicalLiteral() && !atom->isNegative()){
+					ruleInformation.insertJoinVariable(term);
+					trace_action_tag(backtracking,1,
+							cerr<<"JOIN VARIABLE : ";term->print(cerr);cerr<<endl;
+					);
+				}
 			}
 		}
 	}

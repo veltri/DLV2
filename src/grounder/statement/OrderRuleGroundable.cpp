@@ -155,7 +155,7 @@ bool OrderRuleGroundable::isBound(Atom* atom, unsigned orginalPosition) {
 void OrderRuleGroundable::computeDictionaryIntersection(Atom* atom) {
 	for(unsigned i=0;i<atom->getTermsSize();++i){
 		Term* var=atom->getTerm(i);
-		if(var->getType()==TermType::VARIABLE){
+		if(var->getType()==TermType::VARIABLE && rule->getRuleInformation().isAJoinVariable(var)){
 			index_object localIndex=var->getLocalVariableIndex();
 			if(variablesInTheBody.count(var)){
 				for(auto it=rule->getDictionaryIntersectionBegin(localIndex);it!=rule->getDictionaryIntersectionEnd(localIndex);){

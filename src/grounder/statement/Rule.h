@@ -80,21 +80,25 @@ public:
 	}
 
 	void print()const{
-		cout.flush();
 		cerr<<"Dictionary Intersection"<<endl;
-		for(auto v:dictionaryIntersection){
-			for(auto t:v)
-				{t->print(cerr);cerr<<" ";}
-			cerr<<endl;
+		for(unsigned i=0;i<dictionaryIntersectionCreation.size();++i){
+			if(dictionaryIntersectionCreation[i]){
+				for(auto t:dictionaryIntersection[i]){
+					t->print(cerr);cerr<<" ";
+				}
+				cerr<<endl;
+			}
 		}
-		cerr.flush();
-
 	}
 
+	void insertJoinVariable(Term* term) {joinVariables.insert(term);}
+
+	bool isAJoinVariable(Term* term) const {return joinVariables.count(term);}
 
 private:
 	vector<set_term> dictionaryIntersection;
 	vector<bool> dictionaryIntersectionCreation;
+	set_term joinVariables;
 };
 
 /**
@@ -311,6 +315,7 @@ private:
 	RuleInformation ruleInformation;
 
 	unsigned variablesSize;
+
 };
 
 

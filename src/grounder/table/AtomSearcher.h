@@ -82,12 +82,8 @@ public:
 		if(iterators[currentIterator]->isDone())
 			currentIterator++;
 	}
-	virtual bool isDone(){return currentIterator==iterators.size();}
-	virtual Atom* currentItem(){
-		if(!iterators[currentIterator]->isDone())
-			return iterators[currentIterator]->currentItem();
-		return nullptr;
-	}
+	virtual bool isDone(){return currentIterator>=iterators.size();}
+	virtual Atom* currentItem(){return iterators[currentIterator]->currentItem();}
 	virtual ~MultipleIterators(){for(auto it:iterators) delete it;};
 private:
 	vector<GeneralIterator*> iterators;
@@ -266,9 +262,12 @@ protected:
 
 class BinderSelector{
 public:
+	BinderSelector():binderIndex(-1){};
 	virtual int select(Atom* templateAtom, const RuleInformation& ruleInformation,vector<pair<int,index_object>>& possibleTableToSearch,
 			vector<pair<int,index_object>>& bindVariablesWithCreatedIntersection, SingleTermAtomSearcher* atomSearcher)=0;
 	virtual ~BinderSelector(){}
+protected:
+	int binderIndex;
 };
 
 class BinderSelector1 : public BinderSelector {

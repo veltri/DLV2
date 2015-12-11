@@ -104,11 +104,9 @@ void BaseAtomSearcher::firstMatch(unsigned id,Atom *templateAtom, var_assignment
 
 bool BaseAtomSearcher::computeMatch(GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation){
 	for(;!currentMatch->isDone();currentMatch->next()){
-		if(currentMatch->currentItem()!=nullptr){
-			if (checkMatch(currentMatch->currentItem(),templateAtom,currentAssignment,ruleInformation)){
-				atomFound=currentMatch->currentItem();
-				return true;
-			}
+		if (checkMatch(currentMatch->currentItem(),templateAtom,currentAssignment,ruleInformation)){
+			atomFound=currentMatch->currentItem();
+			return true;
 		}
 	}
 	atomFound=nullptr;
@@ -324,6 +322,8 @@ int BinderSelector1::select(Atom* templateAtom,
 	unsigned size=possibleTableToSearch.size();
 
 	if(size==0){
+//		if(binderIndex>=0)
+//			return binderIndex;
 		int min=INT_MAX;
 		for(auto var:bindVariablesWithCreatedIntersection){
 			unsigned currentSize=ruleInformation.getDictionaryIntersectionSize(var.second);
@@ -332,6 +332,7 @@ int BinderSelector1::select(Atom* templateAtom,
 				indexSelected=var.first;
 			}
 		}
+//		binderIndex=indexSelected;
 	}
 	else if(size==1)
 		indexSelected=possibleTableToSearch.front().first;
@@ -352,11 +353,14 @@ int BinderSelector2::select(Atom* templateAtom,
 
 	int indexSelected=-1;
 	unsigned size=possibleTableToSearch.size();
-
 	if(size==0){
+//		if(binderIndex>=0)
+//			return binderIndex;
 		for(auto var:bindVariablesWithCreatedIntersection){
-			if(atomSearcher->isCreatedSearchingTable(var.first))
-				return var.first;
+			if(atomSearcher->isCreatedSearchingTable(var.first)){
+				binderIndex=var.first;
+				return binderIndex;
+			}
 		}
 	}
 	else if(size==1)
@@ -381,12 +385,11 @@ int SingleTermMapDictionaryAtomSearcher::manageIndex(Atom* templateAtom, const R
 		else if(ruleInformation.isCreatedDictionaryIntersection(t->getLocalVariableIndex()))
 			bindVariablesWithCreatedIntersection.push_back({i,t->getLocalVariableIndex()});
 	}
-
 	return binderSelector->select(templateAtom,ruleInformation,possibleTableToSearch,bindVariablesWithCreatedIntersection,this);
 }
 
 void SingleTermMapDictionaryAtomSearcher::setBinderSelector() {
-	binderSelector=new BinderSelector2();
+	binderSelector=new BinderSelector1();
 }
 
 GeneralIterator* SingleTermMapDictionaryAtomSearcher::computeGenericIterator(Atom* templateAtom, const RuleInformation& ruleInformation) {
@@ -399,8 +402,10 @@ GeneralIterator* SingleTermMapDictionaryAtomSearcher::computeGenericIterator(Ato
 			index_object localIndexVar=templateAtom->getTerm(indexingTerm)->getLocalVariableIndex();
 			for(auto it=ruleInformation.getDictionaryIntersectionBegin(localIndexVar);it!=ruleInformation.getDictionaryIntersectionEnd(localIndexVar);++it){
 				index_object term = (*it)->getIndex();
-				GeneralIterator* iterator=new UnorderedSetIterator(searchingTables[indexingTerm][term].begin() ,searchingTables[indexingTerm][term].end());
-				currentMatch->add(iterator);
+				if(!searchingTables[indexingTerm][term].empty()){
+					GeneralIterator* iterator=new UnorderedSetIterator(searchingTables[indexingTerm][term].begin() ,searchingTables[indexingTerm][term].end());
+					currentMatch->add(iterator);
+				}
 			}
 		}
 		else{
