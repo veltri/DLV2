@@ -204,12 +204,17 @@ void ProgramGrounder::ground() {
 					}
 				}
 
+				// If more rule share a recursive predicate, only the first rule
+				// have to swap the delta, then we need a set of predicate evaluated
+				set_predicate predicateEvaluated;
 				for (unsigned int i = 0; i < n_rules; i++){
 					// Move the content of the delta table in the no fact table,
 					// and fill delta with the content of the next delta table.
-					swapInDelta(recursiveRules[component][i]);
+					swapInDelta(recursiveRules[component][i],predicateEvaluated);
 					trace_action_tag(grounding,1,cerr<<"Swap Delta Rule: ";recursiveRules[component][i]->print(cerr););
+					trace_action_tag(grounding,2,printTableInRule(recursiveRules[component][i],predicate_searchInsert_table););
 				}
+
 
 			}
 		}
@@ -378,15 +383,16 @@ bool ProgramGrounder::nextSearchInsertPredicate(Rule* rule,unordered_set<index_o
 }
 
 
-void ProgramGrounder::swapInDelta(Rule *rule){
+void ProgramGrounder::swapInDelta(Rule *rule,set_predicate &predicateEvaluated){
 	for (auto it = rule->getBeginHead(); it != rule->getEndHead(); it++) {
 		set_predicate predicates=(*it)->getPredicates();
 		for(auto predicate:predicates){
 			PredicateExtension* predicateExt = predicateExtTable->getPredicateExt(predicate);
-			if (predicateExt != nullptr){
+			if (predicateExt != nullptr && !predicateEvaluated.count(predicate)){
 				predicateExt->swapTables(DELTA,NOFACT);
 //				predicateExt->swapTables(NEXTDELTA,DELTA);
 				predicateExt->swapPointersTables(NEXTDELTA,DELTA);
+				predicateEvaluated.insert(predicate);
 			}
 		}
 	}

@@ -96,7 +96,7 @@ protected:
 	///The NonGroundSimplifier object
 	NonGroundSimplifier nonGroundSimplificator;
 
-	void swapInDelta(Rule* r);
+	void swapInDelta(Rule* r,set_predicate &predicateEvaluated);
 
 	/* Initialize the vector of predicate_searchInsert_table with:
 	 * 		Atom in head: if is recursive predicate DELTA table else NOFACT table
