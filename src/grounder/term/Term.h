@@ -116,6 +116,8 @@ public:
 	bool isTermMin() const;
 	bool isTermZero() const;
 
+	virtual void getVariablesInArith(set_term& vars){};
+
 	///Check if one or both terms are term max or term min and behaves as the operator >
 	///If checkEqual is true it behaves as the operator >=
 	///Returns 1 or 0 if one of the two terms is the max or the min (according to the comparison)

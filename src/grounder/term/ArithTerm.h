@@ -75,6 +75,8 @@ public:
 
 	virtual bool operator==(const Term& term)const;
 
+	virtual void getVariablesInArith(set_term& vars){this->getVariable(vars);}
+
 	/// Return the string composed by the concatenation of terms and operators
 	virtual size_t hash();
 	virtual void print(ostream& stream=cout);

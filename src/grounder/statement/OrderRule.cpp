@@ -28,13 +28,12 @@ OrderRule::OrderRule(Rule* r):rule(r){
 				/// Find for each positive classical literal the variables that must be bound
 				/// (for example variables appearing in arith terms)
 				bool mustBeBound=false;
+				mapPositiveAtomsBoundVariables.insert({atom_counter,set_term()});
 				for(auto v:current_atom->getTerms()){
-					if(v->getType()==ARITH){
-						if(!mustBeBound){
-							positiveAtomsToBeBound.push_back(atom_counter);
-							mustBeBound=true;
-						}
-						v->getVariable(mapPositiveAtomsBoundVariables[atom_counter]);
+					v->getVariablesInArith(mapPositiveAtomsBoundVariables[atom_counter]);
+					if(mapPositiveAtomsBoundVariables[atom_counter].size()>0 && !mustBeBound){
+						positiveAtomsToBeBound.push_back(atom_counter);
+						mustBeBound=true;
 					}
 				}
 				if(!mustBeBound) positiveAtoms.push_back(atom_counter);
@@ -79,7 +78,6 @@ bool OrderRule::order() {
 
 	// Finally, set the ordered body as the body of the rule
 	rule->setBody(orderedBody);
-
 	// Check head safety once that the safe variables are known
 	return checkHeadSafety();
 
@@ -138,7 +136,7 @@ void OrderRule::unlockAtoms(list<unsigned>& atoms) {
 				orderedBody.push_back(atom);
 				atomsUnlocked.push_back(it);
 			}
-			else if(mapPositiveAtomsBoundVariables.count(*it)){
+			else if(mapPositiveAtomsBoundVariables[*it].size()>0){
 				if(Utils::isContained(mapPositiveAtomsBoundVariables[*it],safeVariables)){
 					atomsUnlocked.push_back(it);
 					addSafeVariablesInAtom(atom,*it);

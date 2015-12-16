@@ -82,6 +82,11 @@ public:
 	virtual size_t hash();
 
 	virtual void print(ostream& stream=cout);
+
+	virtual void getVariablesInArith(set_term& vars){
+		for(auto t:terms)
+			t->getVariablesInArith(vars);
+	}
 private:
 	/**
 	 *   The name of a function
