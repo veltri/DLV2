@@ -24,8 +24,19 @@ OrderRule::OrderRule(Rule* r):rule(r){
 		if(current_atom->isClassicalLiteral()){
 			if(current_atom->isNegative())
 				negativeAtoms.push_back(atom_counter);
-			else
-				positiveAtoms.push_back(atom_counter);
+			else{
+				bool mustBeBound=false;
+				for(auto v:current_atom->getTerms()){
+					if(v->getType()==ARITH){
+						if(!mustBeBound){
+							positiveAtomsToBeBound.push_back(atom_counter);
+							mustBeBound=true;
+						}
+						v->getVariable(mapPositiveAtomsBoundVariables[atom_counter]);
+					}
+				}
+				if(!mustBeBound) positiveAtoms.push_back(atom_counter);
+			}
 		}
 		else if(current_atom->isBuiltIn())
 			 builtInAtoms.push_back(atom_counter);
@@ -43,26 +54,24 @@ bool OrderRule::order() {
 		addSafeVariablesInAtom(current_atom, atom_counter);
 		positiveAtoms.pop_front();
 		unlockAtoms(positiveAtoms);
-		unlockAtoms(negativeAtoms);
+		unlockAtoms(positiveAtomsToBeBound);
 		unlockAtoms(builtInAtoms);
+		unlockAtoms(negativeAtoms);
 	}
 
 	// Second, solve the cyclic dependencies
-	while(builtInAtoms.size()>0 || negativeAtoms.size()>0 || aggregatesAtoms.size()>0){
+	while(builtInAtoms.size()>0 || negativeAtoms.size()>0 || aggregatesAtoms.size()>0 || positiveAtomsToBeBound.size()>0){
 		unsigned sizeBuiltIns=builtInAtoms.size();
 		unsigned sizeNegatives=negativeAtoms.size();
-		unlockAtoms(negativeAtoms);
+		unsigned sizePositivesToBeBound=positiveAtomsToBeBound.size();
 		unlockAtoms(builtInAtoms);
-		if(builtInAtoms.size()==sizeBuiltIns && sizeNegatives==negativeAtoms.size()){
+		unlockAtoms(negativeAtoms);
+		unlockAtoms(positiveAtomsToBeBound);
+		if(positiveAtomsToBeBound.size()==sizePositivesToBeBound && builtInAtoms.size()==sizeBuiltIns && sizeNegatives==negativeAtoms.size()){
 			unsigned sizeAggregates=aggregatesAtoms.size();
 			unlockAtoms(aggregatesAtoms);
-			if(aggregatesAtoms.size()==sizeAggregates){
-				for(auto b:orderedBody){
-					b->print();
-					cout<<endl;
-				}
+			if(aggregatesAtoms.size()==sizeAggregates)
 				return false;
-			}
 		}
 	}
 
@@ -122,9 +131,17 @@ void OrderRule::unlockAtoms(list<unsigned>& atoms) {
 	for(auto it=atoms.begin();it!=atoms.end();++it){
 		Atom* atom=rule->getAtomInBody(*it);
 		set_term variables=mapAtomsVariables[*it];
-		if(atom->isClassicalLiteral() && !atom->isNegative() && Utils::isContained(variables,safeVariables)){
-			orderedBody.push_back(atom);
-			atomsUnlocked.push_back(it);
+		if(atom->isClassicalLiteral() && !atom->isNegative()){
+			if(Utils::isContained(variables,safeVariables)){
+				orderedBody.push_back(atom);
+				atomsUnlocked.push_back(it);
+			}
+			else if(mapPositiveAtomsBoundVariables.count(*it)){
+				if(Utils::isContained(mapPositiveAtomsBoundVariables[*it],safeVariables)){
+					atomsUnlocked.push_back(it);
+					addSafeVariablesInAtom(atom,*it);
+				}
+			}
 		}
 		// If the atom is negative or is not an assignment or is an aggregate
 		// then if every variable is safe, the atom is safe

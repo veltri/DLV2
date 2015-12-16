@@ -22,7 +22,9 @@ private:
 	list<unsigned> negativeAtoms;
 	list<unsigned> positiveAtoms;
 	list<unsigned> aggregatesAtoms;
+	list<unsigned> positiveAtomsToBeBound;
 	unordered_map<unsigned,set_term> mapAtomsVariables;
+	unordered_map<unsigned,set_term> mapPositiveAtomsBoundVariables;
 	vector<Atom*> orderedBody;
 	map_term<unsigned> mapVariablesAtoms;
 	vector<unordered_set<unsigned>> bindAtomsDependency;
