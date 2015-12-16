@@ -25,6 +25,8 @@ OrderRule::OrderRule(Rule* r):rule(r){
 			if(current_atom->isNegative())
 				negativeAtoms.push_back(atom_counter);
 			else{
+				/// Find for each positive classical literal the variables that must be bound
+				/// (for example variables appearing in arith terms)
 				bool mustBeBound=false;
 				for(auto v:current_atom->getTerms()){
 					if(v->getType()==ARITH){

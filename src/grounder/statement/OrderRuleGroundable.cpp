@@ -30,6 +30,11 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<unsigned>>& predicate_
 		}
 		else
 			atomsVariables[i]=atom->getVariable();
+		if(atom->isClassicalLiteral() && !atom->isNegative()){
+			for(auto v:atom->getTerms())
+				if(v->getType()==ARITH)
+					v->getVariable(mapPositiveAtomsBoundVariables[i]);
+		}
 	}
 
 	vector<Atom*> orderedBody;
@@ -148,6 +153,9 @@ bool OrderRuleGroundable::isBound(Atom* atom, unsigned orginalPosition) {
 			variables.erase(atom->getFirstGuard());
 		return Utils::isContained(variables,variablesInTheBody);
 	}
+	else if(mapPositiveAtomsBoundVariables.count(orginalPosition)){
+		return !(atom->containsAnonymous()) && Utils::isContained(mapPositiveAtomsBoundVariables[orginalPosition],variablesInTheBody);
+	}
 	return !(atom->containsAnonymous()) && Utils::isContained(atomsVariables[orginalPosition],variablesInTheBody);
 
 }
@@ -197,8 +205,10 @@ list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(list<unsigned>& a
 		);
 
 		bool bound=isBound(atom,*it);
-		if(!bound && atom->isClassicalLiteral() && !atom->isNegative()){
-			weight=assignWeightPositiveClassicalLit(atom,*it);
+		if(atom->isClassicalLiteral() && !atom->isNegative()){
+			/// If in a positive classical literal all variables that must be bound are bound then it can be safely added to the new body
+			if((!bound && !mapPositiveAtomsBoundVariables.count(*it)) || (bound && mapPositiveAtomsBoundVariables.count(*it)))
+				weight=assignWeightPositiveClassicalLit(atom,*it);
 		}
 		else if(bound){
 			if(atom->isClassicalLiteral()){

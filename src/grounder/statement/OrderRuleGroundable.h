@@ -59,6 +59,9 @@ protected:
 	set_term variablesInTheBody;
 	vector<set_term> atomsVariables;
 	const Priority priorities;
+	/// A map in which for each positive classical literal are stored variables that must be bound
+	/// (for example variables appearing in arith terms)
+	unordered_map<unsigned,set_term> mapPositiveAtomsBoundVariables;
 
 	void computeDictionaryIntersection(Atom* atom);
 };

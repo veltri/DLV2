@@ -24,6 +24,8 @@ private:
 	list<unsigned> aggregatesAtoms;
 	list<unsigned> positiveAtomsToBeBound;
 	unordered_map<unsigned,set_term> mapAtomsVariables;
+	/// A map in which for each positive classical literal are stored variables that must be bound
+	/// (for example variables appearing in arith terms)
 	unordered_map<unsigned,set_term> mapPositiveAtomsBoundVariables;
 	vector<Atom*> orderedBody;
 	map_term<unsigned> mapVariablesAtoms;
