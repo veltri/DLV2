@@ -134,6 +134,9 @@ protected:
 	///		-If it was not derived, then (since is false) the atom is true, so it can be simplified
 	void substituteIndicesInRulesWithPossibleUndefAtoms();
 
+	virtual bool isCartesianProductRule(Rule *r){return false;}
+	virtual void groundCartesian(Rule *r)=0;
+
 
 private:
 	///Print the program rule

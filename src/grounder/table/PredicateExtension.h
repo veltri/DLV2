@@ -112,6 +112,10 @@ public:
 		return atomFound;
 	}
 
+	inline AtomVector* getAtomVector(unsigned i)const{
+		return tables[i];
+	}
+
 	///Get a atom searching in all table
 	Atom* getAtom(Atom* genericAtom){
 		for(unsigned i=0;i<tables.size();++i){

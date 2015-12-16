@@ -423,6 +423,11 @@ bool ProgramGrounder::groundRule(Rule* rule) {
 		return true;
 	}
 
+	if(isCartesianProductRule(rule)){
+		groundCartesian(rule);
+		return true;
+	}
+
 	bool find_assignment=false;
 	bool finish=false;
 

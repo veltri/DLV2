@@ -480,6 +480,95 @@ void BackTrackingGrounder::removeBindValueFromAssignment(const vector<index_obje
 
 }
 
+/*
+ * Check if the rule contains only classical positive atoms and all the variable is bind
+ */
+bool BackTrackingGrounder::isCartesianProductRule(Rule *currentRule){
+	unsigned index_current_atom=0;
+	for (auto current_atom_it = currentRule->getBeginBody(); current_atom_it != currentRule->getEndBody(); ++current_atom_it,++index_current_atom) {
+		Atom *current_atom = *current_atom_it;
+		if(! (current_atom->isClassicalLiteral() && !current_atom->isNegative()))
+			return false;
+		unsigned sizeVar=0;
+		for(unsigned i=0;i<current_atom->getTermsSize();i++){
+			Term *term=current_atom->getTerm(i);
+			if(term->getType()!=VARIABLE)return false;
+			sizeVar++;
+		}
+		if(sizeVar==0 || sizeVar!=atoms_bind_variables[index_current_atom].size())
+			return false;
+	}
+	return true;
+}
+
+/*
+ * ground a rule with only cartesian product. tables contain a vector of the atoms to search, and two index. The first
+ * is the index of the table to search and the second is the the index of the AtomVector. Thsi method simulate the groundRule procedure
+ * but is more light, because we know that the atom not share variable and then we have to search in the AtomVector all the combinations
+ *
+ */
+void BackTrackingGrounder::groundCartesian(Rule* rule){
+	unsigned size=rule->getSizeBody();
+	vector<tuple<vector<AtomVector*>,unsigned,unsigned>> tables;
+
+	int i=0;
+	for(i=0;i<rule->getSizeBody();i++){
+		Predicate *predicate=rule->getAtomInBody(i)->getPredicate();
+		vector<AtomVector*> tableToSearch;
+		for(auto table:predicate_searchInsert_table[i+rule->getSizeHead()]){
+			tableToSearch.push_back(predicateExtTable->getPredicateExt(predicate)->getAtomVector(table));
+		}
+		tables.push_back(make_tuple(tableToSearch,0,0));
+	}
+
+	i=0;
+	while(true){
+		if(i==-1)
+			break;
+
+		if((unsigned)i==size){
+			foundAssignment();
+			--i;
+			continue;
+		}
+
+
+		if(get<1>(tables[i])>=get<0>(tables[i]).size()){
+			get<1>(tables[i])=0;
+			get<2>(tables[i])=0;
+			--i;
+			continue;
+		}
+
+		AtomVector *vec=get<0>(tables[i])[get<1>(tables[i])];
+		if(get<2>(tables[i])>=vec->size()){
+			get<2>(tables[i])=0;
+			get<1>(tables[i])=get<1>(tables[i])+1;
+			continue;
+		}
+		Atom * atom=(*vec)[get<2>(tables[i])];
+
+		ground_rule->setAtomInBody(i,atom);
+		ground_rule->setAtomToSimplifyInBody(i,atom->isFact());
+		if(!rule->isAStrongConstraint()){
+			Atom *nonGroundAtom=rule->getAtomInBody(i);
+			for(unsigned j=0;j<atom->getTermsSize();j++)
+				current_assignment[nonGroundAtom->getTerm(j)->getLocalVariableIndex()]=atom->getTerm(j);
+		}
+
+		get<2>(tables[i])=get<2>(tables[i])+1;
+		++i;
+	}
+
+
+//	for(auto atom1:*predicateExtTable->getPredicateExt(rule->getAtomInBody(0)->getPredicate())->getAtomVector(NOFACT)){
+//		ground_rule->setAtomInBody(0,atom1);
+//		for(auto atom2:*predicateExtTable->getPredicateExt(rule->getAtomInBody(1)->getPredicate())->getAtomVector(NOFACT)){
+//			ground_rule->setAtomInBody(1,atom2);
+//			foundAssignment();
+//		}
+//	}
+}
 
 bool BackTrackingGrounder::groundAggregate() {
 	Atom *aggregateAtom=templateSetAtom[index_current_atom];

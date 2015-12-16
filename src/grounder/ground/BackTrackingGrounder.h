@@ -70,6 +70,9 @@ protected:
 	///Determine the table to search for each atom in the body
 	void findSearchTables();
 
+	virtual bool isCartesianProductRule(Rule *r);
+	virtual void groundCartesian(Rule *r);
+
 	/// Current rule to be grounded
 	Rule* currentRule;
 	/// Position of the atom currently under evaluation
