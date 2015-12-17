@@ -79,6 +79,23 @@ public:
 		return dictionaryIntersectionCreation[index];
 	}
 
+	inline void addBounderBuiltin(unsigned i,Atom *builtin){
+		if(i>=bounderBuiltins.size())
+			bounderBuiltins.resize(i+1);
+		bounderBuiltins[i].push_back(builtin);
+	}
+
+	inline const vector<Atom*>& getBounderBuiltin(unsigned i)const{
+		return bounderBuiltins[i];
+	}
+
+	inline bool isBounderBuiltin(unsigned i)const{
+		if(i>=bounderBuiltins.size() || bounderBuiltins[i].empty())
+			return false;
+		return true;
+	}
+
+
 	void print()const{
 		cerr<<"Dictionary Intersection"<<endl;
 		for(unsigned i=0;i<dictionaryIntersectionCreation.size();++i){
@@ -99,6 +116,7 @@ private:
 	vector<set_term> dictionaryIntersection;
 	vector<bool> dictionaryIntersectionCreation;
 	set_term joinVariables;
+	vector<vector<Atom*>> bounderBuiltins;
 };
 
 /**
@@ -285,6 +303,10 @@ public:
 
 	void clearDictionaryIntersection(){
 		ruleInformation.clearDictionaryIntersection();
+	}
+
+	inline void addBounderBuiltin(unsigned i,Atom *builtin){
+		ruleInformation.addBounderBuiltin(i,builtin);
 	}
 
 private:

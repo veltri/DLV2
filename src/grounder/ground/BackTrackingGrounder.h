@@ -41,7 +41,10 @@ protected:
 	virtual bool foundAssignment();
 
 	/// Generate the template atom of current atom (substitute at the current atom the current assignment)
-	virtual void generateTemplateAtom();
+	inline void generateTemplateAtom(){
+		currentRule->getAtomInBody(index_current_atom)->ground(current_assignment,templateSetAtom[index_current_atom]);
+	}
+
 	/// Remove the variable in the current assignment which are in bind_variables
 	virtual void removeBindValueFromAssignment(const vector<index_object>& bind_variables);
 	/// Call the first match with the current atom
@@ -72,6 +75,9 @@ protected:
 
 	virtual bool isCartesianProductRule(Rule *r);
 	virtual void groundCartesian(Rule *r);
+
+	///Find the builtin that can be evaluated while match an atom
+	virtual void findBuiltinFastEvaluated();
 
 	/// Current rule to be grounded
 	Rule* currentRule;
@@ -105,6 +111,15 @@ protected:
 
 	/// The size is >0 if the current ground rule has at least a negative atom that an potentially be an undef atom (an atom without a valid index)
 	vector<unsigned> atomsPossibleUndef;
+
+	///Map each variable to its binder atom
+	AdvancedArray<unsigned,ARRAY_SIZE> variablesBinder;
+
+	///Vector of the size of the body. If the position of this vector is true then the builtin
+	/// in the rule with this position is already evaluated
+	vector<bool> builtAlreadyEvaluated;
+
+	vector<vector<Atom*>> matchBuiltin;
 
 #ifdef TRACE_ON
 	/// Print the current assignment

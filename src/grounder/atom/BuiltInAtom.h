@@ -72,6 +72,10 @@ public:
 	///This method evaluate the truth value of the built-in atom
 	bool evaluate(var_assignment& substritutionTerm);
 
+	///This method first substitute the terms and after evaluate the truth value of the built-in atom
+	bool groundAndEvaluate(var_assignment& substitutionTerm);
+
+
 	/// Return true if is BuiltInAtom
 	virtual bool isBuiltIn()const{return true;};
 
@@ -83,6 +87,7 @@ public:
 
 	virtual bool isAssignment(){return assignment;};
 	virtual void setAssignment(bool assignment){this->assignment=assignment;};
+
 
 	///Destructor
 	~BuiltInAtom() {};

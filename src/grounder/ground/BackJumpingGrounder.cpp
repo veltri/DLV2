@@ -12,6 +12,7 @@ namespace DLV2 {
 namespace grounder {
 
 bool BackJumpingGrounder::back() {
+
 	direction=0;
 	callFoundAssignment = false;
 	if (index_current_atom <  0)
@@ -79,12 +80,6 @@ void BackJumpingGrounder::inizialize(Rule* rule) {
 	historyBackOutputVars.setSize(currentRule->getSizeBody(),-2);
 	historyBackFromSolutionFound=-2;
 
-	variablesBinder.setSize(current_assignment.size(),0);
-	for(unsigned i=0;i<atoms_bind_variables.size();++i){
-		for(auto var:atoms_bind_variables[i])
-			variablesBinder[var]=i;
-	}
-
 	atomsVariables.clear();
 
 	failureMap.resize(current_assignment.size(),false);
@@ -95,12 +90,21 @@ void BackJumpingGrounder::inizialize(Rule* rule) {
 		const set_term& variables=atom->getVariable();
 		outputVariables.insert(variables.begin(),variables.end());
 	}
-	for (auto it=currentRule->getBeginBody();it!=currentRule->getEndBody(); ++it) {
+	unsigned position=0;
+	for (auto it=currentRule->getBeginBody();it!=currentRule->getEndBody(); ++it,++position) {
 		Atom* atom=*it;
 		const set_term& variablesInAtom=atom->getVariable();
 		atomsVariables.push_back(variablesInAtom);
-		if(atom->isClassicalLiteral() && !atom->getPredicate()->isSolved()){
-			outputVariables.insert(variablesInAtom.begin(),variablesInAtom.end());
+		if(atom->isClassicalLiteral()){
+			if(!atom->getPredicate()->isSolved()){
+				outputVariables.insert(variablesInAtom.begin(),variablesInAtom.end());
+			}
+			//Add also the variable in the builtin that the atom evaluate inside the matchTerm
+			if(!matchBuiltin[position].empty())
+				for(auto builtinAtom:matchBuiltin[position]){
+					auto variablesInBuiltIn=builtinAtom->getVariable();
+					atomsVariables[position].insert(variablesInBuiltIn.begin(),variablesInBuiltIn.end());
+				}
 		}
 		else if(atom->isAggregateAtom()){ //&& atom->isAssignment()
 			set_term variablesUnsolved;
@@ -121,12 +125,7 @@ void BackJumpingGrounder::inizialize(Rule* rule) {
 			var->print(cerr);cerr<<" ";
 		}
 		cerr<<endl;);
-	trace_action_tag(backjumping,1,cerr<<"VARIABLES BINDER: ";
-		for(unsigned i=0;i<currentRule->getSizeBody();++i){
-			cerr<<variablesBinder[i]<<" ";
-		}
-		cerr<<endl;
-	);
+
 }
 
 void BackJumpingGrounder::closestBinder( int literal_pos, const set_term& variables,int& positionCB, bool includeCurrentLiteral) {
@@ -193,6 +192,7 @@ void BackJumpingGrounder::backFromFirstMatch() {
 	trace_msg(backjumping,1,"CURRENT ATOM "<<index_current_atom);
 }
 
+
 bool BackJumpingGrounder::match() {
 	trace_msg(backjumping,1,"---> MATCH");
 	bool result = true;
@@ -207,10 +207,12 @@ bool BackJumpingGrounder::match() {
 		const set_term& vars=atomsVariables[index_current_atom];
 		for(auto var:vars)
 			failureMap[var->getLocalVariableIndex()]=true;
+
 	}
 	else{
 		for(auto var: atoms_bind_variables[index_current_atom])
 			failureMap[var]=false;
+
 	}
 
 	trace_msg(backjumping,1,"MATCH RESULT: "<<result);

@@ -17,9 +17,43 @@ namespace DLV2{
 namespace grounder{
 
 
+//TODO - This method have to be removed, use only groundAndEvaluate
 bool BuiltInAtom::evaluate(var_assignment& substitutionTerm){
 	Term* firstTerm=terms[0];
 	Term* secondTerm=terms[1];
+
+	// If there is equal and variable assign that value
+	if(assignment){
+		if(firstTerm->getType()==TermType::VARIABLE || secondTerm->getType()!=TermType::VARIABLE ){
+			substitutionTerm[firstTerm->getLocalVariableIndex()]=secondTerm->calculate();
+			return true;
+		}if(firstTerm->getType()!=TermType::VARIABLE || secondTerm->getType()==TermType::VARIABLE ){
+			substitutionTerm[secondTerm->getLocalVariableIndex()]=firstTerm->calculate();
+			return true;
+	    }
+	}
+
+
+	if(binop==Binop::EQUAL)
+		return firstTerm->getIndex()==secondTerm->getIndex();
+	if(binop==Binop::UNEQUAL)
+		return firstTerm->getIndex()!=secondTerm->getIndex();
+	if(binop==Binop::LESS)
+		return *firstTerm<*secondTerm;
+	if(binop==Binop::LESS_OR_EQ)
+		return *firstTerm<=*secondTerm;
+	if(binop==Binop::GREATER)
+		return *firstTerm>*secondTerm;
+	if(binop==Binop::GREATER_OR_EQ)
+		return *firstTerm>=*secondTerm;
+
+	return false;
+}
+
+bool BuiltInAtom::groundAndEvaluate(var_assignment& substitutionTerm){
+	Term* firstTerm=terms[0]->substitute(substitutionTerm)->calculate();
+
+	Term* secondTerm=terms[1]->substitute(substitutionTerm)->calculate();
 
 	// If there is equal and variable assign that value
 	if(assignment){

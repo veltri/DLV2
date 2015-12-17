@@ -144,6 +144,8 @@ public:
 	///This method evaluate the truth value of the built-in atom, if there is bind variable
 	/// and equal then assign that value for the bind variable
 	virtual bool evaluate(var_assignment& substritutionTerm ){return false;};
+	///This method is like the evaluate but first substitute the variable in the builtin
+	virtual bool groundAndEvaluate(var_assignment& substitutionTerm){return false;}
 	///Return true if the built in assign value in term, else compare the variable like ==
 	virtual bool isAssignment(){return false;};
 	virtual void setAssignment(bool assigment){};

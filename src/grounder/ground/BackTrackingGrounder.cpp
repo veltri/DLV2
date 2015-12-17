@@ -16,9 +16,6 @@
 namespace DLV2 {
 namespace grounder {
 
-void BackTrackingGrounder::generateTemplateAtom(){
-	currentRule->getAtomInBody(index_current_atom)->ground(current_assignment,templateSetAtom[index_current_atom]);
-}
 
 #ifdef TRACE_ON
 void BackTrackingGrounder::printAssignment(){
@@ -141,6 +138,8 @@ bool BackTrackingGrounder::match() {
 		current_id_match[index_current_atom][0].second=1;
 		ground_rule->setAtomToSimplifyInBody(index_current_atom);
 
+		if(builtAlreadyEvaluated[index_current_atom])
+			return true;
 
 		return templateSetAtom[index_current_atom] -> evaluate(current_assignment);
 
@@ -376,6 +375,7 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 	findSearchTables();
 	if(rule->getSizeBody()>0)
 		generateTemplateAtom();
+	findBuiltinFastEvaluated();
 
 	if(ground_rule==0)
 		ground_rule=new Rule(true, rule->getSizeHead(), rule->getSizeBody());
@@ -384,6 +384,8 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 		ground_rule=new Rule(true, rule->getSizeHead(), rule->getSizeBody());
 	}
 	atomsPossibleUndef.clear();
+
+
 }
 
 void BackTrackingGrounder::findBindVariablesRule() {
@@ -392,6 +394,7 @@ void BackTrackingGrounder::findBindVariablesRule() {
 	unsigned int index_current_atom = 0;
 	atoms_bind_variables.clear();
 	atoms_bind_variables.resize(currentRule->getSizeBody());
+	variablesBinder.setSize(currentRule->getVariablesSize(),0);
 
 //	map_term<index_object> variableLocalIndex;
 
@@ -418,7 +421,9 @@ void BackTrackingGrounder::findBindVariablesRule() {
 		atoms_bind_variables[index_current_atom].reserve(variablesInAtom.size());
 		for (auto variable : variablesInAtom) {
 			if (!total_variable.count(variable)){
-				atoms_bind_variables[index_current_atom].push_back(variable->getLocalVariableIndex());
+				unsigned var=variable->getLocalVariableIndex();
+				atoms_bind_variables[index_current_atom].push_back(var);
+				variablesBinder[var]=index_current_atom;
 			}
 		}
 
@@ -430,6 +435,15 @@ void BackTrackingGrounder::findBindVariablesRule() {
 	}
 
 	current_assignment.setSize(currentRule->getVariablesSize(),nullptr);
+
+
+	trace_action_tag(backjumping,1,cerr<<"VARIABLES BINDER: ";
+		for(unsigned i=0;i<currentRule->getSizeBody();++i){
+			cerr<<variablesBinder[i]<<" ";
+		}
+		cerr<<endl;
+	);
+
 
 	trace_action_tag(backtracking,1,
 		cerr<<"BINDER OF ATOMS: ";int i=0;
@@ -479,6 +493,53 @@ void BackTrackingGrounder::removeBindValueFromAssignment(const vector<index_obje
 		current_assignment[variable]=nullptr;
 
 }
+
+/*
+ * For each atom in the body of the rule, find an a BuiltinAtom that is not an assignment. Then find the greates atom that bind some of the variable
+ * in the builtin that is an a classical literal. After that the greatest binder is founded we have to find the rightmost variable ,in the classical literal, is also in the builtin.
+ * Then the variable selected in the classical literal have to evaluate the built-in while do the matchTerm.
+ */
+void BackTrackingGrounder::findBuiltinFastEvaluated(){
+	builtAlreadyEvaluated.clear();
+	builtAlreadyEvaluated.resize(currentRule->getSizeBody(),false);
+	matchBuiltin.clear();
+	matchBuiltin.resize(currentRule->getSizeBody());
+	unsigned index_current_atom=0;
+	for (auto current_atom_it = currentRule->getBeginBody(); current_atom_it != currentRule->getEndBody(); ++current_atom_it,++index_current_atom) {
+		Atom *atom=*current_atom_it;
+		if(atom->isBuiltIn() && !atom->isAssignment()){
+			//Find the greatest classical literal that bind some variable in the builtin
+			auto varInBuiltin=atom->getVariable();
+			unsigned positionAtomBinder=0;
+			for(auto var:varInBuiltin)
+				if(variablesBinder[var->getLocalVariableIndex()]>positionAtomBinder)
+					positionAtomBinder=variablesBinder[var->getLocalVariableIndex()];
+			Atom* atomBinder=currentRule->getAtomInBody(positionAtomBinder);
+			if(atomBinder->isClassicalLiteral()){
+				//Find the rightmost variable in the classical literal that is contained also in the builtin
+				list<Term*> termsInAtom;
+				for(unsigned i=0;i<atomBinder->getTermsSize();i++)
+					termsInAtom.push_back(atomBinder->getTerm(i));
+				while(termsInAtom.size()>0){
+					Term *lastTerm=termsInAtom.back();
+					termsInAtom.pop_back();
+					if(lastTerm->getType()==VARIABLE && varInBuiltin.count(lastTerm)){
+						//VARIABLE FINDED, then the builtin can be evaluated while matching the term in the classical literal
+						builtAlreadyEvaluated[index_current_atom]=true;
+						matchBuiltin[positionAtomBinder].push_back(atom);
+						currentRule->addBounderBuiltin(lastTerm->getLocalVariableIndex(),atom);
+						break;
+					}else if(lastTerm->getType()==FUNCTION){
+						//Term is function, then put in the list the term and recursively check if exist the varaible
+						for(unsigned i=0;i<lastTerm->getTermsSize();i++)termsInAtom.push_back(lastTerm->getTerm(i));
+					}
+				}
+			}
+		}
+	}
+
+}
+
 
 /*
  * Check if the rule contains only classical positive atoms and all the variable is bind

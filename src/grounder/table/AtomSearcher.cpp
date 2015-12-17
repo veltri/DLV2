@@ -29,7 +29,7 @@ bool AtomSearcher::checkMatch(Atom *genericAtom, Atom *templateAtom, var_assignm
 		Term* genericTerm=genericAtom->getTerm(i);
 		Term* termToMatch=templateAtom->getTerm(i);
 		if (termToMatch->getIndex() == genericTerm->getIndex()) continue;
-		if(!matchTerm(genericTerm,termToMatch,assignInTerm,variablesAdded,ruleInformation))
+		if(!matchTerm(genericTerm,termToMatch,assignInTerm,variablesAdded,currentAssignment,ruleInformation))
 			return false;
 	}
 
@@ -42,7 +42,25 @@ bool AtomSearcher::checkMatch(Atom *genericAtom, Atom *templateAtom, var_assignm
 
 }
 
-bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, var_assignment& varAssignment,vector<index_object>& addedVariables,const RuleInformation& ruleInformation){
+/*
+ * For each builtin atom that the bind variable(with local index=index) is the last variable evaluated in the builtin, check if the builtin is satisfied. If the
+ * evaluation of builtin is false the match of the term, then the match of the atom fail
+ */
+bool AtomSearcher::evaluateFastBuiltin(const RuleInformation& ruleInformation,index_object index, var_assignment& currentAssignment, var_assignment& varAssignment, Term* genericTerm) {
+	for (auto builtin : ruleInformation.getBounderBuiltin(index)) {
+		Atom* groundBuiiltin1 = nullptr;
+		builtin->ground(currentAssignment, groundBuiiltin1);
+		varAssignment[index] = genericTerm;
+		bool evaluation = groundBuiiltin1->groundAndEvaluate(varAssignment);
+		delete groundBuiiltin1;
+		if (!evaluation) {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, var_assignment& varAssignment,vector<index_object>& addedVariables,var_assignment& currentAssignment,const RuleInformation& ruleInformation){
 
 	TermType termToMatchType=termToMatch->getType();
 	TermType genericTermType=genericTerm->getType();
@@ -60,6 +78,12 @@ bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, var_assignmen
 		if(ruleInformation.isCreatedDictionaryIntersection(index) && !ruleInformation.countInDictionaryIntersection(index,genericTerm)){
 			return false;
 		}
+
+		if(ruleInformation.isBounderBuiltin(index)){
+			if(!evaluateFastBuiltin(ruleInformation, index,currentAssignment, varAssignment, genericTerm))
+				return false;
+		}
+
 		varAssignment[index]=genericTerm;
 		addedVariables.push_back(index);
 		return true;
@@ -78,7 +102,7 @@ bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, var_assignmen
 		if(termToMatch->getName().compare(genericTerm->getName()) != 0)return false;
 		if(termToMatch->getTermsSize() != genericTerm->getTermsSize())return false;
 		for(unsigned int i=0;i<genericTerm->getTermsSize();++i)
-			if(!matchTerm(genericTerm->getTerm(i),termToMatch->getTerm(i),varAssignment,addedVariables,ruleInformation))
+			if(!matchTerm(genericTerm->getTerm(i),termToMatch->getTerm(i),varAssignment,addedVariables,currentAssignment,ruleInformation))
 				return false;
 
 		return true;
