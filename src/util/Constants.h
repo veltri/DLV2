@@ -89,6 +89,7 @@ namespace grounder{
 	#define MULTIMAP 2
 	#define HASHSET 3
 	#define DOUBLEMAP 4
+	#define MAP_DICTIONARY_INTERSECTION 5
 
 	#define NATIVE_CHOICE 0
 	#define DISJUNCTION 1

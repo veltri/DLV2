@@ -74,7 +74,7 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<unsigned>>& predicate_
 		Atom* atom=rule->getAtomInBody((*bestAtom));
 		orderedBody.push_back(atom);
 		orderedPositions.push_back(*bestAtom);
-		if(atom->isClassicalLiteral() && !atom->isNegative())
+		if(Options::globalOptions()->isEnabledDictionaryIntersection() && atom->isClassicalLiteral() && !atom->isNegative())
 			computeDictionaryIntersection(atom);
 		variablesInTheBody.insert(atomsVariables[*bestAtom].begin(),atomsVariables[*bestAtom].end());
 		atomsToInsert.erase(bestAtom);

@@ -67,6 +67,7 @@ namespace DLV2
 #define OPTIONID_textual ('z' + 41)
 #define OPTIONID_instantiationProcedure ('z' + 42)
 #define OPTIONID_positiveOrderingProcedure ('z' + 43)
+#define OPTIONID_enableDictionaryIntersection ('z' + 44)
 
 
 };
@@ -118,7 +119,8 @@ Options::Options():
 		rewritingType(NATIVE_CHOICE),
 		outputFormat(OUTPUT_NUMERIC),
 		instantiationProcedure(BACKJUMPING),
-		positiveOrderingProcedure(COMBINED_POSITIVE_ORDERING)
+		positiveOrderingProcedure(COMBINED_POSITIVE_ORDERING),
+		enabledDictionaryIntersection(false)
 {
 
 }
@@ -140,7 +142,8 @@ Options::Options(
 		rewritingType(o.rewritingType),
 		outputFormat(o.outputFormat),
 		instantiationProcedure(o.instantiationProcedure),
-		positiveOrderingProcedure(COMBINED_POSITIVE_ORDERING)
+		positiveOrderingProcedure(o.positiveOrderingProcedure),
+		enabledDictionaryIntersection(o.enabledDictionaryIntersection)
 
 {
 
@@ -193,6 +196,7 @@ Options::init(
 		{"t",no_argument, NULL, OPTIONID_textual},
 		{"instantiate",required_argument, NULL, OPTIONID_instantiationProcedure},
 		{"positiveOrdering",required_argument, NULL, OPTIONID_positiveOrderingProcedure},
+		{"dictionary-intersection",no_argument, NULL, OPTIONID_enableDictionaryIntersection},
 
         // Required at end of array. 
         { NULL, 0, NULL, 0 }
@@ -278,7 +282,7 @@ Options::init(
 
             case OPTIONID_indexType:
             	indexType = atoi(optarg);
-                assert_msg((indexType>=DEFAULT && indexType<=DOUBLEMAP),"Index type not supported");
+                assert_msg((indexType>=DEFAULT && indexType<=MAP_DICTIONARY_INTERSECTION),"Index type not supported");
                 break;
 
             case OPTIONID_predIndexTerm:
@@ -317,6 +321,10 @@ Options::init(
 
             case OPTIONID_positiveOrderingProcedure:
             	positiveOrderingProcedure=atoi(optarg);
+				break;
+
+            case OPTIONID_enableDictionaryIntersection:
+            	enabledDictionaryIntersection=true;
 				break;
 
             default:

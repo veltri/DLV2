@@ -110,6 +110,14 @@ namespace DLV2
 			return positiveOrderingProcedure;
 		}
 
+		bool isEnabledDictionaryIntersection() const {
+			return enabledDictionaryIntersection;
+		}
+
+		void setEnabledDictionaryIntersection(bool enableDictionaryIntersection) {
+			this->enabledDictionaryIntersection = enableDictionaryIntersection;
+		}
+
     private:
 
         static Options* instance;
@@ -175,6 +183,8 @@ namespace DLV2
     	unsigned instantiationProcedure;
 
     	unsigned positiveOrderingProcedure;
+
+    	bool enabledDictionaryIntersection;
     };
     
 };

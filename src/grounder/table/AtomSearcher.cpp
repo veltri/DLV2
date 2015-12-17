@@ -26,7 +26,10 @@ bool AtomSearcher::checkMatch(Atom *genericAtom, Atom *templateAtom, var_assignm
 
 	vector<index_object> variablesAdded;
 	for(unsigned int i=0;i<genericAtom->getTermsSize();++i){
-		if(!matchTerm(genericAtom->getTerm(i),templateAtom->getTerm(i),assignInTerm,variablesAdded,ruleInformation))
+		Term* genericTerm=genericAtom->getTerm(i);
+		Term* termToMatch=templateAtom->getTerm(i);
+		if (termToMatch->getIndex() == genericTerm->getIndex()) continue;
+		if(!matchTerm(genericTerm,termToMatch,assignInTerm,variablesAdded,ruleInformation))
 			return false;
 	}
 
@@ -41,7 +44,11 @@ bool AtomSearcher::checkMatch(Atom *genericAtom, Atom *templateAtom, var_assignm
 
 bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, var_assignment& varAssignment,vector<index_object>& addedVariables,const RuleInformation& ruleInformation){
 
-	if (termToMatch->getType()==TermType::VARIABLE) {
+	TermType termToMatchType=termToMatch->getType();
+	TermType genericTermType=genericTerm->getType();
+	if((termToMatchType==TermType::NUMERIC_CONSTANT || termToMatchType==TermType::STRING_CONSTANT || termToMatchType==TermType::SYMBOLIC_CONSTANT))
+		return false;
+	else if (termToMatchType==TermType::VARIABLE) {
 		index_object index=termToMatch->getLocalVariableIndex();
 		Term* term=varAssignment[index];
 		if(term!=nullptr){
@@ -57,23 +64,17 @@ bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, var_assignmen
 		addedVariables.push_back(index);
 		return true;
 	}
+	else if (termToMatchType==TermType::ANONYMOUS) return true;
 
-	if(termToMatch->getType()==TermType::ARITH){
+	else if(termToMatchType==TermType::ARITH){
 		Term *new_term=termToMatch->substitute(varAssignment);
 		assert_msg(new_term->isGround(),"Arith term not safe");
 		termToMatch=new_term->calculate();
 	}
 
-	if (termToMatch->getType()==TermType::ANONYMOUS) return true;
+	else if(genericTermType==TermType::FUNCTION){
 
-	if((genericTerm->getType()==TermType::NUMERIC_CONSTANT || genericTerm->getType()==TermType::STRING_CONSTANT
-			 || genericTerm->getType()==TermType::SYMBOLIC_CONSTANT)){
-
-		if (termToMatch->getIndex() == genericTerm->getIndex()) return true;
-
-	}else if(genericTerm->getType()==TermType::FUNCTION){
-
-		if(termToMatch->getType()!=TermType::FUNCTION) return false;
+		if(termToMatchType!=TermType::FUNCTION) return false;
 		if(termToMatch->getName().compare(genericTerm->getName()) != 0)return false;
 		if(termToMatch->getTermsSize() != genericTerm->getTermsSize())return false;
 		for(unsigned int i=0;i<genericTerm->getTermsSize();++i)
@@ -369,6 +370,30 @@ int BinderSelector2::select(Atom* templateAtom,
 
 }
 
+int BinderSelector3::select(Atom* templateAtom,
+		const RuleInformation& ruleInformation,
+		vector<pair<int, index_object> >& possibleTableToSearch,
+		vector<pair<int,index_object>>& bindVariablesWithCreatedIntersection,
+		SingleTermAtomSearcher* atomSearcher) {
+
+	int indexSelected=-1;
+	unsigned size=possibleTableToSearch.size();
+	if(size==0){
+		if(bindVariablesWithCreatedIntersection.size()>0)
+			indexSelected=bindVariablesWithCreatedIntersection.front().first;
+	}
+	else if(size==1)
+		indexSelected=possibleTableToSearch.front().first;
+	else
+		indexSelected=atomSearcher->selectBestIndex(possibleTableToSearch);
+
+	if(indexSelected>=0 && !atomSearcher->isCreatedSearchingTable(indexSelected))
+		atomSearcher->initializeIndexMaps(indexSelected);
+
+	return indexSelected;
+
+}
+
 int SingleTermMapDictionaryAtomSearcher::manageIndex(Atom* templateAtom, const RuleInformation& ruleInformation) {
 	vector<pair<int,index_object>> possibleTableToSearch;
 	vector<pair<int,index_object>> bindVariablesWithCreatedIntersection;
@@ -383,7 +408,7 @@ int SingleTermMapDictionaryAtomSearcher::manageIndex(Atom* templateAtom, const R
 }
 
 void SingleTermMapDictionaryAtomSearcher::setBinderSelector() {
-	binderSelector=new BinderSelector2();
+	binderSelector=new BinderSelector3();
 }
 
 GeneralIterator* SingleTermMapDictionaryAtomSearcher::computeGenericIterator(Atom* templateAtom, const RuleInformation& ruleInformation) {

@@ -77,7 +77,7 @@ class MultipleIterators : public GeneralIterator{
 public:
 	MultipleIterators():currentIterator(0){};
 	virtual void add(GeneralIterator* g){iterators.push_back(g);}
-	virtual void next(){
+	__attribute__ ((always_inline)) virtual void next(){
 		iterators[currentIterator]->next();
 		if(iterators[currentIterator]->isDone())
 			currentIterator++;

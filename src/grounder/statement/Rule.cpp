@@ -252,14 +252,14 @@ void Rule::computeVariablesLocalIndices() {
 			if(!variableLocalIndex.count(term)){
 				term->setLocalVariableIndex(variableLocalIndex.size()+1);
 				variableLocalIndex.insert(term);
-				trace_action_tag(backtracking,1,
+				trace_action_tag(grounding,1,
 					cerr<<"VARIABLE-INDEX : ";term->print(cerr);cerr<<" = "<<term->getLocalVariableIndex()<<endl;
 				);
 			}
 			else{
 				if(atom->isClassicalLiteral() && !atom->isNegative()){
 					ruleInformation.insertJoinVariable(term);
-					trace_action_tag(backtracking,1,
+					trace_action_tag(grounding,1,
 							cerr<<"JOIN VARIABLE : ";term->print(cerr);cerr<<endl;
 					);
 				}
