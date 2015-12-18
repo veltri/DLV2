@@ -46,7 +46,6 @@ void PredicateExtension::setAtomSearchers(){
 			atomSearcher = new SingleTermMapAtomSearcher(tables[atomSearchers.size()],predicate);
 			break;
 		case (MAP_DICTIONARY_INTERSECTION):
-			Options::globalOptions()->setEnabledDictionaryIntersection(true);
 			atomSearcher = new SingleTermMapDictionaryAtomSearcher(tables[atomSearchers.size()],predicate);
 			break;
 		case (MULTIMAP):

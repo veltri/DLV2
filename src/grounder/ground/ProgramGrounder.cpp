@@ -226,8 +226,8 @@ void ProgramGrounder::ground() {
 				continue;
 			try{
 				orderPositiveAtomsBody(rule);
-				groundRule(rule);
 				trace_action_tag(grounding,1,cerr<<"Grounding Constraint Rule: ";rule->print(cerr););
+				groundRule(rule);
 			}
 			catch (exception& e){
 				foundEmptyConstraint=true;
@@ -245,8 +245,8 @@ void ProgramGrounder::ground() {
 					continue;
 				try{
 					orderPositiveAtomsBody(rule);
-					groundRule(rule);
 					trace_action_tag(grounding,1,cerr<<"Grounding Constraint Rule: ";rule->print(cerr););
+					groundRule(rule);
 				}catch (exception& e){
 					break;
 				}

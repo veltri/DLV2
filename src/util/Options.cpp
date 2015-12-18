@@ -282,6 +282,7 @@ Options::init(
 
             case OPTIONID_indexType:
             	indexType = atoi(optarg);
+            	if(indexType==MAP_DICTIONARY_INTERSECTION) Options::globalOptions()->setEnabledDictionaryIntersection(true);
                 assert_msg((indexType>=DEFAULT && indexType<=MAP_DICTIONARY_INTERSECTION),"Index type not supported");
                 break;
 

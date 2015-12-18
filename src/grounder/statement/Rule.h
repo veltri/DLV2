@@ -104,6 +104,12 @@ public:
 		cerr<<"Dictionary Intersection"<<endl;
 		for(unsigned i=0;i<dictionaryIntersectionCreation.size();++i){
 			if(dictionaryIntersectionCreation[i]){
+				for(auto t:joinVariables)
+					if(t->getLocalVariableIndex()==i)
+					{
+						t->print(cerr);cerr<<" --> ";
+						break;
+					}
 				for(auto t:dictionaryIntersection[i]){
 					t->print(cerr);cerr<<" ";
 				}

@@ -1,18 +1,39 @@
-%a:-sol(K1,ET1),sol(K2,ET2),ET1<ET2,p(K1,EP1),p(K1,EP2),EP1>=EP2.
 
-%sol(1,1)| d.
-%sol(1,2)| d.
-%p(1,1).
-%p(1,2).
+%ancestor(X,Y) :- edge(X,Y).
+%ancestor(X,Y) :- ancestor(X,U), ancestor(U,Y).
+
+%edge(1,2).
+%edge(2,3).
+%edge(3,4).
+%edge(3,5).
+%edge(4,6).
+%edge(4,7).
+%edge(7,8).
+
+%d(X,Y,Z,W):-a(X,Y),a(X,E),b(Y,Z),c(Z,W).
+%a(1,1). b(2,3). c(3,1).
+%a(1,2). b(2,4). c(3,2).
+%a(4,7). b(3,1). c(5,7).
+
+filled(X,Y) :- bottle(B,X,Y), not unfilled(X,Y).
+unfilled(X,Y) :- bottle(B,X,Y), not filled(X,Y).
+
+%:- xvalue(Y,V), not #count{ X : filled(X,Y) } = V.
+%:- yvalue(X,V), not #count{ Y : filled(X,Y) } = V.
+
+:- bottle(B,X1,Y1), bottle(B,X2,Y2), ysucc(Y1,Y2), filled(X1,Y1), unfilled(X2,Y2).
+:- bottle(B,X1,Y), bottle(B,X2,Y), filled(X1,Y), unfilled(X2,Y), X1 != X2.
+
+%xvalue(1,3).
+%yvalue(1,5).
+bottle(1,1,1).
+bottle(2,1,2).
+filled(1,1).
+unfilled(1,2).
+ysucc(1,2).
 
 
-%a(X,Y):-b(X,Z),b(Z,Y),not c(X,Y).
-%b(1,1) | f.
-%c(1,1).
-%b(1..20,1..20) | f.
-%c(1..20,1..20) | g.
 
-true.
 
-w :- true.
-w :- not w.
+
+ 

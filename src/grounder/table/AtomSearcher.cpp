@@ -68,15 +68,15 @@ bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, var_assignmen
 		return false;
 	else if (termToMatchType==TermType::VARIABLE) {
 		index_object index=termToMatch->getLocalVariableIndex();
+		if(ruleInformation.isCreatedDictionaryIntersection(index) && !ruleInformation.countInDictionaryIntersection(index,genericTerm)){
+			return false;
+		}
 		Term* term=varAssignment[index];
 		if(term!=nullptr){
 			if( term->getIndex() == genericTerm->getIndex())
 				return true;
 			else
 				return false;
-		}
-		if(ruleInformation.isCreatedDictionaryIntersection(index) && !ruleInformation.countInDictionaryIntersection(index,genericTerm)){
-			return false;
 		}
 
 		if(ruleInformation.isBounderBuiltin(index)){
@@ -403,8 +403,13 @@ int BinderSelector3::select(Atom* templateAtom,
 	int indexSelected=-1;
 	unsigned size=possibleTableToSearch.size();
 	if(size==0){
-		if(bindVariablesWithCreatedIntersection.size()>0)
-			indexSelected=bindVariablesWithCreatedIntersection.front().first;
+		if(bindVariablesWithCreatedIntersection.size()>0){
+				auto element=bindVariablesWithCreatedIntersection.front();
+				if(PredicateExtTable::getInstance()->getPredicateExt(templateAtom->getPredicate())->getPredicateInformation()->getSelectivity(element.first)
+						>ruleInformation.getDictionaryIntersectionSize(element.second)){
+					indexSelected=bindVariablesWithCreatedIntersection.front().first;
+				}
+		}
 	}
 	else if(size==1)
 		indexSelected=possibleTableToSearch.front().first;
@@ -415,7 +420,38 @@ int BinderSelector3::select(Atom* templateAtom,
 		atomSearcher->initializeIndexMaps(indexSelected);
 
 	return indexSelected;
+}
 
+int BinderSelector4::select(Atom* templateAtom,
+		const RuleInformation& ruleInformation,
+		vector<pair<int, index_object> >& possibleTableToSearch,
+		vector<pair<int,index_object>>& bindVariablesWithCreatedIntersection,
+		SingleTermAtomSearcher* atomSearcher) {
+
+	int indexSelected=-1;
+	unsigned size=possibleTableToSearch.size();
+	if(size==0){
+		if(bindVariablesWithCreatedIntersection.size()>0){
+			int min=INT_MAX;
+			for(auto var:bindVariablesWithCreatedIntersection){
+				int currentSize=ruleInformation.getDictionaryIntersectionSize(var.second);
+				if(currentSize<min && PredicateExtTable::getInstance()->getPredicateExt(templateAtom->getPredicate())->getPredicateInformation()->getSelectivity(var.first)
+						>ruleInformation.getDictionaryIntersectionSize(var.second)){
+					min=currentSize;
+					indexSelected=var.first;
+				}
+			}
+		}
+	}
+	else if(size==1)
+		indexSelected=possibleTableToSearch.front().first;
+	else
+		indexSelected=atomSearcher->selectBestIndex(possibleTableToSearch);
+
+	if(indexSelected>=0 && !atomSearcher->isCreatedSearchingTable(indexSelected))
+		atomSearcher->initializeIndexMaps(indexSelected);
+
+	return indexSelected;
 }
 
 int SingleTermMapDictionaryAtomSearcher::manageIndex(Atom* templateAtom, const RuleInformation& ruleInformation) {
@@ -428,6 +464,7 @@ int SingleTermMapDictionaryAtomSearcher::manageIndex(Atom* templateAtom, const R
 		else if(ruleInformation.isCreatedDictionaryIntersection(t->getLocalVariableIndex()))
 			bindVariablesWithCreatedIntersection.push_back({i,t->getLocalVariableIndex()});
 	}
+
 	return binderSelector->select(templateAtom,ruleInformation,possibleTableToSearch,bindVariablesWithCreatedIntersection,this);
 }
 
