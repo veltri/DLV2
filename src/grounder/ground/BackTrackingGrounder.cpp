@@ -504,6 +504,7 @@ void BackTrackingGrounder::findBuiltinFastEvaluated(){
 	builtAlreadyEvaluated.resize(currentRule->getSizeBody(),false);
 	matchBuiltin.clear();
 	matchBuiltin.resize(currentRule->getSizeBody());
+	currentRule->clearBounderBuiltin();
 	unsigned index_current_atom=0;
 	for (auto current_atom_it = currentRule->getBeginBody(); current_atom_it != currentRule->getEndBody(); ++current_atom_it,++index_current_atom) {
 		Atom *atom=*current_atom_it;

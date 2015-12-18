@@ -85,6 +85,10 @@ public:
 		bounderBuiltins[i].push_back(builtin);
 	}
 
+	inline void clearBounderBuiltin(){
+		bounderBuiltins.clear();
+	}
+
 	inline const vector<Atom*>& getBounderBuiltin(unsigned i)const{
 		return bounderBuiltins[i];
 	}
@@ -307,6 +311,10 @@ public:
 
 	inline void addBounderBuiltin(unsigned i,Atom *builtin){
 		ruleInformation.addBounderBuiltin(i,builtin);
+	}
+
+	inline void clearBounderBuiltin(){
+		ruleInformation.clearBounderBuiltin();
 	}
 
 private:
