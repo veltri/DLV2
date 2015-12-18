@@ -548,16 +548,23 @@ bool BackTrackingGrounder::isCartesianProductRule(Rule *currentRule){
 	unsigned index_current_atom=0;
 	for (auto current_atom_it = currentRule->getBeginBody(); current_atom_it != currentRule->getEndBody(); ++current_atom_it,++index_current_atom) {
 		Atom *current_atom = *current_atom_it;
-		if(! (current_atom->isClassicalLiteral() && !current_atom->isNegative()))
+		if(current_atom->isBuiltIn() && builtAlreadyEvaluated[index_current_atom])
+			continue;
+		if(! (current_atom->isClassicalLiteral() && !current_atom->isNegative())){
 			return false;
+		}
 		unsigned sizeVar=0;
 		for(unsigned i=0;i<current_atom->getTermsSize();i++){
 			Term *term=current_atom->getTerm(i);
-			if(term->getType()!=VARIABLE)return false;
-			sizeVar++;
+			if(!(term->getType()==VARIABLE || term->getType()==ANONYMOUS)){
+				return false;
+			}
+			if(term->getType()==VARIABLE)
+				sizeVar++;
 		}
 		if(sizeVar==0 || sizeVar!=atoms_bind_variables[index_current_atom].size())
 			return false;
+
 	}
 	return true;
 }
@@ -570,19 +577,25 @@ bool BackTrackingGrounder::isCartesianProductRule(Rule *currentRule){
  */
 void BackTrackingGrounder::groundCartesian(Rule* rule){
 	unsigned size=rule->getSizeBody();
-	vector<tuple<vector<AtomVector*>,unsigned,unsigned>> tables;
+	vector<tuple<vector<AtomVector*>,unsigned,unsigned>> tables(rule->getSizeBody());
 
 	int i=0;
 	for(i=0;i<rule->getSizeBody();i++){
 		Predicate *predicate=rule->getAtomInBody(i)->getPredicate();
+		if(predicate==nullptr){
+			ground_rule->setAtomToSimplifyInBody(i,true);
+			continue;
+		}
 		vector<AtomVector*> tableToSearch;
 		for(auto table:predicate_searchInsert_table[i+rule->getSizeHead()]){
 			tableToSearch.push_back(predicateExtTable->getPredicateExt(predicate)->getAtomVector(table));
 		}
-		tables.push_back(make_tuple(tableToSearch,0,0));
+
+		tables[i]=(make_tuple(tableToSearch,0,0));
 	}
 
 	i=0;
+	direction=true;
 	while(true){
 		if(i==-1)
 			break;
@@ -590,14 +603,23 @@ void BackTrackingGrounder::groundCartesian(Rule* rule){
 		if((unsigned)i==size){
 			foundAssignment();
 			--i;
+			direction=false;
 			continue;
 		}
 
+		if(currentRule->getAtomInBody(i)->isBuiltIn()){
+			if(direction)
+				++i;
+			else
+				--i;
+			continue;
+		}
 
 		if(get<1>(tables[i])>=get<0>(tables[i]).size()){
 			get<1>(tables[i])=0;
 			get<2>(tables[i])=0;
 			--i;
+			direction=false;
 			continue;
 		}
 
@@ -607,18 +629,28 @@ void BackTrackingGrounder::groundCartesian(Rule* rule){
 			get<1>(tables[i])=get<1>(tables[i])+1;
 			continue;
 		}
-		Atom * atom=(*vec)[get<2>(tables[i])];
 
-		ground_rule->setAtomInBody(i,atom);
-		ground_rule->setAtomToSimplifyInBody(i,atom->isFact());
-		if(!rule->isAStrongConstraint()){
-			Atom *nonGroundAtom=rule->getAtomInBody(i);
-			for(unsigned j=0;j<atom->getTermsSize();j++)
-				current_assignment[nonGroundAtom->getTerm(j)->getLocalVariableIndex()]=atom->getTerm(j);
+		bool match=true;
+		Atom * atom=(*vec)[get<2>(tables[i])];
+		Atom *nonGroundAtom=rule->getAtomInBody(i);
+		for(unsigned j=0;j<atom->getTermsSize();j++){
+			if(atom->getTerm(j)->getType()==ANONYMOUS)continue;
+			current_assignment[nonGroundAtom->getTerm(j)->getLocalVariableIndex()]=atom->getTerm(j);
+			if(currentRule->getRuleInformation().isBounderBuiltin(nonGroundAtom->getTerm(j)->getLocalVariableIndex())){
+				match=AtomSearcher::evaluateFastBuiltin(currentRule->getRuleInformation(),nonGroundAtom->getTerm(j)->getLocalVariableIndex(),current_assignment,current_assignment,atom->getTerm(j));
+				if(!match)break;
+			}
 		}
 
-		get<2>(tables[i])=get<2>(tables[i])+1;
-		++i;
+		if(match){
+			ground_rule->setAtomInBody(i,atom);
+			ground_rule->setAtomToSimplifyInBody(i,atom->isFact());
+			get<2>(tables[i])=get<2>(tables[i])+1;
+			++i;
+			direction=true;
+		}else
+			get<2>(tables[i])=get<2>(tables[i])+1;
+
 	}
 
 
