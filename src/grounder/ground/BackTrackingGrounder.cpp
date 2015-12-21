@@ -638,7 +638,7 @@ void BackTrackingGrounder::groundCartesian(Rule* rule){
 			if(atom->getTerm(j)->getType()==ANONYMOUS)continue;
 			current_assignment[nonGroundAtom->getTerm(j)->getLocalVariableIndex()]=atom->getTerm(j);
 			if(currentRule->getRuleInformation().isBounderBuiltin(nonGroundAtom->getTerm(j)->getLocalVariableIndex())){
-				match=AtomSearcher::evaluateFastBuiltin(currentRule->getRuleInformation(),nonGroundAtom->getTerm(j)->getLocalVariableIndex(),current_assignment,current_assignment,atom->getTerm(j));
+				match=AtomSearcher::evaluateFastBuiltin(currentRule->getRuleInformation(),nonGroundAtom->getTerm(j)->getLocalVariableIndex(),current_assignment,atom->getTerm(j));
 				if(!match)break;
 			}
 		}

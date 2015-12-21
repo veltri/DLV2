@@ -126,7 +126,7 @@ public:
 	/// Match a function with given id of term, compare the constant term and put in binds
 	/// a value of the variable term present in termToMatch
 	/// Return true if constant term are equal, else false
-	bool matchTerm(Term *genericTerm, Term *termToMatch, var_assignment& varAssignment,vector<index_object>& addedVariables,var_assignment& currentAssignment,const RuleInformation& ruleInformation);
+	bool matchTerm(Term *genericTerm, Term *termToMatch, var_assignment& varAssignment,vector<index_object>& addedVariables,const RuleInformation& ruleInformation);
 
 	virtual void setSizeResultVector(unsigned int size)=0;
 
@@ -134,8 +134,7 @@ public:
 
 	///Function for evaluation of builtin related with the current matching atom
 	static bool evaluateFastBuiltin(const RuleInformation& ruleInformation,
-			index_object index, var_assignment& currentAssignment,
-			var_assignment& varAssignment, Term* genericTerm);
+			index_object index,	var_assignment& varAssignment, Term* genericTerm);
 
 protected:
 	///The basic data-structure that collects the atoms

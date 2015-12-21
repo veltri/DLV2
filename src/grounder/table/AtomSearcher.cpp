@@ -21,15 +21,14 @@ namespace grounder{
 
 bool AtomSearcher::checkMatch(Atom *genericAtom, Atom *templateAtom, var_assignment& currentAssignment,const RuleInformation& ruleInformation){
 	// Checks the match for each term and, if all the terms match, updates the current assignment accordingly
-	var_assignment assignInTerm;
-	assignInTerm.setSize(currentAssignment.size(),nullptr);
+	var_assignment assignInTerm(currentAssignment);
 
 	vector<index_object> variablesAdded;
 	for(unsigned int i=0;i<genericAtom->getTermsSize();++i){
 		Term* genericTerm=genericAtom->getTerm(i);
 		Term* termToMatch=templateAtom->getTerm(i);
 		if (termToMatch->getIndex() == genericTerm->getIndex()) continue;
-		if(!matchTerm(genericTerm,termToMatch,assignInTerm,variablesAdded,currentAssignment,ruleInformation))
+		if(!matchTerm(genericTerm,termToMatch,assignInTerm,variablesAdded,ruleInformation))
 			return false;
 	}
 
@@ -46,13 +45,13 @@ bool AtomSearcher::checkMatch(Atom *genericAtom, Atom *templateAtom, var_assignm
  * For each builtin atom that the bind variable(with local index=index) is the last variable evaluated in the builtin, check if the builtin is satisfied. If the
  * evaluation of builtin is false the match of the term, then the match of the atom fail
  */
-bool AtomSearcher::evaluateFastBuiltin(const RuleInformation& ruleInformation,index_object index, var_assignment& currentAssignment, var_assignment& varAssignment, Term* genericTerm) {
+bool AtomSearcher::evaluateFastBuiltin(const RuleInformation& ruleInformation,index_object index, var_assignment& varAssignment, Term* genericTerm) {
 	for (auto builtin : ruleInformation.getBounderBuiltin(index)) {
-		Atom* groundBuiiltin1 = nullptr;
-		builtin->ground(currentAssignment, groundBuiiltin1);
+//		Atom* groundBuiiltin1 = nullptr;
+//		builtin->ground(currentAssignment, groundBuiiltin1);
 		varAssignment[index] = genericTerm;
-		bool evaluation = groundBuiiltin1->groundAndEvaluate(varAssignment);
-		delete groundBuiiltin1;
+		bool evaluation = builtin->groundAndEvaluate(varAssignment);
+//		delete groundBuiiltin1;
 		if (!evaluation) {
 			return false;
 		}
@@ -60,7 +59,7 @@ bool AtomSearcher::evaluateFastBuiltin(const RuleInformation& ruleInformation,in
 	return true;
 }
 
-bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, var_assignment& varAssignment,vector<index_object>& addedVariables,var_assignment& currentAssignment,const RuleInformation& ruleInformation){
+bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, var_assignment& varAssignment,vector<index_object>& addedVariables,const RuleInformation& ruleInformation){
 
 	TermType termToMatchType=termToMatch->getType();
 	TermType genericTermType=genericTerm->getType();
@@ -80,7 +79,7 @@ bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, var_assignmen
 		}
 
 		if(ruleInformation.isBounderBuiltin(index)){
-			if(!evaluateFastBuiltin(ruleInformation, index,currentAssignment, varAssignment, genericTerm))
+			if(!evaluateFastBuiltin(ruleInformation, index, varAssignment, genericTerm))
 				return false;
 		}
 
@@ -102,7 +101,7 @@ bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, var_assignmen
 		if(termToMatch->getName().compare(genericTerm->getName()) != 0)return false;
 		if(termToMatch->getTermsSize() != genericTerm->getTermsSize())return false;
 		for(unsigned int i=0;i<genericTerm->getTermsSize();++i)
-			if(!matchTerm(genericTerm->getTerm(i),termToMatch->getTerm(i),varAssignment,addedVariables,currentAssignment,ruleInformation))
+			if(!matchTerm(genericTerm->getTerm(i),termToMatch->getTerm(i),varAssignment,addedVariables,ruleInformation))
 				return false;
 
 		return true;
