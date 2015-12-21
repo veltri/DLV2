@@ -109,7 +109,6 @@ protected:
 	/// Based on the sequence of searching table set the table to search and insert for grounding process
 	bool nextSearchInsertPredicate(Rule* rule,unordered_set<index_object>& componentPredicateInHead,unsigned token,const vector<unsigned>& originalOrderBody);
 
-
 	/// Initialization of grounding rule r
 	virtual void inizialize(Rule* rule) = 0;
 	/// Return true if exist a match with the current atom and current assignment
@@ -146,6 +145,12 @@ private:
 	void orderPositiveAtomsBody(vector<unsigned>& originalOrderBody,Rule* rule);
 	void orderPositiveAtomsBody(Rule* rule);
 
+	///This method creates a default atom searcher for each predicate occurring in the head and the body of the current rule.
+	///In particular it creates an atom searcher on FACT and NOFACT tables for every predicate,
+	///and for recursive predicates it creates an atom searcher also for DELTA and NEXTDELTA tables.
+	void setDefaultAtomSearchers(Rule* r,unordered_set<index_object>* componentPredicateInHead=nullptr);
+	///Utility method for setDefaultAtomSearchers
+	void createAtomSearchersForPredicate(Predicate* predicate, unordered_set<index_object>* componentPredicateInHead);
 };
 
 };

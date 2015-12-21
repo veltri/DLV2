@@ -46,7 +46,7 @@ bool BackTrackingGrounder::findGroundMatch(){
 
 	while(current_table<n_table){
 		unsigned tableToSearch = current_id_match[index_current_atom][current_table].first;
-		AtomSearcher *searcher=predicateExtTable->getPredicateExt(templateAtom->getPredicate())->getAtomSearcher(tableToSearch);
+		AtomSearcher *searcher=predicateExtTable->getPredicateExt(templateAtom->getPredicate())->getAtomSearcher(tableToSearch,0);
 		//Initialize false for negative atom
 		bool undef=false;
 
@@ -164,8 +164,7 @@ bool BackTrackingGrounder::firstMatch(){
 	Atom* templateAtom=templateSetAtom[index_current_atom];
 	while(current_table<n_table){
 		unsigned tableToSearch = current_id_match[index_current_atom][current_table].first;
-//		cerr<<"TABLE: "<<tableToSearch<<endl;
-		AtomSearcher *searcher=predicateExtTable->getPredicateExt(templateAtom->getPredicate())->getAtomSearcher(tableToSearch);
+		AtomSearcher *searcher=predicateExtTable->getPredicateExt(templateAtom->getPredicate())->getAtomSearcher(tableToSearch,0);
 		//Initialize false for negative atom
 		bool undef=false;
 
@@ -209,7 +208,7 @@ bool BackTrackingGrounder::nextMatch(){
 
 		unsigned tableToSearch = current_id_match[index_current_atom][current_table].first;
 		bool match = current_id_match[index_current_atom][current_table].second;
-		AtomSearcher *searcher=predicateExtTable->getPredicateExt(templateAtom->getPredicate())->getAtomSearcher(tableToSearch);
+		AtomSearcher *searcher=predicateExtTable->getPredicateExt(templateAtom->getPredicate())->getAtomSearcher(tableToSearch,0);
 		Atom* atomFound=nullptr;
 		if(match != NO_MATCH){
 			trace_action_tag(grounding,2,cerr<<"Invoked Next Match on table: "<<tableToSearch<<endl;);
@@ -476,7 +475,7 @@ void BackTrackingGrounder::findSearchTables() {
 			for(unsigned i=0;i<predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom].size();++i){
 				if(predicate!=nullptr){
 					int tableToSearch=predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom][i];
-					predicateExtTable->getPredicateExt(predicate)->getAtomSearcher(tableToSearch)->setSizeResultVector(sizeRule);
+					predicateExtTable->getPredicateExt(predicate)->getAtomSearcher(tableToSearch,0)->setSizeResultVector(sizeRule);
 				}
 				current_id_match[index_current_atom].push_back({predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom][i],NO_MATCH});
 			}
@@ -589,7 +588,7 @@ void BackTrackingGrounder::groundCartesian(Rule* rule){
 		}
 		vector<AtomVector*> tableToSearch;
 		for(auto table:predicate_searchInsert_table[i+rule->getSizeHead()]){
-			tableToSearch.push_back(predicateExtTable->getPredicateExt(predicate)->getAtomVector(table));
+			tableToSearch.push_back(predicateExtTable->getPredicateExt(predicate)->getTable(table));
 		}
 
 		tables[i]=(make_tuple(tableToSearch,0,0));
@@ -707,14 +706,14 @@ bool BackTrackingGrounder::groundAggregate() {
 
 		Atom* atom=aggregateAtom->getAggregateElement(i)->getNafLiteral(0);
 		Predicate *predicate_atom=atom->getPredicate();
-		vector<unsigned> tablesToSearch={FACT,NOFACT};
+//		vector<unsigned> tablesToSearch=predicate_searchInsert_table[index_current_atom+currentRule->getSizeHead()];
 		variablesInAtom=atom->getVariable();
 
 		int counter=0;
-		for(unsigned j=0;j<tablesToSearch.size()&&result==UNDEF;j++){
+		for(unsigned j=0;j<predicate_searchInsert_table[index_current_atom+currentRule->getSizeHead()].size()&&result==UNDEF;j++){
 
-			unsigned table=tablesToSearch[j];
-			AtomSearcher *searcher=predicateExtTable->getPredicateExt(predicate_atom)->getAtomSearcher(table);
+			unsigned table=predicate_searchInsert_table[index_current_atom+currentRule->getSizeHead()][j];
+			AtomSearcher *searcher=predicateExtTable->getPredicateExt(predicate_atom)->getAtomSearcher(table,0);
 			bool find=false;
 			Atom* atomFound=nullptr;
 

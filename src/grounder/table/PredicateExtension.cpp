@@ -18,11 +18,9 @@ namespace grounder{
 
 unsigned int PredicateExtension::MAX_TABLE_NUMBER = 4;
 
-void PredicateExtension::setAtomSearchers(){
-
+void PredicateExtension::addAtomSearcher(unsigned table){
 	// Properly set the IndexAtom type
-	while(atomSearchers.size()<tables.size()){
-
+	if(table<tables.size()){
 		AtomSearcher* atomSearcher;
 		int indexType=Options::globalOptions()->getPredicateIndexType(predicate->getName());
 
@@ -37,31 +35,31 @@ void PredicateExtension::setAtomSearchers(){
 		if(predicate->getArity()==0)
 			indexType=DEFAULT;
 
-#ifdef DEBUG_ATOM_SEARCHER
+	#ifdef DEBUG_ATOM_SEARCHER
 		cout<<"Predicate: "<<predicate->getName()<<"  Index type: "<<indexType<<endl;
-#endif
+	#endif
 
 		switch (indexType) {
 		case (MAP):
-			atomSearcher = new SingleTermMapAtomSearcher(tables[atomSearchers.size()],predicate);
+			atomSearcher = new SingleTermMapAtomSearcher(tables[table],predicate);
 			break;
 		case (MAP_DICTIONARY_INTERSECTION):
-			atomSearcher = new SingleTermMapDictionaryAtomSearcher(tables[atomSearchers.size()],predicate);
+			atomSearcher = new SingleTermMapDictionaryAtomSearcher(tables[table],predicate);
 			break;
 		case (MULTIMAP):
-			atomSearcher = new SingleTermMultiMapAtomSearcher(tables[atomSearchers.size()],predicate);
+			atomSearcher = new SingleTermMultiMapAtomSearcher(tables[table],predicate);
 			break;
 		case (HASHSET):
-			atomSearcher = new HashSetAtomSearcher(tables[atomSearchers.size()],predicate);
+			atomSearcher = new HashSetAtomSearcher(tables[table],predicate);
 			break;
 		case (DOUBLEMAP):
-			atomSearcher = new DoubleTermMapAtomSearcher(tables[atomSearchers.size()],predicate);
+			atomSearcher = new DoubleTermMapAtomSearcher(tables[table],predicate);
 			break;
 		default:
-			atomSearcher = new BaseAtomSearcher(tables[atomSearchers.size()]);
+			atomSearcher = new BaseAtomSearcher(tables[table]);
 			break;
 		}
-		atomSearchers.push_back(atomSearcher);
+		atomSearchers[table].push_back(atomSearcher);
 	}
 }
 
@@ -75,7 +73,9 @@ PredicateExtension::~PredicateExtension() {
 	}
 
 	for(unsigned int i=0;i<atomSearchers.size();++i)
-		delete atomSearchers[i];
+		for(unsigned j=0;j<atomSearchers[i].size();++j)
+			delete atomSearchers[i][j];
+
 	delete predicateInformation;
 }
 
@@ -86,8 +86,6 @@ void PredicateExtension::swapTables(unsigned tableFrom,unsigned tableTo){
 	AtomVector *table_from=tables[tableFrom];
 	AtomVector *table_to=tables[tableTo];
 
-	AtomSearcher* seacher_from=getAtomSearcher(tableFrom);
-	AtomSearcher* seacher_to=getAtomSearcher(tableTo);
 	unsigned size=table_from->size();
 	table_to->reserve(size+table_to->size());
 	for (int i = size-1; i >= 0; --i) {
@@ -96,21 +94,19 @@ void PredicateExtension::swapTables(unsigned tableFrom,unsigned tableTo){
 		table_to->push_back(currentAtom);
 		table_from->pop_back();
 
-		seacher_to->add(currentAtom);
+		for(auto atomSearcher:atomSearchers[tableTo])
+			atomSearcher->add(currentAtom);
 	}
 
-	seacher_from->clear();
+	for(auto atomSearcher:atomSearchers[tableFrom])
+		atomSearcher->clear();
 }
 
 void PredicateExtension::swapPointersTables(unsigned tableFrom, unsigned tableTo) {
 	assert_msg(tableFrom<tables.size(),"The specified table doesn't exist.");
 	assert_msg(tableTo<tables.size(),"The specified table doesn't exist.");
 
-	AtomSearcher *seacher_from=atomSearchers[tableFrom];
-	AtomSearcher *seacher_to=atomSearchers[tableTo];
-	AtomSearcher *searcher_tmp=seacher_from;
-	atomSearchers[tableFrom]=seacher_to;
-	atomSearchers[tableTo]=searcher_tmp;
+	atomSearchers[tableFrom].swap(atomSearchers[tableTo]);
 
 	AtomVector *table_from=tables[tableFrom];
 	AtomVector *table_to=tables[tableTo];

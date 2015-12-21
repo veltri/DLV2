@@ -64,21 +64,13 @@ class PredicateExtension {
 public:
 	///Constructor
 	PredicateExtension(Predicate* predicate, unsigned tableNumber = 2): predicate(predicate), predicateInformation(new PredicateInformation(predicate->getArity())){
-		if(MAX_TABLE_NUMBER){
-			tables.reserve(MAX_TABLE_NUMBER);
-			atomSearchers.reserve(MAX_TABLE_NUMBER);
-		}
+		tables.reserve(MAX_TABLE_NUMBER);
+		atomSearchers.resize(MAX_TABLE_NUMBER);
 		addTables(tableNumber);
 	}
 
 	///Getter for the predicate
-	Predicate* getPredicate() const {return predicate;}
-
-	///Returns the i-th AtomSeacher in atomSearchers
-	inline AtomSearcher*& getAtomSearcher(unsigned i){
-		if(i>=atomSearchers.size()) setAtomSearchers();
-		return atomSearchers[i];
-	}
+	inline Predicate* getPredicate() const {return predicate;}
 
 	/// Add table and an AtomSearcher
 	void addTables(unsigned numTables=1){
@@ -86,17 +78,35 @@ public:
 			tables.push_back(new AtomVector());
 	}
 
+	inline AtomVector* getTable(unsigned i)const{
+		return tables[i];
+	}
+
+	///Set the index of the atom with new id if the atom is not yet indexed, and send it to the output builder
+	void setIndexOfAtom(Atom* atom){
+		atom->setIndex(IdGenerator::getInstance()->getNewId(1));
+		if(!atom->getPredicate()->isHiddenForPrinting())
+			OutputBuilder::getInstance()->appendToStreamAtomTable(atom);
+	}
+
+	///Returns the i-th AtomSeacher in atomSearchers
+	inline AtomSearcher* getAtomSearcher(unsigned i, unsigned atomSearcher){
+		if(atomSearcher<atomSearchers[i].size())
+			return atomSearchers[i][atomSearcher];
+		return nullptr;
+	}
+
 	///Add a given atom in specified table
 	bool addAtom(unsigned table, Atom* genericAtom, bool search = false){
-		if(predicate->isSolved() && !genericAtom->isFact()){
+		if(predicate->isSolved() && !genericAtom->isFact())
 			predicate->setSolved(false);
-		}
 		if(search){
-			if((getAtomSearcher(table)->findGroundAtom(genericAtom))!=nullptr)
+			if((getAtomSearcher(table,0)->findGroundAtom(genericAtom))!=nullptr)
 				return false;
 		}
 		if(atomSearchers.size()>table){
-			getAtomSearcher(table)->add(genericAtom);
+			for(auto atomSearcher:atomSearchers[table])
+				atomSearcher->add(genericAtom);
 		}
 		tables[table]->push_back(genericAtom);
 		predicateInformation->update(genericAtom);
@@ -107,13 +117,7 @@ public:
 	///Get an atom in specified table
 	Atom* getAtom(unsigned table, Atom* genericAtom){
 		if(tables[table]->size()==0) return nullptr;
-		AtomSearcher* atomSearcher=getAtomSearcher(table);
-		Atom* atomFound=atomSearcher->findGroundAtom(genericAtom);
-		return atomFound;
-	}
-
-	inline AtomVector* getAtomVector(unsigned i)const{
-		return tables[i];
+		return atomSearchers[table][0]->findGroundAtom(genericAtom);
 	}
 
 	///Get a atom searching in all table
@@ -127,18 +131,11 @@ public:
 		return nullptr;
 	}
 
-	///Set the index of the atom with new id if the atom is not yet indexed, and send it to the output builder
-	void setIndexOfAtom(Atom* atom){
-		atom->setIndex(IdGenerator::getInstance()->getNewId(1));
-		if(!atom->getPredicate()->isHiddenForPrinting())
-			OutputBuilder::getInstance()->appendToStreamAtomTable(atom);
-	}
+	//Moves the content of the tableFrom (source) to the tableTo (destination)
+	void swapTables(unsigned tableFrom,unsigned tableTo);
 
-	 //Moves the content of the tableFrom (source) to the tableTo (destination)
-	 void swapTables(unsigned tableFrom,unsigned tableTo);
-
-	 //Swap the pointers of the tableFrom (source) to the tableTo (destination)
-	 void swapPointersTables(unsigned tableFrom,unsigned tableTo);
+	//Swap the pointers of the tableFrom (source) to the tableTo (destination)
+	void swapPointersTables(unsigned tableFrom,unsigned tableTo);
 
 	///Printer method for a single table
 	inline void print(unsigned table){for(auto fact:*tables[table]){cout<<fact->getIndex()<<" ";ClassicalLiteral::print(predicate,fact->getTerms(),false,false,cout);cout<<endl;}}
@@ -155,6 +152,9 @@ public:
 
 	unsigned getPredicateExtentionSize(unsigned table)const{if(table<tables.size()) return tables[table]->size(); return 0;}
 
+	///This method configures the searching strategy for each table
+	void addAtomSearcher(unsigned table);
+
 private:
 	///The predicate
 	Predicate* predicate;
@@ -163,15 +163,12 @@ private:
 	///The vector of tables
 	vector<AtomVector*> tables;
 	///The vector of  AtomSeacher
-	vector<AtomSearcher*> atomSearchers;
+	vector<vector<AtomSearcher*>> atomSearchers;
 
 	static unsigned int MAX_TABLE_NUMBER;
 
 	///A PredicateInformation object that stores the information about the max and the min values of each term in the instances of the predicate
 	PredicateInformation* predicateInformation;
-
-	///This method configures the searching strategy for each table
-	void setAtomSearchers();
 
 };
 
