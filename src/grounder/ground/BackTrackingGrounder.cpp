@@ -266,6 +266,9 @@ bool BackTrackingGrounder::foundAssignment() {
 
 	for(auto atom=currentRule->getBeginHead();atom!=currentRule->getEndHead()&&!isAChoiceRule;++atom,++atom_counter){
 
+		// When grounding head atoms, head template atoms are used in order to avoid the creation and deletion of atoms that are already present in the predicate extensions.
+		// In case an atom is not already present in the predicate extension then the corresponding grounded template atom is cloned
+		// and the atom obtained in this way is stored in the predicate extension.
 		Atom *headGroundAtom=groundTemplateAtomHead[atom_counter];
 		(*atom)->ground(current_assignment,headGroundAtom);
 
@@ -376,17 +379,6 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 		generateTemplateAtom();
 	findBuiltinFastEvaluated();
 
-	if(!currentRule->isChoiceRule()){
-		for(auto& atom:groundTemplateAtomHead){
-			delete atom;
-			atom=0;
-		}
-		groundTemplateAtomHead.clear();
-
-		for(auto headIt=currentRule->getBeginHead();headIt!=currentRule->getEndHead();++headIt)
-			groundTemplateAtomHead.push_back((*headIt)->clone());
-	}
-
 	if(ground_rule==0)
 		ground_rule=new Rule(true, rule->getSizeHead(), rule->getSizeBody());
 	else{
@@ -394,6 +386,18 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 		ground_rule=new Rule(true, rule->getSizeHead(), rule->getSizeBody());
 	}
 	atomsPossibleUndef.clear();
+
+	if(!currentRule->isChoiceRule()){
+		/// If the current rule is not a choice rule, then the vector groundTemplateAtomHead has to be filled with placeholder atoms as follows
+		for(auto& atom:groundTemplateAtomHead){
+			delete atom;
+			atom=0;
+		}
+		groundTemplateAtomHead.resize(currentRule->getSizeHead(),0);
+
+		for(auto headIt=currentRule->getBeginHead();headIt!=currentRule->getEndHead();++headIt)
+			groundTemplateAtomHead.push_back((*headIt)->clone());
+	}
 }
 
 void BackTrackingGrounder::findBindVariablesRule() {
@@ -404,24 +408,11 @@ void BackTrackingGrounder::findBindVariablesRule() {
 	atoms_bind_variables.resize(currentRule->getSizeBody());
 	variablesBinder.setSize(currentRule->getVariablesSize(),0);
 
-//	map_term<index_object> variableLocalIndex;
-
 	//For each atom determines the bound and the bind variables
 	for (auto current_atom_it = currentRule->getBeginBody(); current_atom_it != currentRule->getEndBody(); ++current_atom_it,++index_current_atom) {
 		Atom *current_atom = *current_atom_it;
 
 		set_term variablesInAtom =current_atom->getVariable();
-//		for(auto term:variablesInAtom){
-//			auto find=variableLocalIndex.find(term);
-//			if(find==variableLocalIndex.end()){
-//				variableLocalIndex[term]=variableLocalIndex.size()+1;
-//				term->setLocalVariableIndex(variableLocalIndex[term]);
-//
-//				trace_action_tag(backtracking,1,
-//					cerr<<"VARIABLE-INDEX : ";term->print(cerr);cerr<<" = "<<variableLocalIndex[term]<<endl;
-//				);
-//			}
-//		}
 
 		if(current_atom->isAggregateAtom())
 			variablesInAtom=current_atom->getGuardVariable();
@@ -443,7 +434,6 @@ void BackTrackingGrounder::findBindVariablesRule() {
 	}
 
 	current_assignment.setSize(currentRule->getVariablesSize(),nullptr);
-
 
 	trace_action_tag(backjumping,1,cerr<<"VARIABLES BINDER: ";
 		for(unsigned i=0;i<currentRule->getSizeBody();++i){

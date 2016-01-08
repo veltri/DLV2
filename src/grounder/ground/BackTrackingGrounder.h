@@ -41,13 +41,6 @@ protected:
 	virtual void inizialize(Rule* rule);
 	virtual bool foundAssignment();
 
-	/// Generate the template atom of current atom (substitute at the current atom the current assignment)
-	inline void generateTemplateAtom(){
-		currentRule->getAtomInBody(index_current_atom)->ground(current_assignment,templateSetAtom[index_current_atom]);
-	}
-
-	/// Remove the variable in the current assignment which are in bind_variables
-	virtual void removeBindValueFromAssignment(const vector<index_object>& bind_variables);
 	/// Call the first match with the current atom
 	virtual bool firstMatch();
 
@@ -60,6 +53,20 @@ protected:
 	///Ground a choice in the head of the rule
 	virtual void groundChoice(bool& find_new_true_atom,bool& ground_new_atom);
 
+	///Find the bind variable on rule
+	void findBindVariablesRule();
+
+	///Determine the table to search for each atom in the body
+	void findSearchTables();
+
+	/// Remove the variable in the current assignment which are in bind_variables
+	virtual void removeBindValueFromAssignment(const vector<index_object>& bind_variables);
+
+	/// Generate the template atom of current atom (substitute at the current atom the current assignment)
+	inline void generateTemplateAtom(){
+		currentRule->getAtomInBody(index_current_atom)->ground(current_assignment,templateSetAtom[index_current_atom]);
+	}
+
 	//Delete the atom at the given position and substitute it with the given atom at that position
 	void substiteInGroundRule(unsigned position, Atom* new_atom) {
 		Atom* atom=(ground_rule->getAtomInBody(position));
@@ -67,12 +74,6 @@ protected:
 			delete atom;
 		ground_rule->setAtomInBody(position,new_atom);
 	}
-
-	///Find the bind variable on rule
-	void findBindVariablesRule();
-
-	///Determine the table to search for each atom in the body
-	void findSearchTables();
 
 	virtual bool isCartesianProductRule(Rule *r);
 	virtual void groundCartesian(Rule *r);
@@ -97,7 +98,6 @@ protected:
 
 	/// Vector of current template atoms: partially ground atoms, in which bound variables have been substituted according to the current assignment
 	vector<Atom*> templateSetAtom;
-	vector<Atom*> groundTemplateAtomHead;
 
 	/// Current id of first match for grounding rule
 	/// Vector of the atom and vector of pair : table to search and id of firstMatch (if is NOMATCH call first else next)
@@ -122,6 +122,9 @@ protected:
 	vector<bool> builtAlreadyEvaluated;
 
 	vector<vector<Atom*>> matchBuiltin;
+
+	///This vector contains a kind of template atoms for head atoms
+	vector<Atom*> groundTemplateAtomHead;
 
 #ifdef TRACE_ON
 	/// Print the current assignment
