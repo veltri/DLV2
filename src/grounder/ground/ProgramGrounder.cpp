@@ -410,11 +410,6 @@ void ProgramGrounder::swapInDelta(Rule *rule,set_predicate &predicateEvaluated){
 	}
 }
 
-void printTimeElapsed(clock_t time,ostream& stream){
-	stream<<"TIME: \t"<<((time)/(double) CLOCKS_PER_SEC)<<endl;
-	stream<<"----------------------"<<endl;
-}
-
 bool ProgramGrounder::groundRule(Rule* rule) {
 
 	if (Options::globalOptions()->isPrintRewrittenProgram())
@@ -463,7 +458,7 @@ bool ProgramGrounder::groundRule(Rule* rule) {
 
 #ifdef DEBUG_GRULE_TIME
 	clock_t end=Timer::getInstance()->getClock();
-	printTimeElapsed(end-start,cerr);
+	Timer::printTimeElapsed(end-start,cerr);
 #endif
 
 	return find_assignment;

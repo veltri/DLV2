@@ -51,7 +51,7 @@ bool BackTrackingGrounder::findGroundMatch(){
 		bool undef=false;
 
 		Atom* atomFound=nullptr;
-		atomFound=searcher->findGroundAtom(templateAtom); // (index_current_atom,templateAtom,current_assignment,atomFound);
+		atomFound=searcher->findGroundAtom(templateAtom);
 		find=(atomFound!=nullptr);
 		if(atomFound!=nullptr)
 			undef=!atomFound->isFact();
@@ -254,7 +254,9 @@ bool BackTrackingGrounder::next() {
 bool BackTrackingGrounder::foundAssignment() {
 	callFoundAssignment=true;
 	bool isAChoiceRule=currentRule->isChoiceRule();
-	bool head_true=(currentRule->getSizeHead() <= 1  && !isAChoiceRule) && (!ground_rule->areThereUndefinedAtomInBody());
+	bool undefinedAtomInBody=ground_rule->areThereUndefinedAtomInBody();
+	bool strongConstraint=ground_rule->isAStrongConstraint();
+	bool head_true=(currentRule->getSizeHead() <= 1  && !isAChoiceRule) && (!undefinedAtomInBody);
 	bool ground_new_atom=false;
 	bool find_new_true_atom=false;
 	unsigned atom_counter=0;
@@ -264,7 +266,7 @@ bool BackTrackingGrounder::foundAssignment() {
 
 	for(auto atom=currentRule->getBeginHead();atom!=currentRule->getEndHead()&&!isAChoiceRule;++atom,++atom_counter){
 
-		Atom *headGroundAtom=nullptr;
+		Atom *headGroundAtom=groundTemplateAtomHead[atom_counter];
 		(*atom)->ground(current_assignment,headGroundAtom);
 
 		PredicateExtension* predicateExt=predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
@@ -274,13 +276,14 @@ bool BackTrackingGrounder::foundAssignment() {
 			ground_new_atom = true;
 
 			headGroundAtom->setFact(head_true);
+			Atom* newAtom=headGroundAtom->clone();
 			for(unsigned i=0;i<predicate_searchInsert_table[atom_counter].size();++i)
-				predicateExt->addAtom(predicate_searchInsert_table[atom_counter][i],headGroundAtom);
+				predicateExt->addAtom(predicate_searchInsert_table[atom_counter][i],newAtom);
 
-			ground_rule->setAtomInHead(atom_counter,headGroundAtom);
+			ground_rule->setAtomInHead(atom_counter,newAtom);
+
+
 		}else{
-			delete headGroundAtom;
-
 			//TODO If searchAtom is true ??? {a|b. a.} o {a :- b(X,Y).b(1).b(1,2)|d.}
 
 			//Previus atom is undef and now is true
@@ -294,8 +297,6 @@ bool BackTrackingGrounder::foundAssignment() {
 	}
 
 	trace_action_tag(grounding,1,cerr<<"Ground Rule Produced: ";ground_rule->print(cerr);cerr<<endl;);
-
-
 	// If the rule has possible undef atoms in its body its printing is postponed to the end of grounding
 	// So that:
 	// 	- if the printing type is numeric we give to that atoms the right indices,
@@ -318,11 +319,10 @@ bool BackTrackingGrounder::foundAssignment() {
 		}
 	}
 	//Print if ground new atom, an atom changed from undef to true, the rule is a strong constraint, there are some undefined atom in body
-	else if( ground_new_atom || (!ground_new_atom && !head_true) || (find_new_true_atom && head_true) || ground_rule->isAStrongConstraint() || ground_rule->areThereUndefinedAtomInBody()){
+	else if( ground_new_atom || (!ground_new_atom && !head_true) || (find_new_true_atom && head_true) || strongConstraint || undefinedAtomInBody){
 		outputBuilder->onRule(ground_rule);
 	}
-
-	if(ground_rule->isAStrongConstraint() && !ground_rule->areThereUndefinedAtomInBody()){throw ConstrainException{};};
+	if(strongConstraint && !undefinedAtomInBody){throw ConstrainException{};};
 
 	return ground_new_atom;
 }
@@ -376,6 +376,17 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 		generateTemplateAtom();
 	findBuiltinFastEvaluated();
 
+	if(!currentRule->isChoiceRule()){
+		for(auto& atom:groundTemplateAtomHead){
+			delete atom;
+			atom=0;
+		}
+		groundTemplateAtomHead.clear();
+
+		for(auto headIt=currentRule->getBeginHead();headIt!=currentRule->getEndHead();++headIt)
+			groundTemplateAtomHead.push_back((*headIt)->clone());
+	}
+
 	if(ground_rule==0)
 		ground_rule=new Rule(true, rule->getSizeHead(), rule->getSizeBody());
 	else{
@@ -383,8 +394,6 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 		ground_rule=new Rule(true, rule->getSizeHead(), rule->getSizeBody());
 	}
 	atomsPossibleUndef.clear();
-
-
 }
 
 void BackTrackingGrounder::findBindVariablesRule() {

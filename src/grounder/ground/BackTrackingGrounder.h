@@ -26,6 +26,7 @@ public:
 	BackTrackingGrounder():ProgramGrounder(),currentRule(0),index_current_atom(0),ground_rule(0),callFoundAssignment(0),direction(1){};
 	virtual ~BackTrackingGrounder() {
 		for(auto atom:templateSetAtom) {if(atom!=nullptr){atom->deleteAtoms(); delete atom;}}
+		for(auto atom:groundTemplateAtomHead) delete atom;
 		if(ground_rule!=0)
 			ground_rule->deleteGroundRule();
 
@@ -96,6 +97,7 @@ protected:
 
 	/// Vector of current template atoms: partially ground atoms, in which bound variables have been substituted according to the current assignment
 	vector<Atom*> templateSetAtom;
+	vector<Atom*> groundTemplateAtomHead;
 
 	/// Current id of first match for grounding rule
 	/// Vector of the atom and vector of pair : table to search and id of firstMatch (if is NOMATCH call first else next)

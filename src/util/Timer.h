@@ -98,6 +98,10 @@ public:
 		cerr<<((double) CLOCKS_PER_SEC)<<endl;
 	}
 
+	static void printTimeElapsed(clock_t time, ostream& stream){
+		stream<<"TIME: \t"<<((time)/(double) CLOCKS_PER_SEC)<<endl;
+		stream<<"----------------------"<<endl;
+	}
 
 private:
 	Timer(){};
