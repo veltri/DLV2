@@ -118,6 +118,10 @@ namespace DLV2
 			this->enabledDictionaryIntersection = enableDictionaryIntersection;
 		}
 
+		bool getRuleTime(){
+			return ruleTime;
+		}
+
     private:
 
         static Options* instance;
@@ -185,6 +189,8 @@ namespace DLV2
     	unsigned positiveOrderingProcedure;
 
     	bool enabledDictionaryIntersection;
+
+    	bool ruleTime;
     };
     
 };

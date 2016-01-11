@@ -68,6 +68,8 @@ namespace DLV2
 #define OPTIONID_instantiationProcedure ('z' + 42)
 #define OPTIONID_positiveOrderingProcedure ('z' + 43)
 #define OPTIONID_enableDictionaryIntersection ('z' + 44)
+#define OPTIONID_ruleTime ('z' + 45)
+
 
 
 };
@@ -120,7 +122,8 @@ Options::Options():
 		outputFormat(OUTPUT_NUMERIC),
 		instantiationProcedure(BACKJUMPING),
 		positiveOrderingProcedure(COMBINED_POSITIVE_ORDERING),
-		enabledDictionaryIntersection(false)
+		enabledDictionaryIntersection(false),
+		ruleTime(false)
 {
 
 }
@@ -143,7 +146,8 @@ Options::Options(
 		outputFormat(o.outputFormat),
 		instantiationProcedure(o.instantiationProcedure),
 		positiveOrderingProcedure(o.positiveOrderingProcedure),
-		enabledDictionaryIntersection(o.enabledDictionaryIntersection)
+		enabledDictionaryIntersection(o.enabledDictionaryIntersection),
+		ruleTime(false)
 
 {
 
@@ -197,6 +201,7 @@ Options::init(
 		{"instantiate",required_argument, NULL, OPTIONID_instantiationProcedure},
 		{"positiveOrdering",required_argument, NULL, OPTIONID_positiveOrderingProcedure},
 		{"dictionary-intersection",no_argument, NULL, OPTIONID_enableDictionaryIntersection},
+		{"ruleTime",no_argument, NULL, OPTIONID_ruleTime},
 
         // Required at end of array. 
         { NULL, 0, NULL, 0 }
@@ -326,6 +331,10 @@ Options::init(
 
             case OPTIONID_enableDictionaryIntersection:
             	enabledDictionaryIntersection=true;
+				break;
+
+            case OPTIONID_ruleTime:
+            	ruleTime=true;
 				break;
 
             default:

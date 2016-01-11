@@ -414,24 +414,31 @@ bool ProgramGrounder::groundRule(Rule* rule) {
 
 	if (Options::globalOptions()->isPrintRewrittenProgram())
 		{cerr<<"RULE: ";rule->print(cerr);}
-#ifdef DEBUG_GRULE_TIME
-	cerr<<endl<<"RULE ORDERED: \t";rule->print(cerr);
-	clock_t start=Timer::getInstance()->getClock();
-#endif
+	bool printTime=Options::globalOptions()->getRuleTime();
+	clock_t start=0;
+
+	if(printTime){
+		cerr<<endl<<"RULE ORDERED: \t";rule->print(cerr);
+		start=Timer::getInstance()->getClock();
+	}
 
 	inizialize(rule);
 
 	if(rule->getSizeBody()==0){
 		foundAssignment();
-#ifdef DEBUG_GRULE_TIME
-	clock_t end=Timer::getInstance()->getClock();
-	printTimeElapsed(end-start,cerr);
-#endif
+		if(printTime){
+			clock_t end=Timer::getInstance()->getClock();
+			Timer::printTimeElapsed(end-start,cerr);
+		}
 		return true;
 	}
 
 	if(isCartesianProductRule(rule)){
 		groundCartesian(rule);
+		if(printTime){
+			clock_t end=Timer::getInstance()->getClock();
+			Timer::printTimeElapsed(end-start,cerr);
+		}
 		return true;
 	}
 
@@ -456,10 +463,10 @@ bool ProgramGrounder::groundRule(Rule* rule) {
 
 	}
 
-#ifdef DEBUG_GRULE_TIME
-	clock_t end=Timer::getInstance()->getClock();
-	Timer::printTimeElapsed(end-start,cerr);
-#endif
+	if(printTime){
+		clock_t end=Timer::getInstance()->getClock();
+		Timer::printTimeElapsed(end-start,cerr);
+	}
 
 	return find_assignment;
 }
