@@ -265,6 +265,7 @@ void ProgramGrounder::ground() {
 
 	outputBuilder->onEnd();
 
+//	Timer::getInstance()->printSumTime(cerr);
 
 	//Print and simplify the rule
 //	evaluator.printAndSimplify(predicateExtTable);

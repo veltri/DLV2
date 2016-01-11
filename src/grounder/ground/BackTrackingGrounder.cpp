@@ -252,6 +252,7 @@ bool BackTrackingGrounder::next() {
 
 
 bool BackTrackingGrounder::foundAssignment() {
+
 	callFoundAssignment=true;
 	bool isAChoiceRule=currentRule->isChoiceRule();
 	bool undefinedAtomInBody=ground_rule->areThereUndefinedAtomInBody();
@@ -270,10 +271,14 @@ bool BackTrackingGrounder::foundAssignment() {
 		// In case an atom is not already present in the predicate extension then the corresponding grounded template atom is cloned
 		// and the atom obtained in this way is stored in the predicate extension.
 		Atom *headGroundAtom=groundTemplateAtomHead[atom_counter];
+		if(headGroundAtom==nullptr) cout<<"aaaa"<<endl;
 		(*atom)->ground(current_assignment,headGroundAtom);
 
+//		clock_t start=Timer::getInstance()->getClock();
 		PredicateExtension* predicateExt=predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
 		searchAtom=predicateExt->getAtom(headGroundAtom);
+//		clock_t end=Timer::getInstance()->getClock();
+//		Timer::getInstance()->sumTime(end-start);
 
 		if(searchAtom==nullptr){
 			ground_new_atom = true;
@@ -326,6 +331,7 @@ bool BackTrackingGrounder::foundAssignment() {
 		outputBuilder->onRule(ground_rule);
 	}
 	if(strongConstraint && !undefinedAtomInBody){throw ConstrainException{};};
+
 
 	return ground_new_atom;
 }
@@ -395,8 +401,10 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 		}
 		groundTemplateAtomHead.resize(currentRule->getSizeHead(),0);
 
-		for(auto headIt=currentRule->getBeginHead();headIt!=currentRule->getEndHead();++headIt)
-			groundTemplateAtomHead.push_back((*headIt)->clone());
+		unsigned i=0;
+		for(auto headIt=currentRule->getBeginHead();headIt!=currentRule->getEndHead();++headIt,++i){
+			groundTemplateAtomHead[i]=(*headIt)->clone();
+		}
 	}
 }
 
