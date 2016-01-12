@@ -156,7 +156,6 @@ bool OrderRuleGroundable::isBound(Atom* atom, unsigned orginalPosition) {
 		return !(atom->containsAnonymous()) && Utils::isContained(mapPositiveAtomsBoundVariables[orginalPosition],variablesInTheBody);
 	}
 	return !(atom->containsAnonymous()) && Utils::isContained(atomsVariables[orginalPosition],variablesInTheBody);
-
 }
 
 void OrderRuleGroundable::computeDictionaryIntersection(Atom* atom) {

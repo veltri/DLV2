@@ -126,13 +126,13 @@ void ProgramGrounder::ground() {
 
 		// Ground exit rules
 		for (Rule* rule : exitRules[component]){
-			setDefaultAtomSearchers(rule);
 //			r->sortPositiveLiteralInBody(predicate_searchInsert_table);
 			if(nonGroundSimplificator.simplifyRule(rule) || inizializeSearchInsertPredicate(rule)){
 				continue;
 			}
 			trace_action_tag(grounding,1,cerr<<"Grounding Exit Rule: ";rule->print(cerr););
 			orderPositiveAtomsBody(rule);
+			setDefaultAtomSearchers(rule);
 			groundRule(rule);
 
 #ifdef DEBUG_RULE_TIME
@@ -155,7 +155,7 @@ void ProgramGrounder::ground() {
 			// First iteration
 			for (unsigned int i = 0; i < n_rules; ++i) {
 				Rule *rule=recursiveRules[component][i];
-				setDefaultAtomSearchers(rule,&componentPredicateInHead[component]);
+
 				trace_action_tag(grounding,1,cerr<<"Grounding Recursive Rule: ";rule->print(cerr););
 
 				if(nonGroundSimplificator.simplifyRule(rule) || inizializeSearchInsertPredicate(rule,componentPredicateInHead[component])){
@@ -168,6 +168,7 @@ void ProgramGrounder::ground() {
 
 				findRecursivePredicatesInComponentRules(componentPredicateInHead[component], recursivePredicatesPositions[i], rule, originalOrderBody[i]);
 				orderPositiveAtomsBody(originalOrderBody[i], rule);
+				setDefaultAtomSearchers(rule);
 				if(groundRule(rule))
 					found_something=true;
 
@@ -199,6 +200,7 @@ void ProgramGrounder::ground() {
 						trace_action_tag(grounding,2,printTableInRule(rule,predicate_searchInsert_table););
 
 						orderPositiveAtomsBody(originalOrderBody[i],rule);
+						setDefaultAtomSearchers(rule);
 						if (groundRule(rule))
 							found_something = true;
 
@@ -225,13 +227,13 @@ void ProgramGrounder::ground() {
 
 		// Ground constraint rules
 		for (Rule* rule : constraintRules[component]){
-			setDefaultAtomSearchers(rule);
 			if (rule->getSizeBody() == 0) continue;
 			if(nonGroundSimplificator.simplifyRule(rule) || inizializeSearchInsertPredicate(rule)){
 				continue;
 			}
 			try{
 				orderPositiveAtomsBody(rule);
+				setDefaultAtomSearchers(rule);
 				trace_action_tag(grounding,1,cerr<<"Grounding Constraint Rule: ";rule->print(cerr););
 				groundRule(rule);
 			}
@@ -248,12 +250,12 @@ void ProgramGrounder::ground() {
 	{
 		for (auto rule:remainedConstraint)
 			if (rule->getSizeBody() > 0){
-				setDefaultAtomSearchers(rule);
 				if(nonGroundSimplificator.simplifyRule(rule) || inizializeSearchInsertPredicate(rule)){
 					continue;
 				}
 				try{
 					orderPositiveAtomsBody(rule);
+					setDefaultAtomSearchers(rule);
 					trace_action_tag(grounding,1,cerr<<"Grounding Constraint Rule: ";rule->print(cerr););
 					groundRule(rule);
 				}catch (exception& e){
@@ -507,36 +509,83 @@ ProgramGrounder::~ProgramGrounder() {
 	delete predicateTable;
 }
 
-void ProgramGrounder::createAtomSearchersForPredicate(Predicate* predicate, unordered_set<index_object>* componentPredicateInHead) {
+void ProgramGrounder::createAtomSearchersForPredicateBody(unsigned position, Predicate* predicate) {
 	PredicateExtension* predicateExtension = predicateExtTable->getPredicateExt(predicate);
-	if (predicateExtension->getAtomSearcher(FACT, 0) == nullptr)
-		predicateExtension->addAtomSearcher(FACT);
-
-	if (predicateExtension->getAtomSearcher(NOFACT, 0) == nullptr)
-		predicateExtension->addAtomSearcher(NOFACT);
-
-	if (componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex())) {
-		if (predicateExtension->getAtomSearcher(DELTA, 0) == nullptr)
-			predicateExtension->addAtomSearcher(DELTA);
-		if (predicateExtension->getAtomSearcher(NEXTDELTA, 0) == nullptr)
-			predicateExtension->addAtomSearcher(NEXTDELTA);
+	for(auto table:predicate_searchInsert_table[position]){
+		unsigned atomSearcher=predicateExtension->addAtomSearcher(table);
+		predicate_searchInsert_atomSearcher[position].push_back(atomSearcher);
 	}
 }
 
-void ProgramGrounder::setDefaultAtomSearchers(Rule* rule, unordered_set<index_object>* componentPredicateInHead) {
-	unsigned atomIndex=0;
-	for(auto atom=rule->getBeginHead();atom!=rule->getEndHead();atom++,atomIndex++){
-		set_predicate predicates=(*atom)->getPredicates();
-		for(auto predicate:predicates){
-			createAtomSearchersForPredicate(predicate, componentPredicateInHead);
+void ProgramGrounder::createAtomSearchersForPredicateHead(unsigned position, Predicate* predicate, Rule* rule) {
+	PredicateExtension* predicateExtension = predicateExtTable->getPredicateExt(predicate);
+	// WARNING: is assumed that is there only one insert table for head atoms
+	unsigned tableToInsert=predicate_searchInsert_table[position][0];
+	unsigned atomSearcherTableToInsert=predicateExtension->addAtomSearcher(tableToInsert,HASHSET);
+	predicate_searchInsert_atomSearcher[position].push_back(atomSearcherTableToInsert);
+
+	unordered_set<unsigned> tableAdded;
+
+	unsigned atomIndex=rule->getSizeHead();
+	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();++atom,++atomIndex){
+		if((*atom)->isClassicalLiteral()){
+			Predicate* predicateBody=(*atom)->getPredicate();
+			if (predicate->getIndex()==predicateBody->getIndex()) {
+				for(unsigned i=0;i<predicate_searchInsert_table[atomIndex].size();++i){
+					predicate_searchInsert_atomSearcher[position].push_back(predicate_searchInsert_atomSearcher[atomIndex][i]);
+					tableAdded.insert(predicate_searchInsert_table[atomIndex][i]);
+				}
+			}
 		}
 	}
-	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();atom++,atomIndex++){
-		set_predicate predicates=(*atom)->getPredicates();
-		for(auto predicate:predicates){
-			createAtomSearchersForPredicate(predicate, componentPredicateInHead);
+
+	for(unsigned i=0;i<tableToInsert;++i){
+		if(!tableAdded.count(i)){
+			unsigned atomSearcher=predicateExtension->addAtomSearcher(i,HASHSET);
+			if(predicateExtension->getPredicateExtentionSize(i))
+				predicate_searchInsert_atomSearcher[position].push_back(atomSearcher);
 		}
 	}
+}
+
+void ProgramGrounder::setDefaultAtomSearchers(Rule* rule) {
+	predicate_searchInsert_atomSearcher.clear();
+	unsigned atomIndex=rule->getSizeHead();
+	predicate_searchInsert_atomSearcher.resize(atomIndex+rule->getSizeBody());
+	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();++atom,++atomIndex){
+		set_predicate predicates=(*atom)->getPredicates();
+		for(auto predicate:predicates){
+			createAtomSearchersForPredicateBody(atomIndex, predicate);
+		}
+	}
+	atomIndex=0;
+	for(auto atom=rule->getBeginHead();atom!=rule->getEndHead();++atom,++atomIndex){
+		set_predicate predicates=(*atom)->getPredicates();
+		for(auto predicate:predicates){
+			createAtomSearchersForPredicateHead(atomIndex, predicate,rule);
+		}
+	}
+
+//	cout<<" ******   "<<predicate_searchInsert_atomSearcher.size()<<endl;
+//	for(unsigned atom=0;atom<predicate_searchInsert_table.size();atom++){
+//		cout<<"Atom: "<<atom<<" ";
+//		for(auto i:predicate_searchInsert_table[atom]){
+//			cout<<i<<" ";
+//		}
+//		cout<<endl;
+//	}
+//	cout<<endl;
+//
+//	for(unsigned atom=0;atom<predicate_searchInsert_atomSearcher.size();atom++){
+//		cout<<"Atom: "<<atom<<" ";
+//		for(auto i:predicate_searchInsert_atomSearcher[atom]){
+//			cout<<i<<" ";
+//		}
+//		cout<<endl;
+//	}
+//	cout<<endl;
+
+
 }
 
 }}

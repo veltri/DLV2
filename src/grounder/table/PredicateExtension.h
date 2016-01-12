@@ -131,6 +131,26 @@ public:
 		return nullptr;
 	}
 
+	Atom* getAtom(Atom* atom, unsigned table, unsigned atomSearcher){
+		AtomSearcher* searcher=getAtomSearcher(table,atomSearcher);
+		if(searcher!=nullptr)
+			return searcher->findGroundAtom(atom);
+		return nullptr;
+	}
+
+	void addAtom(Atom* atom, unsigned table, unsigned atomSearcher){
+		AtomSearcher* searcher=getAtomSearcher(table,atomSearcher);
+		if(searcher!=nullptr)
+			searcher->add(atom);
+		tables[table]->push_back(atom);
+		predicateInformation->update(atom);
+
+		//TODO Evitare di fare ogni volta le seguenti istruzioni
+		if(predicate->isSolved() && !atom->isFact())
+			predicate->setSolved(false);
+		if(atom->getIndex()==0) setIndexOfAtom(atom);
+	}
+
 	//Moves the content of the tableFrom (source) to the tableTo (destination)
 	void swapTables(unsigned tableFrom,unsigned tableTo);
 
@@ -150,10 +170,12 @@ public:
 
 	PredicateInformation* getPredicateInformation() const {return predicateInformation;}
 
-	unsigned getPredicateExtentionSize(unsigned table)const{if(table<tables.size()) return tables[table]->size(); return 0;}
+	unsigned getPredicateExtentionSize(unsigned table) const {if(table<tables.size()) return tables[table]->size(); return 0;}
 
 	///This method configures the searching strategy for each table
-	void addAtomSearcher(unsigned table);
+	unsigned addAtomSearcher(unsigned table);
+	unsigned addAtomSearcher(unsigned table, unsigned type);
+	AtomSearcher* createAtomSearcher(int indexType, unsigned table);
 
 private:
 	///The predicate

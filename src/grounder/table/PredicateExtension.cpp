@@ -18,7 +18,34 @@ namespace grounder{
 
 unsigned int PredicateExtension::MAX_TABLE_NUMBER = 4;
 
-void PredicateExtension::addAtomSearcher(unsigned table){
+AtomSearcher* PredicateExtension::createAtomSearcher(int indexType, unsigned table) {
+	AtomSearcher* atomSearcher;
+	switch (indexType) {
+	case (MAP):
+		atomSearcher = new SingleTermMapAtomSearcher(tables[table], predicate);
+		break;
+	case (MAP_DICTIONARY_INTERSECTION):
+		atomSearcher = new SingleTermMapDictionaryAtomSearcher(tables[table],
+				predicate);
+		break;
+	case (MULTIMAP):
+		atomSearcher = new SingleTermMultiMapAtomSearcher(tables[table],
+				predicate);
+		break;
+	case (HASHSET):
+		atomSearcher = new HashSetAtomSearcher(tables[table], predicate);
+		break;
+	case (DOUBLEMAP):
+		atomSearcher = new DoubleTermMapAtomSearcher(tables[table], predicate);
+		break;
+	default:
+		atomSearcher = new BaseAtomSearcher(tables[table]);
+		break;
+	}
+	return atomSearcher;
+}
+
+unsigned PredicateExtension::addAtomSearcher(unsigned table){
 	// Properly set the IndexAtom type
 	if(table<tables.size()){
 		AtomSearcher* atomSearcher;
@@ -31,7 +58,6 @@ void PredicateExtension::addAtomSearcher(unsigned table){
 				indexType=Options::globalOptions()->getIndexType();
 		}
 
-
 		if(predicate->getArity()==0)
 			indexType=DEFAULT;
 
@@ -39,28 +65,32 @@ void PredicateExtension::addAtomSearcher(unsigned table){
 		cout<<"Predicate: "<<predicate->getName()<<"  Index type: "<<indexType<<endl;
 	#endif
 
-		switch (indexType) {
-		case (MAP):
-			atomSearcher = new SingleTermMapAtomSearcher(tables[table],predicate);
-			break;
-		case (MAP_DICTIONARY_INTERSECTION):
-			atomSearcher = new SingleTermMapDictionaryAtomSearcher(tables[table],predicate);
-			break;
-		case (MULTIMAP):
-			atomSearcher = new SingleTermMultiMapAtomSearcher(tables[table],predicate);
-			break;
-		case (HASHSET):
-			atomSearcher = new HashSetAtomSearcher(tables[table],predicate);
-			break;
-		case (DOUBLEMAP):
-			atomSearcher = new DoubleTermMapAtomSearcher(tables[table],predicate);
-			break;
-		default:
-			atomSearcher = new BaseAtomSearcher(tables[table]);
-			break;
-		}
+		for(unsigned i=0;i<atomSearchers[table].size();i++)
+			if(atomSearchers[table][i]->getType()==indexType)
+				return i;
+
+		atomSearcher = createAtomSearcher(indexType, table);
 		atomSearchers[table].push_back(atomSearcher);
+		return atomSearchers[table].size()-1;
 	}
+	return 0;
+}
+
+unsigned PredicateExtension::addAtomSearcher(unsigned table, unsigned type) {
+	if(table<tables.size()){
+		int indexType=type;
+		if(predicate->getArity()==0)
+			indexType=DEFAULT;
+		if(predicate->getArity()==1)
+			indexType=HASHSET;
+		for(unsigned i=0;i<atomSearchers[table].size();i++)
+			if(atomSearchers[table][i]->getType()==indexType)
+				return i;
+		AtomSearcher* atomSearcher = createAtomSearcher(indexType, table);
+		atomSearchers[table].push_back(atomSearcher);
+		return atomSearchers[table].size()-1;
+	}
+	return 0;
 }
 
 PredicateExtension::~PredicateExtension() {
@@ -184,7 +214,6 @@ void PredicateInformation::addInDictionary(unsigned position, Term* term) {
 bool PredicateInformation::isPresent(unsigned position, Term* term) const {
 	return termDictionary[position].count(term);
 }
-
 
 
 }

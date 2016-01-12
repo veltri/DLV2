@@ -271,14 +271,10 @@ bool BackTrackingGrounder::foundAssignment() {
 		// In case an atom is not already present in the predicate extension then the corresponding grounded template atom is cloned
 		// and the atom obtained in this way is stored in the predicate extension.
 		Atom *headGroundAtom=groundTemplateAtomHead[atom_counter];
-		if(headGroundAtom==nullptr) cout<<"aaaa"<<endl;
 		(*atom)->ground(current_assignment,headGroundAtom);
 
-//		clock_t start=Timer::getInstance()->getClock();
 		PredicateExtension* predicateExt=predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
 		searchAtom=predicateExt->getAtom(headGroundAtom);
-//		clock_t end=Timer::getInstance()->getClock();
-//		Timer::getInstance()->sumTime(end-start);
 
 		if(searchAtom==nullptr){
 			ground_new_atom = true;
@@ -292,6 +288,7 @@ bool BackTrackingGrounder::foundAssignment() {
 
 
 		}else{
+//			clock_t start=Timer::getInstance()->getClock();
 			//TODO If searchAtom is true ??? {a|b. a.} o {a :- b(X,Y).b(1).b(1,2)|d.}
 
 			//Previus atom is undef and now is true
@@ -301,6 +298,8 @@ bool BackTrackingGrounder::foundAssignment() {
 			}
 			//Check if previus is false now is true ground_new atom i have put true
 			ground_rule->setAtomInHead(atom_counter,searchAtom);
+//			clock_t end=Timer::getInstance()->getClock();
+//			Timer::getInstance()->sumTime(end-start);
 		}
 	}
 

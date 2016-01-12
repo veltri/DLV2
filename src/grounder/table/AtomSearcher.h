@@ -132,6 +132,8 @@ public:
 
 	virtual ~AtomSearcher() {};
 
+	virtual unsigned getType()=0;
+
 	///Function for evaluation of builtin related with the current matching atom
 	static bool evaluateFastBuiltin(const RuleInformation& ruleInformation,
 			index_object index,	var_assignment& varAssignment, Term* genericTerm);
@@ -165,6 +167,8 @@ public:
 	virtual void print(ostream& stream=cout){for(auto atom:*table)atom->print(stream);}
 
 	virtual ~BaseAtomSearcher() {for(auto it:resultVector) delete it;};
+
+	virtual unsigned getType(){return DEFAULT;};
 
 protected:
 	/// This maps stores the calls to the firstMatch method.
@@ -255,6 +259,8 @@ public:
 	///This method fills in the searching data structure for the given indexing term
 	void initializeIndexMaps(unsigned int indexingTerm);
 
+	virtual unsigned getType(){return MAP;};
+
 protected:
 	///A vector of chosen searching data structure for this kind of indexing strategies, one for each possible indexing term.
 	vector<unordered_map<index_object,AtomTable>> searchingTables;
@@ -335,6 +341,8 @@ public:
  	///This method fills in the indexing data structures
 	void initializeIndexMaps(unsigned int indexTable);
 
+	virtual unsigned getType(){return MULTIMAP;};
+
 private:
 	/// A vector of chosen searching data structure for this kind of indexing strategies, one for each possible indexing term.
 	vector<Multimap_Atom> searchingTables;
@@ -351,6 +359,8 @@ public:
 	virtual void add(Atom* atom) { searchingTable.insert(atom); }
 	virtual void remove(Atom* atom) { searchingTable.erase(atom); }
 	virtual void clear() { searchingTable.clear(); }
+
+	virtual unsigned getType(){return HASHSET;};
 
 private:
 	/// An unordered set of Atoms, the chosen searching data structure for this kind of indexing strategies.
@@ -402,6 +412,8 @@ public:
 
 	///This method chooses the best indexing term among the one allowed.
 	unsigned int selectBestIndex(const vector<pair<int,pair<index_object,int>>>& possibleTableToSearch);
+
+	virtual unsigned getType(){return DOUBLEMAP;};
 
 private:
 	/// The predicate

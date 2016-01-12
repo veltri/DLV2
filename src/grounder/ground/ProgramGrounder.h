@@ -90,9 +90,14 @@ protected:
 //	/// Manage the output and simplification
 //	ProgramEvaluator evaluator;
 
-	/// For each predicate in the current rule this vector stores the table of insert for the atom in head and
+	/// For each predicate in the current rule this vector stores the tables of insert for the atom in head and
 	/// searching table for the predicate in the body
 	vector<vector<unsigned>> predicate_searchInsert_table;
+
+	/// For each predicate in the current rule this vector stores the atom searchers of insertion and look-up for head atoms and
+	/// the atom searchers of look-up for body atoms
+	vector<vector<unsigned>> predicate_searchInsert_atomSearcher;
+
 	///The NonGroundSimplifier object
 	NonGroundSimplifier nonGroundSimplificator;
 
@@ -148,9 +153,10 @@ private:
 	///This method creates a default atom searcher for each predicate occurring in the head and the body of the current rule.
 	///In particular it creates an atom searcher on FACT and NOFACT tables for every predicate,
 	///and for recursive predicates it creates an atom searcher also for DELTA and NEXTDELTA tables.
-	void setDefaultAtomSearchers(Rule* r,unordered_set<index_object>* componentPredicateInHead=nullptr);
+	void setDefaultAtomSearchers(Rule* r);
 	///Utility method for setDefaultAtomSearchers
-	void createAtomSearchersForPredicate(Predicate* predicate, unordered_set<index_object>* componentPredicateInHead);
+	void createAtomSearchersForPredicateBody(unsigned position, Predicate* predicate);
+	void createAtomSearchersForPredicateHead(unsigned position, Predicate* predicate, Rule* rule);
 };
 
 };
