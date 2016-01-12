@@ -21,9 +21,9 @@ void Atom::ground(var_assignment& substritutionTerm,Atom*& templateAtom){
 
 	for(unsigned int i=0;i<templateAtom->getTermsSize();i++){
 		Term* term=templateAtom->getTerm(i);
-		if(term->contain(TermType::ARITH) && term->isGround())
-			/// Calculate the value of arithmetic term and add in terms table
-			templateAtom->setTerm(i,term->calculate());
+//		if(term->contain(TermType::ARITH) && term->isGround())
+//			/// Calculate the value of arithmetic term and add in terms table
+//			templateAtom->setTerm(i,term->calculate());
 	}
 
 };

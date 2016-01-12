@@ -173,8 +173,8 @@ public:
 	unsigned getPredicateExtentionSize(unsigned table) const {if(table<tables.size()) return tables[table]->size(); return 0;}
 
 	///This method configures the searching strategy for each table
-	unsigned addAtomSearcher(unsigned table);
-	unsigned addAtomSearcher(unsigned table, unsigned type);
+	AtomSearcher* addAtomSearcher(unsigned table);
+	AtomSearcher* addAtomSearcher(unsigned table, unsigned type);
 	AtomSearcher* createAtomSearcher(int indexType, unsigned table);
 
 private:

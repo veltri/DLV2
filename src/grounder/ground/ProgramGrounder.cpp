@@ -512,7 +512,7 @@ ProgramGrounder::~ProgramGrounder() {
 void ProgramGrounder::createAtomSearchersForPredicateBody(unsigned position, Predicate* predicate) {
 	PredicateExtension* predicateExtension = predicateExtTable->getPredicateExt(predicate);
 	for(auto table:predicate_searchInsert_table[position]){
-		unsigned atomSearcher=predicateExtension->addAtomSearcher(table);
+		auto atomSearcher=predicateExtension->addAtomSearcher(table);
 		predicate_searchInsert_atomSearcher[position].push_back(atomSearcher);
 	}
 }
@@ -521,7 +521,7 @@ void ProgramGrounder::createAtomSearchersForPredicateHead(unsigned position, Pre
 	PredicateExtension* predicateExtension = predicateExtTable->getPredicateExt(predicate);
 	// WARNING: is assumed that is there only one insert table for head atoms
 	unsigned tableToInsert=predicate_searchInsert_table[position][0];
-	unsigned atomSearcherTableToInsert=predicateExtension->addAtomSearcher(tableToInsert,HASHSET);
+	auto atomSearcherTableToInsert=predicateExtension->addAtomSearcher(tableToInsert,HASHSET);
 	predicate_searchInsert_atomSearcher[position].push_back(atomSearcherTableToInsert);
 
 	unordered_set<unsigned> tableAdded;
@@ -541,7 +541,7 @@ void ProgramGrounder::createAtomSearchersForPredicateHead(unsigned position, Pre
 
 	for(unsigned i=0;i<tableToInsert;++i){
 		if(!tableAdded.count(i)){
-			unsigned atomSearcher=predicateExtension->addAtomSearcher(i,HASHSET);
+			auto atomSearcher=predicateExtension->addAtomSearcher(i,HASHSET);
 			if(predicateExtension->getPredicateExtentionSize(i))
 				predicate_searchInsert_atomSearcher[position].push_back(atomSearcher);
 		}

@@ -45,7 +45,7 @@ AtomSearcher* PredicateExtension::createAtomSearcher(int indexType, unsigned tab
 	return atomSearcher;
 }
 
-unsigned PredicateExtension::addAtomSearcher(unsigned table){
+AtomSearcher* PredicateExtension::addAtomSearcher(unsigned table){
 	// Properly set the IndexAtom type
 	if(table<tables.size()){
 		AtomSearcher* atomSearcher;
@@ -67,16 +67,16 @@ unsigned PredicateExtension::addAtomSearcher(unsigned table){
 
 		for(unsigned i=0;i<atomSearchers[table].size();i++)
 			if(atomSearchers[table][i]->getType()==indexType)
-				return i;
+				return atomSearchers[table][i];
 
 		atomSearcher = createAtomSearcher(indexType, table);
 		atomSearchers[table].push_back(atomSearcher);
-		return atomSearchers[table].size()-1;
+		return atomSearcher;
 	}
 	return 0;
 }
 
-unsigned PredicateExtension::addAtomSearcher(unsigned table, unsigned type) {
+AtomSearcher* PredicateExtension::addAtomSearcher(unsigned table, unsigned type) {
 	if(table<tables.size()){
 		int indexType=type;
 		if(predicate->getArity()==0)
@@ -85,10 +85,10 @@ unsigned PredicateExtension::addAtomSearcher(unsigned table, unsigned type) {
 			indexType=HASHSET;
 		for(unsigned i=0;i<atomSearchers[table].size();i++)
 			if(atomSearchers[table][i]->getType()==indexType)
-				return i;
+				return atomSearchers[table][i];
 		AtomSearcher* atomSearcher = createAtomSearcher(indexType, table);
 		atomSearchers[table].push_back(atomSearcher);
-		return atomSearchers[table].size()-1;
+		return atomSearcher;
 	}
 	return 0;
 }

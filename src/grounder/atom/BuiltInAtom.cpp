@@ -123,12 +123,19 @@ void BuiltInAtom::substitute(var_assignment& substitutionTerm,Atom*& templateAto
 		vector<Term*> terms_substitute(terms.size());
 		for(unsigned int i=0;i<terms.size();i++){
 			terms_substitute[i]=terms[i]->substitute(substitutionTerm) ;
+			if(terms_substitute[i]->contain(TermType::ARITH) && terms_substitute[i]->isGround())
+				/// Calculate the value of arithmetic term and add in terms table
+				templateAtom->setTerm(i,terms_substitute[i]->calculate());
 		}
 		templateAtom=new BuiltInAtom(binop,negative,terms_substitute,assignment);
 	}
 	else
-		for(unsigned int i=0;i<terms.size();i++)
+		for(unsigned int i=0;i<terms.size();i++){
 			templateAtom->setTerm(i,terms[i]->substitute(substitutionTerm));
+			if(terms[i]->contain(TermType::ARITH) && terms[i]->isGround())
+				/// Calculate the value of arithmetic term and add in terms table
+				templateAtom->setTerm(i,terms[i]->calculate());
+		}
 };
 
 };

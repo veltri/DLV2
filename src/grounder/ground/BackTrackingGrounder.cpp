@@ -46,7 +46,7 @@ bool BackTrackingGrounder::findGroundMatch(){
 
 	while(current_table<n_table){
 		unsigned tableToSearch = current_id_match[index_current_atom][current_table].first;
-		AtomSearcher *searcher=predicateExtTable->getPredicateExt(templateAtom->getPredicate())->getAtomSearcher(tableToSearch,0);
+		AtomSearcher *searcher=predicate_searchInsert_atomSearcher[index_current_atom][current_table];
 		//Initialize false for negative atom
 		bool undef=false;
 
@@ -164,7 +164,7 @@ bool BackTrackingGrounder::firstMatch(){
 	Atom* templateAtom=templateSetAtom[index_current_atom];
 	while(current_table<n_table){
 		unsigned tableToSearch = current_id_match[index_current_atom][current_table].first;
-		AtomSearcher *searcher=predicateExtTable->getPredicateExt(templateAtom->getPredicate())->getAtomSearcher(tableToSearch,0);
+		AtomSearcher *searcher=predicate_searchInsert_atomSearcher[index_current_atom][current_table];
 		//Initialize false for negative atom
 		bool undef=false;
 
@@ -208,7 +208,7 @@ bool BackTrackingGrounder::nextMatch(){
 
 		unsigned tableToSearch = current_id_match[index_current_atom][current_table].first;
 		bool match = current_id_match[index_current_atom][current_table].second;
-		AtomSearcher *searcher=predicateExtTable->getPredicateExt(templateAtom->getPredicate())->getAtomSearcher(tableToSearch,0);
+		AtomSearcher *searcher=predicate_searchInsert_atomSearcher[index_current_atom][current_table];
 		Atom* atomFound=nullptr;
 		if(match != NO_MATCH){
 			trace_action_tag(grounding,2,cerr<<"Invoked Next Match on table: "<<tableToSearch<<endl;);
@@ -276,11 +276,18 @@ bool BackTrackingGrounder::foundAssignment() {
 		PredicateExtension* predicateExt=predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
 		searchAtom=predicateExt->getAtom(headGroundAtom);
 
+//		for(auto atomSearcher:predicate_searchInsert_atomSearcher[atom_counter]){
+//			searchAtom=atomSearcher->findGroundAtom(headGroundAtom);
+//			if(searchAtom!=nullptr)
+//				break;
+//		}
+
 		if(searchAtom==nullptr){
 			ground_new_atom = true;
 
 			headGroundAtom->setFact(head_true);
 			Atom* newAtom=headGroundAtom->clone();
+			PredicateExtension* predicateExt=predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
 			for(unsigned i=0;i<predicate_searchInsert_table[atom_counter].size();++i)
 				predicateExt->addAtom(predicate_searchInsert_table[atom_counter][i],newAtom);
 
