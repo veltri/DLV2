@@ -138,8 +138,7 @@ public:
 		return nullptr;
 	}
 
-	void addAtom(Atom* atom, unsigned table, unsigned atomSearcher){
-		AtomSearcher* searcher=getAtomSearcher(table,atomSearcher);
+	void addAtom(Atom* atom, unsigned table, AtomSearcher* searcher){
 		if(searcher!=nullptr)
 			searcher->add(atom);
 		tables[table]->push_back(atom);

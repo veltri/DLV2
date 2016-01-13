@@ -173,7 +173,7 @@ int SingleTermAtomSearcher::manageIndex(Atom* templateAtom, const RuleInformatio
 		indexSelected=possibleTableToSearch.front().first;
 	else
 		indexSelected=selectBestIndex(possibleTableToSearch);
-	if(!createdSearchingTables[indexSelected])
+	if(!isUpdatedSearchingTable(indexSelected))
 		initializeIndexMaps(indexSelected);
 	return indexSelected;
 }

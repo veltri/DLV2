@@ -188,9 +188,8 @@ protected:
 class SingleTermAtomSearcher : public BaseAtomSearcher{
 public:
 	SingleTermAtomSearcher(AtomVector* table, Predicate* p) : BaseAtomSearcher(table), predicate(p), defaultIndexingTerm(-1) {
-		createdSearchingTables.reserve(predicate->getArity());
-		for(unsigned int i=0;i<predicate->getArity();++i)
-			createdSearchingTables.push_back(false);
+		lastUpdateIndices.resize(predicate->getArity(),0);
+
 //		indexingTermSetByUser = Options::globalOptions()->getPredicateIndexTerm(this->predicate->getName());
 //		if(indexingTermSetByUser>=0)
 //			assert_msg(unsigned(indexingTermSetByUser)<this->predicate->getArity(), "The specified index for the predicate \""+(this->predicate)->getName()+"\" is not valid.");
@@ -201,7 +200,7 @@ public:
 	///This method chooses the best indexing term among the one allowed.
 	virtual unsigned int selectBestIndex(const vector<pair<int,index_object>>& possibleTableToSearch) = 0;
 
-	bool isCreatedSearchingTable(unsigned position)const{return createdSearchingTables[position];}
+	inline bool isUpdatedSearchingTable(unsigned position)const{return lastUpdateIndices[position]==table->size();}
 
 	///This method fills in the searching data structure for the given indexing term
 	virtual void initializeIndexMaps(unsigned int indexingTerm) = 0;
@@ -212,7 +211,7 @@ protected:
 	///The indexing term set by user. It is -1 if not set.
 //	int indexingTermSetByUser;
 	/// A vector of boolean used in order to determine if the data-structure for a particular indexing terms has been created.
-	vector<bool> createdSearchingTables;
+	vector<unsigned> lastUpdateIndices;
 
 	///The first indexing position for which an indexing structure is created
 	int defaultIndexingTerm;
@@ -264,6 +263,8 @@ public:
 protected:
 	///A vector of chosen searching data structure for this kind of indexing strategies, one for each possible indexing term.
 	vector<unordered_map<index_object,AtomTable>> searchingTables;
+
+
 
 	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom,const RuleInformation& ruleInformation);
 
@@ -354,7 +355,7 @@ private:
 
 class HashSetAtomSearcher: public BaseAtomSearcher {
 public:
-	HashSetAtomSearcher(AtomVector* table, Predicate *p) : BaseAtomSearcher(table), createdSearchingTable(false) {}
+	HashSetAtomSearcher(AtomVector* table, Predicate *p) : BaseAtomSearcher(table), lastUpdateIndex(0) {}
 	virtual Atom* findGroundAtom(Atom *atom);
 	virtual void add(Atom* atom) { searchingTable.insert(atom); }
 	virtual void remove(Atom* atom) { searchingTable.erase(atom); }
@@ -365,8 +366,9 @@ public:
 private:
 	/// An unordered set of Atoms, the chosen searching data structure for this kind of indexing strategies.
 	AtomTable searchingTable;
-	/// A boolean used in order to determine if the data-structure for a particular indexing terms has been created.
-	bool createdSearchingTable;
+
+	///The HashSet contains the atoms up to the lastUpdateIndex in the vector of atoms
+	unsigned lastUpdateIndex;
 
  	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom,const RuleInformation& ruleInformation){
  		manageIndex();
@@ -374,15 +376,15 @@ private:
  	}
 
  	///This method fills in the indexing data structures
-	void initializeIndexMaps(){
-		createdSearchingTable=true;
-		for (Atom* a : *table)
-			searchingTable.insert(a);
+	void updateIndexMaps(){
+		for (;lastUpdateIndex<table->size();lastUpdateIndex++)
+			searchingTable.insert((*table)[lastUpdateIndex]);
+
 	}
 
 	void manageIndex(){
-		if(!createdSearchingTable)
-			initializeIndexMaps();
+		if(lastUpdateIndex<table->size())
+			updateIndexMaps();
 	}
 
 };
