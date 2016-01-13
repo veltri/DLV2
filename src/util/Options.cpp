@@ -205,7 +205,7 @@ Options::init(
 		{"positiveOrdering",required_argument, NULL, OPTIONID_positiveOrderingProcedure},
 		{"dictionary-intersection",no_argument, NULL, OPTIONID_enableDictionaryIntersection},
 		{"rule-time",no_argument, NULL, OPTIONID_ruleTime},
-		{"check-fact-duplicate",no_argument, NULL, OPTIONID_checkFactDuplicate},
+		{"check-facts-duplication",no_argument, NULL, OPTIONID_checkFactDuplicate},
         // Required at end of array. 
         { NULL, 0, NULL, 0 }
     };
