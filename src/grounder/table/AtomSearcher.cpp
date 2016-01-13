@@ -245,7 +245,7 @@ Atom* SingleTermMapAtomSearcher::findGroundAtom(Atom *atom){
 	if (defaultIndexingTerm==-1)
 		defaultIndexingTerm=0;
 	if(!isUpdatedSearchingTable(defaultIndexingTerm))
-		initializeIndexMaps(0);
+		initializeIndexMaps(defaultIndexingTerm);
 
 	index_object term = atom->getTerm(defaultIndexingTerm)->getIndex();
 	AtomTable* matchingTable=&searchingTables[defaultIndexingTerm][term];
