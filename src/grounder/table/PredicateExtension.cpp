@@ -124,8 +124,8 @@ void PredicateExtension::swapTables(unsigned tableFrom,unsigned tableTo){
 		table_to->push_back(currentAtom);
 		table_from->pop_back();
 
-		for(auto atomSearcher:atomSearchers[tableTo])
-			atomSearcher->add(currentAtom);
+//		for(auto atomSearcher:atomSearchers[tableTo])
+//			atomSearcher->add(currentAtom);
 	}
 
 	for(auto atomSearcher:atomSearchers[tableFrom])

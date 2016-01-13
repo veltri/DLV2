@@ -207,12 +207,13 @@ int SingleTermAtomSearcher::getPositionWithBestSelectivity(const vector<pair<int
 
 /****************************************************** SINGLE TERM MAP ATOM SEARCH ***************************************************/
 
+//FIXME isUpdated
 void SingleTermMapAtomSearcher::add(Atom* atom) {
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("Add index "+predicate->getName());
 #endif
 	for (unsigned int i = 0; i < predicate->getArity(); ++i) {
-		if(createdSearchingTables[i]){
+		if(isUpdatedSearchingTable(i)){
 			index_object termIndex=atom->getTerm(i)->getIndex();
 			if(searchingTables[i].count(termIndex))
 				searchingTables[i][termIndex].insert(atom);
@@ -226,9 +227,10 @@ void SingleTermMapAtomSearcher::add(Atom* atom) {
 #endif
 }
 
+//FIXME isUpdated
 void SingleTermMapAtomSearcher::remove(Atom* atom) {
 	for (unsigned int i = 0; i < predicate->getArity(); ++i) {
-		if(createdSearchingTables[i]){
+		if(isUpdatedSearchingTable(i)){
 			index_object termIndex=atom->getTerm(i)->getIndex();
 			if(searchingTables[i].count(termIndex))
 				searchingTables[termIndex][i].erase(atom);
@@ -240,10 +242,10 @@ Atom* SingleTermMapAtomSearcher::findGroundAtom(Atom *atom){
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("Find "+predicate->getName());
 #endif
-	if (defaultIndexingTerm==-1){
+	if (defaultIndexingTerm==-1)
 		defaultIndexingTerm=0;
+	if(!isUpdatedSearchingTable(defaultIndexingTerm))
 		initializeIndexMaps(0);
-	}
 
 	index_object term = atom->getTerm(defaultIndexingTerm)->getIndex();
 	AtomTable* matchingTable=&searchingTables[defaultIndexingTerm][term];
@@ -271,7 +273,7 @@ unsigned int SingleTermMapAtomSearcher::selectBestIndex(const vector<pair<int,in
 
 	unsigned minSize=INT_MAX;
 	for(auto it=possibleTableToSearch.begin();it!=possibleTableToSearch.end();++it){
-		if(createdSearchingTables[(*it).first]){
+		if(isUpdatedSearchingTable((*it).first)){
 			unsigned currentSize=(searchingTables[(*it).first][(*it).second]).size();
 			if(minSize>currentSize){
 				minSize=currentSize;
@@ -319,8 +321,9 @@ void SingleTermMapAtomSearcher::initializeIndexMaps(unsigned int indexingTerm){
 	if(defaultIndexingTerm==-1)
 		defaultIndexingTerm=indexingTerm;
 
-	createdSearchingTables[indexingTerm]=true;
-	for (Atom* a : *table) {
+	unsigned& lastUpdateIndex=lastUpdateIndices[indexingTerm];
+	for (;lastUpdateIndex<table->size();++lastUpdateIndex) {
+		Atom *a=(*table)[lastUpdateIndex];
 		index_object termIndex=a->getTerm(indexingTerm)->getIndex();
 		if(!searchingTables[indexingTerm].count(termIndex)){
 			AtomTable values;
@@ -360,7 +363,7 @@ int BinderSelector1::select(Atom* templateAtom,
 	else
 		indexSelected=atomSearcher->selectBestIndex(possibleTableToSearch);
 
-	if(indexSelected>=0 && !atomSearcher->isCreatedSearchingTable(indexSelected))
+	if(indexSelected>=0 && !atomSearcher->isUpdatedSearchingTable(indexSelected))
 		atomSearcher->initializeIndexMaps(indexSelected);
 	return indexSelected;
 }
@@ -376,7 +379,7 @@ int BinderSelector2::select(Atom* templateAtom,
 	unsigned size=possibleTableToSearch.size();
 	if(size==0){
 		for(auto var:bindVariablesWithCreatedIntersection){
-			if(atomSearcher->isCreatedSearchingTable(var.first)){
+			if(atomSearcher->isUpdatedSearchingTable(var.first)){
 				return var.first;
 			}
 		}
@@ -386,7 +389,7 @@ int BinderSelector2::select(Atom* templateAtom,
 	else
 		indexSelected=atomSearcher->selectBestIndex(possibleTableToSearch);
 
-	if(indexSelected>=0 && !atomSearcher->isCreatedSearchingTable(indexSelected))
+	if(indexSelected>=0 && !atomSearcher->isUpdatedSearchingTable(indexSelected))
 		atomSearcher->initializeIndexMaps(indexSelected);
 
 	return indexSelected;
@@ -415,7 +418,7 @@ int BinderSelector3::select(Atom* templateAtom,
 	else
 		indexSelected=atomSearcher->selectBestIndex(possibleTableToSearch);
 
-	if(indexSelected>=0 && !atomSearcher->isCreatedSearchingTable(indexSelected))
+	if(indexSelected>=0 && !atomSearcher->isUpdatedSearchingTable(indexSelected))
 		atomSearcher->initializeIndexMaps(indexSelected);
 
 	return indexSelected;
@@ -447,7 +450,7 @@ int BinderSelector4::select(Atom* templateAtom,
 	else
 		indexSelected=atomSearcher->selectBestIndex(possibleTableToSearch);
 
-	if(indexSelected>=0 && !atomSearcher->isCreatedSearchingTable(indexSelected))
+	if(indexSelected>=0 && !atomSearcher->isUpdatedSearchingTable(indexSelected))
 		atomSearcher->initializeIndexMaps(indexSelected);
 
 	return indexSelected;
@@ -506,7 +509,7 @@ void SingleTermMultiMapAtomSearcher::add(Atom* atom) {
 	Timer::getInstance()->start("Add index "+predicate->getName());
 #endif
 	for (unsigned int i = 0; i < predicate->getArity(); ++i) {
-		if(createdSearchingTables[i]){
+		if(isUpdatedSearchingTable(i)){
 			index_object termIndex=atom->getTerm(i)->getIndex();
 			searchingTables[i].insert({termIndex,atom});
 		}
@@ -518,7 +521,7 @@ void SingleTermMultiMapAtomSearcher::add(Atom* atom) {
 
 void SingleTermMultiMapAtomSearcher::remove(Atom* atom) {
 	for (unsigned int i = 0; i < predicate->getArity(); ++i) {
-		if(createdSearchingTables[i]){
+		if(isUpdatedSearchingTable(i)){
 			index_object termIndex=atom->getTerm(i)->getIndex();
 			auto pair=searchingTables[i].equal_range(termIndex);
 			for(auto it=pair.first;it!=pair.second;++it){
@@ -533,10 +536,11 @@ Atom* SingleTermMultiMapAtomSearcher::findGroundAtom(Atom *atom){
 #ifdef DEBUG_RULE_TIME
 	Timer::getInstance()->start("Find "+predicate->getName());
 #endif
-	if (defaultIndexingTerm==-1){
+	if (defaultIndexingTerm==-1)
 		defaultIndexingTerm=0;
-		initializeIndexMaps(0);
-	}
+	if(isUpdatedSearchingTable(defaultIndexingTerm))
+		initializeIndexMaps(defaultIndexingTerm);
+
 
 	index_object term = atom->getTerm(defaultIndexingTerm)->getIndex();
 	auto pair=searchingTables[defaultIndexingTerm].equal_range(term);
@@ -565,7 +569,7 @@ unsigned int SingleTermMultiMapAtomSearcher::selectBestIndex(const vector<pair<i
 
 	unsigned minSize=INT_MAX;
 	for(auto it=possibleTableToSearch.begin();it!=possibleTableToSearch.end();++it){
-		if(createdSearchingTables[(*it).first]){
+		if(isUpdatedSearchingTable((*it).first)){
 			unsigned currentSize=searchingTables[(*it).first].count((*it).second);
 			if(minSize>currentSize){
 				minSize=currentSize;
@@ -610,8 +614,9 @@ void SingleTermMultiMapAtomSearcher::initializeIndexMaps(unsigned int indexingTe
 	if(defaultIndexingTerm==-1)
 		defaultIndexingTerm=indexingTerm;
 
-	createdSearchingTables[indexingTerm]=true;
-	for (Atom* a : *table) {
+	unsigned& lastUpdateIndex=lastUpdateIndices[indexingTerm];
+	for (;lastUpdateIndex<table->size();++lastUpdateIndex) {
+		Atom *a=(*table)[lastUpdateIndex];
 		index_object termIndex=a->getTerm(indexingTerm)->getIndex();
 		searchingTables[indexingTerm].insert({termIndex,a});
 	}

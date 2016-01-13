@@ -205,6 +205,8 @@ public:
 	///This method fills in the searching data structure for the given indexing term
 	virtual void initializeIndexMaps(unsigned int indexingTerm) = 0;
 
+	virtual void clear(){lastUpdateIndices.assign(lastUpdateIndices.size(),0);}
+
 protected:
 	/// The predicate
 	Predicate* predicate;
@@ -250,7 +252,7 @@ public:
 	virtual Atom* findGroundAtom(Atom *atom);
 	virtual void add(Atom* atom);
 	virtual void remove(Atom* atom);
-	virtual void clear(){for(auto table:searchingTables) table.clear();};
+	virtual void clear(){SingleTermAtomSearcher::clear(); for(auto& table:searchingTables)table.clear();};
 
 	///This method chooses the best indexing term among the one allowed.
 	unsigned int selectBestIndex(const vector<pair<int,index_object>>& possibleTableToSearch);
@@ -334,7 +336,7 @@ public:
 	virtual Atom* findGroundAtom(Atom *atom);
 	virtual void add(Atom* atom);
 	virtual void remove(Atom* atom);
-	virtual void clear(){for(auto table:searchingTables) table.clear();};
+	virtual void clear(){SingleTermAtomSearcher::clear(); for(auto& table:searchingTables)table.clear();};
 
 	///This method chooses the best indexing term among the one allowed.
 	unsigned int selectBestIndex(const vector<pair<int,index_object>>& possibleTableToSearch);
@@ -359,7 +361,7 @@ public:
 	virtual Atom* findGroundAtom(Atom *atom);
 	virtual void add(Atom* atom) { searchingTable.insert(atom); }
 	virtual void remove(Atom* atom) { searchingTable.erase(atom); }
-	virtual void clear() { searchingTable.clear(); }
+	virtual void clear() { lastUpdateIndex=0; searchingTable.clear(); }
 
 	virtual unsigned getType(){return HASHSET;};
 
@@ -371,13 +373,12 @@ private:
 	unsigned lastUpdateIndex;
 
  	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom,const RuleInformation& ruleInformation){
- 		manageIndex();
- 		return new UnorderedSetIterator(searchingTable.begin(), searchingTable.end());
+ 		return new VectorIterator(table->begin(), table->end());
  	}
 
  	///This method fills in the indexing data structures
 	void updateIndexMaps(){
-		for (;lastUpdateIndex<table->size();lastUpdateIndex++)
+		for (;lastUpdateIndex<table->size();++lastUpdateIndex)
 			searchingTable.insert((*table)[lastUpdateIndex]);
 
 	}

@@ -104,11 +104,11 @@ public:
 			if((getAtomSearcher(table,0)->findGroundAtom(genericAtom))!=nullptr)
 				return false;
 		}
-		if(atomSearchers.size()>table){
-			for(auto atomSearcher:atomSearchers[table])
-				atomSearcher->add(genericAtom);
-		}
 		tables[table]->push_back(genericAtom);
+//		if(atomSearchers.size()>table){
+//			for(auto atomSearcher:atomSearchers[table])
+//				atomSearcher->add(genericAtom);
+//		}
 		predicateInformation->update(genericAtom);
 		if(genericAtom->getIndex()==0) setIndexOfAtom(genericAtom);
 		return true;
@@ -139,10 +139,11 @@ public:
 	}
 
 	void addAtom(Atom* atom, unsigned table, AtomSearcher* searcher){
-		if(searcher!=nullptr)
-			searcher->add(atom);
 		tables[table]->push_back(atom);
 		predicateInformation->update(atom);
+
+//		if(searcher!=nullptr)
+//			searcher->add(atom);
 
 		//TODO Evitare di fare ogni volta le seguenti istruzioni
 		if(predicate->isSolved() && !atom->isFact())
