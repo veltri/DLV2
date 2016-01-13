@@ -174,7 +174,7 @@ int SingleTermAtomSearcher::manageIndex(Atom* templateAtom, const RuleInformatio
 	else
 		indexSelected=selectBestIndex(possibleTableToSearch);
 	if(!isUpdatedSearchingTable(indexSelected))
-		initializeIndexMaps(indexSelected);
+		updateIndexMaps(indexSelected);
 	return indexSelected;
 }
 
@@ -245,7 +245,7 @@ Atom* SingleTermMapAtomSearcher::findGroundAtom(Atom *atom){
 	if (defaultIndexingTerm==-1)
 		defaultIndexingTerm=0;
 	if(!isUpdatedSearchingTable(defaultIndexingTerm))
-		initializeIndexMaps(defaultIndexingTerm);
+		updateIndexMaps(defaultIndexingTerm);
 
 	index_object term = atom->getTerm(defaultIndexingTerm)->getIndex();
 	AtomTable* matchingTable=&searchingTables[defaultIndexingTerm][term];
@@ -310,7 +310,7 @@ GeneralIterator* SingleTermMapAtomSearcher::computeGenericIterator(Atom* templat
 	return currentMatch;
 }
 
-void SingleTermMapAtomSearcher::initializeIndexMaps(unsigned int indexingTerm){
+void SingleTermMapAtomSearcher::updateIndexMaps(unsigned int indexingTerm){
 #ifdef DEBUG_ATOM_SEARCHER
 	cout<<"Predicate: "<<predicate->getName()<<" Created Index on term: "<<indexingTerm<<endl;
 #endif
@@ -364,7 +364,7 @@ int BinderSelector1::select(Atom* templateAtom,
 		indexSelected=atomSearcher->selectBestIndex(possibleTableToSearch);
 
 	if(indexSelected>=0 && !atomSearcher->isUpdatedSearchingTable(indexSelected))
-		atomSearcher->initializeIndexMaps(indexSelected);
+		atomSearcher->updateIndexMaps(indexSelected);
 	return indexSelected;
 }
 
@@ -390,7 +390,7 @@ int BinderSelector2::select(Atom* templateAtom,
 		indexSelected=atomSearcher->selectBestIndex(possibleTableToSearch);
 
 	if(indexSelected>=0 && !atomSearcher->isUpdatedSearchingTable(indexSelected))
-		atomSearcher->initializeIndexMaps(indexSelected);
+		atomSearcher->updateIndexMaps(indexSelected);
 
 	return indexSelected;
 
@@ -419,7 +419,7 @@ int BinderSelector3::select(Atom* templateAtom,
 		indexSelected=atomSearcher->selectBestIndex(possibleTableToSearch);
 
 	if(indexSelected>=0 && !atomSearcher->isUpdatedSearchingTable(indexSelected))
-		atomSearcher->initializeIndexMaps(indexSelected);
+		atomSearcher->updateIndexMaps(indexSelected);
 
 	return indexSelected;
 }
@@ -451,7 +451,7 @@ int BinderSelector4::select(Atom* templateAtom,
 		indexSelected=atomSearcher->selectBestIndex(possibleTableToSearch);
 
 	if(indexSelected>=0 && !atomSearcher->isUpdatedSearchingTable(indexSelected))
-		atomSearcher->initializeIndexMaps(indexSelected);
+		atomSearcher->updateIndexMaps(indexSelected);
 
 	return indexSelected;
 }
@@ -539,7 +539,7 @@ Atom* SingleTermMultiMapAtomSearcher::findGroundAtom(Atom *atom){
 	if (defaultIndexingTerm==-1)
 		defaultIndexingTerm=0;
 	if(isUpdatedSearchingTable(defaultIndexingTerm))
-		initializeIndexMaps(defaultIndexingTerm);
+		updateIndexMaps(defaultIndexingTerm);
 
 
 	index_object term = atom->getTerm(defaultIndexingTerm)->getIndex();
@@ -604,7 +604,7 @@ GeneralIterator* SingleTermMultiMapAtomSearcher::computeGenericIterator(Atom* te
 	return currentMatch;
 }
 
-void SingleTermMultiMapAtomSearcher::initializeIndexMaps(unsigned int indexingTerm){
+void SingleTermMultiMapAtomSearcher::updateIndexMaps(unsigned int indexingTerm){
 #ifdef DEBUG_ATOM_SEARCHER
 	cout<<"Predicate: "<<predicate->getName()<<" Created Index on term: "<<indexingTerm<<endl;
 #endif

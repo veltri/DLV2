@@ -203,7 +203,7 @@ public:
 	inline bool isUpdatedSearchingTable(unsigned position)const{return lastUpdateIndices[position]==table->size();}
 
 	///This method fills in the searching data structure for the given indexing term
-	virtual void initializeIndexMaps(unsigned int indexingTerm) = 0;
+	virtual void updateIndexMaps(unsigned int indexingTerm) = 0;
 
 	virtual void clear(){lastUpdateIndices.assign(lastUpdateIndices.size(),0);}
 
@@ -258,7 +258,7 @@ public:
 	unsigned int selectBestIndex(const vector<pair<int,index_object>>& possibleTableToSearch);
 
 	///This method fills in the searching data structure for the given indexing term
-	void initializeIndexMaps(unsigned int indexingTerm);
+	void updateIndexMaps(unsigned int indexingTerm);
 
 	virtual unsigned getType(){return MAP;};
 
@@ -342,7 +342,7 @@ public:
 	unsigned int selectBestIndex(const vector<pair<int,index_object>>& possibleTableToSearch);
 
  	///This method fills in the indexing data structures
-	void initializeIndexMaps(unsigned int indexTable);
+	void updateIndexMaps(unsigned int indexTable);
 
 	virtual unsigned getType(){return MULTIMAP;};
 
