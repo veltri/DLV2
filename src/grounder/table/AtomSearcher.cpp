@@ -638,9 +638,10 @@ Atom* HashSetAtomSearcher::findGroundAtom(Atom* atom) {
 
 /****************************************************** DOUBLE TERM MAP ATOM SEARCH ***************************************************/
 
+//FIXME
 void DoubleTermMapAtomSearcher::add(Atom* atom) {
 	for (unsigned int i = 0; i < predicate->getArity(); ++i) {
-		if(createdSearchingTables[i]){
+		if(isUpdatedSearchingTable(i)){
 			index_object termIndex=atom->getTerm(i)->getIndex();
 			int nextTermIndex=-1;
 			if(i<(predicate->getArity()-1))
@@ -663,9 +664,10 @@ void DoubleTermMapAtomSearcher::add(Atom* atom) {
 	}
 }
 
+//FIXME
 void DoubleTermMapAtomSearcher::remove(Atom* atom) {
 	for (unsigned int i = 0; i < predicate->getArity(); ++i) {
-		if(createdSearchingTables[i]){
+		if(isUpdatedSearchingTable(i)){
 			index_object termIndex=atom->getTerm(i)->getIndex();
 			int nextTermIndex=-1;
 			if(i<(predicate->getArity()-1))
@@ -684,21 +686,22 @@ void DoubleTermMapAtomSearcher::remove(Atom* atom) {
 int DoubleTermMapAtomSearcher::manageIndexGround() {
 	int tableToSearch = 0;
 	for (unsigned int i = 0; i < predicate->getArity(); ++i)
-		if (createdSearchingTables[i]) {
+		if(isUpdatedSearchingTable(i)){
 			tableToSearch = i;
 			break;
 		}
-	if (!createdSearchingTables[tableToSearch])
-		initializeIndexMaps(tableToSearch);
+	if (!isUpdatedSearchingTable(tableToSearch))
+		updateIndexMaps(tableToSearch);
 
 	return tableToSearch;
 }
 
 Atom* DoubleTermMapAtomSearcher::findGroundAtom(Atom *atom){
-	if (defaultIndexingTerm==-1){
+	if (defaultIndexingTerm==-1)
 		defaultIndexingTerm=0;
-		initializeIndexMaps(0);
-	}
+
+	if (!isUpdatedSearchingTable(defaultIndexingTerm))
+		updateIndexMaps(defaultIndexingTerm);
 
 	index_object term = atom->getTerm(defaultIndexingTerm)->getIndex();
 	Multimap_Atom::iterator start;
@@ -742,8 +745,8 @@ int DoubleTermMapAtomSearcher::manageIndex(Atom* templateAtom) {
 	int indexSelected=-1;
 	if(!possibleTableToSearch.empty()){
 		indexSelected=selectBestIndex(possibleTableToSearch);
-		if(!createdSearchingTables[indexSelected])
-			initializeIndexMaps(indexSelected);
+		if(!isUpdatedSearchingTable(indexSelected))
+			updateIndexMaps(indexSelected);
 	}
 	return indexSelected;
 }
@@ -773,7 +776,7 @@ unsigned int DoubleTermMapAtomSearcher::selectBestIndex(const vector<pair<int,pa
 
 	unsigned minSize=INT_MAX;
 	for(auto it=possibleTableToSearch.begin();it!=possibleTableToSearch.end();++it){
-		if(unsigned((*it).first)<createdSearchingTables.size() && createdSearchingTables[(*it).first]){
+		if(unsigned((*it).first)<lastUpdateIndices.size() && isUpdatedSearchingTable((*it).first)){
 			unsigned termIndex=(*it).second.first;
 			int nextTermIndex=(*it).second.second;
 			unsigned currentSize=searchingTables[(*it).first][termIndex].size();
@@ -834,15 +837,16 @@ GeneralIterator* DoubleTermMapAtomSearcher::computeGenericIterator(Atom* templat
 	return currentMatch;
 }
 
-void DoubleTermMapAtomSearcher::initializeIndexMaps(unsigned int indexingTerm){
+void DoubleTermMapAtomSearcher::updateIndexMaps(unsigned int indexingTerm){
 #ifdef DEBUG_ATOM_SEARCHER
 	cout<<"Predicate: "<<predicate->getName()<<" Created Index on term: "<<indexingTerm<<endl;
 #endif
 	if(defaultIndexingTerm==-1 || defaultIndexingTerm==predicate->getArity()-1)
 		defaultIndexingTerm=indexingTerm;
 
-	createdSearchingTables[indexingTerm]=true;
-	for (Atom* a : *table) {
+	unsigned& lastUpdateIndex=lastUpdateIndices[indexingTerm];
+	for (;lastUpdateIndex<table->size();++lastUpdateIndex) {
+		Atom* a=(*table)[lastUpdateIndex];
 		index_object termIndex=a->getTerm(indexingTerm)->getIndex();
 		int nextTermIndex=-1;
 		if(indexingTerm<(predicate->getArity()-1))

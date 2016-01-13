@@ -395,11 +395,9 @@ public:
 	DoubleTermMapAtomSearcher(AtomVector* table, Predicate* p) : BaseAtomSearcher(table),defaultIndexingTerm(-1) {
 		this->predicate=p;
 		searchingTables.reserve(predicate->getArity());
-		createdSearchingTables.reserve(predicate->getArity());
-		for(unsigned int i=0;i<predicate->getArity();++i){
+		lastUpdateIndices.resize(predicate->getArity(),0);
+		for(unsigned int i=0;i<predicate->getArity();++i)
 			searchingTables.push_back(unordered_map<index_object,Multimap_Atom>());
-			createdSearchingTables.push_back(false);
-		}
 //		indexingTermSetByUser = Options::globalOptions()->getPredicateIndexTerm(this->predicate->getName());
 //		if(indexingTermSetByUser>=0)
 //			assert_msg(unsigned(indexingTermSetByUser)<this->predicate->getArity(), "The specified index for the predicate \""+(this->predicate)->getName()+"\" is not valid.");
@@ -411,10 +409,12 @@ public:
 	virtual Atom* findGroundAtom(Atom *atom);
 	virtual void add(Atom* atom);
 	virtual void remove(Atom* atom);
-	virtual void clear(){for(auto table:searchingTables) table.clear();};
+	virtual void clear(){lastUpdateIndices.assign(predicate->getArity(),0); for(auto table:searchingTables) table.clear();};
 
 	///This method chooses the best indexing term among the one allowed.
 	unsigned int selectBestIndex(const vector<pair<int,pair<index_object,int>>>& possibleTableToSearch);
+
+	inline bool isUpdatedSearchingTable(unsigned position)const{return lastUpdateIndices[position]==table->size();}
 
 	virtual unsigned getType(){return DOUBLEMAP;};
 
@@ -424,20 +424,19 @@ private:
 	///The indexing term set by user. It is -1 if not set.
 //	int indexingTermSetByUser;
 	/// A vector of boolean used in order to determine if the data-structure for a particular indexing terms has been created.
-	vector<bool> createdSearchingTables;
+	vector<unsigned> lastUpdateIndices;
 	///A vector of chosen searching data structure for this kind of indexing strategies, one for each possible indexing term.
 	vector<unordered_map<index_object,Multimap_Atom>> searchingTables;
 
 	///The first indexing position for which an indexing structure is created
 	int defaultIndexingTerm;
 
-
 	int manageIndex(Atom* templateAtom);
 	int manageIndexGround();
 
 	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom,const RuleInformation& ruleInformation);
 
-	void initializeIndexMaps(unsigned int indexingTerm);
+	void updateIndexMaps(unsigned int indexingTerm);
 
 //	int computePossibleIndexingTermTable(const vector<pair<int,pair<index_object,int>>>& possibleTableToSearch);
 
