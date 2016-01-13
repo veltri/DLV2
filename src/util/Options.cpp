@@ -69,6 +69,7 @@ namespace DLV2
 #define OPTIONID_positiveOrderingProcedure ('z' + 43)
 #define OPTIONID_enableDictionaryIntersection ('z' + 44)
 #define OPTIONID_ruleTime ('z' + 45)
+#define OPTIONID_checkFactDuplicate ('z' + 46)
 
 
 
@@ -123,7 +124,8 @@ Options::Options():
 		instantiationProcedure(BACKJUMPING),
 		positiveOrderingProcedure(COMBINED_POSITIVE_ORDERING),
 		enabledDictionaryIntersection(false),
-		ruleTime(false)
+		ruleTime(false),
+		checkFactDuplicate(false)
 {
 
 }
@@ -147,7 +149,8 @@ Options::Options(
 		instantiationProcedure(o.instantiationProcedure),
 		positiveOrderingProcedure(o.positiveOrderingProcedure),
 		enabledDictionaryIntersection(o.enabledDictionaryIntersection),
-		ruleTime(false)
+		ruleTime(false),
+		checkFactDuplicate(false)
 
 {
 
@@ -201,8 +204,8 @@ Options::init(
 		{"instantiate",required_argument, NULL, OPTIONID_instantiationProcedure},
 		{"positiveOrdering",required_argument, NULL, OPTIONID_positiveOrderingProcedure},
 		{"dictionary-intersection",no_argument, NULL, OPTIONID_enableDictionaryIntersection},
-		{"ruleTime",no_argument, NULL, OPTIONID_ruleTime},
-
+		{"rule-time",no_argument, NULL, OPTIONID_ruleTime},
+		{"check-fact-duplicate",no_argument, NULL, OPTIONID_checkFactDuplicate},
         // Required at end of array. 
         { NULL, 0, NULL, 0 }
     };
@@ -335,6 +338,10 @@ Options::init(
 
             case OPTIONID_ruleTime:
             	ruleTime=true;
+				break;
+
+            case OPTIONID_checkFactDuplicate:
+            	checkFactDuplicate=true;
 				break;
 
             default:

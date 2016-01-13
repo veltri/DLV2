@@ -523,12 +523,18 @@ void InMemoryInputBuilder::createFact(Atom* fact) {
 //	}
 	fact->setFact(true);
 	Predicate* predicate = fact->getPredicate();
-	if (!(instancesTable->getPredicateExt(predicate)->addAtom(FACT, fact)))
-		delete fact;
-	else
+//	if (!(instancesTable->getPredicateExt(predicate)->addAtom(FACT, fact)))
+	AtomSearcher* atomSearcher=nullptr;
+	if(Options::globalOptions()->getCheckFactDuplicate())
+		atomSearcher=instancesTable->getPredicateExt(predicate)->addAtomSearcher(FACT,HASHSET);
+
+	if( atomSearcher==nullptr || atomSearcher->findGroundAtom(fact)==nullptr ){
+		instancesTable->getPredicateExt(predicate)->addAtom(FACT,fact);
 		if (!Options::globalOptions()->isNofacts()) {
-			OutputBuilder::getInstance()->onFact(fact);
+				OutputBuilder::getInstance()->onFact(fact);
 		}
+	}else
+		delete fact;
 }
 
 void InMemoryInputBuilder::expandTermsRecursive(Atom* atom, vector<Term*>& currentTerms, vector<Atom*>& atomExpanded,unsigned currentPosition){

@@ -122,6 +122,10 @@ namespace DLV2
 			return ruleTime;
 		}
 
+		bool getCheckFactDuplicate(){
+			return checkFactDuplicate;
+		}
+
     private:
 
         static Options* instance;
@@ -191,6 +195,8 @@ namespace DLV2
     	bool enabledDictionaryIntersection;
 
     	bool ruleTime;
+
+    	bool checkFactDuplicate;
     };
     
 };
