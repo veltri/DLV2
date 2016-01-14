@@ -554,8 +554,16 @@ void ProgramGrounder::setDefaultAtomSearchers(Rule* rule) {
 	predicate_searchInsert_atomSearcher.resize(atomIndex+rule->getSizeBody());
 	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();++atom,++atomIndex){
 		set_predicate predicates=(*atom)->getPredicates();
-		for(auto predicate:predicates){
+		if((*atom)->isClassicalLiteral()){
+			Predicate *predicate=(*atom)->getPredicate();
 			createAtomSearchersForPredicateBody(atomIndex, predicate);
+		}
+		else if((*atom)->isAggregateAtom()){
+			for(unsigned i=0;i<(*atom)->getAggregateElementsSize();++i){
+				Predicate *predicate=(*atom)->getAggregateElement(i)->getNafLiteral(0)->getPredicate();
+				if(predicate!=nullptr)
+					createAtomSearchersForPredicateBody(atomIndex, predicate);
+			}
 		}
 	}
 	atomIndex=0;
@@ -566,9 +574,9 @@ void ProgramGrounder::setDefaultAtomSearchers(Rule* rule) {
 		}
 	}
 
-//	cout<<" ******   "<<predicate_searchInsert_atomSearcher.size()<<endl;
+//	cout<<"Size = "<<predicate_searchInsert_atomSearcher.size()<<endl;
 //	for(unsigned atom=0;atom<predicate_searchInsert_table.size();atom++){
-//		cout<<"Atom: "<<atom<<" ";
+//		cout<<"Atom: "<<atom<<" --> ";
 //		for(auto i:predicate_searchInsert_table[atom]){
 //			cout<<i<<" ";
 //		}
@@ -577,7 +585,7 @@ void ProgramGrounder::setDefaultAtomSearchers(Rule* rule) {
 //	cout<<endl;
 //
 //	for(unsigned atom=0;atom<predicate_searchInsert_atomSearcher.size();atom++){
-//		cout<<"Atom: "<<atom<<" ";
+//		cout<<"Atom: "<<atom<<" --> ";
 //		for(auto i:predicate_searchInsert_atomSearcher[atom]){
 //			cout<<i<<" ";
 //		}

@@ -710,6 +710,7 @@ bool BackTrackingGrounder::groundAggregate() {
 	ground_rule->setAtomToSimplifyInBody(index_current_atom,false);
 
 	set_term variablesInAtom;
+	unsigned numTables=predicate_searchInsert_table[index_current_atom+currentRule->getSizeHead()].size();
 
 	ResultEvaluation result=UNDEF;
 	for(unsigned i=0;i<aggregateAtom->getAggregateElementsSize()&&result==UNDEF;i++){
@@ -721,14 +722,15 @@ bool BackTrackingGrounder::groundAggregate() {
 
 		Atom* atom=aggregateAtom->getAggregateElement(i)->getNafLiteral(0);
 		Predicate *predicate_atom=atom->getPredicate();
-//		vector<unsigned> tablesToSearch=predicate_searchInsert_table[index_current_atom+currentRule->getSizeHead()];
 		variablesInAtom=atom->getVariable();
 
+
 		int counter=0;
-		for(unsigned j=0;j<predicate_searchInsert_table[index_current_atom+currentRule->getSizeHead()].size()&&result==UNDEF;j++){
+		for(unsigned j=0;j<numTables&&result==UNDEF;j++){
 
 			unsigned table=predicate_searchInsert_table[index_current_atom+currentRule->getSizeHead()][j];
 			AtomSearcher *searcher=predicateExtTable->getPredicateExt(predicate_atom)->getAtomSearcher(table,0);
+			if(searcher==nullptr) continue;
 			bool find=false;
 			Atom* atomFound=nullptr;
 
