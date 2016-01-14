@@ -721,15 +721,13 @@ bool BackTrackingGrounder::groundAggregate() {
 		// For reasoning of correctness the current assignment have to be copied for maintaining the current assignment
 
 		Atom* atom=aggregateAtom->getAggregateElement(i)->getNafLiteral(0);
-		Predicate *predicate_atom=atom->getPredicate();
 		variablesInAtom=atom->getVariable();
 
 
 		int counter=0;
 		for(unsigned j=0;j<numTables&&result==UNDEF;j++){
 
-			unsigned table=predicate_searchInsert_table[index_current_atom+currentRule->getSizeHead()][j];
-			AtomSearcher *searcher=predicateExtTable->getPredicateExt(predicate_atom)->getAtomSearcher(table,0);
+			AtomSearcher *searcher=predicate_searchInsert_atomSearcher[index_current_atom+currentRule->getSizeHead()][j+(i*numTables)];
 			if(searcher==nullptr) continue;
 			bool find=false;
 			Atom* atomFound=nullptr;

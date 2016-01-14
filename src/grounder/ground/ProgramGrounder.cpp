@@ -587,7 +587,7 @@ void ProgramGrounder::setDefaultAtomSearchers(Rule* rule) {
 //	for(unsigned atom=0;atom<predicate_searchInsert_atomSearcher.size();atom++){
 //		cout<<"Atom: "<<atom<<" --> ";
 //		for(auto i:predicate_searchInsert_atomSearcher[atom]){
-//			cout<<i<<" ";
+//			cout<<i->getType()<<" ";
 //		}
 //		cout<<endl;
 //	}
