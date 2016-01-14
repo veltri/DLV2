@@ -133,6 +133,30 @@ public:
 
 };
 
+class DLVHashVecInt : public HashVecInt{
+public:
+	inline size_t computeHash(const vector<index_object> & values){
+	    size_t seed=values[0];
+		for(unsigned i=1;i<values.size();i++)
+			seed = seed*5+values[i];
+		return seed;
+	}
+	inline size_t computeHashSize_T(const vector<size_t> & values){
+	    size_t seed=values[0];
+		for(unsigned i=1;i<values.size();i++)
+			seed = seed*5+values[i];
+		return seed;
+	}
+
+	inline size_t computeHashTerm(const vector<Term*> & values){
+	    size_t seed=values[0]->getIndex();
+		for(unsigned i=1;i<values.size();i++)
+			seed = seed*5+values[i]->getIndex();
+		return seed;
+	}
+
+};
+
 };
 
 };
