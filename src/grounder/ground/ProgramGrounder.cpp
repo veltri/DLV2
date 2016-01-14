@@ -544,6 +544,8 @@ void ProgramGrounder::createAtomSearchersForPredicateHead(unsigned position, Pre
 			auto atomSearcher=predicateExtension->addAtomSearcher(i,HASHSET);
 			if(predicateExtension->getPredicateExtentionSize(i))
 				predicate_searchInsert_atomSearcher[position].push_back(atomSearcher);
+			else
+				predicate_searchInsert_atomSearcher[position].push_back(0);
 		}
 	}
 }
@@ -553,7 +555,6 @@ void ProgramGrounder::setDefaultAtomSearchers(Rule* rule) {
 	unsigned atomIndex=rule->getSizeHead();
 	predicate_searchInsert_atomSearcher.resize(atomIndex+rule->getSizeBody());
 	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();++atom,++atomIndex){
-		set_predicate predicates=(*atom)->getPredicates();
 		if((*atom)->isClassicalLiteral()){
 			Predicate *predicate=(*atom)->getPredicate();
 			createAtomSearchersForPredicateBody(atomIndex, predicate);
@@ -568,9 +569,16 @@ void ProgramGrounder::setDefaultAtomSearchers(Rule* rule) {
 	}
 	atomIndex=0;
 	for(auto atom=rule->getBeginHead();atom!=rule->getEndHead();++atom,++atomIndex){
-		set_predicate predicates=(*atom)->getPredicates();
-		for(auto predicate:predicates){
+		if((*atom)->isClassicalLiteral()){
+			Predicate *predicate=(*atom)->getPredicate();
 			createAtomSearchersForPredicateHead(atomIndex, predicate,rule);
+		}
+		else if((*atom)->isChoice()){
+			for(unsigned i=0;i<(*atom)->getChoiceElementsSize();++i){
+				Predicate *predicate=(*atom)->getChoiceElement(i)->getFirstAtom()->getPredicate();
+				if(predicate!=nullptr)
+					createAtomSearchersForPredicateHead(atomIndex, predicate,rule);
+			}
 		}
 	}
 

@@ -280,6 +280,7 @@ bool BackTrackingGrounder::foundAssignment() {
 		(*atom)->ground(current_assignment,headGroundAtom);
 
 		for(auto atomSearcher:predicate_searchInsert_atomSearcher[atom_counter]){
+			if(atomSearcher==nullptr) continue;
 			searchAtom=atomSearcher->findGroundAtom(headGroundAtom);
 			if(searchAtom!=nullptr)
 				break;
@@ -804,6 +805,7 @@ void BackTrackingGrounder::groundChoice(bool& find_new_true_atom,bool& ground_ne
 	Atom* searchAtom=nullptr;
 	Atom* ground_choice=new Choice;
 	Atom *choice=currentRule->getAtomInHead(0);
+	unsigned numTables=predicate_searchInsert_table[0][0]+1;
 
 	for(unsigned i=0;i<choice->getChoiceElementsSize();i++){
 
@@ -812,14 +814,23 @@ void BackTrackingGrounder::groundChoice(bool& find_new_true_atom,bool& ground_ne
 		Atom *headGroundAtom=nullptr;
 		atom_in_choice->ground(current_assignment,headGroundAtom);
 		PredicateExtension* predicateExt=predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
-		searchAtom=predicateExt->getAtom(headGroundAtom);
+//		searchAtom=predicateExt->getAtom(headGroundAtom);
+
+		for(unsigned j=i*numTables;j<(i*numTables)+numTables;j++){
+			AtomSearcher *searcher=predicate_searchInsert_atomSearcher[0][j];
+			if(searcher==nullptr) continue;
+			searchAtom=searcher->findGroundAtom(headGroundAtom);
+			if(searchAtom!=nullptr){
+				break;
+			}
+		}
 
 		if(searchAtom==nullptr){
 			ground_new_atom = true;
 
 			headGroundAtom->setFact(false);
-			for(unsigned i=0;i<predicate_searchInsert_table[0].size();++i)
-				predicateExt->addAtom(predicate_searchInsert_table[0][i],headGroundAtom);
+//			for(unsigned i=0;i<predicate_searchInsert_table[0].size();++i)
+				predicateExt->addAtom(predicate_searchInsert_table[0][0],headGroundAtom);
 
 			ground_choice->addSingleChoiceElement(headGroundAtom);
 		}else{
