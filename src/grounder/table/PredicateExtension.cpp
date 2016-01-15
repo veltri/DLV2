@@ -38,6 +38,9 @@ AtomSearcher* PredicateExtension::createAtomSearcher(int indexType, unsigned tab
 	case (DOUBLEMAP):
 		atomSearcher = new DoubleTermMapAtomSearcher(tables[table], predicate);
 		break;
+	case (MAP_VECTOR):
+		atomSearcher = new SingleTermVectorAtomSearcher(tables[table], predicate);
+		break;
 	default:
 		atomSearcher = new BaseAtomSearcher(tables[table]);
 		break;

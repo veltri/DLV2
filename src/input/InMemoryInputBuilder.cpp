@@ -529,7 +529,7 @@ void InMemoryInputBuilder::createFact(Atom* fact) {
 		atomSearcher=instancesTable->getPredicateExt(predicate)->addAtomSearcher(FACT,HASHSET);
 
 	if( atomSearcher==nullptr || atomSearcher->findGroundAtom(fact)==nullptr ){
-		instancesTable->getPredicateExt(predicate)->addAtom(FACT,fact);
+		instancesTable->getPredicateExt(predicate)->addAtom(fact,FACT);
 		if (!Options::globalOptions()->isNofacts()) {
 				OutputBuilder::getInstance()->onFact(fact);
 		}

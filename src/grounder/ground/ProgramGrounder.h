@@ -141,6 +141,13 @@ protected:
 	virtual bool isCartesianProductRule(Rule *r){return false;}
 	virtual void groundCartesian(Rule *r)=0;
 
+	///This method creates a default atom searcher for each predicate occurring in the head and the body of the current rule.
+	///In particular it creates an atom searcher on FACT and NOFACT tables for every predicate,
+	///and for recursive predicates it creates an atom searcher also for DELTA and NEXTDELTA tables.
+	void setDefaultAtomSearchers(Rule* r);
+
+	///Utility method for setDefaultAtomSearchers
+	virtual void createAtomSearchersForPredicateBody(unsigned position, Predicate* predicate, unsigned sizeRule);
 
 private:
 	///Print the program rule
@@ -150,12 +157,7 @@ private:
 	void orderPositiveAtomsBody(vector<unsigned>& originalOrderBody,Rule* rule);
 	void orderPositiveAtomsBody(Rule* rule);
 
-	///This method creates a default atom searcher for each predicate occurring in the head and the body of the current rule.
-	///In particular it creates an atom searcher on FACT and NOFACT tables for every predicate,
-	///and for recursive predicates it creates an atom searcher also for DELTA and NEXTDELTA tables.
-	void setDefaultAtomSearchers(Rule* r);
 	///Utility method for setDefaultAtomSearchers
-	void createAtomSearchersForPredicateBody(unsigned position, Predicate* predicate);
 	void createAtomSearchersForPredicateHead(unsigned position, Predicate* predicate, Rule* rule);
 };
 

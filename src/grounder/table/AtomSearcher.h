@@ -273,6 +273,35 @@ protected:
 
 };
 
+
+class SingleTermVectorAtomSearcher: public SingleTermAtomSearcher {
+public:
+	SingleTermVectorAtomSearcher(AtomVector* table, Predicate* p) : SingleTermAtomSearcher(table,p) {
+		searchingTables.reserve(predicate->getArity());
+		for(unsigned int i=0;i<predicate->getArity();++i)
+			searchingTables.push_back(unordered_map<index_object,AtomVector>());
+	};
+
+	virtual Atom* findGroundAtom(Atom *atom);
+	virtual void add(Atom* atom);
+	virtual void remove(Atom* atom);
+	virtual void clear(){SingleTermAtomSearcher::clear(); for(auto& table:searchingTables)table.clear();};
+
+	///This method chooses the best indexing term among the one allowed.
+	unsigned int selectBestIndex(const vector<pair<int,index_object>>& possibleTableToSearch);
+
+	///This method fills in the searching data structure for the given indexing term
+	void updateIndexMaps(unsigned int indexingTerm);
+
+	virtual unsigned getType(){return MAP_VECTOR;};
+
+protected:
+	///A vector of chosen searching data structure for this kind of indexing strategies, one for each possible indexing term.
+	vector<unordered_map<index_object,AtomVector>> searchingTables;
+	virtual GeneralIterator* computeGenericIterator(Atom* templateAtom,const RuleInformation& ruleInformation);
+
+};
+
 class BinderSelector{
 public:
 	virtual int select(Atom* templateAtom, const RuleInformation& ruleInformation,vector<pair<int,index_object>>& possibleTableToSearch,

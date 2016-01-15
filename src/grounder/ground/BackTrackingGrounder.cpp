@@ -292,7 +292,7 @@ bool BackTrackingGrounder::foundAssignment() {
 			headGroundAtom->setFact(head_true);
 			Atom* newAtom=headGroundAtom->clone();
 			PredicateExtension* predicateExt=predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
-			predicateExt->addAtom(predicate_searchInsert_table[atom_counter][0],newAtom,predicate_searchInsert_atomSearcher[atom_counter][0]);
+			predicateExt->addAtom(newAtom,predicate_searchInsert_table[atom_counter][0]);
 
 			ground_rule->setAtomInHead(atom_counter,newAtom);
 
@@ -415,6 +415,8 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 			groundTemplateAtomHead[i]=(*headIt)->clone();
 		}
 	}
+
+	setDefaultAtomSearchers(currentRule);
 }
 
 void BackTrackingGrounder::findBindVariablesRule() {
@@ -445,8 +447,9 @@ void BackTrackingGrounder::findBindVariablesRule() {
 
 		total_variable.insert(variablesInAtom.begin(),variablesInAtom.end());
 		///Set true if is ground
-		if(is_bound_atom.size()<=index_current_atom)
+		if(is_bound_atom.size()<=index_current_atom){
 			is_bound_atom.push_back((current_atom->isBuiltIn() || (current_atom->isClassicalLiteral() && current_atom->isNegative()) || (atoms_bind_variables[index_current_atom].size()==0 && !current_atom->containsAnonymous()) ));
+		}
 
 	}
 
@@ -483,16 +486,11 @@ void BackTrackingGrounder::findSearchTables() {
 	for (unsigned index_current_atom = 0; index_current_atom < sizeRule; ++index_current_atom) {
 		//find the table to search for each atom in the body
 		current_id_match.emplace_back();
-		Predicate *predicate=currentRule->getAtomInBody(index_current_atom)->getPredicate();
 		if(predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom].size()==0){
 			current_id_match[index_current_atom].push_back({0,NO_MATCH});
 		}
 		else{
 			for(unsigned i=0;i<predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom].size();++i){
-				if(predicate!=nullptr){
-					int tableToSearch=predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom][i];
-					predicateExtTable->getPredicateExt(predicate)->getAtomSearcher(tableToSearch,0)->setSizeResultVector(sizeRule);
-				}
 				current_id_match[index_current_atom].push_back({predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom][i],NO_MATCH});
 			}
 		}
@@ -830,7 +828,7 @@ void BackTrackingGrounder::groundChoice(bool& find_new_true_atom,bool& ground_ne
 
 			headGroundAtom->setFact(false);
 //			for(unsigned i=0;i<predicate_searchInsert_table[0].size();++i)
-				predicateExt->addAtom(predicate_searchInsert_table[0][0],headGroundAtom);
+				predicateExt->addAtom(headGroundAtom,predicate_searchInsert_table[0][0]);
 
 			ground_choice->addSingleChoiceElement(headGroundAtom);
 		}else{
@@ -847,6 +845,28 @@ void BackTrackingGrounder::groundChoice(bool& find_new_true_atom,bool& ground_ne
 	ground_rule->setAtomInHead(0,ground_choice);
 }
 
+void BackTrackingGrounder::createAtomSearchersForPredicateBody(	unsigned position, Predicate* predicate, unsigned sizeRule) {
+	PredicateExtension* predicateExtension = predicateExtTable->getPredicateExt(predicate);
+	for(auto table:predicate_searchInsert_table[position]){
+		AtomSearcher* atomSearcher;
+		if(is_bound_atom[position-currentRule->getSizeHead()]){
+			AtomSearcher* atomSearcherMAP=predicateExtension->getAtomSearcher(table,MAP);
+			AtomSearcher* atomSearcherHASH=predicateExtension->getAtomSearcher(table,HASHSET);
+			if(atomSearcherMAP!=nullptr)
+				atomSearcher=atomSearcherMAP;
+			else if(atomSearcherHASH!=nullptr)
+				atomSearcher=atomSearcherHASH;
+			else
+				atomSearcher=predicateExtension->addAtomSearcher(table,HASHSET);
+		}
+		else{
+			atomSearcher=predicateExtension->addAtomSearcher(table);
+		}
+		atomSearcher->setSizeResultVector(sizeRule);
+		predicate_searchInsert_atomSearcher[position].push_back(atomSearcher);
+	}
+}
 
 } /* namespace grounder */
 } /* namespace DLV2 */
+

@@ -327,11 +327,12 @@ void SingleTermMapAtomSearcher::updateIndexMaps(unsigned int indexingTerm){
 		index_object termIndex=a->getTerm(indexingTerm)->getIndex();
 		if(!searchingTables[indexingTerm].count(termIndex)){
 			AtomTable values;
+//			values.reserve(table->size()/PredicateExtTable::getInstance()->getPredicateExt(predicate)->getPredicateInformation()->getSelectivity(indexingTerm));
 			values.insert(a);
-			searchingTables[indexingTerm].insert({termIndex,values}).second;
+			searchingTables[indexingTerm].insert({termIndex,values});
 		}
 		else
-			searchingTables[indexingTerm][termIndex].insert(a).second;
+			searchingTables[indexingTerm][termIndex].insert(a);
 	}
 
 #ifdef DEBUG_RULE_TIME
@@ -868,6 +869,92 @@ void DoubleTermMapAtomSearcher::updateIndexMaps(unsigned int indexingTerm){
 	}
 }
 
+/****************************************************** SINGLE TERM VECTOR ATOM SEARCH ***************************************************/
+
+Atom* SingleTermVectorAtomSearcher::findGroundAtom(Atom* atom) {
+	if (defaultIndexingTerm==-1)
+		defaultIndexingTerm=0;
+	if(!isUpdatedSearchingTable(defaultIndexingTerm))
+		updateIndexMaps(defaultIndexingTerm);
+
+	index_object term = atom->getTerm(defaultIndexingTerm)->getIndex();
+	AtomVector* matchingTable=&searchingTables[defaultIndexingTerm][term];
+
+	for(auto genericAtom:(*matchingTable)){
+		if(*genericAtom==*atom){
+			return genericAtom;
+		}
+	}
+	return nullptr;
+}
+
+void SingleTermVectorAtomSearcher::add(Atom* atom) {
+	for (unsigned int i = 0; i < predicate->getArity(); ++i) {
+		if(isUpdatedSearchingTable(i)){
+			index_object termIndex=atom->getTerm(i)->getIndex();
+			if(searchingTables[i].count(termIndex))
+				searchingTables[i][termIndex].push_back(atom);
+			else{
+				searchingTables[i].emplace(termIndex,AtomVector({atom}));
+			}
+		}
+	}
+}
+
+//FIXME
+void SingleTermVectorAtomSearcher::remove(Atom* atom) {}
+
+unsigned int SingleTermVectorAtomSearcher::selectBestIndex(const vector<pair<int, index_object> >& possibleTableToSearch) {
+	int index=-1;
+
+	unsigned minSize=INT_MAX;
+	for(auto it=possibleTableToSearch.begin();it!=possibleTableToSearch.end();++it){
+		if(isUpdatedSearchingTable((*it).first)){
+			unsigned currentSize=(searchingTables[(*it).first][(*it).second]).size();
+			if(minSize>currentSize){
+				minSize=currentSize;
+				index=(*it).first;
+			}
+		}
+	}
+
+	if(index!=-1)
+		return index;
+	return possibleTableToSearch.front().first;
+}
+
+void SingleTermVectorAtomSearcher::updateIndexMaps(unsigned int indexingTerm) {
+	if(defaultIndexingTerm==-1)
+		defaultIndexingTerm=indexingTerm;
+
+	unsigned& lastUpdateIndex=lastUpdateIndices[indexingTerm];
+	for (;lastUpdateIndex<table->size();++lastUpdateIndex) {
+		Atom *a=(*table)[lastUpdateIndex];
+		index_object termIndex=a->getTerm(indexingTerm)->getIndex();
+		if(!searchingTables[indexingTerm].count(termIndex)){
+			AtomVector values;
+			values.reserve(table->size()/PredicateExtTable::getInstance()->getPredicateExt(predicate)->getPredicateInformation()->getSelectivity(indexingTerm));
+			values.push_back(a);
+			searchingTables[indexingTerm].insert({termIndex,values});
+		}
+		else
+			searchingTables[indexingTerm][termIndex].push_back(a);
+	}
+}
+
+GeneralIterator* SingleTermVectorAtomSearcher::computeGenericIterator(Atom* templateAtom, const RuleInformation& ruleInformation) {
+	int indexingTerm=manageIndex(templateAtom,ruleInformation);
+	GeneralIterator* currentMatch;
+
+	if(indexingTerm!=-1){
+		index_object term = templateAtom->getTerm(indexingTerm)->getIndex();
+		AtomVector* matchingTable=&searchingTables[indexingTerm][term];
+		currentMatch=new VectorIterator(matchingTable->begin(),matchingTable->end());
+	}
+	else
+		currentMatch=new VectorIterator(table->begin(), table->end());
+	return currentMatch;
+}
 
 }
 }

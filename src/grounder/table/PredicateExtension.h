@@ -89,30 +89,38 @@ public:
 			OutputBuilder::getInstance()->appendToStreamAtomTable(atom);
 	}
 
+//	///Returns the i-th AtomSeacher in atomSearchers
+//	inline AtomSearcher* getAtomSearcher(unsigned i, unsigned atomSearcher){
+//		if(atomSearcher<atomSearchers[i].size())
+//			return atomSearchers[i][atomSearcher];
+//		return nullptr;
+//	}
+
 	///Returns the i-th AtomSeacher in atomSearchers
-	inline AtomSearcher* getAtomSearcher(unsigned i, unsigned atomSearcher){
-		if(atomSearcher<atomSearchers[i].size())
-			return atomSearchers[i][atomSearcher];
+	inline AtomSearcher* getAtomSearcher(unsigned table, unsigned indexType){
+		for(unsigned i=0;i<atomSearchers[table].size();++i)
+			if(atomSearchers[table][i]->getType()==indexType)
+				return atomSearchers[table][i];
 		return nullptr;
 	}
 
-	///Add a given atom in specified table
-	bool addAtom(unsigned table, Atom* genericAtom, bool search = false){
-		if(predicate->isSolved() && !genericAtom->isFact())
-			predicate->setSolved(false);
-		if(search){
-			if((getAtomSearcher(table,0)->findGroundAtom(genericAtom))!=nullptr)
-				return false;
-		}
-		tables[table]->push_back(genericAtom);
-//		if(atomSearchers.size()>table){
-//			for(auto atomSearcher:atomSearchers[table])
-//				atomSearcher->add(genericAtom);
+//	///Add a given atom in specified table
+//	bool addAtom(Atom* genericAtom, unsigned table,  bool search = false){
+//		if(predicate->isSolved() && !genericAtom->isFact())
+//			predicate->setSolved(false);
+//		if(search){
+//			if((getAtomSearcher(table,0)->findGroundAtom(genericAtom))!=nullptr)
+//				return false;
 //		}
-		predicateInformation->update(genericAtom);
-		if(genericAtom->getIndex()==0) setIndexOfAtom(genericAtom);
-		return true;
-	}
+//		tables[table]->push_back(genericAtom);
+////		if(atomSearchers.size()>table){
+////			for(auto atomSearcher:atomSearchers[table])
+////				atomSearcher->add(genericAtom);
+////		}
+//		predicateInformation->update(genericAtom);
+//		if(genericAtom->getIndex()==0) setIndexOfAtom(genericAtom);
+//		return true;
+//	}
 
 	///Get an atom in specified table
 	Atom* getAtom(unsigned table, Atom* genericAtom){
@@ -138,12 +146,9 @@ public:
 		return nullptr;
 	}
 
-	void addAtom(Atom* atom, unsigned table, AtomSearcher* searcher){
+	void addAtom(Atom* atom, unsigned table){
 		tables[table]->push_back(atom);
 		predicateInformation->update(atom);
-
-//		if(searcher!=nullptr)
-//			searcher->add(atom);
 
 		//TODO Evitare di fare ogni volta le seguenti istruzioni
 		if(predicate->isSolved() && !atom->isFact())
