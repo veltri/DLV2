@@ -44,7 +44,6 @@ bool BackTrackingGrounder::findGroundMatch(){
 	index_object indexNegativeAtom=0;
 	bool negativeToClone=false;
 	while(current_table<n_table){
-		unsigned tableToSearch = current_id_match[index_current_atom][current_table].first;
 
 		IndexingStructure *searcher=nullptr;
 		Atom* atomFound=nullptr;

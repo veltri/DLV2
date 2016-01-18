@@ -127,16 +127,19 @@ private:
 	unordered_map<index_object,AtomTable> indexingStructure;
 };
 
-//class UnorderedMapOfVector : public IndexingStructure {
-//public:
-//	void add(Atom* atom);
-//	Atom* find(Atom* atom);
-//	void clear();
-//	virtual void update();
-//private:
-//	unordered_map<index_object,AtomVector> indexingStructure;
-//};
-//
+class UnorderedMapOfVector : public IndexingStructure {
+public:
+	UnorderedMapOfVector(AtomVector* table):IndexingStructure(table){};
+	void add(Atom* atom);
+	Atom* find(Atom* atom);
+	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
+	virtual void update();
+	virtual unsigned getType(){return MAP;}
+private:
+	unordered_map<index_object,AtomVector> indexingStructure;
+};
+
+
 //class UnorderedMultimap : public IndexingStructure {
 //public:
 //	void add(Atom* atom);

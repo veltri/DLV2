@@ -74,5 +74,47 @@ void UnorderedMapOfMap::update() {
 	}
 }
 
+void DLV2::grounder::UnorderedMapOfVector::add(Atom* atom) {
+	unsigned i=indexingTerms[0];
+	if(lastUpdate==table->size()){
+		index_object termIndex=atom->getTerm(i)->getIndex();
+		if(indexingStructure.count(termIndex))
+			indexingStructure[termIndex].push_back(atom);
+		else{
+			indexingStructure.emplace(termIndex,AtomVector({atom}));
+		}
+	}
+}
+
+Atom* DLV2::grounder::UnorderedMapOfVector::find(Atom* atom) {
+	unsigned i=indexingTerms[0];
+	index_object term = atom->getTerm(i)->getIndex();
+	AtomVector* matchingTable=&indexingStructure[term];
+
+	for(auto atom1:(*matchingTable)){
+		if(*atom1==*atom){
+			return atom1;
+		}
+	}
+	return nullptr;
+}
+
+void DLV2::grounder::UnorderedMapOfVector::update() {
+	unsigned i=indexingTerms[0];
+	for (;lastUpdate<table->size();++lastUpdate) {
+		Atom *a=(*table)[lastUpdate];
+		index_object termIndex=a->getTerm(i)->getIndex();
+		if(!indexingStructure.count(termIndex)){
+			AtomVector values;
+//			values.reserve(table->size()/PredicateExtTable::getInstance()->getPredicateExt(predicate)->getPredicateInformation()->getSelectivity(indexingTerm));
+			values.push_back(a);
+			indexingStructure.insert({termIndex,values});
+		}
+		else
+			indexingStructure[termIndex].push_back(a);
+	}
+}
+
 } /* namespace grounder */
 } /* namespace DLV2 */
+
