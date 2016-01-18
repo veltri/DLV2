@@ -400,8 +400,8 @@ void ProgramGrounder::swapInDelta(Rule *rule,set_predicate &predicateEvaluated){
 			PredicateExtension* predicateExt = predicateExtTable->getPredicateExt(predicate);
 			if (predicateExt != nullptr && !predicateEvaluated.count(predicate)){
 				predicateExt->swapTables(DELTA,NOFACT);
-//				predicateExt->swapTables(NEXTDELTA,DELTA);
-				predicateExt->swapPointersTables(NEXTDELTA,DELTA);
+				predicateExt->swapTables(NEXTDELTA,DELTA);
+//				predicateExt->swapPointersTables(NEXTDELTA,DELTA);
 				predicateEvaluated.insert(predicate);
 			}
 		}
@@ -508,7 +508,7 @@ void ProgramGrounder::createAtomSearchersForPredicateBody(unsigned position, Pre
 	PredicateExtension* predicateExtension = predicateExtTable->getPredicateExt(predicate);
 	for(auto table:predicate_searchInsert_table[position]){
 		auto atomSearcher=predicateExtension->addAtomSearcher(table);
-		atomSearcher->setSizeResultVector(sizeRule);
+		predicateExtension->getAtomSearcher(table)->setSizeResultVector(sizeRule);
 		predicate_searchInsert_atomSearcher[position].push_back(atomSearcher);
 	}
 }
@@ -518,9 +518,9 @@ void ProgramGrounder::createAtomSearchersForPredicateHead(unsigned position, Pre
 	PredicateExtension* predicateExtension = predicateExtTable->getPredicateExt(predicate);
 	// WARNING: is assumed that is there only one insert table for head atoms
 	unsigned tableToInsert=predicate_searchInsert_table[position][0];
-//	auto atomSearcherTableToInsert=predicateExtension->addAtomSearcher(tableToInsert,HASHSET);
-	auto atomSearcherTableToInsert=predicateExtension->addAtomSearcher(tableToInsert,MAP);
-	atomSearcherTableToInsert->setSizeResultVector(sizeRule);
+	predicateExtension->getAtomSearcher(tableToInsert)->setSizeResultVector(sizeRule);
+	auto atomSearcherTableToInsert=predicateExtension->addAtomSearcher(tableToInsert,HASHSET);
+//	auto atomSearcherTableToInsert=predicateExtension->addAtomSearcher(tableToInsert,MAP);
 	predicate_searchInsert_atomSearcher[position].push_back(atomSearcherTableToInsert);
 
 	unordered_set<unsigned> tableAdded;
@@ -540,9 +540,9 @@ void ProgramGrounder::createAtomSearchersForPredicateHead(unsigned position, Pre
 
 	for(unsigned i=0;i<tableToInsert;++i){
 		if(!tableAdded.count(i)){
-//			auto atomSearcher=predicateExtension->addAtomSearcher(i,HASHSET);
-			auto atomSearcher=predicateExtension->addAtomSearcher(i,MAP);
-			atomSearcher->setSizeResultVector(sizeRule);
+			predicateExtension->getAtomSearcher(i)->setSizeResultVector(sizeRule);
+//			auto atomSearcher=predicateExtension->addAtomSearcher(i,MAP);
+ 			auto atomSearcher=predicateExtension->addAtomSearcher(i,HASHSET);
 			if(predicateExtension->getPredicateExtentionSize(i))
 				predicate_searchInsert_atomSearcher[position].push_back(atomSearcher);
 			else

@@ -126,7 +126,7 @@ protected:
 	///This vector contains a kind of template atoms for head atoms
 	vector<Atom*> groundTemplateAtomHead;
 
-	virtual void createAtomSearchersForPredicateBody(unsigned position, Predicate* predicate, unsigned sizeRule);
+//	virtual void createAtomSearchersForPredicateBody(unsigned position, Predicate* predicate, unsigned sizeRule);
 
 #ifdef TRACE_ON
 	/// Print the current assignment

@@ -18,40 +18,39 @@ namespace grounder{
 
 unsigned int PredicateExtension::MAX_TABLE_NUMBER = 4;
 
-AtomSearcher* PredicateExtension::createAtomSearcher(int indexType, unsigned table) {
-	AtomSearcher* atomSearcher;
-	switch (indexType) {
-	case (MAP):
-		atomSearcher = new SingleTermMapAtomSearcher(tables[table], predicate);
-		break;
-	case (MAP_DICTIONARY_INTERSECTION):
-		atomSearcher = new SingleTermMapDictionaryAtomSearcher(tables[table],
-				predicate);
-		break;
-	case (MULTIMAP):
-		atomSearcher = new SingleTermMultiMapAtomSearcher(tables[table],
-				predicate);
-		break;
-	case (HASHSET):
-		atomSearcher = new HashSetAtomSearcher(tables[table], predicate);
-		break;
-	case (DOUBLEMAP):
-		atomSearcher = new DoubleTermMapAtomSearcher(tables[table], predicate);
-		break;
-	case (MAP_VECTOR):
-		atomSearcher = new SingleTermVectorAtomSearcher(tables[table], predicate);
-		break;
-	default:
-		atomSearcher = new BaseAtomSearcher(tables[table]);
-		break;
-	}
-	return atomSearcher;
+IndexingStructure* PredicateExtension::createAtomSearcher(int indexType, unsigned table, vector<unsigned>* indexingTerms) {
+	IndexingStructure* indexingStructure;
+//	switch (indexType) {
+//	case (MAP):
+//		indexingStructure = new UnorderedMapOfMap(tables[table]);
+//		break;
+//	case (MAP_DICTIONARY_INTERSECTION):
+//		atomSearcher = new SingleTermMapDictionaryAtomSearcher(tables[table],
+//				predicate);
+//		break;
+//	case (MULTIMAP):
+//		atomSearcher = new SingleTermMultiMapAtomSearcher(tables[table],
+//				predicate);
+//		break;
+//	case (HASHSET):
+//		indexingStructure=new UnorderedSet(tables[table]);
+//		break;
+//	case (DOUBLEMAP):
+//		atomSearcher = new DoubleTermMapAtomSearcher(tables[table], predicate);
+//		break;
+//	case (MAP_VECTOR):
+//		atomSearcher = new SingleTermVectorAtomSearcher(tables[table], predicate);
+//		break;
+//	default:
+		indexingStructure = new IndexingStructure(tables[table]);
+//		break;
+//	}
+	return indexingStructure;
 }
 
-AtomSearcher* PredicateExtension::addAtomSearcher(unsigned table){
+IndexingStructure* PredicateExtension::addAtomSearcher(unsigned table, vector<unsigned>* indexingTerms){
 	// Properly set the IndexAtom type
 	if(table<tables.size()){
-		AtomSearcher* atomSearcher;
 		int indexType=Options::globalOptions()->getPredicateIndexType(predicate->getName());
 
 		if(indexType==-1){
@@ -68,30 +67,30 @@ AtomSearcher* PredicateExtension::addAtomSearcher(unsigned table){
 		cout<<"Predicate: "<<predicate->getName()<<"  Index type: "<<indexType<<endl;
 	#endif
 
-		for(unsigned i=0;i<atomSearchers[table].size();i++)
-			if(atomSearchers[table][i]->getType()==indexType)
-				return atomSearchers[table][i];
+		IndexingStructure* indexingStruct=atomSearchers[table]->getIndexingStructure(indexType,indexingTerms);
 
-		atomSearcher = createAtomSearcher(indexType, table);
-		atomSearchers[table].push_back(atomSearcher);
-		return atomSearcher;
+		if(indexingStruct==nullptr){
+			indexingStruct = createAtomSearcher(indexType, table, indexingTerms);
+			atomSearchers[table]->addIndexingStructure(indexingStruct);
+		}
+		return indexingStruct;
 	}
 	return 0;
 }
 
-AtomSearcher* PredicateExtension::addAtomSearcher(unsigned table, unsigned type) {
+IndexingStructure* PredicateExtension::addAtomSearcher(unsigned table, unsigned type, vector<unsigned>* indexingTerms) {
 	if(table<tables.size()){
 		int indexType=type;
 		if(predicate->getArity()==0)
 			indexType=DEFAULT;
 		if(predicate->getArity()==1)
 			indexType=HASHSET;
-		for(unsigned i=0;i<atomSearchers[table].size();i++)
-			if(atomSearchers[table][i]->getType()==indexType)
-				return atomSearchers[table][i];
-		AtomSearcher* atomSearcher = createAtomSearcher(indexType, table);
-		atomSearchers[table].push_back(atomSearcher);
-		return atomSearcher;
+		IndexingStructure* indexingStruct=atomSearchers[table]->getIndexingStructure(indexType,indexingTerms);
+		if(indexingStruct==nullptr){
+			indexingStruct = createAtomSearcher(indexType, table, indexingTerms);
+			atomSearchers[table]->addIndexingStructure(indexingStruct);
+		}
+		return indexingStruct;
 	}
 	return 0;
 }
@@ -106,8 +105,7 @@ PredicateExtension::~PredicateExtension() {
 	}
 
 	for(unsigned int i=0;i<atomSearchers.size();++i)
-		for(unsigned j=0;j<atomSearchers[i].size();++j)
-			delete atomSearchers[i][j];
+		delete atomSearchers[i];
 
 	delete predicateInformation;
 }
@@ -127,25 +125,27 @@ void PredicateExtension::swapTables(unsigned tableFrom,unsigned tableTo){
 		table_to->push_back(currentAtom);
 		table_from->pop_back();
 
-//		for(auto atomSearcher:atomSearchers[tableTo])
-//			atomSearcher->add(currentAtom);
 	}
 
-	for(auto atomSearcher:atomSearchers[tableFrom])
-		atomSearcher->clear();
+	atomSearchers[tableFrom]->clear();
 }
 
 void PredicateExtension::swapPointersTables(unsigned tableFrom, unsigned tableTo) {
 	assert_msg(tableFrom<tables.size(),"The specified table doesn't exist.");
 	assert_msg(tableTo<tables.size(),"The specified table doesn't exist.");
 
-	atomSearchers[tableFrom].swap(atomSearchers[tableTo]);
+	AtomSearcher *seacher_from=atomSearchers[tableFrom];
+	AtomSearcher *seacher_to=atomSearchers[tableTo];
+	AtomSearcher *searcher_tmp=seacher_from;
+	atomSearchers[tableFrom]=seacher_to;
+	atomSearchers[tableTo]=searcher_tmp;
 
-	AtomVector *table_from=tables[tableFrom];
-	AtomVector *table_to=tables[tableTo];
-	AtomVector *table_tmp=table_from;
+	AtomVector* table_from=tables[tableFrom];
+	AtomVector* table_to=tables[tableTo];
+	AtomVector* table_tmp=table_from;
 	tables[tableFrom]=table_to;
 	tables[tableTo]=table_tmp;
+
 }
 
 /****************************************************** PREDICATE EXT TABLE ***************************************************/

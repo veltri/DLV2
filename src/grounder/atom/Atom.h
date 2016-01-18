@@ -19,8 +19,6 @@
 #include "../table/TermTable.h"
 #include "Predicate.h"
 
-
-
 using namespace std;
 
 namespace DLV2{
@@ -292,10 +290,14 @@ protected:
 };
 
 using AtomTable = hashSet<Atom> ;
+///Vector of Atom
+using AtomVector = vector<Atom*>;
+///An unordered multimap of Atom
+using Multimap_Atom = unordered_multimap<index_object, Atom*>;
 
-};
 
-};
+
+}}
 
 #endif /* ATOM_H_ */
 

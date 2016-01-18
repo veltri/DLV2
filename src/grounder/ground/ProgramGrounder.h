@@ -96,7 +96,7 @@ protected:
 
 	/// For each predicate in the current rule this vector stores the atom searchers of insertion and look-up for head atoms and
 	/// the atom searchers of look-up for body atoms
-	vector<vector<AtomSearcher*>> predicate_searchInsert_atomSearcher;
+	vector<vector<IndexingStructure*>> predicate_searchInsert_atomSearcher;
 
 	///The NonGroundSimplifier object
 	NonGroundSimplifier nonGroundSimplificator;
