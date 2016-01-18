@@ -20,10 +20,10 @@ unsigned int PredicateExtension::MAX_TABLE_NUMBER = 4;
 
 IndexingStructure* PredicateExtension::createAtomSearcher(int indexType, unsigned table, vector<unsigned>* indexingTerms) {
 	IndexingStructure* indexingStructure;
-//	switch (indexType) {
-//	case (MAP):
-//		indexingStructure = new UnorderedMapOfMap(tables[table]);
-//		break;
+	switch (indexType) {
+	case (MAP):
+		indexingStructure = new UnorderedMapOfMap(tables[table],*indexingTerms);
+		break;
 //	case (MAP_DICTIONARY_INTERSECTION):
 //		atomSearcher = new SingleTermMapDictionaryAtomSearcher(tables[table],
 //				predicate);
@@ -32,19 +32,19 @@ IndexingStructure* PredicateExtension::createAtomSearcher(int indexType, unsigne
 //		atomSearcher = new SingleTermMultiMapAtomSearcher(tables[table],
 //				predicate);
 //		break;
-//	case (HASHSET):
-//		indexingStructure=new UnorderedSet(tables[table]);
-//		break;
+	case (HASHSET):
+		indexingStructure=new UnorderedSet(tables[table]);
+		break;
 //	case (DOUBLEMAP):
 //		atomSearcher = new DoubleTermMapAtomSearcher(tables[table], predicate);
 //		break;
-//	case (MAP_VECTOR):
-//		atomSearcher = new SingleTermVectorAtomSearcher(tables[table], predicate);
-//		break;
-//	default:
+	case (MAP_VECTOR):
+		indexingStructure = new UnorderedMapOfVector(tables[table],*indexingTerms);
+		break;
+	default:
 		indexingStructure = new IndexingStructure(tables[table]);
-//		break;
-//	}
+		break;
+	}
 	return indexingStructure;
 }
 

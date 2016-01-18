@@ -83,6 +83,7 @@ private:
 class IndexingStructure {
 public:
 	IndexingStructure(AtomVector* table):table(table),lastUpdate(0){};
+	IndexingStructure(AtomVector* table, vector<unsigned>& indexingTerms):table(table),lastUpdate(0),indexingTerms(move(indexingTerms)){};
 
 	virtual void add(Atom* atom){};
 	virtual Atom* find(Atom* atom);
@@ -117,11 +118,12 @@ private:
 
 class UnorderedMapOfMap : public IndexingStructure {
 public:
-	UnorderedMapOfMap(AtomVector* table):IndexingStructure(table){};
+	UnorderedMapOfMap(AtomVector* table, vector<unsigned>& indexingTerm): IndexingStructure(table,indexingTerm){};
 	void add(Atom* atom);
 	Atom* find(Atom* atom);
 	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
 	virtual void update();
+	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation);
 	virtual unsigned getType(){return MAP;}
 private:
 	unordered_map<index_object,AtomTable> indexingStructure;
@@ -129,11 +131,12 @@ private:
 
 class UnorderedMapOfVector : public IndexingStructure {
 public:
-	UnorderedMapOfVector(AtomVector* table):IndexingStructure(table){};
+	UnorderedMapOfVector(AtomVector* table, vector<unsigned>& indexingTerm): IndexingStructure(table,indexingTerm){};
 	void add(Atom* atom);
 	Atom* find(Atom* atom);
 	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
 	virtual void update();
+	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation);
 	virtual unsigned getType(){return MAP;}
 private:
 	unordered_map<index_object,AtomVector> indexingStructure;

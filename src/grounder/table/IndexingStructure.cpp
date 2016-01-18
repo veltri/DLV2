@@ -115,6 +115,34 @@ void DLV2::grounder::UnorderedMapOfVector::update() {
 	}
 }
 
+GeneralIterator* DLV2::grounder::UnorderedMapOfMap::computeMatchIterator(Atom* templateAtom, const RuleInformation& ruleInformation) {
+
+	if(lastUpdate<table->size())
+		update();
+
+	int indexingTerm=indexingTerms[0];
+	GeneralIterator* currentMatch;
+
+	index_object term = templateAtom->getTerm(indexingTerm)->getIndex();
+	AtomTable* matchingTable=&indexingStructure[term];
+	currentMatch=new UnorderedSetIterator(matchingTable->begin(),matchingTable->end());
+	return currentMatch;
+
+}
+
+GeneralIterator* DLV2::grounder::UnorderedMapOfVector::computeMatchIterator(Atom* templateAtom, const RuleInformation& ruleInformation) {
+	if(lastUpdate<table->size())
+		update();
+
+	int indexingTerm=indexingTerms[0];
+	GeneralIterator* currentMatch;
+
+	index_object term = templateAtom->getTerm(indexingTerm)->getIndex();
+	AtomVector* matchingTable=&indexingStructure[term];
+	currentMatch=new VectorIterator(matchingTable->begin(),matchingTable->end());
+	return currentMatch;
+}
+
 } /* namespace grounder */
 } /* namespace DLV2 */
 

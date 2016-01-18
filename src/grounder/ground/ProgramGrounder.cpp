@@ -400,8 +400,8 @@ void ProgramGrounder::swapInDelta(Rule *rule,set_predicate &predicateEvaluated){
 			PredicateExtension* predicateExt = predicateExtTable->getPredicateExt(predicate);
 			if (predicateExt != nullptr && !predicateEvaluated.count(predicate)){
 				predicateExt->swapTables(DELTA,NOFACT);
-				predicateExt->swapTables(NEXTDELTA,DELTA);
-//				predicateExt->swapPointersTables(NEXTDELTA,DELTA);
+//				predicateExt->swapTables(NEXTDELTA,DELTA);
+				predicateExt->swapPointersTables(NEXTDELTA,DELTA);
 				predicateEvaluated.insert(predicate);
 			}
 		}
@@ -520,7 +520,8 @@ void ProgramGrounder::createAtomSearchersForPredicateHead(unsigned position, Pre
 	unsigned tableToInsert=predicate_searchInsert_table[position][0];
 	predicateExtension->getAtomSearcher(tableToInsert)->setSizeResultVector(sizeRule);
 	auto atomSearcherTableToInsert=predicateExtension->addAtomSearcher(tableToInsert,HASHSET);
-//	auto atomSearcherTableToInsert=predicateExtension->addAtomSearcher(tableToInsert,MAP);
+//	vector<unsigned> indexingTerm(1,0);
+//	auto atomSearcherTableToInsert=predicateExtension->addAtomSearcher(tableToInsert,MAP,&indexingTerm);
 	predicate_searchInsert_atomSearcher[position].push_back(atomSearcherTableToInsert);
 
 	unordered_set<unsigned> tableAdded;
@@ -540,13 +541,14 @@ void ProgramGrounder::createAtomSearchersForPredicateHead(unsigned position, Pre
 
 	for(unsigned i=0;i<tableToInsert;++i){
 		if(!tableAdded.count(i)){
-			predicateExtension->getAtomSearcher(i)->setSizeResultVector(sizeRule);
-//			auto atomSearcher=predicateExtension->addAtomSearcher(i,MAP);
- 			auto atomSearcher=predicateExtension->addAtomSearcher(i,HASHSET);
-			if(predicateExtension->getPredicateExtentionSize(i))
-				predicate_searchInsert_atomSearcher[position].push_back(atomSearcher);
-			else
-				predicate_searchInsert_atomSearcher[position].push_back(0);
+		predicateExtension->getAtomSearcher(i)->setSizeResultVector(sizeRule);
+		vector<unsigned> indexing(1,0);
+//		auto atomSearcher=predicateExtension->addAtomSearcher(i,MAP,&indexing);
+ 		auto atomSearcher=predicateExtension->addAtomSearcher(i,HASHSET);
+		if(predicateExtension->getPredicateExtentionSize(i))
+			predicate_searchInsert_atomSearcher[position].push_back(atomSearcher);
+		else
+			predicate_searchInsert_atomSearcher[position].push_back(0);
 		}
 	}
 }

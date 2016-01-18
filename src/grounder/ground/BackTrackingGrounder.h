@@ -108,6 +108,8 @@ protected:
 	/// Bind variables for each atom in the current rule
 	vector<vector<index_object>> atoms_bind_variables;
 
+	vector<vector<index_object>> boundTermsInAtoms;
+
 	/// Positions of bound atoms
 	vector<bool> is_bound_atom;
 
@@ -126,7 +128,7 @@ protected:
 	///This vector contains a kind of template atoms for head atoms
 	vector<Atom*> groundTemplateAtomHead;
 
-//	virtual void createAtomSearchersForPredicateBody(unsigned position, Predicate* predicate, unsigned sizeRule);
+	virtual void createAtomSearchersForPredicateBody(unsigned position, Predicate* predicate, unsigned sizeRule);
 
 #ifdef TRACE_ON
 	/// Print the current assignment

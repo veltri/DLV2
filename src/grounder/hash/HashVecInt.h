@@ -95,7 +95,7 @@ public:
 	}
 
 	inline size_t computeHashTerm(const vector<Term*> & values){
-		if(values.size()==0)
+		if(values.empty())
 			return 0;
 		size_t seed=values[0]->getIndex();
 		for(unsigned i=1;i<values.size();i++)

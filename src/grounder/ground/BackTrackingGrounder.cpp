@@ -430,6 +430,8 @@ void BackTrackingGrounder::findBindVariablesRule() {
 	atoms_bind_variables.clear();
 	atoms_bind_variables.resize(currentRule->getSizeBody());
 	variablesBinder.setSize(currentRule->getVariablesSize(),0);
+	boundTermsInAtoms.clear();
+	boundTermsInAtoms.resize(currentRule->getSizeBody());
 
 	//For each atom determines the bound and the bind variables
 	for (auto current_atom_it = currentRule->getBeginBody(); current_atom_it != currentRule->getEndBody(); ++current_atom_it,++index_current_atom) {
@@ -453,6 +455,28 @@ void BackTrackingGrounder::findBindVariablesRule() {
 		///Set true if is ground
 		if(is_bound_atom.size()<=index_current_atom){
 			is_bound_atom.push_back((current_atom->isBuiltIn() || (current_atom->isClassicalLiteral() && current_atom->isNegative()) || (atoms_bind_variables[index_current_atom].size()==0 && !current_atom->containsAnonymous()) ));
+		}
+
+		boundTermsInAtoms[index_current_atom].reserve(current_atom->getTermsSize());
+		for(unsigned j=0;j<current_atom->getTermsSize();++j){
+			Term* term=current_atom->getTerm(j);
+			unsigned termLocalIndex=current_atom->getTerm(j)->getLocalVariableIndex();
+			bool anonymous=current_atom->getTerm(j)->contain(TermType::ANONYMOUS);
+			if(term->isGround() && !anonymous){
+				boundTermsInAtoms[index_current_atom].push_back(j);
+				continue;
+			}
+			if(term->getType()==VARIABLE){
+				bool bound=true;
+				for (auto variable : atoms_bind_variables[index_current_atom])
+					if(variable==termLocalIndex){
+						bound=false;
+						break;
+					}
+				if(bound && !anonymous){
+					boundTermsInAtoms[index_current_atom].push_back(j);
+				}
+			}
 		}
 
 	}
@@ -851,27 +875,40 @@ void BackTrackingGrounder::groundChoice(bool& find_new_true_atom,bool& ground_ne
 	ground_rule->setAtomInHead(0,ground_choice);
 }
 
-//void BackTrackingGrounder::createAtomSearchersForPredicateBody(	unsigned position, Predicate* predicate, unsigned sizeRule) {
-//	PredicateExtension* predicateExtension = predicateExtTable->getPredicateExt(predicate);
-//	for(auto table:predicate_searchInsert_table[position]){
-//		IndexingStructure* atomSearcher;
-//		predicateExtension->getAtomSearcher(table)->setSizeResultVector(sizeRule);
-//		if(is_bound_atom[position-currentRule->getSizeHead()]){
-//			auto atomSearcherMAP=predicateExtension->getIndexingStructure(table,MAP);
-//			auto atomSearcherHASH=predicateExtension->getIndexingStructure(table,HASHSET);
-//			if(atomSearcherMAP!=nullptr)
-//				atomSearcher=atomSearcherMAP;
-//			else if(atomSearcherHASH!=nullptr)
-//				atomSearcher=atomSearcherHASH;
-//			else
-//				atomSearcher=predicateExtension->addAtomSearcher(table,HASHSET);
-//		}
-//		else{
-//			atomSearcher=predicateExtension->addAtomSearcher(table);
-//		}
-//		predicate_searchInsert_atomSearcher[position].push_back(atomSearcher);
-//	}
-//}
+void BackTrackingGrounder::createAtomSearchersForPredicateBody(	unsigned position, Predicate* predicate, unsigned sizeRule) {
+	PredicateExtension* predicateExtension = predicateExtTable->getPredicateExt(predicate);
+	for(auto table:predicate_searchInsert_table[position]){
+		IndexingStructure* atomSearcher;
+		predicateExtension->getAtomSearcher(table)->setSizeResultVector(sizeRule);
+		if(is_bound_atom[position-currentRule->getSizeHead()]){
+			auto atomSearcherMAP=predicateExtension->getIndexingStructure(table,MAP);
+			auto atomSearcherHASH=predicateExtension->getIndexingStructure(table,HASHSET);
+			if(atomSearcherMAP!=nullptr)
+				atomSearcher=atomSearcherMAP;
+			else if(atomSearcherHASH!=nullptr)
+				atomSearcher=atomSearcherHASH;
+			else
+				atomSearcher=predicateExtension->addAtomSearcher(table,HASHSET);
+		}
+		else if(!boundTermsInAtoms[position-currentRule->getSizeHead()].empty()){
+			unsigned bestSelectivityArg=0;
+			unsigned bestArg=0;
+			PredicateInformation* predicateInfo=predicateExtTable->getPredicateExt(predicate)->getPredicateInformation();
+			for(auto boundArg:boundTermsInAtoms[position-currentRule->getSizeHead()]){
+				if(predicateInfo->getSelectivity(boundArg)>bestSelectivityArg){
+					bestSelectivityArg=predicateInfo->getSelectivity(boundArg);
+					bestArg=boundArg;
+				}
+			}
+			vector<unsigned> indexingTerm(1,bestArg);
+			atomSearcher=predicateExtension->addAtomSearcher(table,&indexingTerm);
+		}
+		else{
+			atomSearcher=predicateExtension->addAtomSearcher(table,0,0);
+		}
+		predicate_searchInsert_atomSearcher[position].push_back(atomSearcher);
+	}
+}
 
 } /* namespace grounder */
 } /* namespace DLV2 */
