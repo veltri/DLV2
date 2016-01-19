@@ -48,13 +48,16 @@ void UnorderedMapOfMap::add(Atom* atom) {
 }
 
 Atom* UnorderedMapOfMap::find(Atom* atom) {
+	if(lastUpdate<table->size())
+		update();
+
 	unsigned i=indexingTerms[0];
 	index_object term = atom->getTerm(i)->getIndex();
-	AtomTable* matchingTable=&indexingStructure[term];
 
-	auto atomFound_it=matchingTable->find(atom);
-	if(atomFound_it!=matchingTable->end())
+	auto atomFound_it=indexingStructure[term].find(atom);
+	if(atomFound_it!=indexingStructure[term].end()){
 		return *atomFound_it;
+	}
 	return nullptr;
 }
 
@@ -74,7 +77,7 @@ void UnorderedMapOfMap::update() {
 	}
 }
 
-void DLV2::grounder::UnorderedMapOfVector::add(Atom* atom) {
+void UnorderedMapOfVector::add(Atom* atom) {
 	unsigned i=indexingTerms[0];
 	if(lastUpdate==table->size()){
 		index_object termIndex=atom->getTerm(i)->getIndex();
@@ -86,7 +89,10 @@ void DLV2::grounder::UnorderedMapOfVector::add(Atom* atom) {
 	}
 }
 
-Atom* DLV2::grounder::UnorderedMapOfVector::find(Atom* atom) {
+Atom* UnorderedMapOfVector::find(Atom* atom) {
+	if(lastUpdate<table->size())
+		update();
+
 	unsigned i=indexingTerms[0];
 	index_object term = atom->getTerm(i)->getIndex();
 	AtomVector* matchingTable=&indexingStructure[term];
@@ -99,7 +105,7 @@ Atom* DLV2::grounder::UnorderedMapOfVector::find(Atom* atom) {
 	return nullptr;
 }
 
-void DLV2::grounder::UnorderedMapOfVector::update() {
+void UnorderedMapOfVector::update() {
 	unsigned i=indexingTerms[0];
 	for (;lastUpdate<table->size();++lastUpdate) {
 		Atom *a=(*table)[lastUpdate];
@@ -115,8 +121,7 @@ void DLV2::grounder::UnorderedMapOfVector::update() {
 	}
 }
 
-GeneralIterator* DLV2::grounder::UnorderedMapOfMap::computeMatchIterator(Atom* templateAtom, const RuleInformation& ruleInformation) {
-
+GeneralIterator* UnorderedMapOfMap::computeMatchIterator(Atom* templateAtom, const RuleInformation& ruleInformation) {
 	if(lastUpdate<table->size())
 		update();
 
@@ -130,7 +135,7 @@ GeneralIterator* DLV2::grounder::UnorderedMapOfMap::computeMatchIterator(Atom* t
 
 }
 
-GeneralIterator* DLV2::grounder::UnorderedMapOfVector::computeMatchIterator(Atom* templateAtom, const RuleInformation& ruleInformation) {
+GeneralIterator* UnorderedMapOfVector::computeMatchIterator(Atom* templateAtom, const RuleInformation& ruleInformation) {
 	if(lastUpdate<table->size())
 		update();
 

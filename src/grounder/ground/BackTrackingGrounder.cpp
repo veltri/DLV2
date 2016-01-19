@@ -282,7 +282,7 @@ bool BackTrackingGrounder::foundAssignment() {
 		// and the atom obtained in this way is stored in the predicate extension.
 		Atom *headGroundAtom=groundTemplateAtomHead[atom_counter];
 		(*atom)->ground(current_assignment,headGroundAtom);
-
+		searchAtom=nullptr;
 		for(auto atomSearcher:predicate_searchInsert_atomSearcher[atom_counter]){
 			if(atomSearcher==nullptr) continue;
 			searchAtom=atomSearcher->find(headGroundAtom);
@@ -888,7 +888,7 @@ void BackTrackingGrounder::createAtomSearchersForPredicateBody(	unsigned positio
 			else if(atomSearcherHASH!=nullptr)
 				atomSearcher=atomSearcherHASH;
 			else
-				atomSearcher=predicateExtension->addAtomSearcher(table,HASHSET);
+				atomSearcher=predicateExtension->addAtomSearcher(table,HASHSET,nullptr);
 		}
 		else if(!boundTermsInAtoms[position-currentRule->getSizeHead()].empty()){
 			unsigned bestSelectivityArg=0;
@@ -901,10 +901,10 @@ void BackTrackingGrounder::createAtomSearchersForPredicateBody(	unsigned positio
 				}
 			}
 			vector<unsigned> indexingTerm(1,bestArg);
-			atomSearcher=predicateExtension->addAtomSearcher(table,&indexingTerm);
+			atomSearcher=predicateExtension->addAtomSearcher(table,MAP_VECTOR,&indexingTerm);
 		}
 		else{
-			atomSearcher=predicateExtension->addAtomSearcher(table,0,0);
+			atomSearcher=predicateExtension->addAtomSearcher(table,DEFAULT,nullptr);
 		}
 		predicate_searchInsert_atomSearcher[position].push_back(atomSearcher);
 	}

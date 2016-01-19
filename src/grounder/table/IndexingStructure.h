@@ -137,7 +137,7 @@ public:
 	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
 	virtual void update();
 	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation);
-	virtual unsigned getType(){return MAP;}
+	virtual unsigned getType(){return MAP_VECTOR;}
 private:
 	unordered_map<index_object,AtomVector> indexingStructure;
 };

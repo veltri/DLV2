@@ -527,7 +527,7 @@ void InMemoryInputBuilder::createFact(Atom* fact) {
 	IndexingStructure* atomSearcher=nullptr;
 	instancesTable->getPredicateExt(predicate)->getAtomSearcher(FACT);
 	if(Options::globalOptions()->getCheckFactDuplicate())
-		atomSearcher=instancesTable->getPredicateExt(predicate)->addAtomSearcher(FACT,HASHSET);
+		atomSearcher=instancesTable->getPredicateExt(predicate)->addAtomSearcher(FACT,HASHSET,nullptr);
 
 	if(atomSearcher==nullptr || atomSearcher->find(fact)==nullptr){
 		instancesTable->getPredicateExt(predicate)->addAtom(fact,FACT);

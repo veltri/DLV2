@@ -18,7 +18,7 @@ namespace grounder{
 
 unsigned int PredicateExtension::MAX_TABLE_NUMBER = 4;
 
-IndexingStructure* PredicateExtension::createAtomSearcher(int indexType, unsigned table, vector<unsigned>* indexingTerms) {
+IndexingStructure* PredicateExtension::createAtomSearcher(unsigned table, unsigned indexType, vector<unsigned>* indexingTerms) {
 	IndexingStructure* indexingStructure;
 	switch (indexType) {
 	case (MAP):
@@ -48,35 +48,35 @@ IndexingStructure* PredicateExtension::createAtomSearcher(int indexType, unsigne
 	return indexingStructure;
 }
 
-IndexingStructure* PredicateExtension::addAtomSearcher(unsigned table, vector<unsigned>* indexingTerms){
-	// Properly set the IndexAtom type
-	if(table<tables.size()){
-		int indexType=Options::globalOptions()->getPredicateIndexType(predicate->getName());
-
-		if(indexType==-1){
-			if(StatementDependency::getInstance()->isOnlyInHead(predicate->getIndex()) || predicate->getArity()==1)
-				indexType=HASHSET;
-			else
-				indexType=Options::globalOptions()->getIndexType();
-		}
-
-		if(predicate->getArity()==0)
-			indexType=DEFAULT;
-
-	#ifdef DEBUG_ATOM_SEARCHER
-		cout<<"Predicate: "<<predicate->getName()<<"  Index type: "<<indexType<<endl;
-	#endif
-
-		IndexingStructure* indexingStruct=atomSearchers[table]->getIndexingStructure(indexType,indexingTerms);
-
-		if(indexingStruct==nullptr){
-			indexingStruct = createAtomSearcher(indexType, table, indexingTerms);
-			atomSearchers[table]->addIndexingStructure(indexingStruct);
-		}
-		return indexingStruct;
-	}
-	return 0;
-}
+//IndexingStructure* PredicateExtension::addAtomSearcher(unsigned table, vector<unsigned>* indexingTerms){
+//	// Properly set the IndexAtom type
+//	if(table<tables.size()){
+//		int indexType=Options::globalOptions()->getPredicateIndexType(predicate->getName());
+//
+//		if(indexType==-1){
+//			if(StatementDependency::getInstance()->isOnlyInHead(predicate->getIndex()) || predicate->getArity()==1)
+//				indexType=HASHSET;
+//			else
+//				indexType=Options::globalOptions()->getIndexType();
+//		}
+//
+//		if(predicate->getArity()==0)
+//			indexType=DEFAULT;
+//
+//	#ifdef DEBUG_ATOM_SEARCHER
+//		cout<<"Predicate: "<<predicate->getName()<<"  Index type: "<<indexType<<endl;
+//	#endif
+//
+//		IndexingStructure* indexingStruct=atomSearchers[table]->getIndexingStructure(indexType,indexingTerms);
+//
+//		if(indexingStruct==nullptr){
+//			indexingStruct = createAtomSearcher(indexType, table, indexingTerms);
+//			atomSearchers[table]->addIndexingStructure(indexingStruct);
+//		}
+//		return indexingStruct;
+//	}
+//	return 0;
+//}
 
 IndexingStructure* PredicateExtension::addAtomSearcher(unsigned table, unsigned type, vector<unsigned>* indexingTerms) {
 	if(table<tables.size()){
@@ -87,7 +87,7 @@ IndexingStructure* PredicateExtension::addAtomSearcher(unsigned table, unsigned 
 			indexType=HASHSET;
 		IndexingStructure* indexingStruct=atomSearchers[table]->getIndexingStructure(indexType,indexingTerms);
 		if(indexingStruct==nullptr){
-			indexingStruct = createAtomSearcher(indexType, table, indexingTerms);
+			indexingStruct = createAtomSearcher(table, indexType, indexingTerms);
 			atomSearchers[table]->addIndexingStructure(indexingStruct);
 		}
 		return indexingStruct;

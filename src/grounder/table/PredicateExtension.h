@@ -146,9 +146,9 @@ public:
 	unsigned getPredicateExtentionSize(unsigned table) const {if(table<tables.size()) return tables[table]->size(); return 0;}
 
 	///This method configures the searching strategy for each table
-	IndexingStructure* addAtomSearcher(unsigned table, vector<unsigned>* indexingTerms=nullptr);
-	IndexingStructure* addAtomSearcher(unsigned table, unsigned type, vector<unsigned>* indexingTerms=nullptr);
-	IndexingStructure* createAtomSearcher(int indexType, unsigned table, vector<unsigned>* indexingTerms=nullptr);
+//	IndexingStructure* addAtomSearcher(unsigned table, vector<unsigned>* indexingTerms=nullptr);
+	IndexingStructure* addAtomSearcher(unsigned table, unsigned type, vector<unsigned>* indexingTerms);
+	IndexingStructure* createAtomSearcher(unsigned table, unsigned indexType,  vector<unsigned>* indexingTerms=nullptr);
 
 private:
 	///The predicate
