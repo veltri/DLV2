@@ -164,5 +164,14 @@ IndexingStructure* AtomSearcher::getIndexingStructure(unsigned type, vector<unsi
 	return nullptr;
 }
 
+AtomSearcher::~AtomSearcher() {
+	for(auto& it:resultVector)
+		delete it;
+
+	for(auto& indexingStructure: indexingStructures){
+		delete indexingStructure;
+	}
+};
+
 }}
 

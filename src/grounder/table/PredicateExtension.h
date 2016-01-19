@@ -84,11 +84,9 @@ public:
 		return tables[i];
 	}
 
-	///Set the index of the atom with new id if the atom is not yet indexed, and send it to the output builder
-	void setIndexOfAtom(Atom* atom){
-		atom->setIndex(IdGenerator::getInstance()->getNewId(1));
-		if(!atom->getPredicate()->isHiddenForPrinting())
-			OutputBuilder::getInstance()->appendToStreamAtomTable(atom);
+	///Returns the i-th AtomSeacher in atomSearchers
+	inline AtomSearcher* getAtomSearcher(unsigned table)const{
+		return atomSearchers[table];
 	}
 
 	///Returns the i-th AtomSeacher in atomSearchers
@@ -96,13 +94,15 @@ public:
 		return atomSearchers[table]->getIndexingStructure(indexType,indexingTerms);
 	}
 
-	///Returns the i-th AtomSeacher in atomSearchers
-	inline AtomSearcher* getAtomSearcher(unsigned table)const{
-		return atomSearchers[table];
+	///Set the index of the atom with new id if the atom is not yet indexed, and send it to the output builder
+	void setIndexOfAtom(Atom* atom){
+		atom->setIndex(IdGenerator::getInstance()->getNewId(1));
+		if(!atom->getPredicate()->isHiddenForPrinting())
+			OutputBuilder::getInstance()->appendToStreamAtomTable(atom);
 	}
 
-	///Returns the i-th AtomSeacher in atomSearchers
-	inline Atom* getAtom(Atom* atom){
+	///Search the given ground atom in all tables
+	inline Atom* getGroundAtom(Atom* atom){
 		for(unsigned table=0;table<tables.size();++table){
 			IndexingStructure* indexingStructure=atomSearchers[table]->getDefaultIndexingStructure();
 			if(indexingStructure!=nullptr){
@@ -118,7 +118,6 @@ public:
 		tables[table]->push_back(atom);
 		predicateInformation->update(atom);
 
-		//TODO Evitare di fare ogni volta le seguenti istruzioni
 		if(predicate->isSolved() && !atom->isFact())
 			predicate->setSolved(false);
 		if(atom->getIndex()==0) setIndexOfAtom(atom);
@@ -145,10 +144,9 @@ public:
 
 	unsigned getPredicateExtentionSize(unsigned table) const {if(table<tables.size()) return tables[table]->size(); return 0;}
 
-	///This method configures the searching strategy for each table
 	IndexingStructure* addAtomSearcher(unsigned table, vector<unsigned>* indexingTerms);
 	IndexingStructure* addAtomSearcher(unsigned table, unsigned type, vector<unsigned>* indexingTerms);
-	IndexingStructure* createAtomSearcher(unsigned table, unsigned indexType,  vector<unsigned>* indexingTerms=nullptr);
+	IndexingStructure* createAtomSearcher(unsigned table, unsigned indexType,  vector<unsigned>* indexingTerms);
 
 private:
 	///The predicate

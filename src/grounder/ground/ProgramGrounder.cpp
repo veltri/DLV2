@@ -475,7 +475,7 @@ void ProgramGrounder::substituteIndicesInRulesWithPossibleUndefAtoms(){
 		bool ruleSimplified=false;
 		for(unsigned possibleUndef:atomsPossibleUndefPositions[i]){
 			Atom* atom=rule->getAtomInBody(possibleUndef);
-			Atom* atomFound=predicateExtTable->getPredicateExt(atom->getPredicate())->getAtom(atom);
+			Atom* atomFound=predicateExtTable->getPredicateExt(atom->getPredicate())->getGroundAtom(atom);
 			if(atomFound!=nullptr){
 				atom->setIndex(atomFound->getIndex());
 				//Simplification now can be done

@@ -79,31 +79,48 @@ private:
 	unsigned currentIterator;
 };
 
-
+/**
+ * This class represents a generic indexing data structure of atoms (@see Atom.h)
+ **/
 class IndexingStructure {
 public:
 	IndexingStructure(AtomVector* table):table(table),lastUpdate(0){};
 	IndexingStructure(AtomVector* table, vector<unsigned>& indexingTerms):table(table),lastUpdate(0),indexingTerms(move(indexingTerms)){};
 
+	///Add an atom the the indexing data structure
 	virtual void add(Atom* atom){};
+	///Search a (ground) atom in the indexing data structure
 	virtual Atom* find(Atom* atom);
+	///Erase the content of the indexing data structure
 	virtual void clear(){lastUpdate=0;};
+	///Update the indexing data structure by adding the atoms in the table starting from lastUpdate
 	virtual void update(){};
+	///Given a partially ground atom compute the matching atoms according to the variables assignment in these atom
 	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation){return new VectorIterator(table->begin(),table->end());};
+	///Univocal label for each class implementing IndexingStructure
 	virtual unsigned getType(){return DEFAULT;};
 
+	///Get the indexing terms
 	const vector<unsigned>& getIndexingTerms() const {return indexingTerms;}
+	///Set the indexing terms
 	void setIndexingTerms(const vector<unsigned>& indexingTerm) {this->indexingTerms = indexingTerm;}
+	///Add an indexing term
 	void addIndexingTerm(unsigned indexingTerm) {this->indexingTerms.push_back(indexingTerm);}
 
 	virtual ~IndexingStructure(){}
 
 protected:
+	///Vector of atoms for which the indexing data structure is created
 	AtomVector* table;
+	///The position of the last atom in table to which the indexing data structure has been updated
 	unsigned lastUpdate;
+	///The vector of indexing terms
 	vector<unsigned> indexingTerms;
 };
 
+/**
+ * This class implements IndexingStructure and provides an unordered set of atoms as indexing data structure (@see Atom.h)
+ **/
 class UnorderedSet : public IndexingStructure {
 public:
 	UnorderedSet(AtomVector* table):IndexingStructure(table){};
@@ -116,9 +133,13 @@ private:
 	AtomTable indexingStructure;
 };
 
-class UnorderedMapOfMap : public IndexingStructure {
+/**
+ * This class implements IndexingStructure and provides a single term indexing data structure
+ * implemented by means of an unordered map of unordered sets of atoms as indexing data structure (@see Atom.h)
+ **/
+class UnorderedMapOfUnorderedSet : public IndexingStructure {
 public:
-	UnorderedMapOfMap(AtomVector* table, vector<unsigned>& indexingTerm): IndexingStructure(table,indexingTerm){};
+	UnorderedMapOfUnorderedSet(AtomVector* table, vector<unsigned>& indexingTerm): IndexingStructure(table,indexingTerm){};
 	void add(Atom* atom);
 	Atom* find(Atom* atom);
 	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
@@ -129,6 +150,10 @@ private:
 	unordered_map<index_object,AtomTable> indexingStructure;
 };
 
+/**
+ * This class implements IndexingStructure and provides a single term indexing data structure
+ * implemented by means of an unordered map of vectors of atoms as indexing data structure (@see Atom.h)
+ **/
 class UnorderedMapOfVector : public IndexingStructure {
 public:
 	UnorderedMapOfVector(AtomVector* table, vector<unsigned>& indexingTerm): IndexingStructure(table,indexingTerm){};
@@ -141,7 +166,6 @@ public:
 private:
 	unordered_map<index_object,AtomVector> indexingStructure;
 };
-
 
 //class UnorderedMultimap : public IndexingStructure {
 //public:

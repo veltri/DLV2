@@ -918,7 +918,7 @@ void BackTrackingGrounder::createAtomSearchersForPredicateBody(	unsigned positio
 				}
 			}
 			vector<unsigned> indexingTerm(1,bestArg);
-			atomSearcher=predicateExtension->addAtomSearcher(table, MAP, &indexingTerm);
+			atomSearcher=predicateExtension->addAtomSearcher(table, &indexingTerm);
 		}
 		else{
 			atomSearcher=predicateExtension->addAtomSearcher(table,DEFAULT,nullptr);

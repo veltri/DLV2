@@ -10,6 +10,8 @@
 namespace DLV2 {
 namespace grounder {
 
+/******************************************************** Indexing Structure (Vector) **************************************************/
+
 Atom* IndexingStructure::find(Atom* atom) {
 	for(auto atom1:(*table)){
 		if(*atom1==*atom){
@@ -18,6 +20,8 @@ Atom* IndexingStructure::find(Atom* atom) {
 	}
 	return nullptr;
 }
+
+/******************************************************** Unordered Set **************************************************/
 
 Atom* UnorderedSet::find(Atom* atom) {
 	if(lastUpdate<table->size())
@@ -35,7 +39,9 @@ void UnorderedSet::update() {
 }
 
 
-void UnorderedMapOfMap::add(Atom* atom) {
+/******************************************************** Unordered Map of Unordered Set **************************************************/
+
+void UnorderedMapOfUnorderedSet::add(Atom* atom) {
 	unsigned i=indexingTerms[0];
 	if(lastUpdate==table->size()){
 		index_object termIndex=atom->getTerm(i)->getIndex();
@@ -47,7 +53,7 @@ void UnorderedMapOfMap::add(Atom* atom) {
 	}
 }
 
-Atom* UnorderedMapOfMap::find(Atom* atom) {
+Atom* UnorderedMapOfUnorderedSet::find(Atom* atom) {
 	if(lastUpdate<table->size())
 		update();
 
@@ -61,7 +67,7 @@ Atom* UnorderedMapOfMap::find(Atom* atom) {
 	return nullptr;
 }
 
-void UnorderedMapOfMap::update() {
+void UnorderedMapOfUnorderedSet::update() {
 	unsigned i=indexingTerms[0];
 	for (;lastUpdate<table->size();++lastUpdate) {
 		Atom *a=(*table)[lastUpdate];
@@ -76,6 +82,22 @@ void UnorderedMapOfMap::update() {
 			indexingStructure[termIndex].insert(a);
 	}
 }
+
+GeneralIterator* UnorderedMapOfUnorderedSet::computeMatchIterator(Atom* templateAtom, const RuleInformation& ruleInformation) {
+	if(lastUpdate<table->size())
+		update();
+
+	int indexingTerm=indexingTerms[0];
+	GeneralIterator* currentMatch;
+
+	index_object term = templateAtom->getTerm(indexingTerm)->getIndex();
+	AtomTable* matchingTable=&indexingStructure[term];
+	currentMatch=new UnorderedSetIterator(matchingTable->begin(),matchingTable->end());
+	return currentMatch;
+
+}
+
+/******************************************************** Unordered Map of Vector **************************************************/
 
 void UnorderedMapOfVector::add(Atom* atom) {
 	unsigned i=indexingTerms[0];
@@ -119,20 +141,6 @@ void UnorderedMapOfVector::update() {
 		else
 			indexingStructure[termIndex].push_back(a);
 	}
-}
-
-GeneralIterator* UnorderedMapOfMap::computeMatchIterator(Atom* templateAtom, const RuleInformation& ruleInformation) {
-	if(lastUpdate<table->size())
-		update();
-
-	int indexingTerm=indexingTerms[0];
-	GeneralIterator* currentMatch;
-
-	index_object term = templateAtom->getTerm(indexingTerm)->getIndex();
-	AtomTable* matchingTable=&indexingStructure[term];
-	currentMatch=new UnorderedSetIterator(matchingTable->begin(),matchingTable->end());
-	return currentMatch;
-
 }
 
 GeneralIterator* UnorderedMapOfVector::computeMatchIterator(Atom* templateAtom, const RuleInformation& ruleInformation) {
