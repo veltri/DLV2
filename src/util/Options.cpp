@@ -194,8 +194,8 @@ Options::init(
 
 		{"hashtype",required_argument, NULL, OPTIONID_hashType },
 		{"indextype",required_argument,NULL,OPTIONID_indexType},
-		{"predindexterm",required_argument, NULL, OPTIONID_predIndexTerm},
-		{"predindextype",required_argument, NULL, OPTIONID_predIndexType},
+		{"pred-index-term",required_argument, NULL, OPTIONID_predIndexTerm},
+		{"pred-index-type",required_argument, NULL, OPTIONID_predIndexType},
 		{"nofacts",no_argument, NULL, OPTIONID_nofacts},
 		{"printRewrite",no_argument, NULL, OPTIONID_printRewrite},
 		{"rewritingtype",required_argument, NULL, OPTIONID_rewritingType},

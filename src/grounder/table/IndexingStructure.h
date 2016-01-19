@@ -167,24 +167,39 @@ private:
 	unordered_map<index_object,AtomVector> indexingStructure;
 };
 
-//class UnorderedMultimap : public IndexingStructure {
-//public:
-//	void add(Atom* atom);
-//	Atom* find(Atom* atom);
-//	void clear();
-//	virtual void update();
-//private:
-//	unordered_multimap<index_object,AtomTable> indexingStructure;
-//};
-//
-//class DoubleUnorderedMultimap : public IndexingStructure {
-//public:
-//	void add(Atom* atom);
-//	Atom* find(Atom* atom);
-//	void clear();
-//private:
-//	unordered_multimap<unsigned,unordered_multimap<index_object,AtomTable>> indexingStructure;
-//};
+/**
+ * This class implements IndexingStructure and provides a single term indexing data structure
+ * implemented by means of an unordered multimap of atoms as indexing data structure (@see Atom.h)
+ **/
+class UnorderedMultiMap : public IndexingStructure {
+public:
+	UnorderedMultiMap(AtomVector* table, vector<unsigned>& indexingTerm): IndexingStructure(table,indexingTerm){};
+	void add(Atom* atom);
+	Atom* find(Atom* atom);
+	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
+	virtual void update();
+	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation);
+	virtual unsigned getType(){return MULTIMAP;}
+private:
+	unordered_multimap<index_object,Atom*> indexingStructure;
+};
+
+/**
+ * This class implements IndexingStructure and provides a double term indexing data structure
+ * implemented by means of an unordered map of unordered multimap of atoms as indexing data structure (@see Atom.h)
+ **/
+class UnorderedMapOfUnorderedMultimap : public IndexingStructure {
+public:
+	UnorderedMapOfUnorderedMultimap(AtomVector* table, vector<unsigned>& indexingTerm): IndexingStructure(table,indexingTerm){};
+	void add(Atom* atom);
+	Atom* find(Atom* atom);
+	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
+	virtual void update();
+	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation);
+	virtual unsigned getType(){return DOUBLEMAP;};
+private:
+	unordered_map<index_object,unordered_multimap<index_object,Atom*>> indexingStructure;
+};
 
 } /* namespace grounder */
 } /* namespace DLV2 */

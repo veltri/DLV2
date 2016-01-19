@@ -908,10 +908,15 @@ void BackTrackingGrounder::createAtomSearchersForPredicateBody(	unsigned positio
 				atomSearcher=predicateExtension->addAtomSearcher(table,HASHSET,nullptr);
 		}
 		else if(!boundTermsInAtoms[position-currentRule->getSizeHead()][atomPos].empty()){
-			unsigned bestSelectivityArg=0;
+			int indexingTermSetByUser=Options::globalOptions()->getPredicateIndexTerm(predicate->getName());
 			unsigned bestArg=0;
+			unsigned bestSelectivityArg=0;
 			PredicateInformation* predicateInfo=predicateExtTable->getPredicateExt(predicate)->getPredicateInformation();
 			for(auto boundArg:boundTermsInAtoms[position-currentRule->getSizeHead()][atomPos]){
+				if(boundArg==indexingTermSetByUser){
+					bestArg=indexingTermSetByUser;
+					break;
+				}
 				if(predicateInfo->getSelectivity(boundArg)>bestSelectivityArg){
 					bestSelectivityArg=predicateInfo->getSelectivity(boundArg);
 					bestArg=boundArg;

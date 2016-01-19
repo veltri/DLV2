@@ -28,16 +28,15 @@ IndexingStructure* PredicateExtension::createAtomSearcher(unsigned table, unsign
 //		atomSearcher = new SingleTermMapDictionaryAtomSearcher(tables[table],
 //				predicate);
 //		break;
-//	case (MULTIMAP):
-//		atomSearcher = new SingleTermMultiMapAtomSearcher(tables[table],
-//				predicate);
-//		break;
+	case (MULTIMAP):
+		indexingStructure = new UnorderedMultiMap(tables[table],*indexingTerms);
+		break;
 	case (HASHSET):
 		indexingStructure = new UnorderedSet(tables[table]);
 		break;
-//	case (DOUBLEMAP):
-//		atomSearcher = new DoubleTermMapAtomSearcher(tables[table], predicate);
-//		break;
+	case (DOUBLEMAP):
+		indexingStructure = new UnorderedMapOfUnorderedMultimap(tables[table],*indexingTerms);
+		break;
 	case (MAP_VECTOR):
 		indexingStructure = new UnorderedMapOfVector(tables[table],*indexingTerms);
 		break;
