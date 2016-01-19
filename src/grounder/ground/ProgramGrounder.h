@@ -147,7 +147,7 @@ protected:
 	void setDefaultAtomSearchers(Rule* r);
 
 	///Utility method for setDefaultAtomSearchers
-	virtual void createAtomSearchersForPredicateBody(unsigned position, Predicate* predicate, unsigned sizeRule);
+	virtual void createAtomSearchersForPredicateBody(unsigned position, unsigned atomPos, Predicate* predicate, unsigned sizeRule){};
 
 private:
 	///Print the program rule

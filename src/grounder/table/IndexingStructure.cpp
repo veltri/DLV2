@@ -145,6 +145,7 @@ GeneralIterator* UnorderedMapOfVector::computeMatchIterator(Atom* templateAtom, 
 	index_object term = templateAtom->getTerm(indexingTerm)->getIndex();
 	AtomVector* matchingTable=&indexingStructure[term];
 	currentMatch=new VectorIterator(matchingTable->begin(),matchingTable->end());
+
 	return currentMatch;
 }
 

@@ -97,9 +97,9 @@ void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited,
 }
 
 void BaseInputRewriter::chooseBestSaviorForAggregate(Rule* rule, AggregateElement* aggregateElement, set_term& unsafeVars, vector<Atom*>& atomToAdd, const OrderRule& orderRule) {
-	unsigned int index_atom=0;
 	list<Atom*> possibleAtomsBinding;
 	for(auto var:unsafeVars){
+		unsigned int index_atom=0;
 		for(auto it=rule->getBeginBody();it!=rule->getEndBody();++it,++index_atom){
 			Atom* atom=*it;
 			set_term variables; //TODO togliere dal for o fare cache
