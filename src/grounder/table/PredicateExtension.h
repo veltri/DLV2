@@ -15,6 +15,7 @@
 #include "AtomSearcher.h"
 #include "IdGenerator.h"
 #include "../output/OutputBuilder.h"
+#include "../ground/StatementDependency.h"
 
 using namespace std;
 
@@ -91,6 +92,20 @@ public:
 
 	///Returns the i-th AtomSeacher in atomSearchers
 	inline IndexingStructure* getIndexingStructure(unsigned table, unsigned indexType, vector<unsigned>* indexingTerms=nullptr){
+		return atomSearchers[table]->getIndexingStructure(indexType,indexingTerms);
+	}
+
+	///Returns the i-th AtomSeacher in atomSearchers
+	inline IndexingStructure* getIndexingStructure(unsigned table, vector<unsigned>* indexingTerms=nullptr){
+		int indexType=Options::globalOptions()->getPredicateIndexType(predicate->getName());
+		if(indexType==-1){
+			if(StatementDependency::getInstance()->isOnlyInHead(predicate->getIndex()) || predicate->getArity()==1)
+				indexType=HASHSET;
+			else
+				indexType=Options::globalOptions()->getIndexType();
+		}
+		if(predicate->getArity()==0)
+			indexType=DEFAULT;
 		return atomSearchers[table]->getIndexingStructure(indexType,indexingTerms);
 	}
 

@@ -911,6 +911,8 @@ void BackTrackingGrounder::createAtomSearchersForPredicateBody(	unsigned positio
 			int indexingTermSetByUser=Options::globalOptions()->getPredicateIndexTerm(predicate->getName());
 			unsigned bestArg=0;
 			unsigned bestSelectivityArg=0;
+			int bestArgCreated=-1;
+			unsigned bestSelectivityArgCreated=0;
 			PredicateInformation* predicateInfo=predicateExtTable->getPredicateExt(predicate)->getPredicateInformation();
 			for(auto boundArg:boundTermsInAtoms[position-currentRule->getSizeHead()][atomPos]){
 				if(boundArg==indexingTermSetByUser){
@@ -921,7 +923,14 @@ void BackTrackingGrounder::createAtomSearchersForPredicateBody(	unsigned positio
 					bestSelectivityArg=predicateInfo->getSelectivity(boundArg);
 					bestArg=boundArg;
 				}
+				vector<unsigned> terms(1,boundArg);
+				if(predicateInfo->getSelectivity(boundArg)>bestSelectivityArgCreated && predicateExtension->getIndexingStructure(table,&terms)!=nullptr){
+					bestSelectivityArgCreated=predicateInfo->getSelectivity(boundArg);
+					bestArgCreated=boundArg;
+				}
 			}
+			if(bestArgCreated!=-1)
+				bestArg=bestArgCreated;
 			vector<unsigned> indexingTerm(1,bestArg);
 			atomSearcher=predicateExtension->addAtomSearcher(table, &indexingTerm);
 		}

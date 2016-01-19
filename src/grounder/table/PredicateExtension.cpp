@@ -6,9 +6,7 @@
  */
 
 #include "PredicateExtension.h"
-#include "../ground/StatementDependency.h"
 //#include "../utility/Timer.h"
-#include <climits>
 
 namespace DLV2{
 
