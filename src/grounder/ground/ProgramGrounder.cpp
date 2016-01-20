@@ -523,10 +523,10 @@ void ProgramGrounder::createAtomSearchersForPredicateHead(unsigned position, Pre
 		vector<unsigned> indexing(1,0);
 		auto atomSearcher=predicateExtension->addAtomSearcher(i,MAP,&indexing);
 // 		auto atomSearcher=predicateExtension->addAtomSearcher(i,HASHSET,nullptr);
-//		if(i==predicate_searchInsert_table[position][0] || predicateExtension->getPredicateExtentionSize(i))
+		if(i==predicate_searchInsert_table[position][0] || predicateExtension->getPredicateExtentionSize(i))
 			predicate_searchInsert_atomSearcher[position].push_back(atomSearcher);
-//		else
-//			predicate_searchInsert_atomSearcher[position].push_back(0);
+		else
+			predicate_searchInsert_atomSearcher[position].push_back(0);
 	}
 }
 

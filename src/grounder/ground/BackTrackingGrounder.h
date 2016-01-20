@@ -117,7 +117,7 @@ protected:
 	vector<unsigned> atomsPossibleUndef;
 
 	///Map each variable to its binder atom
-	AdvancedArray<unsigned,ARRAY_SIZE> variablesBinder;
+	AdvancedArray<int,ARRAY_SIZE> variablesBinder;
 
 	///Vector of the size of the body. If the position of this vector is true then the builtin
 	/// in the rule with this position is already evaluated

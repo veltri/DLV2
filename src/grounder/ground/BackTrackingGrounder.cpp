@@ -426,8 +426,7 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 void BackTrackingGrounder::findBoundTerms(unsigned int index_current_atom, unsigned position, Atom* current_atom) {
 	for (unsigned j = 0; j < current_atom->getTermsSize(); ++j) {
 		Term* term = current_atom->getTerm(j);
-		unsigned termLocalIndex =
-				current_atom->getTerm(j)->getLocalVariableIndex();
+		unsigned termLocalIndex = current_atom->getTerm(j)->getLocalVariableIndex();
 		bool anonymous = current_atom->getTerm(j)->contain(TermType::ANONYMOUS);
 		if (term->isGround() && !anonymous) {
 			boundTermsInAtoms[index_current_atom][position].push_back(j);
@@ -435,12 +434,15 @@ void BackTrackingGrounder::findBoundTerms(unsigned int index_current_atom, unsig
 		}
 		if (term->getType() == VARIABLE) {
 			bool bound = true;
-			for (auto variable : atoms_bind_variables[index_current_atom])
-				if (variable == termLocalIndex) {
-					bound = false;
-					break;
-				}
-			if (bound && !currentRule->getAtomInBody(index_current_atom)->isAggregateAtom() && !anonymous) {
+			if(variablesBinder[termLocalIndex]==-1 || variablesBinder[termLocalIndex]==index_current_atom){
+				bound=false;
+			}
+//			for (auto variable : atoms_bind_variables[index_current_atom])
+//				if (variable == termLocalIndex) {
+//					bound = false;
+//					break;
+//				}
+			if (bound && !anonymous) {
 				boundTermsInAtoms[index_current_atom][position].push_back(j);
 			}
 		}
@@ -453,7 +455,7 @@ void BackTrackingGrounder::findBindVariablesRule() {
 	unsigned int index_current_atom = 0;
 	atoms_bind_variables.clear();
 	atoms_bind_variables.resize(currentRule->getSizeBody());
-	variablesBinder.setSize(currentRule->getVariablesSize(),0);
+	variablesBinder.setSize(currentRule->getVariablesSize(),-1);
 	boundTermsInAtoms.clear();
 	boundTermsInAtoms.resize(currentRule->getSizeBody());
 
@@ -904,8 +906,10 @@ void BackTrackingGrounder::createAtomSearchersForPredicateBody(	unsigned positio
 				atomSearcher=atomSearcherMAP;
 			else if(atomSearcherHASH!=nullptr)
 				atomSearcher=atomSearcherHASH;
-			else
-				atomSearcher=predicateExtension->addAtomSearcher(table,HASHSET,nullptr);
+			else{
+				vector<unsigned> terms(1,0);
+				atomSearcher=predicateExtension->addAtomSearcher(table,MAP,&terms);
+			}
 		}
 		else if(!boundTermsInAtoms[position-currentRule->getSizeHead()][atomPos].empty()){
 			int indexingTermSetByUser=Options::globalOptions()->getPredicateIndexTerm(predicate->getName());
