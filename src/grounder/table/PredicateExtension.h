@@ -90,23 +90,21 @@ public:
 		return atomSearchers[table];
 	}
 
-	///Returns the i-th AtomSeacher in atomSearchers
-	inline IndexingStructure* getIndexingStructure(unsigned table, unsigned indexType, vector<unsigned>* indexingTerms=nullptr){
+	IndexingStructure* getIndexingStructure(unsigned table, unsigned indexType, vector<unsigned>* indexingTerms=nullptr){
 		return atomSearchers[table]->getIndexingStructure(indexType,indexingTerms);
 	}
 
-	///Returns the i-th AtomSeacher in atomSearchers
-	inline IndexingStructure* getIndexingStructure(unsigned table, vector<unsigned>* indexingTerms=nullptr){
-		int indexType=Options::globalOptions()->getPredicateIndexType(predicate->getName());
-		if(indexType==-1){
-			if(StatementDependency::getInstance()->isOnlyInHead(predicate->getIndex()) || predicate->getArity()==1)
-				indexType=HASHSET;
-			else
-				indexType=Options::globalOptions()->getIndexType();
-		}
-		if(predicate->getArity()==0)
-			indexType=DEFAULT;
-		return atomSearchers[table]->getIndexingStructure(indexType,indexingTerms);
+	IndexingStructure* getIndexingStructure(unsigned table, vector<unsigned>* indexingTerms=nullptr){
+//		int indexType=Options::globalOptions()->getPredicateIndexType(predicate->getName());
+//		if(indexType==-1){
+//			if(StatementDependency::getInstance()->isOnlyInHead(predicate->getIndex()) || predicate->getArity()==1)
+//				indexType=HASHSET;
+//			else
+//				indexType=Options::globalOptions()->getIndexType();
+//		}
+//		if(predicate->getArity()==0)
+//			indexType=DEFAULT;
+		return atomSearchers[table]->getIndexingStructure(indexingTerms);
 	}
 
 	///Set the index of the atom with new id if the atom is not yet indexed, and send it to the output builder

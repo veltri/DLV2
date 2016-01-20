@@ -58,6 +58,8 @@ public:
 	void addIndexingStructure(IndexingStructure* indexingStructure){indexingStructures.push_back(indexingStructure);};
 	///If present, returns an indexing structure for the table of the specified type and with the specified indexing terms
 	IndexingStructure* getIndexingStructure(unsigned type, vector<unsigned>* indexingTerms);
+	///If present, returns an indexing structure for the table of any type but with the specified indexing terms
+	IndexingStructure* getIndexingStructure(vector<unsigned>* indexingTerms);
 
 	///Return a default hash indexing structure
 	IndexingStructure* getDefaultIndexingStructure(){

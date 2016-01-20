@@ -164,6 +164,24 @@ IndexingStructure* AtomSearcher::getIndexingStructure(unsigned type, vector<unsi
 	return nullptr;
 }
 
+IndexingStructure* AtomSearcher::getIndexingStructure(vector<unsigned>* indexingTerms) {
+	for(auto indexingStruct:indexingStructures){
+		if(indexingTerms==nullptr)
+			return indexingStruct;
+		else{
+			vector<unsigned> indexingStructIndexingTerms=indexingStruct->getIndexingTerms();
+			if(indexingStructIndexingTerms.size()!=indexingTerms->size())
+				return nullptr;
+			for(unsigned i=0;i<indexingTerms->size();++i){
+				if(indexingStructIndexingTerms[i]!=(*indexingTerms)[i])
+					return nullptr;
+			}
+			return indexingStruct;
+		}
+	}
+	return nullptr;
+}
+
 AtomSearcher::~AtomSearcher() {
 	for(auto& it:resultVector)
 		delete it;
