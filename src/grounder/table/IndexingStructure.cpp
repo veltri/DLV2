@@ -106,7 +106,7 @@ void UnorderedMapOfVector::add(Atom* atom) {
 		if(indexingStructure.count(termIndex))
 			indexingStructure[termIndex].push_back(atom);
 		else{
-			indexingStructure.emplace(termIndex,AtomVector({atom}));
+			indexingStructure.emplace(termIndex,vector<Atom*>({atom}));
 		}
 	}
 }
@@ -117,7 +117,7 @@ Atom* UnorderedMapOfVector::find(Atom* atom) {
 
 	unsigned i=indexingTerms[0];
 	index_object term = atom->getTerm(i)->getIndex();
-	AtomVector* matchingTable=&indexingStructure[term];
+	vector<Atom*>* matchingTable=&indexingStructure[term];
 
 	for(auto atom1:(*matchingTable)){
 		if(*atom1==*atom){
@@ -133,7 +133,7 @@ void UnorderedMapOfVector::update() {
 		Atom *a=(*table)[lastUpdate];
 		index_object termIndex=a->getTerm(i)->getIndex();
 		if(!indexingStructure.count(termIndex)){
-			AtomVector values;
+			vector<Atom*> values;
 //			values.reserve(table->size()/PredicateExtTable::getInstance()->getPredicateExt(predicate)->getPredicateInformation()->getSelectivity(indexingTerm));
 			values.push_back(a);
 			indexingStructure.insert({termIndex,values});
@@ -151,7 +151,61 @@ GeneralIterator* UnorderedMapOfVector::computeMatchIterator(Atom* templateAtom, 
 	GeneralIterator* currentMatch;
 
 	index_object term = templateAtom->getTerm(indexingTerm)->getIndex();
-	AtomVector* matchingTable=&indexingStructure[term];
+	vector<Atom*>* matchingTable=&indexingStructure[term];
+	currentMatch=new VectorIterator(matchingTable->begin(),matchingTable->end());
+
+	return currentMatch;
+}
+
+/******************************************************** Unordered Map of History Vector **************************************************/
+
+void UnorderedMapOfHistoryVector::add(Atom* atom) {
+
+}
+
+Atom* UnorderedMapOfHistoryVector::find(Atom* atom) {
+	if(lastUpdate<table->size())
+		update();
+
+	unsigned i=indexingTerms[0];
+	index_object term = atom->getTerm(i)->getIndex();
+	AtomHistoryVector& matchingTable=indexingStructure[term];
+
+	for(auto atom1:matchingTable){
+		if(*atom1==*atom){
+			return atom1;
+		}
+	}
+	return nullptr;
+}
+
+void UnorderedMapOfHistoryVector::update() {
+	unsigned i=indexingTerms[0];
+	unsigned currentIteration=table->getCurrentIteration();
+	for (;lastUpdate<table->size();++lastUpdate) {
+		Atom *a=(*table)[lastUpdate];
+		index_object termIndex=a->getTerm(i)->getIndex();
+		unsigned atomIteration=(lastUpdate<currentIteration)?currentIteration-1:currentIteration;
+		if(!indexingStructure.count(termIndex)){
+			AtomHistoryVector values;
+//			values.reserve(table->size()/PredicateExtTable::getInstance()->getPredicateExt(predicate)->getPredicateInformation()->getSelectivity(indexingTerm));
+			values.push_back_iteration(a,atomIteration);
+			indexingStructure.insert({termIndex,values});
+		}
+		else
+			indexingStructure[termIndex].push_back_iteration(a,atomIteration);
+	}
+}
+
+GeneralIterator* UnorderedMapOfHistoryVector::computeMatchIterator(Atom* templateAtom, const RuleInformation& ruleInformation) {
+	if(lastUpdate<table->size())
+		update();
+
+	int indexingTerm=indexingTerms[0];
+	GeneralIterator* currentMatch;
+
+	index_object term = templateAtom->getTerm(indexingTerm)->getIndex();
+	AtomHistoryVector* matchingTable=&indexingStructure[term];
 	currentMatch=new VectorIterator(matchingTable->begin(),matchingTable->end());
 
 	return currentMatch;

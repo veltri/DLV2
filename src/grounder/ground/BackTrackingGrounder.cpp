@@ -634,7 +634,7 @@ bool BackTrackingGrounder::isCartesianProductRule(Rule *currentRule){
  */
 void BackTrackingGrounder::groundCartesian(Rule* rule){
 	unsigned size=rule->getSizeBody();
-	vector<tuple<vector<AtomVector*>,unsigned,unsigned>> tables(rule->getSizeBody());
+	vector<tuple<vector<AtomHistoryVector*>,unsigned,unsigned>> tables(rule->getSizeBody());
 
 	int i=0;
 	for(i=0;i<rule->getSizeBody();i++){
@@ -643,7 +643,7 @@ void BackTrackingGrounder::groundCartesian(Rule* rule){
 			ground_rule->setAtomToSimplifyInBody(i,true);
 			continue;
 		}
-		vector<AtomVector*> tableToSearch;
+		vector<AtomHistoryVector*> tableToSearch;
 		for(auto table:predicate_searchInsert_table[i+rule->getSizeHead()]){
 			tableToSearch.push_back(predicateExtTable->getPredicateExt(predicate)->getTable(table));
 		}
@@ -680,7 +680,7 @@ void BackTrackingGrounder::groundCartesian(Rule* rule){
 			continue;
 		}
 
-		AtomVector *vec=get<0>(tables[i])[get<1>(tables[i])];
+		AtomHistoryVector *vec=get<0>(tables[i])[get<1>(tables[i])];
 		if(get<2>(tables[i])>=vec->size()){
 			get<2>(tables[i])=0;
 			get<1>(tables[i])=get<1>(tables[i])+1;

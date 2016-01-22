@@ -93,7 +93,7 @@ IndexingStructure* PredicateExtension::addAtomSearcher(unsigned table, unsigned 
 
 PredicateExtension::~PredicateExtension() {
 	for(unsigned int i=0;i<tables.size();++i){
-		AtomVector* table=tables[i];
+		AtomHistoryVector* table=tables[i];
 		for (auto it = table->begin(); it != table->end(); ++it){
 			delete *it;
 		}
@@ -110,8 +110,8 @@ void PredicateExtension::swapTables(unsigned tableFrom,unsigned tableTo){
 	assert_msg(tableFrom<tables.size(),"The specified table doesn't exist.");
 	assert_msg(tableTo<tables.size(),"The specified table doesn't exist.");
 
-	AtomVector *table_from=tables[tableFrom];
-	AtomVector *table_to=tables[tableTo];
+	AtomHistoryVector *table_from=tables[tableFrom];
+	AtomHistoryVector *table_to=tables[tableTo];
 
 	unsigned size=table_from->size();
 	table_to->reserve(size+table_to->size());
@@ -136,9 +136,9 @@ void PredicateExtension::swapPointersTables(unsigned tableFrom, unsigned tableTo
 	atomSearchers[tableFrom]=seacher_to;
 	atomSearchers[tableTo]=searcher_tmp;
 
-	AtomVector* table_from=tables[tableFrom];
-	AtomVector* table_to=tables[tableTo];
-	AtomVector* table_tmp=table_from;
+	AtomHistoryVector* table_from=tables[tableFrom];
+	AtomHistoryVector* table_to=tables[tableTo];
+	AtomHistoryVector* table_tmp=table_from;
 	tables[tableFrom]=table_to;
 	tables[tableTo]=table_tmp;
 

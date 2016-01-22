@@ -18,6 +18,7 @@
 #include "ChoiceElement.h"
 #include "../table/TermTable.h"
 #include "Predicate.h"
+#include "../table/HistoryVector.h"
 
 using namespace std;
 
@@ -291,7 +292,10 @@ protected:
 
 using AtomTable = hashSet<Atom> ;
 ///Vector of Atom
-using AtomVector = vector<Atom*>;
+//using AtomVector = vector<Atom*>;
+///Vector used for the recursion
+using AtomHistoryVector = HistoryVector<Atom*>;
+
 ///An unordered multimap of Atom
 using Multimap_Atom = unordered_multimap<index_object, Atom*>;
 

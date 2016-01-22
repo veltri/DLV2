@@ -76,12 +76,12 @@ public:
 	/// Add table and an AtomSearcher
 	void addTables(unsigned numTables=1){
 		for(unsigned i=0;i<numTables;++i){
-			tables.push_back(new AtomVector());
+			tables.push_back(new AtomHistoryVector());
 			atomSearchers.push_back(new AtomSearcher(tables[i]));
 		}
 	}
 
-	inline AtomVector* getTable(unsigned i)const{
+	inline AtomHistoryVector* getTable(unsigned i)const{
 		return tables[i];
 	}
 
@@ -167,7 +167,7 @@ private:
 
 	///For each AtomTable in tables is present an AtomSeacher in atomSearchers
 	///The vector of tables
-	vector<AtomVector*> tables;
+	vector<AtomHistoryVector*> tables;
 	///The vector of  AtomSeacher
 	vector<AtomSearcher*> atomSearchers;
 

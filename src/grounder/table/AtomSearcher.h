@@ -27,7 +27,7 @@ namespace grounder{
  */
 class AtomSearcher {
 public:
-	AtomSearcher(AtomVector* table) : table(table) {resultVector.resize(ATOMS_IN_RULE,nullptr);};
+	AtomSearcher(AtomHistoryVector* table) : table(table) {resultVector.resize(ATOMS_IN_RULE,nullptr);};
 	/// Given a partially ground atom, this method is meant to find all the matching atoms satisfying the variables assignment in the given atom.
 	virtual void firstMatch(unsigned id,Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation, IndexingStructure* indexingStructure);
 	/// Invoked after a first match iterate trough the matching atoms found one by one.
@@ -80,7 +80,7 @@ public:
 
 protected:
 	///The basic data-structure that collects the atoms
-	AtomVector* table;
+	AtomHistoryVector* table;
 
 	/// This maps stores the calls to the firstMatch method.
 	/// Indeed, for each call it stores a pair with the counter and the iterator to the next matching atoms.
