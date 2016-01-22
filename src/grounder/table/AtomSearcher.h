@@ -29,7 +29,7 @@ class AtomSearcher {
 public:
 	AtomSearcher(AtomHistoryVector* table) : table(table) {resultVector.resize(ATOMS_IN_RULE,nullptr);};
 	/// Given a partially ground atom, this method is meant to find all the matching atoms satisfying the variables assignment in the given atom.
-	virtual void firstMatch(unsigned id,Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation, IndexingStructure* indexingStructure);
+	virtual void firstMatch(unsigned id,Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation, IndexingStructure* indexingStructure,const pair<SearchType,unsigned>& searchSpecification={ALL,0});
 	/// Invoked after a first match iterate trough the matching atoms found one by one.
 	virtual void nextMatch(unsigned id, Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation);
 	/// Search a given ground atom by means of the given indexing structure

@@ -8,8 +8,10 @@
 #ifndef SRC_GROUNDER_STATEMENT_ORDERRULEGROUNDABLE_H_
 #define SRC_GROUNDER_STATEMENT_ORDERRULEGROUNDABLE_H_
 
+#include <list>
 #include "Rule.h"
 #include "../table/PredicateExtension.h"
+
 
 namespace DLV2 {
 namespace grounder {
@@ -40,9 +42,9 @@ public:
 	OrderRuleGroundable(Rule* rule, Priority p):predicateExtTable(PredicateExtTable::getInstance()),rule(rule),priorities(p){}
 	virtual ~OrderRuleGroundable(){}
 	///This method orders the body of a given exit rule
-	vector<unsigned> order(vector<vector<unsigned>>& predicate_searchInsert_table);
+	vector<unsigned> order(vector<vector<pair<unsigned,SearchType>>>& predicate_searchInsert_table);
 	///This method orders the body of a given recursive rule
-	void order(vector<vector<unsigned>>& predicate_searchInsert_table, vector<unsigned>& originalOrderBody);
+	void order(vector<vector<pair<unsigned,SearchType>>>& predicate_searchInsert_table, vector<unsigned>& originalOrderBody);
 
 	/// This method assigns to each remained atom (to be added in the sorted body) a weight,
 	/// and returns the iterator to the atom with the best weight.
@@ -53,7 +55,7 @@ public:
 
 
 protected:
-	vector<vector<unsigned>> predicate_searchInsert_table;
+	vector<vector<pair<unsigned,SearchType>>> predicate_searchInsert_table;
 	PredicateExtTable* predicateExtTable;
 	Rule* rule;
 	set_term variablesInTheBody;

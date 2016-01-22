@@ -43,7 +43,7 @@ public:
 	 */
 	ProgramGrounder() :
 		predicateTable(PredicateTable::getInstance()), predicateExtTable(PredicateExtTable::getInstance()),
-		statementDependency(StatementDependency::getInstance()), termsMap(TermTable::getInstance()),outputBuilder(OutputBuilder::getInstance()){
+		statementDependency(StatementDependency::getInstance()), termsMap(TermTable::getInstance()),outputBuilder(OutputBuilder::getInstance()),iteration(0),iterationToInsert(0){
 	};
 
 	/// This method executes the overall grounding process
@@ -70,6 +70,9 @@ public:
 	/// Return the PredicateTable
 	PredicateTable* getPredicateTable() {return predicateTable;};
 
+	bool isNotEmptyPredExt(Predicate* pred,unsigned table);
+
+
 	///Destructor
 	virtual ~ProgramGrounder();
 
@@ -90,9 +93,10 @@ protected:
 //	/// Manage the output and simplification
 //	ProgramEvaluator evaluator;
 
+
 	/// For each predicate in the current rule this vector stores the tables of insert for the atom in head and
 	/// searching table for the predicate in the body
-	vector<vector<unsigned>> predicate_searchInsert_table;
+	vector<vector<pair<unsigned,SearchType>>> predicate_searchInsert_table;
 
 	/// For each predicate in the current rule this vector stores the atom searchers of insertion and look-up for head atoms and
 	/// the atom searchers of look-up for body atoms
@@ -139,7 +143,7 @@ protected:
 	void substituteIndicesInRulesWithPossibleUndefAtoms();
 
 	virtual bool isCartesianProductRule(Rule *r){return false;}
-	virtual void groundCartesian(Rule *r)=0;
+	virtual bool groundCartesian(Rule *r)=0;
 
 	///This method creates a default atom searcher for each predicate occurring in the head and the body of the current rule.
 	///In particular it creates an atom searcher on FACT and NOFACT tables for every predicate,
@@ -148,6 +152,12 @@ protected:
 
 	///Utility method for setDefaultAtomSearchers
 	virtual void createAtomSearchersForPredicateBody(unsigned position, unsigned atomPos, Predicate* predicate, unsigned sizeRule){};
+
+	//Iteration of the current instantiation
+	unsigned iteration;
+
+	//Iteration of the derived atom
+	unsigned iterationToInsert;
 
 private:
 	///Print the program rule

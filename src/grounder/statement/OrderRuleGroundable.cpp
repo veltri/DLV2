@@ -16,7 +16,7 @@ namespace grounder {
 
 /****************************************** OrderRuleGroundable ***********************************************/
 
-vector<unsigned> OrderRuleGroundable::order(vector<vector<unsigned>>& predicate_searchInsert_table) {
+vector<unsigned> OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchType>>>& predicate_searchInsert_table) {
 	this->predicate_searchInsert_table=predicate_searchInsert_table;
 	unsigned sizeBody=rule->getSizeBody();
 
@@ -42,7 +42,7 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<unsigned>>& predicate_
 	vector<unsigned> orderedPositions;
 	orderedPositions.reserve(sizeBody);
 
-	vector<vector<unsigned>> orderdedPredicateSearchInsertTable;
+	vector<vector<pair<unsigned,SearchType>>> orderdedPredicateSearchInsertTable;
 	orderdedPredicateSearchInsertTable.reserve(predicate_searchInsert_table.size());
 
 	unsigned sizeHead=predicate_searchInsert_table.size()-sizeBody;
@@ -98,7 +98,7 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<unsigned>>& predicate_
 
 }
 
-void OrderRuleGroundable::order(vector<vector<unsigned> >& predicate_searchInsert_table, vector<unsigned>& originalOrderBody) {
+void OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchType>> >& predicate_searchInsert_table, vector<unsigned>& originalOrderBody) {
 	vector<unsigned> orderedPositions=order(predicate_searchInsert_table);
 	vector<unsigned> newOriginalOrderBody;
 	newOriginalOrderBody.resize(originalOrderBody.size());
@@ -185,8 +185,7 @@ unsigned AllOrderRuleGroundable::computePredicateExtensionSize(	unsigned atomPos
 	unsigned extensionSize = 0;
 	for (auto j : predicate_searchInsert_table[atomPosition + rule->getSizeHead()])
 		extensionSize +=
-				predicateExtTable->getInstance()->getPredicateExt(p)->getPredicateExtentionSize(
-						j);
+				predicateExtTable->getInstance()->getPredicateExt(p)->getPredicateExtentionSize(j.first,j.second);
 	return extensionSize;
 }
 
@@ -312,7 +311,7 @@ double CombinedCriterion::assignWeightPositiveClassicalLit(Atom* atom, unsigned 
 
 	unsigned sizeTablesToSearch=0;
 	for(auto j:predicate_searchInsert_table[originalPosition+rule->getSizeHead()])
-		sizeTablesToSearch+=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(j);
+		sizeTablesToSearch+=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(j.first,j.second);
 
 	long double prodSelectivity_a=1;
 	long unsigned prodDomains_a=1;
@@ -355,7 +354,7 @@ double CombinedCriterion1::assignWeightPositiveClassicalLit(Atom* atom, unsigned
 
 	unsigned sizeTablesToSearch=0;
 	for(auto j:predicate_searchInsert_table[originalPosition+rule->getSizeHead()])
-		sizeTablesToSearch+=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(j);
+		sizeTablesToSearch+=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(j.first,j.second);
 
 	long double num1=1;
 	long unsigned  den1=1;

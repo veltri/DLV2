@@ -136,6 +136,19 @@ public:
 		if(atom->getIndex()==0) setIndexOfAtom(atom);
 	}
 
+	inline void addAtom(Atom* atom, unsigned table,unsigned iteration){
+		if(iteration>0)
+			tables[table]->push_back_iteration(atom,iteration);
+		else
+			tables[table]->push_back(atom);
+
+		predicateInformation->update(atom);
+
+		if(predicate->isSolved() && !atom->isFact())
+			predicate->setSolved(false);
+		if(atom->getIndex()==0) setIndexOfAtom(atom);
+	}
+
 	//Moves the content of the tableFrom (source) to the tableTo (destination)
 	void swapTables(unsigned tableFrom,unsigned tableTo);
 
@@ -156,6 +169,8 @@ public:
 	PredicateInformation* getPredicateInformation() const {return predicateInformation;}
 
 	unsigned getPredicateExtentionSize(unsigned table) const {if(table<tables.size()) return tables[table]->size(); return 0;}
+	unsigned getPredicateExtentionSize(unsigned table,SearchType type) const {if(table<tables.size()) return tables[table]->size_iteration(type); return 0;}
+
 
 	IndexingStructure* addAtomSearcher(unsigned table, vector<unsigned>* indexingTerms);
 	IndexingStructure* addAtomSearcher(unsigned table, unsigned type, vector<unsigned>* indexingTerms);

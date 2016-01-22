@@ -83,7 +83,7 @@ void UnorderedMapOfUnorderedSet::update() {
 	}
 }
 
-GeneralIterator* UnorderedMapOfUnorderedSet::computeMatchIterator(Atom* templateAtom, const RuleInformation& ruleInformation) {
+GeneralIterator* UnorderedMapOfUnorderedSet::computeMatchIterator(Atom* templateAtom, const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification) {
 	if(lastUpdate<table->size())
 		update();
 
@@ -143,7 +143,7 @@ void UnorderedMapOfVector::update() {
 	}
 }
 
-GeneralIterator* UnorderedMapOfVector::computeMatchIterator(Atom* templateAtom, const RuleInformation& ruleInformation) {
+GeneralIterator* UnorderedMapOfVector::computeMatchIterator(Atom* templateAtom, const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification) {
 	if(lastUpdate<table->size())
 		update();
 
@@ -197,16 +197,17 @@ void UnorderedMapOfHistoryVector::update() {
 	}
 }
 
-GeneralIterator* UnorderedMapOfHistoryVector::computeMatchIterator(Atom* templateAtom, const RuleInformation& ruleInformation) {
+GeneralIterator* UnorderedMapOfHistoryVector::computeMatchIterator(Atom* templateAtom, const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification) {
 	if(lastUpdate<table->size())
 		update();
 
-	int indexingTerm=indexingTerms[0];
 	GeneralIterator* currentMatch;
-
+	int indexingTerm=indexingTerms[0];
 	index_object term = templateAtom->getTerm(indexingTerm)->getIndex();
 	AtomHistoryVector* matchingTable=&indexingStructure[term];
-	currentMatch=new VectorIterator(matchingTable->begin(),matchingTable->end());
+
+	auto it=matchingTable->getElements(searchSpecification.first,searchSpecification.second);
+	currentMatch=new VectorIteratorIndex(it.first,it.second,matchingTable);
 
 	return currentMatch;
 }
@@ -246,7 +247,7 @@ void UnorderedMultiMap::update() {
 	}
 }
 
-GeneralIterator* UnorderedMultiMap::computeMatchIterator(Atom* templateAtom, const RuleInformation& ruleInformation) {
+GeneralIterator* UnorderedMultiMap::computeMatchIterator(Atom* templateAtom, const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification) {
 	if(lastUpdate<table->size())
 		update();
 
@@ -341,7 +342,7 @@ void UnorderedMapOfUnorderedMultimap::update() {
 	}
 }
 
-GeneralIterator* UnorderedMapOfUnorderedMultimap::computeMatchIterator(Atom* templateAtom, const RuleInformation& ruleInformation) {
+GeneralIterator* UnorderedMapOfUnorderedMultimap::computeMatchIterator(Atom* templateAtom, const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification) {
 	if(lastUpdate<table->size())
 		update();
 

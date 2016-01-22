@@ -169,14 +169,16 @@ bool BackTrackingGrounder::firstMatch(){
 
 	while(current_table<n_table){
 
+		unsigned predSearch=index_current_atom+currentRule->getSizeHead();
+
 		unsigned tableToSearch = current_id_match[index_current_atom][current_table].first;
 		AtomSearcher* atomSearcher=predicateExtension->getAtomSearcher(tableToSearch);
-		IndexingStructure *searcher=predicate_searchInsert_atomSearcher[index_current_atom+currentRule->getSizeHead()][current_table];
+		IndexingStructure *searcher=predicate_searchInsert_atomSearcher[predSearch][current_table];
 		//Initialize false for negative atom
 		bool undef=false;
 
 		Atom* atomFound=nullptr;
-		atomSearcher->firstMatch(index_current_atom,templateAtom,current_assignment,atomFound,currentRule->getRuleInformation(),searcher);
+		atomSearcher->firstMatch(index_current_atom,templateAtom,current_assignment,atomFound,currentRule->getRuleInformation(),searcher,{predicate_searchInsert_table[predSearch][current_table].second,iteration});
 		find=(atomFound!=nullptr);
 		if(atomFound!=nullptr)
 			undef=!atomFound->isFact();
@@ -215,10 +217,13 @@ bool BackTrackingGrounder::nextMatch(){
 
 	while(current_table<n_table){
 
+		unsigned predSearch=index_current_atom+currentRule->getSizeHead();
+
+
 		unsigned tableToSearch = current_id_match[index_current_atom][current_table].first;
 		bool match = current_id_match[index_current_atom][current_table].second;
 		AtomSearcher* atomSearcher=predicateExtension->getAtomSearcher(tableToSearch);
-		IndexingStructure *searcher=predicate_searchInsert_atomSearcher[index_current_atom+currentRule->getSizeHead()][current_table];
+		IndexingStructure *searcher=predicate_searchInsert_atomSearcher[predSearch][current_table];
 		Atom* atomFound=nullptr;
 		if(match != NO_MATCH){
 			trace_action_tag(grounding,2,cerr<<"Invoked Next Match on table: "<<tableToSearch<<endl;);
@@ -226,7 +231,7 @@ bool BackTrackingGrounder::nextMatch(){
 		}
 		else{
 			trace_action_tag(grounding,2,cerr<<"Invoked First Match on table: "<<tableToSearch<<endl;);
-			atomSearcher->firstMatch(index_current_atom,templateAtom,current_assignment,atomFound,currentRule->getRuleInformation(),searcher);
+			atomSearcher->firstMatch(index_current_atom,templateAtom,current_assignment,atomFound,currentRule->getRuleInformation(),searcher,{predicate_searchInsert_table[predSearch][current_table].second,iteration});
 		}
 
 		find=(atomFound!=nullptr);
@@ -296,7 +301,7 @@ bool BackTrackingGrounder::foundAssignment() {
 			headGroundAtom->setFact(head_true);
 			Atom* newAtom=headGroundAtom->clone();
 			PredicateExtension* predicateExt=predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
-			predicateExt->addAtom(newAtom,predicate_searchInsert_table[atom_counter][0]);
+			predicateExt->addAtom(newAtom,predicate_searchInsert_table[atom_counter][0].first,iterationToInsert);
 
 			ground_rule->setAtomInHead(atom_counter,newAtom);
 
@@ -534,7 +539,7 @@ void BackTrackingGrounder::findSearchTables() {
 		}
 		else{
 			for(unsigned i=0;i<predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom].size();++i){
-				current_id_match[index_current_atom].push_back({predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom][i],NO_MATCH});
+				current_id_match[index_current_atom].push_back({predicate_searchInsert_table[currentRule->getSizeHead()+index_current_atom][i].first,NO_MATCH});
 			}
 		}
 		current_id_match_iterator[index_current_atom]=0;
@@ -632,12 +637,12 @@ bool BackTrackingGrounder::isCartesianProductRule(Rule *currentRule){
  * but is more light, because we know that the atom not share variable and then we have to search in the AtomVector all the combinations
  *
  */
-void BackTrackingGrounder::groundCartesian(Rule* rule){
+bool BackTrackingGrounder::groundCartesian(Rule* rule){
 	unsigned size=rule->getSizeBody();
 	vector<tuple<vector<AtomHistoryVector*>,unsigned,unsigned>> tables(rule->getSizeBody());
 
 	int i=0;
-	for(i=0;i<rule->getSizeBody();i++){
+	for(i=0;(unsigned)i<rule->getSizeBody();i++){
 		Predicate *predicate=rule->getAtomInBody(i)->getPredicate();
 		if(predicate==nullptr){
 			ground_rule->setAtomToSimplifyInBody(i,true);
@@ -645,11 +650,13 @@ void BackTrackingGrounder::groundCartesian(Rule* rule){
 		}
 		vector<AtomHistoryVector*> tableToSearch;
 		for(auto table:predicate_searchInsert_table[i+rule->getSizeHead()]){
-			tableToSearch.push_back(predicateExtTable->getPredicateExt(predicate)->getTable(table));
+			tableToSearch.push_back(predicateExtTable->getPredicateExt(predicate)->getTable(table.first));
 		}
 
 		tables[i]=(make_tuple(tableToSearch,0,0));
 	}
+
+	bool ground_new_atom=false;
 
 	i=0;
 	direction=true;
@@ -658,7 +665,8 @@ void BackTrackingGrounder::groundCartesian(Rule* rule){
 			break;
 
 		if((unsigned)i==size){
-			foundAssignment();
+			if(foundAssignment())
+				ground_new_atom=true;
 			--i;
 			direction=false;
 			continue;
@@ -718,6 +726,8 @@ void BackTrackingGrounder::groundCartesian(Rule* rule){
 //			foundAssignment();
 //		}
 //	}
+
+	return ground_new_atom;
 }
 
 bool BackTrackingGrounder::groundAggregate() {
@@ -770,7 +780,7 @@ bool BackTrackingGrounder::groundAggregate() {
 		int counter=0;
 		for(unsigned j=0;j<numTables&&result==UNDEF;j++){
 
-			unsigned table=predicate_searchInsert_table[index_current_atom+currentRule->getSizeHead()][j];
+			unsigned table=predicate_searchInsert_table[index_current_atom+currentRule->getSizeHead()][j].first;
 			IndexingStructure *searcher=predicate_searchInsert_atomSearcher[index_current_atom+currentRule->getSizeHead()][j+(i*numTables)];
 			AtomSearcher* atomSearcher=predicateExtension->getAtomSearcher(table);
 
@@ -850,7 +860,7 @@ void BackTrackingGrounder::groundChoice(bool& find_new_true_atom,bool& ground_ne
 	Atom* searchAtom=nullptr;
 	Atom* ground_choice=new Choice;
 	Atom *choice=currentRule->getAtomInHead(0);
-	unsigned numTables=predicate_searchInsert_table[0][0]+1;
+	unsigned numTables=predicate_searchInsert_table[0][0].first+1;
 
 	for(unsigned i=0;i<choice->getChoiceElementsSize();i++){
 
@@ -875,7 +885,7 @@ void BackTrackingGrounder::groundChoice(bool& find_new_true_atom,bool& ground_ne
 
 			headGroundAtom->setFact(false);
 //			for(unsigned i=0;i<predicate_searchInsert_table[0].size();++i)
-				predicateExt->addAtom(headGroundAtom,predicate_searchInsert_table[0][0]);
+				predicateExt->addAtom(headGroundAtom,predicate_searchInsert_table[0][0].first,iterationToInsert);
 
 			ground_choice->addSingleChoiceElement(headGroundAtom);
 		}else{
@@ -894,7 +904,8 @@ void BackTrackingGrounder::groundChoice(bool& find_new_true_atom,bool& ground_ne
 
 void BackTrackingGrounder::createAtomSearchersForPredicateBody(	unsigned position, unsigned atomPos, Predicate* predicate, unsigned sizeRule) {
 	PredicateExtension* predicateExtension = predicateExtTable->getPredicateExt(predicate);
-	for(auto table:predicate_searchInsert_table[position]){
+	for(auto tablePair:predicate_searchInsert_table[position]){
+		unsigned table=tablePair.first;
 		IndexingStructure* atomSearcher;
 		predicateExtension->getAtomSearcher(table)->setSizeResultVector(sizeRule);
 		if(boundTermsInAtoms[position-currentRule->getSizeHead()][atomPos].size()==predicate->getArity()){

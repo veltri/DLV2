@@ -111,8 +111,8 @@ bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, var_assignmen
 
 }
 
-void AtomSearcher::firstMatch(unsigned id,Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation,IndexingStructure* indexingStructure) {
-	GeneralIterator* currentMatch=indexingStructure->computeMatchIterator(templateAtom,ruleInformation);
+void AtomSearcher::firstMatch(unsigned id,Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation,IndexingStructure* indexingStructure,const pair<SearchType,unsigned>& searchSpecification) {
+	GeneralIterator* currentMatch=indexingStructure->computeMatchIterator(templateAtom,ruleInformation,searchSpecification);
 	if(computeMatch(currentMatch,templateAtom,currentAssignment,atomFound,ruleInformation)){
 		delete resultVector[id];
 		resultVector[id]=currentMatch;

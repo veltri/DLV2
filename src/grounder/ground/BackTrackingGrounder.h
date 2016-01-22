@@ -76,7 +76,7 @@ protected:
 	}
 
 	virtual bool isCartesianProductRule(Rule *r);
-	virtual void groundCartesian(Rule *r);
+	virtual bool groundCartesian(Rule *r);
 
 	///Find the builtin that can be evaluated while match an atom
 	virtual void findBuiltinFastEvaluated();

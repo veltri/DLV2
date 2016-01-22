@@ -91,7 +91,7 @@ namespace grounder{
 	#define DOUBLEMAP 4
 	#define MAP_DICTIONARY_INTERSECTION 5
 	#define MAP_VECTOR 6
-	#define MAP_HISTORY_VECTOR 6
+	#define MAP_HISTORY_VECTOR 7
 
 
 	#define NATIVE_CHOICE 0

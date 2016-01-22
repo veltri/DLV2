@@ -108,7 +108,7 @@ public:
 	///Update the indexing data structure by adding the atoms in the table starting from lastUpdate
 	virtual void update(){};
 	///Given a partially ground atom compute the matching atoms according to the variables assignment in these atom
-	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation){return new VectorIterator(table->begin(),table->end());};
+	inline virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification){return new VectorIterator(table->begin(),table->end());};
 	///Univocal label for each class implementing IndexingStructure
 	virtual unsigned getType(){return DEFAULT;};
 
@@ -128,6 +128,21 @@ protected:
 	unsigned lastUpdate;
 	///The vector of indexing terms
 	vector<unsigned> indexingTerms;
+};
+
+/**
+ * This class implements IndexingStructure and is used for the recursive predicate. The compute match search in the history vector
+ * the elements based on the type of search and the current iteration
+ **/
+
+class IndexingStructureRecursive : public IndexingStructure{
+public:
+	IndexingStructureRecursive(AtomHistoryVector* table):IndexingStructure(table){};
+
+	inline virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification){
+		auto it=table->getElements(searchSpecification.first,searchSpecification.second);
+		return new VectorIteratorIndex(it.first,it.second,table);
+	};
 };
 
 /**
@@ -156,7 +171,7 @@ public:
 	Atom* find(Atom* atom);
 	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
 	virtual void update();
-	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation);
+	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification);
 	virtual unsigned getType(){return MAP;}
 private:
 	unordered_map<index_object,AtomTable> indexingStructure;
@@ -173,7 +188,7 @@ public:
 	Atom* find(Atom* atom);
 	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
 	virtual void update();
-	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation);
+	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification);
 	virtual unsigned getType(){return MAP_VECTOR;}
 private:
 	unordered_map<index_object,vector<Atom*>> indexingStructure;
@@ -190,7 +205,7 @@ public:
 	Atom* find(Atom* atom);
 	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
 	virtual void update();
-	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation);
+	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification);
 	virtual unsigned getType(){return MAP_HISTORY_VECTOR;}
 private:
 	unordered_map<index_object,AtomHistoryVector> indexingStructure;
@@ -207,7 +222,7 @@ public:
 	Atom* find(Atom* atom);
 	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
 	virtual void update();
-	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation);
+	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification);
 	virtual unsigned getType(){return MULTIMAP;}
 private:
 	unordered_multimap<index_object,Atom*> indexingStructure;
@@ -224,7 +239,7 @@ public:
 	Atom* find(Atom* atom);
 	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
 	virtual void update();
-	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation);
+	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification);
 	virtual unsigned getType(){return DOUBLEMAP;};
 private:
 	unordered_map<index_object,unordered_multimap<index_object,Atom*>> indexingStructure;

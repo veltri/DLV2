@@ -38,8 +38,12 @@ IndexingStructure* PredicateExtension::createAtomSearcher(unsigned table, unsign
 	case (MAP_VECTOR):
 		indexingStructure = new UnorderedMapOfVector(tables[table],*indexingTerms);
 		break;
+	case (MAP_HISTORY_VECTOR):
+		indexingStructure = new UnorderedMapOfHistoryVector(tables[table],*indexingTerms);
+		break;
+
 	default:
-		indexingStructure = new IndexingStructure(tables[table]);
+		indexingStructure = new IndexingStructureRecursive(tables[table]);
 		break;
 	}
 	return indexingStructure;
