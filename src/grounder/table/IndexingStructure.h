@@ -140,6 +140,8 @@ public:
 	IndexingStructureRecursive(AtomHistoryVector* table):IndexingStructure(table){};
 
 	inline virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification){
+		if(searchSpecification.first==ALL)
+			return new VectorIteratorIndex(0,table->size(),table);
 		auto it=table->getElements(searchSpecification.first,searchSpecification.second);
 		return new VectorIteratorIndex(it.first,it.second,table);
 	};
