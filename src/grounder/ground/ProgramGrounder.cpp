@@ -171,7 +171,7 @@ void ProgramGrounder::ground() {
 
 				findRecursivePredicatesInComponentRules(componentPredicateInHead[component], recursivePredicatesPositions[i], rule, originalOrderBody[i]);
 				orderPositiveAtomsBody(originalOrderBody[i], rule);
-				if(groundRule(rule))
+				if(groundRule(rule,&componentPredicateInHead[component]))
 					found_something=true;
 
 				trace_action_tag(grounding,1,cerr<<"Found New Knowledge: "<<found_something;);
@@ -203,7 +203,7 @@ void ProgramGrounder::ground() {
 						trace_action_tag(grounding,2,printTableInRule(rule,predicate_searchInsert_table););
 
 						orderPositiveAtomsBody(originalOrderBody[i],rule);
-						if (groundRule(rule))
+						if (groundRule(rule,&componentPredicateInHead[component]))
 							found_something = true;
 
 						trace_action_tag(grounding,1,cerr<<"Found New Knowledge: "<<found_something;);
@@ -378,7 +378,7 @@ void ProgramGrounder::swapInDelta(Rule *rule,set_predicate &predicateEvaluated){
 	}
 }
 
-bool ProgramGrounder::groundRule(Rule* rule) {
+bool ProgramGrounder::groundRule(Rule* rule, unordered_set<index_object>* componentPredicateInHead) {
 
 	if (Options::globalOptions()->isPrintRewrittenProgram())
 		{cerr<<"RULE: ";rule->print(cerr);}
@@ -390,7 +390,7 @@ bool ProgramGrounder::groundRule(Rule* rule) {
 		start=Timer::getInstance()->getClock();
 	}
 
-	inizialize(rule);
+	inizialize(rule,componentPredicateInHead);
 
 	if(rule->getSizeBody()==0){
 		foundAssignment();
@@ -501,7 +501,7 @@ void ProgramGrounder::createAtomSearchersForPredicateHead(unsigned position, Pre
 	}
 }
 
-void ProgramGrounder::setDefaultAtomSearchers(Rule* rule) {
+void ProgramGrounder::setDefaultAtomSearchers(Rule* rule, unordered_set<index_object>* componentPredicateInHead) {
 	unsigned sizeRule=rule->getSizeBody();
 	predicate_searchInsert_atomSearcher.clear();
 	unsigned atomIndex=rule->getSizeHead();
@@ -509,13 +509,13 @@ void ProgramGrounder::setDefaultAtomSearchers(Rule* rule) {
 	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();++atom,++atomIndex){
 		if((*atom)->isClassicalLiteral()){
 			Predicate *predicate=(*atom)->getPredicate();
-			createAtomSearchersForPredicateBody(atomIndex, 0, predicate, sizeRule);
+			createAtomSearchersForPredicateBody(atomIndex, 0, predicate, sizeRule,componentPredicateInHead);
 		}
 		else if((*atom)->isAggregateAtom()){
 			for(unsigned i=0;i<(*atom)->getAggregateElementsSize();++i){
 				Predicate *predicate=(*atom)->getAggregateElement(i)->getNafLiteral(0)->getPredicate();
 				if(predicate!=nullptr)
-					createAtomSearchersForPredicateBody(atomIndex, i, predicate, sizeRule);
+					createAtomSearchersForPredicateBody(atomIndex, i, predicate, sizeRule,componentPredicateInHead);
 			}
 		}
 	}

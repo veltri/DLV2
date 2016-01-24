@@ -12,10 +12,11 @@
 
 #include "../../util/Options.h"
 #include "../../util/Assert.h"
-#include "AtomSearcher.h"
+#include "IndexingStructure.h"
 #include "IdGenerator.h"
 #include "../output/OutputBuilder.h"
 #include "../ground/StatementDependency.h"
+#include "../atom/ClassicalLiteral.h"
 
 using namespace std;
 
@@ -172,9 +173,9 @@ public:
 	unsigned getPredicateExtentionSize(unsigned table,SearchType type) const {if(table<tables.size()) return tables[table]->size_iteration(type); return 0;}
 
 
-	IndexingStructure* addAtomSearcher(unsigned table, vector<unsigned>* indexingTerms);
-	IndexingStructure* addAtomSearcher(unsigned table, unsigned type, vector<unsigned>* indexingTerms);
-	IndexingStructure* createAtomSearcher(unsigned table, unsigned indexType,  vector<unsigned>* indexingTerms);
+	IndexingStructure* addAtomSearcher(unsigned table, vector<unsigned>* indexingTerms,bool recursive=false);
+	IndexingStructure* addAtomSearcher(unsigned table, unsigned type, vector<unsigned>* indexingTerms,bool recursive=false);
+	IndexingStructure* createAtomSearcher(unsigned table, unsigned indexType,  vector<unsigned>* indexingTerms,bool recursive=false);
 
 private:
 	///The predicate

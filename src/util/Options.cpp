@@ -381,7 +381,6 @@ int Options::getPredicateIndexTerm(const string& predicate){
 int Options::getPredicateIndexType(const string& predicate){
 	if(predicatesIndexTypeMap.count(predicate)){
 		unsigned type=predicatesIndexTypeMap[predicate];
-		assert_msg((type>=DEFAULT && type<=HASHSET),"Index type not supported");
 		return type;
 	}
 	return -1;

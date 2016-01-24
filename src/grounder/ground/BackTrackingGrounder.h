@@ -38,7 +38,7 @@ protected:
 	virtual bool match();
 	virtual bool next();
 	virtual bool back();
-	virtual void inizialize(Rule* rule);
+	virtual void inizialize(Rule* rule, unordered_set<index_object>* componentPredicateInHead);
 	virtual bool foundAssignment();
 
 	/// Call the first match with the current atom
@@ -128,7 +128,9 @@ protected:
 	///This vector contains a kind of template atoms for head atoms
 	vector<Atom*> groundTemplateAtomHead;
 
-	virtual void createAtomSearchersForPredicateBody(unsigned position,  unsigned atomPos, Predicate* predicate, unsigned sizeRule);
+	vector<vector<unsigned>> indexingArguments;
+
+	virtual void createAtomSearchersForPredicateBody(unsigned position, unsigned atomPos, Predicate* predicate, unsigned sizeRule, unordered_set<index_object>* componentPredicateInHead);
 
 #ifdef TRACE_ON
 	/// Print the current assignment

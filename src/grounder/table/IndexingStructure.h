@@ -12,6 +12,7 @@
 #include "../atom/Atom.h"
 #include "../../util/Constants.h"
 #include "../statement/Rule.h"
+#include "AdvancedArray.h"
 using namespace std;
 
 namespace DLV2 {
@@ -91,6 +92,9 @@ private:
 	unsigned currentIterator;
 };
 
+
+class AtomSearcher;
+
 /**
  * This class represents a generic indexing data structure of atoms (@see Atom.h)
  **/
@@ -108,7 +112,7 @@ public:
 	///Update the indexing data structure by adding the atoms in the table starting from lastUpdate
 	virtual void update(){};
 	///Given a partially ground atom compute the matching atoms according to the variables assignment in these atom
-	inline virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification){return new VectorIterator(table->begin(),table->end());};
+	inline virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg=0){return new VectorIterator(table->begin(),table->end());};
 	///Univocal label for each class implementing IndexingStructure
 	virtual unsigned getType(){return DEFAULT;};
 
@@ -139,7 +143,7 @@ class IndexingStructureRecursive : public IndexingStructure{
 public:
 	IndexingStructureRecursive(AtomHistoryVector* table):IndexingStructure(table){};
 
-	inline virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification){
+	inline virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg=0){
 		if(searchSpecification.first==ALL)
 			return new VectorIteratorIndex(0,table->size(),table);
 		auto it=table->getElements(searchSpecification.first,searchSpecification.second);
@@ -173,7 +177,7 @@ public:
 	Atom* find(Atom* atom);
 	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
 	virtual void update();
-	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification);
+	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg=0);
 	virtual unsigned getType(){return MAP;}
 private:
 	unordered_map<index_object,AtomTable> indexingStructure;
@@ -190,7 +194,7 @@ public:
 	Atom* find(Atom* atom);
 	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
 	virtual void update();
-	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification);
+	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg=0);
 	virtual unsigned getType(){return MAP_VECTOR;}
 private:
 	unordered_map<index_object,vector<Atom*>> indexingStructure;
@@ -207,7 +211,7 @@ public:
 	Atom* find(Atom* atom);
 	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
 	virtual void update();
-	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification);
+	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg=0);
 	virtual unsigned getType(){return MAP_HISTORY_VECTOR;}
 private:
 	unordered_map<index_object,AtomHistoryVector> indexingStructure;
@@ -224,7 +228,7 @@ public:
 	Atom* find(Atom* atom);
 	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
 	virtual void update();
-	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification);
+	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg=0);
 	virtual unsigned getType(){return MULTIMAP;}
 private:
 	unordered_multimap<index_object,Atom*> indexingStructure;
@@ -241,10 +245,103 @@ public:
 	Atom* find(Atom* atom);
 	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
 	virtual void update();
-	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification);
+	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg=0);
 	virtual unsigned getType(){return DOUBLEMAP;};
 private:
 	unordered_map<index_object,unordered_multimap<index_object,Atom*>> indexingStructure;
+};
+
+/**
+ **/
+class FullIndexingStructure : public IndexingStructure {
+public:
+    FullIndexingStructure(AtomHistoryVector* table, Predicate* predicate, AtomSearcher* atomSearcher,bool recursive);
+    void add(Atom* atom);
+    Atom* find(Atom* atom);
+    void clear(){IndexingStructure::clear(); for(auto indexingStructure: indexingStructures) indexingStructure->clear();};
+    virtual void update();
+    virtual GeneralIterator* computeMatchIterator(Atom* templateAtom, const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg=0);
+    virtual unsigned getType(){return SINGLE_ARG_FULL;}
+    IndexingStructure* getIndexingStructure(unsigned i) {return indexingStructures[i];}
+    virtual ~FullIndexingStructure(){for(auto& indexingStructure: indexingStructures){ delete indexingStructure; indexingStructure=0;}}
+private:
+    Predicate* predicate;
+    vector<IndexingStructure*> indexingStructures;
+};
+
+
+
+
+
+
+
+/**
+ * This class models a general searching strategy for a predicate's extension.
+ */
+class AtomSearcher {
+public:
+	AtomSearcher(AtomHistoryVector* table) : table(table) {resultVector.resize(ATOMS_IN_RULE,nullptr);};
+	/// Given a partially ground atom, this method is meant to find all the matching atoms satisfying the variables assignment in the given atom.
+	virtual void firstMatch(unsigned id,Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation, IndexingStructure* indexingStructure,unsigned arg,const pair<SearchType,unsigned>& searchSpecification={ALL,0});
+	/// Invoked after a first match iterate trough the matching atoms found one by one.
+	virtual void nextMatch(unsigned id, Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation);
+	/// Search a given ground atom by means of the given indexing structure
+	virtual Atom* findGroundAtom(Atom *atom, IndexingStructure* indexingStructure);
+	/// This method checks if the two given atoms match according to the current assignment.
+	/// If they match the current assignment is update accordingly.
+	bool checkMatch(Atom *genericAtom, Atom *templateAtom, var_assignment& currentAssignment,const RuleInformation& ruleInformation);
+	/// Match a function with given id of term, compare the constant term and put in binds
+	/// a value of the variable term present in termToMatch
+	/// Return true if constant term are equal, else false
+	bool matchTerm(Term *genericTerm, Term *termToMatch, var_assignment& varAssignment,vector<index_object>& addedVariables,const RuleInformation& ruleInformation);
+	/// This method given an iterator increases it in order to find matching atoms with the given atom
+	/// according to the current assignment.
+	bool computeMatch(GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation);
+
+	/// Erase the indexing structures
+	inline virtual void clear(){indexingStructures.clear();}
+
+	///Set the size of the result vector
+	inline void setSizeResultVector(unsigned int size){	if(size>resultVector.size()) resultVector.resize(size,nullptr);}
+
+	///Function for evaluation of builtin related with the current matching atom
+	static bool evaluateFastBuiltin(const RuleInformation& ruleInformation, index_object index,	var_assignment& varAssignment, Term* genericTerm);
+
+	///Add a specific indexing structure for the table
+	void addIndexingStructure(IndexingStructure* indexingStructure){indexingStructures.push_back(indexingStructure);};
+	///If present, returns an indexing structure for the table of the specified type and with the specified indexing terms
+	IndexingStructure* getIndexingStructure(unsigned type, vector<unsigned>* indexingTerms);
+	///If present, returns an indexing structure for the table of any type but with the specified indexing terms
+	IndexingStructure* getIndexingStructure(vector<unsigned>* indexingTerms);
+
+	///Return a default hash indexing structure
+	IndexingStructure* getDefaultIndexingStructure(){
+		if(indexingStructures.size()==0)
+			indexingStructures.push_back(new UnorderedSet(table));
+
+		for(auto indexingStructure: indexingStructures)
+			if(indexingStructure->getType()==HASHSET || indexingStructure->getType()==MAP)
+				return indexingStructure;
+
+		return indexingStructures.front();
+	}
+
+	///Printer method. Useful mainly for debug purpose.
+	virtual void print(ostream& stream=cout){for(auto atom:*table)atom->print(stream);}
+
+	virtual ~AtomSearcher();
+
+protected:
+	///The basic data-structure that collects the atoms
+	AtomHistoryVector* table;
+
+	/// This maps stores the calls to the firstMatch method.
+	/// Indeed, for each call it stores a pair with the counter and the iterator to the next matching atoms.
+	vector<GeneralIterator*> resultVector;
+
+	//This vector stores the created indexing structures for the table
+	vector<IndexingStructure*> indexingStructures;
+
 };
 
 } /* namespace grounder */

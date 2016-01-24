@@ -92,6 +92,7 @@ namespace grounder{
 	#define MAP_DICTIONARY_INTERSECTION 5
 	#define MAP_VECTOR 6
 	#define MAP_HISTORY_VECTOR 7
+	#define SINGLE_ARG_FULL 8
 
 
 	#define NATIVE_CHOICE 0

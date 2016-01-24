@@ -68,10 +68,10 @@ bool BackJumpingGrounder::nextMatch() {
 	return BackTrackingGrounder::nextMatch();
 }
 
-void BackJumpingGrounder::inizialize(Rule* rule) {
+void BackJumpingGrounder::inizialize(Rule* rule, unordered_set<index_object>* componentPredicateInHead) {
 	trace_msg(backjumping,1,"---> INIZIALIZE");
 
-	BackTrackingGrounder::inizialize(rule);
+	BackTrackingGrounder::inizialize(rule,componentPredicateInHead);
 
 	closestSuccessfulBinder_index=-1;
 	current_status=SUCCESSFULL;

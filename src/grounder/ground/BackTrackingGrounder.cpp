@@ -178,7 +178,7 @@ bool BackTrackingGrounder::firstMatch(){
 		bool undef=false;
 
 		Atom* atomFound=nullptr;
-		atomSearcher->firstMatch(index_current_atom,templateAtom,current_assignment,atomFound,currentRule->getRuleInformation(),searcher,{predicate_searchInsert_table[predSearch][current_table].second,iteration});
+		atomSearcher->firstMatch(index_current_atom,templateAtom,current_assignment,atomFound,currentRule->getRuleInformation(),searcher,indexingArguments[index_current_atom][0],{predicate_searchInsert_table[predSearch][current_table].second,iteration});
 		find=(atomFound!=nullptr);
 		if(atomFound!=nullptr)
 			undef=!atomFound->isFact();
@@ -231,7 +231,7 @@ bool BackTrackingGrounder::nextMatch(){
 		}
 		else{
 			trace_action_tag(grounding,2,cerr<<"Invoked First Match on table: "<<tableToSearch<<endl;);
-			atomSearcher->firstMatch(index_current_atom,templateAtom,current_assignment,atomFound,currentRule->getRuleInformation(),searcher,{predicate_searchInsert_table[predSearch][current_table].second,iteration});
+			atomSearcher->firstMatch(index_current_atom,templateAtom,current_assignment,atomFound,currentRule->getRuleInformation(),searcher,indexingArguments[index_current_atom][0],{predicate_searchInsert_table[predSearch][current_table].second,iteration});
 		}
 
 		find=(atomFound!=nullptr);
@@ -388,7 +388,7 @@ bool BackTrackingGrounder::back() {
 	return true;
 }
 
-void BackTrackingGrounder::inizialize(Rule* rule) {
+void BackTrackingGrounder::inizialize(Rule* rule, unordered_set<index_object>* componentPredicateInHead) {
 	direction=1;
 	currentRule=rule;
 	index_current_atom = 0;
@@ -397,6 +397,8 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 	templateSetAtom.resize(rule->getSizeBody());
 	for(auto& atom:templateSetAtom) atom=nullptr;
 	is_bound_atom.clear();
+	indexingArguments.clear();
+	indexingArguments.resize(rule->getSizeBody());
 	findBindVariablesRule();
 	findSearchTables();
 	if(rule->getSizeBody()>0)
@@ -424,8 +426,7 @@ void BackTrackingGrounder::inizialize(Rule* rule) {
 			groundTemplateAtomHead[i]=(*headIt)->clone();
 		}
 	}
-
-	setDefaultAtomSearchers(currentRule);
+	setDefaultAtomSearchers(rule,componentPredicateInHead);
 }
 
 void BackTrackingGrounder::findBoundTerms(unsigned int index_current_atom, unsigned position, Atom* current_atom) {
@@ -442,7 +443,7 @@ void BackTrackingGrounder::findBoundTerms(unsigned int index_current_atom, unsig
 		bool bound = true;
 		for(auto v:vars){
 			unsigned localIdx=v->getLocalVariableIndex();
-			if(variablesBinder[localIdx]==-1 || variablesBinder[localIdx]==index_current_atom){
+			if(variablesBinder[localIdx]==-1 || variablesBinder[localIdx]>=index_current_atom){
 				bound=false;
 				break;
 			}
@@ -487,11 +488,13 @@ void BackTrackingGrounder::findBindVariablesRule() {
 		}
 
 		if(current_atom->isClassicalLiteral()){
+			indexingArguments[index_current_atom].resize(1);
 			boundTermsInAtoms[index_current_atom].push_back(vector<unsigned>());
 			boundTermsInAtoms[index_current_atom][0].reserve(current_atom->getTermsSize());
 			findBoundTerms(index_current_atom, 0, current_atom);
 		}
 		else if(current_atom->isAggregateAtom()){
+			indexingArguments[index_current_atom].resize(current_atom->getAggregateElementsSize());
 			for(unsigned ag=0;ag<current_atom->getAggregateElementsSize();++ag){
 				boundTermsInAtoms[index_current_atom].push_back(vector<unsigned>());
 				boundTermsInAtoms[index_current_atom][ag].reserve(current_atom->getTermsSize());
@@ -790,7 +793,7 @@ bool BackTrackingGrounder::groundAggregate() {
 
 			//Each aggregate element have one atom with no relation with the other atoms in the aggregate elements, then we can
 			//overwrite the general iterator in the Atom Searcher with index_current_atom
-			atomSearcher->firstMatch(index_current_atom,atom,current_assignment,atomFound,currentRule->getRuleInformation(),searcher);
+			atomSearcher->firstMatch(index_current_atom,atom,current_assignment,atomFound,currentRule->getRuleInformation(),searcher,indexingArguments[index_current_atom][i]);
 			find=(atomFound!=nullptr);
 			while(find){
 				counter++;
@@ -902,7 +905,7 @@ void BackTrackingGrounder::groundChoice(bool& find_new_true_atom,bool& ground_ne
 	ground_rule->setAtomInHead(0,ground_choice);
 }
 
-void BackTrackingGrounder::createAtomSearchersForPredicateBody(	unsigned position, unsigned atomPos, Predicate* predicate, unsigned sizeRule) {
+void BackTrackingGrounder::createAtomSearchersForPredicateBody(unsigned position, unsigned atomPos, Predicate* predicate, unsigned sizeRule, unordered_set<index_object>* componentPredicateInHead){
 	PredicateExtension* predicateExtension = predicateExtTable->getPredicateExt(predicate);
 	for(auto tablePair:predicate_searchInsert_table[position]){
 		unsigned table=tablePair.first;
@@ -924,8 +927,6 @@ void BackTrackingGrounder::createAtomSearchersForPredicateBody(	unsigned positio
 			int indexingTermSetByUser=Options::globalOptions()->getPredicateIndexTerm(predicate->getName());
 			unsigned bestArg=0;
 			unsigned bestSelectivityArg=0;
-//			int bestArgCreated=-1;
-//			unsigned bestSelectivityArgCreated=0;
 			PredicateInformation* predicateInfo=predicateExtTable->getPredicateExt(predicate)->getPredicateInformation();
 			for(auto boundArg:boundTermsInAtoms[position-currentRule->getSizeHead()][atomPos]){
 				if(boundArg==indexingTermSetByUser){
@@ -937,18 +938,18 @@ void BackTrackingGrounder::createAtomSearchersForPredicateBody(	unsigned positio
 					bestArg=boundArg;
 				}
 				vector<unsigned> terms(1,boundArg);
-//				if(predicateInfo->getSelectivity(boundArg)>bestSelectivityArgCreated && predicateExtension->getIndexingStructure(table,&terms)!=nullptr){
-//					bestSelectivityArgCreated=predicateInfo->getSelectivity(boundArg);
-//					bestArgCreated=boundArg;
-//				}
 			}
-//			if(bestArgCreated!=-1)
-//				bestArg=bestArgCreated;
 			vector<unsigned> indexingTerm(1,bestArg);
-			atomSearcher=predicateExtension->addAtomSearcher(table, &indexingTerm);
+//			For FULL INDEXING ON EACH SINGLE ARGUMENT:
+//			atomSearcher=predicateExtension->addAtomSearcher(table, SINGLE_ARG_FULL, &indexingTerm, (componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex())));
+			if (componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex()))
+				atomSearcher=predicateExtension->addAtomSearcher(table, MAP_HISTORY_VECTOR, &indexingTerm, true);
+			else
+				atomSearcher=predicateExtension->addAtomSearcher(table, &indexingTerm);
+			indexingArguments[position-currentRule->getSizeHead()][atomPos]=bestArg;
 		}
 		else{
-			atomSearcher=predicateExtension->addAtomSearcher(table,DEFAULT,nullptr);
+			atomSearcher=predicateExtension->addAtomSearcher(table,DEFAULT,nullptr,false);
 		}
 		predicate_searchInsert_atomSearcher[position].push_back(atomSearcher);
 	}

@@ -145,7 +145,7 @@ public:
 	/// Calculate the value for arithmetic term and return the ID of the result term
 	virtual Term* calculate(){return this;};
 	/// If the term is variable insert the variables in the set
-	virtual void getVariable(set_term& variables){void(0);};
+	virtual void getVariable(set_term& variables){};
 	/// If the term is ground insert the term in the setr
 	virtual void getGroundTerm(set_term& variables){void(0);};
 	/// Substitute the term with the given terms and return the term of substitute term

@@ -27,7 +27,7 @@ protected:
 
 	virtual bool match();
 	virtual bool back();
-	virtual void inizialize(Rule* rule);
+	virtual void inizialize(Rule* rule, unordered_set<index_object>* componentPredicateInHead);
 	virtual bool foundAssignment();
 
 	/// Call the first match with the current atom
