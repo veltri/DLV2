@@ -93,6 +93,7 @@ namespace grounder{
 	#define MAP_VECTOR 6
 	#define MAP_HISTORY_VECTOR 7
 	#define SINGLE_ARG_FULL 8
+	#define DEFAULT_RECURSIVE 9
 
 
 	#define NATIVE_CHOICE 0

@@ -116,6 +116,7 @@ void ProgramGrounder::ground() {
 	trace_msg(grounding,1,"Grounding Starts Now.");
 
 
+
 	// Ground each module according to the ordering:
 	// For each component, each rule is either recursive or exit,
 	// Exit rules are grounded just once, while recursive rules are grounded until no more knowledge is derived

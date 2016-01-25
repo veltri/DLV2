@@ -44,8 +44,11 @@ IndexingStructure* PredicateExtension::createAtomSearcher(unsigned table, unsign
 	case (SINGLE_ARG_FULL):
 		indexingStructure = new FullIndexingStructure(tables[table],predicate,atomSearchers[table],recursive);
 		break;
-	default:
+	case (DEFAULT_RECURSIVE):
 		indexingStructure = new IndexingStructureRecursive(tables[table]);
+		break;
+	default:
+			indexingStructure = new IndexingStructure(tables[table]);
 		break;
 	}
 	return indexingStructure;

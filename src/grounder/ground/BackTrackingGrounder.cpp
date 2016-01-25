@@ -949,7 +949,10 @@ void BackTrackingGrounder::createAtomSearchersForPredicateBody(unsigned position
 			indexingArguments[position-currentRule->getSizeHead()][atomPos]=bestArg;
 		}
 		else{
-			atomSearcher=predicateExtension->addAtomSearcher(table,DEFAULT,nullptr,false);
+			if (componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex()))
+				atomSearcher=predicateExtension->addAtomSearcher(table,DEFAULT_RECURSIVE,nullptr,true);
+			else
+				atomSearcher=predicateExtension->addAtomSearcher(table,DEFAULT,nullptr,false);
 		}
 		predicate_searchInsert_atomSearcher[position].push_back(atomSearcher);
 	}

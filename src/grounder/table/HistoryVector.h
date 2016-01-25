@@ -45,9 +45,13 @@ public:
 		if(iteration>current_iteration ){
 			if(type==OLD)
 				type=ALL;
-			else if(type==NEW){
+			else if(type==NEW)
 				return {0,0};
-			}
+
+		}
+		if(iteration<current_iteration && type==ALL){
+			type=OLD;
+			iteration=current_iteration;
 		}
 
 
