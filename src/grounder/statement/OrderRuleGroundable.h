@@ -61,6 +61,7 @@ protected:
 	set_term variablesInTheBody;
 	vector<set_term> atomsVariables;
 	const Priority priorities;
+	list<unsigned> atomsToInsert;
 	/// A map in which for each positive classical literal are stored variables that must be bound
 	/// (for example variables appearing in arith terms)
 	unordered_map<unsigned,set_term> mapPositiveAtomsBoundVariables;
@@ -103,6 +104,20 @@ protected:
 
 };
 
+class IndexingArgumentsOrderRuleGroundable  : public AllOrderRuleGroundable {
+public:
+	IndexingArgumentsOrderRuleGroundable(Rule* rule):AllOrderRuleGroundable(rule){}
+	IndexingArgumentsOrderRuleGroundable(Rule* rule,Priority p):AllOrderRuleGroundable(rule,p){}
+	virtual ~IndexingArgumentsOrderRuleGroundable(){}
+	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
+private:
+	void computeBoundArgumentsSelectivities();
+	vector<unordered_map<unsigned,double>> boundArgumentsSelectivities;
+	vector<vector<set_term>> variablesInTerms;
+};
+
+
+
 
 class CombinedCriterion1 : public CombinedCriterion {
 public:
@@ -144,7 +159,7 @@ public:
 				break;
 
 			default:
-				return	new CombinedCriterion(rule);
+				return new IndexingArgumentsOrderRuleGroundable(rule);
 				break;
 		}
 	}

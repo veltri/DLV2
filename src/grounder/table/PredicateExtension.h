@@ -170,6 +170,7 @@ public:
 	PredicateInformation* getPredicateInformation() const {return predicateInformation;}
 
 	unsigned getPredicateExtentionSize(unsigned table) const {if(table<tables.size()) return tables[table]->size(); return 0;}
+	unsigned getPredicateExtentionSize() const { unsigned size=0; for(auto table:tables) size+=table->size(); return size;}
 	unsigned getPredicateExtentionSize(unsigned table,SearchType type) const {if(table<tables.size()) return tables[table]->size_iteration(type); return 0;}
 
 

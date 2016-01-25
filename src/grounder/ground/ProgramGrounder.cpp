@@ -385,8 +385,8 @@ void ProgramGrounder::swapInDelta(Rule *rule,set_predicate &predicateEvaluated){
 
 bool ProgramGrounder::groundRule(Rule* rule, unordered_set<index_object>* componentPredicateInHead) {
 
-	if (Options::globalOptions()->isPrintRewrittenProgram())
-		{cerr<<"RULE: ";rule->print(cerr);}
+//	if (Options::globalOptions()->isPrintRewrittenProgram())
+		{cout<<"RULE: ";rule->print(cout);}
 	bool printTime=Options::globalOptions()->getRuleTime();
 	clock_t start=0;
 
