@@ -155,6 +155,9 @@ void ProgramGrounder::ground() {
 			vector<vector<unsigned>> originalOrderBody;
 			originalOrderBody.resize(n_rules);
 
+			++iterationToInsert;
+
+
 			// First iteration
 			for (unsigned int i = 0; i < n_rules; ++i) {
 				Rule *rule=recursiveRules[component][i];
@@ -180,6 +183,7 @@ void ProgramGrounder::ground() {
 
 			}
 			++iterationToInsert;
+			++iteration;
 
 			//Further Iterations
 			while (found_something) {
