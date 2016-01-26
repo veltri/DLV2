@@ -154,12 +154,11 @@ public:
 			case NO_POSITIVE_ORDERING:
 				return	nullptr;
 				break;
-			case COMBINED_POSITIVE_ORDERING:
-				return	new CombinedCriterion(rule);
-				break;
-
-			default:
+			case INDEXING_ORDERING:
 				return new IndexingArgumentsOrderRuleGroundable(rule);
+				break;
+			default:
+				return	new CombinedCriterion(rule);
 				break;
 		}
 	}

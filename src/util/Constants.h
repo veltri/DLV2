@@ -111,6 +111,7 @@ namespace grounder{
 
 	#define NO_POSITIVE_ORDERING 0
 	#define COMBINED_POSITIVE_ORDERING 1
+	#define INDEXING_ORDERING 2
 
 	typedef unsigned index_object;
 

@@ -93,8 +93,6 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchTy
 		cerr<<endl;
 	);
 
-	rule->print();
-
 	return orderedPositions;
 
 }
