@@ -151,12 +151,12 @@ class OrderRuleGroundableFactory{
 public:
 	static OrderRuleGroundable* getInstance(Rule *rule){
 		switch (Options::globalOptions()->getPositiveOrderingProcedure()) {
-			case NO_POSITIVE_ORDERING:
-				return	nullptr;
-				break;
-			case COMBINED_POSITIVE_ORDERING:
-				return	new CombinedCriterion(rule);
-				break;
+//			case NO_POSITIVE_ORDERING:
+//				return	nullptr;
+//				break;
+//			case COMBINED_POSITIVE_ORDERING:
+//				return	new CombinedCriterion(rule);
+//				break;
 
 			default:
 				return new IndexingArgumentsOrderRuleGroundable(rule);

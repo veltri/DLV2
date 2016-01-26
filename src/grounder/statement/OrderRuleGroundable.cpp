@@ -201,10 +201,9 @@ list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(list<unsigned>& a
 		);
 
 		bool bound=isBound(atom,*it);
-		if(atom->isClassicalLiteral() && !atom->isNegative()){
-			/// If in a positive classical literal all variables that must be bound are bound then it can be safely added to the new body
-			if((!bound && !mapPositiveAtomsBoundVariables[*it].size()) || (bound && mapPositiveAtomsBoundVariables[*it].size()>0))
-				weight=assignWeightPositiveClassicalLit(atom,*it);
+		if(atom->isClassicalLiteral() && !atom->isNegative() && ((!bound && mapPositiveAtomsBoundVariables[*it].empty()) || (bound && mapPositiveAtomsBoundVariables[*it].size()>0))){
+			// If in a positive classical literal all variables that must be bound are bound then it can be safely added to the new body
+			weight=assignWeightPositiveClassicalLit(atom,*it);
 		}
 		else if(bound){
 			if(atom->isClassicalLiteral()){
@@ -254,7 +253,7 @@ list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(list<unsigned>& a
 	//TODO Add all bound atoms all together and avoid the weigh update if no bind atom has been added
 	update(rule->getAtomInBody(*bestAtomIt));
 	trace_action_tag(grounding,2,
-		cerr<<"Chosen atom: ";rule->getAtomInBody(*bestAtomIt)->print(cerr);cerr<<endl;
+		cerr<<"Chosen atom: ";rule->getAtomInBody(*bestAtomIt)->print(cerr);cerr<<" "<<bestWeight<<endl;
 	);
 
 	return bestAtomIt;
@@ -427,8 +426,9 @@ double IndexingArgumentsOrderRuleGroundable::assignWeightPositiveClassicalLit(At
 	if(boundArgumentsSelectivities.empty())
 		computeBoundArgumentsSelectivities();
 
-	unsigned min=0;
+	double min=1;
 	for(unsigned i=0;i<atom->getTermsSize();++i){
+		if(variablesInTerms[originalPosition][i].empty()) continue;
 		bool boundTerm=true;
 		set_term variablesToErase;
 		for(auto var:variablesInTerms[originalPosition][i]){
@@ -436,7 +436,6 @@ double IndexingArgumentsOrderRuleGroundable::assignWeightPositiveClassicalLit(At
 			if(variablesInTheBody.count(var)){
 				bound=true;
 				variablesToErase.insert(var);
-				break;
 			}
 			if(!bound){boundTerm=false;}
 		}
@@ -446,32 +445,31 @@ double IndexingArgumentsOrderRuleGroundable::assignWeightPositiveClassicalLit(At
 			variablesInTerms[originalPosition][i].erase(v);
 	}
 
-	unsigned minOtherPredicates=0;
+	double minOtherPredicates=1;
 	for(auto j:atomsToInsert){
 		Atom* atom=rule->getAtomInBody(j);
-		if(!(atom->isClassicalLiteral() && !atom->isNegative())) continue;
+		if( j==originalPosition || atom->getPredicate()->getArity()<=1 || !(atom->isClassicalLiteral() && !atom->isNegative())) continue;
 		for(unsigned i=0;i<atom->getTermsSize();++i){
-			set_term variables;
+			if(variablesInTerms[j][i].empty()) continue;
 			bool boundTerm=true;
-			for(auto var:variablesInTerms[originalPosition][i]){
-				var->print();
+			for(auto var:variablesInTerms[j][i]){
 				bool bound=false;
 				if(atomsVariables[originalPosition].count(var)){
 					bound=true;
-					break;
 				}
 				if(!bound){
 					boundTerm=false;
 				}
 			}
-			if(boundTerm && boundArgumentsSelectivities[originalPosition][i]<minOtherPredicates){
-				minOtherPredicates=boundArgumentsSelectivities[originalPosition][i];
+			if(boundTerm && boundArgumentsSelectivities[j][i]<minOtherPredicates){
+				minOtherPredicates=boundArgumentsSelectivities[j][i];
 			}
 		}
 	}
 
-	cout<<"MIN 1: "<<min<<endl;
-	cout<<"MIN 2: "<<minOtherPredicates<<endl;
+//	cout<<"MIN 1: "<<min<<endl;
+//	cout<<"MIN 2: "<<minOtherPredicates<<endl;
+//	cout<<(min*min*minOtherPredicates)<<endl;
 
 	return (min*min*minOtherPredicates);
 }
@@ -500,8 +498,9 @@ void IndexingArgumentsOrderRuleGroundable::computeBoundArgumentsSelectivities() 
 				}
 				if(!bound){
 					boundTerm=false;
-					variablesInTerms[atom_pos][i].insert(var);
 				}
+				else
+					variablesInTerms[atom_pos][i].insert(var);
 			}
 			if(boundTerm){
 				PredicateExtension* predicateExtension=PredicateExtTable::getInstance()->getPredicateExt(atom->getPredicate());
@@ -511,24 +510,23 @@ void IndexingArgumentsOrderRuleGroundable::computeBoundArgumentsSelectivities() 
 		}
 	}
 
-
-	for(unsigned i=0;i<boundArgumentsSelectivities.size();++i){
-		rule->getAtomInBody(i)->print();
-		cout<<endl;
-		for(auto p:boundArgumentsSelectivities[i])
-			cout<<p.first<<" "<<p.second<<" ";
-		cout<<endl;
-	}
-
-	for(unsigned i=0;i<variablesInTerms.size();++i){
-		rule->getAtomInBody(i)->print();
-		cout<<endl;
-		for(auto p:variablesInTerms[i])
-			for(auto s:p){
-				s->print();cout<<" ";
-			}
-		cout<<endl;
-	}
+//	for(unsigned i=0;i<boundArgumentsSelectivities.size();++i){
+//		rule->getAtomInBody(i)->print();
+//		cout<<endl;
+//		for(auto p:boundArgumentsSelectivities[i])
+//			cout<<p.first<<" "<<p.second<<" ";
+//		cout<<endl;
+//	}
+//
+//	for(unsigned i=0;i<variablesInTerms.size();++i){
+//		rule->getAtomInBody(i)->print();
+//		cout<<endl;
+//		for(auto p:variablesInTerms[i])
+//			for(auto s:p){
+//				s->print();cout<<" ";
+//			}
+//		cout<<endl;
+//	}
 
 
 }
