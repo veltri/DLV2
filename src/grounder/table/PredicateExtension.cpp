@@ -109,7 +109,7 @@ IndexingStructure* PredicateExtension::addAtomSearcher(unsigned table, unsigned 
 		int indexType=type;
 		if(predicate->getArity()==0)
 			indexType=DEFAULT;
-		if(predicate->getArity()==1)
+		if(predicate->getArity()==1 && type!=DEFAULT_RECURSIVE)
 			indexType=HASHSET;
 		IndexingStructure* indexingStruct=atomSearchers[table]->getIndexingStructure(indexType,indexingTerms);
 		if(indexingStruct==nullptr){

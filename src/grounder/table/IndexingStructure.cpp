@@ -357,11 +357,12 @@ Atom* UnorderedMapOfHistoryVector::find(Atom* atom) {
 
 void UnorderedMapOfHistoryVector::update() {
 	unsigned i=indexingTerms[0];
+	unsigned currentIndexIteration=table->getIndexIteration();
 	unsigned currentIteration=table->getCurrentIteration();
 	for (;lastUpdate<table->size();++lastUpdate) {
 		Atom *a=(*table)[lastUpdate];
 		index_object termIndex=a->getTerm(i)->getIndex();
-		unsigned atomIteration=(lastUpdate<currentIteration)?currentIteration-1:currentIteration;
+		unsigned atomIteration=(lastUpdate<currentIndexIteration)?currentIteration-1:currentIteration;
 		if(!indexingStructure.count(termIndex)){
 			AtomHistoryVector values;
 //			values.reserve(table->size()/PredicateExtTable::getInstance()->getPredicateExt(predicate)->getPredicateInformation()->getSelectivity(indexingTerm));
@@ -372,6 +373,7 @@ void UnorderedMapOfHistoryVector::update() {
 			indexingStructure[termIndex].push_back_iteration(a,atomIteration);
 	}
 }
+
 
 GeneralIterator* UnorderedMapOfHistoryVector::computeMatchIterator(Atom* templateAtom, const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg) {
 	if(lastUpdate<table->size())
