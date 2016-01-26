@@ -258,7 +258,7 @@ private:
  **/
 class FullIndexingStructure : public IndexingStructure {
 public:
-    FullIndexingStructure(AtomHistoryVector* table, Predicate* predicate, AtomSearcher* atomSearcher,bool recursive);
+    FullIndexingStructure(AtomHistoryVector* table, Predicate* predicate, AtomSearcher* atomSearcher, bool recursive, unsigned indexType);
     void add(Atom* atom);
     Atom* find(Atom* atom);
     void clear(){IndexingStructure::clear(); for(auto indexingStructure: indexingStructures) indexingStructure->clear();};

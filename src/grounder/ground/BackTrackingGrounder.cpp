@@ -927,6 +927,8 @@ void BackTrackingGrounder::createAtomSearchersForPredicateBody(unsigned position
 			int indexingTermSetByUser=Options::globalOptions()->getPredicateIndexTerm(predicate->getName());
 			unsigned bestArg=0;
 			unsigned bestSelectivityArg=0;
+			unsigned nextBestArg=0;
+			unsigned nextBestSelectivityArg=0;
 			PredicateInformation* predicateInfo=predicateExtTable->getPredicateExt(predicate)->getPredicateInformation();
 			for(auto boundArg:boundTermsInAtoms[position-currentRule->getSizeHead()][atomPos]){
 				if(boundArg==indexingTermSetByUser){
@@ -937,11 +939,16 @@ void BackTrackingGrounder::createAtomSearchersForPredicateBody(unsigned position
 					bestSelectivityArg=predicateInfo->getSelectivity(boundArg);
 					bestArg=boundArg;
 				}
-				vector<unsigned> terms(1,boundArg);
+				else if(predicateInfo->getSelectivity(boundArg)>nextBestSelectivityArg){
+					nextBestSelectivityArg=predicateInfo->getSelectivity(boundArg);
+					nextBestArg=boundArg;
+				}
 			}
-			vector<unsigned> indexingTerm(1,bestArg);
+			vector<unsigned> indexingTerm(2);
+			indexingTerm[0]=bestArg;
+			indexingTerm[1]=nextBestArg;
 //			For FULL INDEXING ON EACH SINGLE ARGUMENT:
-//			atomSearcher=predicateExtension->addAtomSearcher(table, SINGLE_ARG_FULL, &indexingTerm, (componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex())));
+//			atomSearcher=predicateExtension->addFullIndexAtomSearcher(table,(componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex())));
 			if (componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex()))
 				atomSearcher=predicateExtension->addAtomSearcher(table, MAP_HISTORY_VECTOR, &indexingTerm, true);
 			else

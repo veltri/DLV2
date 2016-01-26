@@ -176,7 +176,8 @@ public:
 
 	IndexingStructure* addAtomSearcher(unsigned table, vector<unsigned>* indexingTerms,bool recursive=false);
 	IndexingStructure* addAtomSearcher(unsigned table, unsigned type, vector<unsigned>* indexingTerms,bool recursive=false);
-	IndexingStructure* createAtomSearcher(unsigned table, unsigned indexType,  vector<unsigned>* indexingTerms,bool recursive=false);
+	IndexingStructure* addFullIndexAtomSearcher(unsigned table, bool recursive=false);
+	IndexingStructure* createAtomSearcher(unsigned table, unsigned indexType,  vector<unsigned>* indexingTerms, bool recursive=false);
 
 private:
 	///The predicate

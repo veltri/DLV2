@@ -41,9 +41,6 @@ IndexingStructure* PredicateExtension::createAtomSearcher(unsigned table, unsign
 	case (MAP_HISTORY_VECTOR):
 		indexingStructure = new UnorderedMapOfHistoryVector(tables[table],*indexingTerms);
 		break;
-	case (SINGLE_ARG_FULL):
-		indexingStructure = new FullIndexingStructure(tables[table],predicate,atomSearchers[table],recursive);
-		break;
 	case (DEFAULT_RECURSIVE):
 		indexingStructure = new IndexingStructureRecursive(tables[table]);
 		break;
@@ -58,7 +55,6 @@ IndexingStructure* PredicateExtension::addAtomSearcher(unsigned table, vector<un
 	// Properly set the IndexAtom type
 	if(table<tables.size()){
 		int indexType=Options::globalOptions()->getPredicateIndexType(predicate->getName());
-
 		if(indexType==-1){
 			if(predicate->getArity()==1) //StatementDependency::getInstance()->isOnlyInHead(predicate->getIndex()) ||
 				indexType=HASHSET;
@@ -79,6 +75,28 @@ IndexingStructure* PredicateExtension::addAtomSearcher(unsigned table, vector<un
 			indexingStruct=atomSearchers[table]->getIndexingStructure(indexType,indexingTerms);
 		if(indexingStruct==nullptr){
 			indexingStruct = createAtomSearcher(table, indexType, indexingTerms,recursive);
+			atomSearchers[table]->addIndexingStructure(indexingStruct);
+		}
+		return indexingStruct;
+	}
+	return 0;
+}
+
+IndexingStructure* PredicateExtension::addFullIndexAtomSearcher(unsigned table, bool recursive) {
+	if(table<tables.size()){
+		int indexType=Options::globalOptions()->getPredicateIndexType(predicate->getName());
+		if(indexType==-1){
+			if(predicate->getArity()==1) //StatementDependency::getInstance()->isOnlyInHead(predicate->getIndex()) ||
+				indexType=HASHSET;
+			else
+				indexType=Options::globalOptions()->getIndexType();
+		}
+		if(predicate->getArity()==0)
+			indexType=DEFAULT;
+
+		IndexingStructure* indexingStruct = atomSearchers[table]->getIndexingStructure(SINGLE_ARG_FULL,nullptr);
+		if(indexingStruct==nullptr){
+			indexingStruct = new FullIndexingStructure(tables[table], predicate, atomSearchers[table], recursive, indexType);
 			atomSearchers[table]->addIndexingStructure(indexingStruct);
 		}
 		return indexingStruct;

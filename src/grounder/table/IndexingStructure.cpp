@@ -441,11 +441,12 @@ GeneralIterator* UnorderedMultiMap::computeMatchIterator(Atom* templateAtom, con
 
 void UnorderedMapOfUnorderedMultimap::add(Atom* atom) {
 	unsigned i=indexingTerms[0];
+	unsigned next=indexingTerms[1];
 	if(lastUpdate<table->size()){
 		index_object termIndex=atom->getTerm(i)->getIndex();
 		int nextTermIndex=-1;
-		if(i<(atom->getPredicate()->getArity()-1))
-			nextTermIndex=atom->getTerm(i+1)->getIndex();
+		if(next>0)
+			nextTermIndex=atom->getTerm(next)->getIndex();
 		if(indexingStructure.count(termIndex)){
 			if(nextTermIndex>-1)
 				indexingStructure[termIndex].insert({nextTermIndex,atom});
@@ -468,12 +469,13 @@ Atom* UnorderedMapOfUnorderedMultimap::find(Atom* atom) {
 		update();
 
 	unsigned i=indexingTerms[0];
+	unsigned next=indexingTerms[1];
 	index_object term = atom->getTerm(i)->getIndex();
 	Multimap_Atom::iterator start;
 	Multimap_Atom::iterator end;
 
-	if(i <atom->getPredicate()->getArity()-1){
-		index_object nextTerm=atom->getTerm(i+1)->getIndex();
+	if(next>0){
+		index_object nextTerm=atom->getTerm(next)->getIndex();
 		auto pair=indexingStructure[term].equal_range(nextTerm);
 		start=pair.first;
 		end=pair.second;
@@ -493,14 +495,14 @@ Atom* UnorderedMapOfUnorderedMultimap::find(Atom* atom) {
 
 void UnorderedMapOfUnorderedMultimap::update() {
 	if(table->empty()) return;
-	Predicate* predicate=(*table)[0]->getPredicate();
 	unsigned indexingTerm=indexingTerms[0];
+	unsigned next=indexingTerms[1];
 	for (;lastUpdate<table->size();++lastUpdate) {
 		Atom* a=(*table)[lastUpdate];
 		index_object termIndex=a->getTerm(indexingTerm)->getIndex();
 		int nextTermIndex=-1;
-		if(indexingTerm<(predicate->getArity()-1))
-			nextTermIndex=a->getTerm(indexingTerm+1)->getIndex();
+		if(next>0)
+			nextTermIndex=a->getTerm(next)->getIndex();
 		if(indexingStructure.count(termIndex)){
 			if(nextTermIndex>-1)
 				indexingStructure[termIndex].insert({nextTermIndex,a});
@@ -523,13 +525,14 @@ GeneralIterator* UnorderedMapOfUnorderedMultimap::computeMatchIterator(Atom* tem
 		update();
 
 	unsigned indexingTerm=indexingTerms[0];
+	unsigned next=indexingTerms[1];
 
 	index_object term = templateAtom->getTerm(indexingTerm)->getIndex();
 	Multimap_Atom::iterator start;
 	Multimap_Atom::iterator end;
 
-	Term* nextTerm=templateAtom->getTerm(indexingTerm+1);
-	if(indexingTerm < templateAtom->getPredicate()->getArity()-1 && nextTerm->isGround()){ //FIXME avoid to call isGround
+	Term* nextTerm=templateAtom->getTerm(next);
+	if(next>0 && nextTerm->isGround()){ //FIXME avoid to call isGround
 		index_object nextTermIndex=nextTerm->getIndex();
 		auto pair=indexingStructure[term].equal_range(nextTermIndex);
 		start=pair.first;
@@ -544,9 +547,8 @@ GeneralIterator* UnorderedMapOfUnorderedMultimap::computeMatchIterator(Atom* tem
 
 /*************************************************************** Full Index on Single Argument *****************************************************************/
 
-FullIndexingStructure::FullIndexingStructure(AtomHistoryVector* table, Predicate* predicate, AtomSearcher* atomSearcher,bool recursive): IndexingStructure(table), predicate(predicate){
+FullIndexingStructure::FullIndexingStructure(AtomHistoryVector* table, Predicate* predicate, AtomSearcher* atomSearcher,bool recursive, unsigned indexType): IndexingStructure(table), predicate(predicate){
     indexingStructures.reserve(predicate->getArity());
-    int indexType=Options::globalOptions()->getIndexType();
     for(unsigned i=0;i<predicate->getArity();++i){
         vector<unsigned> indexingTerm(1,i);
         if(recursive)
@@ -588,7 +590,7 @@ void FullIndexingStructure::update() {
 GeneralIterator* FullIndexingStructure::computeMatchIterator(Atom* templateAtom, const RuleInformation& ruleInformation, const pair<SearchType, unsigned>& searchSpecification,unsigned arg) {
 	if(lastUpdate<table->size())
 		update();
-	indexingStructures[arg]->computeMatchIterator(templateAtom,ruleInformation,searchSpecification,arg);
+	return indexingStructures[arg]->computeMatchIterator(templateAtom,ruleInformation,searchSpecification,arg);
 }
 
 } /* namespace grounder */
