@@ -448,7 +448,7 @@ double IndexingArgumentsOrderRuleGroundable::assignWeightPositiveClassicalLit(At
 	double minOtherPredicates=1;
 	for(auto j:atomsToInsert){
 		Atom* atom=rule->getAtomInBody(j);
-		if( j==originalPosition || atom->getPredicate()->getArity()<=1 || !(atom->isClassicalLiteral() && !atom->isNegative())) continue;
+		if( j==originalPosition || !(atom->isClassicalLiteral() && !atom->isNegative()) || atom->getPredicate()->getArity()<=1) continue;
 		for(unsigned i=0;i<atom->getTermsSize();++i){
 			if(variablesInTerms[j][i].empty()) continue;
 			bool boundTerm=true;
@@ -481,6 +481,7 @@ void IndexingArgumentsOrderRuleGroundable::computeBoundArgumentsSelectivities() 
 	unsigned atom_pos=0;
 	for(auto it=rule->getBeginBody();it!=rule->getEndBody();++it,++atom_pos){
 		Atom* atom=*it;
+		if(!(atom->isClassicalLiteral() && !atom->isNegative())) continue;
 		unsigned termSize=atom->getTermsSize();
 		variablesInTerms[atom_pos].resize(termSize);
 		for(unsigned i=0;i<termSize;++i){
