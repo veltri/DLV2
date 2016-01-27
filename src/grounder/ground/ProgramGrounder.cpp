@@ -347,7 +347,7 @@ bool ProgramGrounder::nextSearchInsertPredicate(Rule* rule,unordered_set<index_o
 					type=NEW;
 			}
 
-			if(isNotEmptyPredExt(pred,FACT))
+			if(isNotEmptyPredExt(pred,FACT) && type!=NEW)
 				tableToInsert.push_back({FACT,type});
 			if(isNotEmptyPredExt(pred,NOFACT))
 				tableToInsert.push_back({NOFACT,type});
