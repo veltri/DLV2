@@ -56,7 +56,7 @@ IndexingStructure* PredicateExtension::addAtomSearcher(unsigned table, vector<un
 	if(table<tables.size()){
 		int indexType=Options::globalOptions()->getPredicateIndexType(predicate->getName());
 		if(indexType==-1){
-			if(predicate->getArity()==1) //StatementDependency::getInstance()->isOnlyInHead(predicate->getIndex()) ||
+			if(predicate->getArity()==1 && indexType!=DEFAULT_RECURSIVE) //StatementDependency::getInstance()->isOnlyInHead(predicate->getIndex()) ||
 				indexType=HASHSET;
 			else
 				indexType=Options::globalOptions()->getIndexType();
@@ -86,7 +86,7 @@ IndexingStructure* PredicateExtension::addFullIndexAtomSearcher(unsigned table, 
 	if(table<tables.size()){
 		int indexType=Options::globalOptions()->getPredicateIndexType(predicate->getName());
 		if(indexType==-1){
-			if(predicate->getArity()==1) //StatementDependency::getInstance()->isOnlyInHead(predicate->getIndex()) ||
+			if(predicate->getArity()==1 && indexType!=DEFAULT_RECURSIVE) //StatementDependency::getInstance()->isOnlyInHead(predicate->getIndex()) ||
 				indexType=HASHSET;
 			else
 				indexType=Options::globalOptions()->getIndexType();
