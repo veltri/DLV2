@@ -82,7 +82,8 @@ public:
 	//TODO check aggregate type
 	virtual double assignWeightAggregateAtom(Atom* atom, unsigned originalPosition){return priorities.UNDEFINED_AGGREGATE_ASSIGNMENT;};
 	virtual double assignWeightBuiltInAtom(Atom* atom, unsigned originalPosition){return priorities.BUILT_IN;};
-	virtual void update(Atom* atomAdded){};
+	virtual void update(Atom* atomAdded, unsigned originalPosition){};
+	virtual double computeForwardWeight(unsigned originalPosition){return 0;};
 
 private:
 	unsigned computePredicateExtensionSize(unsigned atomPosition, Predicate* p);
@@ -94,8 +95,7 @@ public:
 	CombinedCriterion(Rule* rule,Priority p):AllOrderRuleGroundable(rule,p){}
 	virtual ~CombinedCriterion(){}
 	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
-
-	virtual void update(Atom* atomAdded){updateVariableSelectivity(atomAdded);};
+	virtual void update(Atom* atomAdded, unsigned originalPosition){updateVariableSelectivity(atomAdded);};
 protected:
 	void computeVariablesDomains();
 	void updateVariableSelectivity(Atom* atomAdded);
@@ -104,16 +104,22 @@ protected:
 
 };
 
-class IndexingArgumentsOrderRuleGroundable  : public AllOrderRuleGroundable {
+class IndexingArgumentsOrderRuleGroundable  : public AllOrderRuleGroundable{
 public:
-	IndexingArgumentsOrderRuleGroundable(Rule* rule):AllOrderRuleGroundable(rule){}
-	IndexingArgumentsOrderRuleGroundable(Rule* rule,Priority p):AllOrderRuleGroundable(rule,p){}
+	IndexingArgumentsOrderRuleGroundable(Rule* rule):AllOrderRuleGroundable(rule),DOUBLE_INDEX_THRESHOLD(0.3),currentJoinSize(0){}
+	IndexingArgumentsOrderRuleGroundable(Rule* rule,Priority p):AllOrderRuleGroundable(rule,p),DOUBLE_INDEX_THRESHOLD(0.3),currentJoinSize(0){}
 	virtual ~IndexingArgumentsOrderRuleGroundable(){}
 	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
+	virtual void update(Atom* atomAdded, unsigned originalPosition);
+	double computeForwardWeight(unsigned originalPosition);
+
 private:
 	void computeBoundArgumentsSelectivities();
 	vector<unordered_map<unsigned,double>> boundArgumentsSelectivities;
 	vector<vector<set_term>> variablesInTerms;
+	const double DOUBLE_INDEX_THRESHOLD;
+	double currentJoinSize;
+	vector<unsigned> backwardWeights;
 };
 
 
