@@ -33,7 +33,12 @@ const set_term Atom::getVariable(bool guard){
 	getVariables(this,variables);
 	return variables;
 }
-
+const vector<Term*> Atom::getVectorVariable(){
+	vector<Term*> variables;
+	for(auto term:getTerms())
+		term->getVariable(variables);
+	return variables;
+}
 void Atom::getVariables(Atom* atom,set_term& variables){
 	for(auto term:atom->getTerms())
 		term->getVariable(variables);

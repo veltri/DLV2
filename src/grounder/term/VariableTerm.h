@@ -44,6 +44,8 @@ public:
 
 
 	virtual void getVariable(set_term& variables){if(!isAnonymous)variables.insert(this);};
+	virtual void getVariable(vector<Term*>& variables){if(!isAnonymous)variables.push_back(this);};
+
 	virtual size_t hash(){	return HashString::getHashString()->computeHash(name);};
 	virtual Term* substitute(var_assignment& substitutionTerm){
 		Term *findTerm=substitutionTerm[localIndex];

@@ -61,6 +61,11 @@ public:
 			term->getVariable(variables);
 	};
 
+	virtual void getVariable(vector<Term*>& variables){
+		for(auto term:terms)
+			term->getVariable(variables);
+	};
+
 	virtual void getGroundTerm(set_term& variables){
 		for(auto term:terms)
 			term->getGroundTerm(variables);

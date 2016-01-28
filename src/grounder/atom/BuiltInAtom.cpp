@@ -55,6 +55,7 @@ bool BuiltInAtom::groundAndEvaluate(var_assignment& substitutionTerm){
 
 	Term* secondTerm=terms[1]->substitute(substitutionTerm)->calculate();
 
+
 	// If there is equal and variable assign that value
 	if(assignment){
 		if(firstTerm->getType()==TermType::VARIABLE || secondTerm->getType()!=TermType::VARIABLE ){

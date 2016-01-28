@@ -576,29 +576,45 @@ void BackTrackingGrounder::findBuiltinFastEvaluated(){
 			//Find the greatest classical literal that bind some variable in the builtin
 			auto varInBuiltin=atom->getVariable();
 			unsigned positionAtomBinder=0;
+			unsigned secondPositionAtomBinder=0;
+			unsigned variableBindedOflastPosition=0;
+
 			for(auto var:varInBuiltin)
-				if(variablesBinder[var->getLocalVariableIndex()]>positionAtomBinder)
+				if(variablesBinder[var->getLocalVariableIndex()]>(int)positionAtomBinder){
+					secondPositionAtomBinder=positionAtomBinder;
 					positionAtomBinder=variablesBinder[var->getLocalVariableIndex()];
+					variableBindedOflastPosition=1;
+				}else if(variablesBinder[var->getLocalVariableIndex()]==(int)positionAtomBinder)
+					variableBindedOflastPosition++;
+
+			//Change the builtin to an assignment builtin then we have to find the next to last variable
+			// that is binded
+			if(atom->getBinop()==EQUAL && atom->plusMinusBuiltin()){
+				if(variableBindedOflastPosition==1)
+					positionAtomBinder=secondPositionAtomBinder;
+			}
+
+			cerr<<positionAtomBinder<<endl;
 			Atom* atomBinder=currentRule->getAtomInBody(positionAtomBinder);
 			if(atomBinder->isClassicalLiteral()){
+
+				vector<Term*> variable=atomBinder->getVectorVariable();
+
+
 				//Find the rightmost variable in the classical literal that is contained also in the builtin
-				list<Term*> termsInAtom;
-				for(unsigned i=0;i<atomBinder->getTermsSize();i++)
-					termsInAtom.push_back(atomBinder->getTerm(i));
-				while(termsInAtom.size()>0){
-					Term *lastTerm=termsInAtom.back();
-					termsInAtom.pop_back();
-					if(lastTerm->getType()==VARIABLE && varInBuiltin.count(lastTerm)){
+				for(unsigned i=variable.size()-1;i>=0;--i){
+					Term *lastTerm=variable[i];
+					if(lastTerm->getType()==VARIABLE && varInBuiltin.count(lastTerm) && variablesBinder[lastTerm->getLocalVariableIndex()]==(int)positionAtomBinder){
 						//VARIABLE FINDED, then the builtin can be evaluated while matching the term in the classical literal
 						builtAlreadyEvaluated[index_current_atom]=true;
 						matchBuiltin[positionAtomBinder].push_back(atom);
 						currentRule->addBounderBuiltin(lastTerm->getLocalVariableIndex(),atom);
+						cerr<<"FAST ";lastTerm->print(cerr);cerr<<" ";atom->print(cerr);cerr<<endl;
 						break;
-					}else if(lastTerm->getType()==FUNCTION){
-						//Term is function, then put in the list the term and recursively check if exist the varaible
-						for(unsigned i=0;i<lastTerm->getTermsSize();i++)termsInAtom.push_back(lastTerm->getTerm(i));
 					}
+
 				}
+
 			}
 		}
 	}

@@ -88,6 +88,28 @@ public:
 	virtual bool isAssignment(){return assignment;};
 	virtual void setAssignment(bool assignment){this->assignment=assignment;};
 
+	virtual bool plusMinusBuiltin(){
+		for(unsigned i=0;i<terms.size();i++){
+			Term *t=terms[i];
+			for(unsigned j=0;j<t->getSizeOperator();j++)
+				if(t->getOperator(j)==DIV || t->getOperator(j)==TIMES)
+					return false;
+		}
+		return true;
+	}
+
+	virtual void rewriteBuiltin(Term* variableToRewrite){
+		unsigned count=0;
+		bool positive=true;
+		for(unsigned i=0;i<terms.size();i++){
+			if(terms[i]->getIndex()==variableToRewrite->getIndex()){
+//				if(operator =())
+				count++;
+			}
+		}
+
+	}
+
 
 	///Destructor
 	~BuiltInAtom() {};
