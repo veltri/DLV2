@@ -76,6 +76,10 @@ public:
 	///If the guard is true add also the variable in the guard
 	virtual const set_term getVariable(bool guard=true);
 
+	///Return the term of variable present in the Atom in a vector
+	virtual const vector<Term*> getVectorVariable();
+
+
 	/// Return true if is ground, each term is constant term
 	virtual bool isGround(){
 		for(auto term:terms)
@@ -148,6 +152,8 @@ public:
 	///Return true if the built in assign value in term, else compare the variable like ==
 	virtual bool isAssignment(){return false;};
 	virtual void setAssignment(bool assigment){};
+	//Return true if the builtin not contains in the operator of Airth term a DIV or a TIMES
+	virtual bool plusMinusBuiltin(){return true;};
 	/*****************************************************/
 
 	/******** Methods useful for AggregateAtom ********/
