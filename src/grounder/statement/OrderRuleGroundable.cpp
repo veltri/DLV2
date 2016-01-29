@@ -109,36 +109,40 @@ void OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchType>> >& pred
 
 bool OrderRuleGroundable::isBound(Atom* atom, unsigned orginalPosition) {
 	if(atom->isBuiltIn() && atom->getBinop()==Binop::EQUAL){
-		Term* firstTerm=atom->getTerm(0);
-		set_term varsFirst;
-		firstTerm->getVariable(varsFirst);
 
-		bool firstContained;
-		if(varsFirst.empty())
-			firstContained=true;
-		else
-			firstContained = Utils::isContained(varsFirst,variablesInTheBody);
-		if(varsFirst.size()>1 &&  !firstContained)
-			return false;
-
-		Term* secondTerm=atom->getTerm(1);
-		set_term varsSecond;
-		secondTerm->getVariable(varsSecond);
-		bool secondContained;
-		if(varsSecond.empty())
-			secondContained=true;
-		else
-			secondContained = Utils::isContained(varsSecond,variablesInTheBody);
-		if(firstContained && secondContained){
-			atom->setAssignment(false);
-			return true;
-		}
-		if(secondContained || firstContained){
-			if((secondContained && !firstContained && firstTerm->getType()==VARIABLE) || (!secondContained && firstContained && secondTerm->getType()==VARIABLE)){
+		if(atom->plusMinusBuiltin()){
+			//If the builtin is an = and contain only + and - operatos, then we count only the total variable
+			// of the builtin and if only 1 variable is free we can put this atom because even if the free variable is in
+			// arithmetic operators we can calculate like an equation
+			set_term variablesInAtom=atom->getVariable();
+			unsigned count=0;
+			for(auto var:variablesInAtom){
+				if(!variablesInTheBody.count(var))
+					count++;
+				if(count>1)
+					break;
+			}
+			if(count==1){
+				atom->setAssignment(true);
+				return true;
+			}
+		}else{
+			// If the builtin contain also * or / operator, because ww don't have float constant we cannot solve the equation and then
+			// the free variable must be alone in first or second term in the atom
+			set_term varsFirst;
+			atom->getTerm(0)->getVariable(varsFirst);
+			if(Utils::isContained(varsFirst,variablesInTheBody) && atom->getTerm(1)->getType()==VARIABLE){
+				atom->setAssignment(true);
+				return true;
+			}
+			set_term varSecond;
+			atom->getTerm(1)->getVariable(varSecond);
+			if(Utils::isContained(varSecond,variablesInTheBody) && atom->getTerm(0)->getType()==VARIABLE){
 				atom->setAssignment(true);
 				return true;
 			}
 		}
+
 		return false;
 	}
 	else if(atom->isAggregateAtom()){
@@ -257,9 +261,9 @@ list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(list<unsigned>& a
 	}
 	//TODO Add all bound atoms all together and avoid the weigh update if no bind atom has been added
 	update(rule->getAtomInBody(*bestAtomIt),*bestAtomIt);
-//	trace_action_tag(grounding,2,
+	trace_action_tag(grounding,2,
 		cout<<"Chosen atom: ";rule->getAtomInBody(*bestAtomIt)->print(cout);cout<<" "<<bestWeight<<endl;
-//	);
+	);
 
 	return bestAtomIt;
 }

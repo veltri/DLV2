@@ -10,6 +10,7 @@
 #include "../../util/Options.h"
 #include "../atom/Choice.h"
 #include "../../util/Utils.h"
+#include "../atom/BuiltInAtom.h"
 
 namespace DLV2 {
 namespace grounder {
@@ -18,9 +19,9 @@ OrderRule::OrderRule(Rule* r):rule(r){
 	unsigned atom_counter=0;
 	bindAtomsDependency.reserve(r->getSizeBody());
 	computeAtomsVariables();
-	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();++atom,++atom_counter){
+	for(unsigned atom_counter=0;atom_counter<rule->getSizeBody();++atom_counter){
 		bindAtomsDependency.push_back(unordered_set<unsigned>());
-		Atom* current_atom=*atom;
+		Atom* current_atom=rule->getAtomInBody(atom_counter);
 		if(current_atom->isClassicalLiteral()){
 			if(current_atom->isNegative())
 				negativeAtoms.push_back(atom_counter);
@@ -28,14 +29,28 @@ OrderRule::OrderRule(Rule* r):rule(r){
 				/// Find for each positive classical literal the variables that must be bound
 				/// (for example variables appearing in arith terms)
 				bool mustBeBound=false;
-				mapPositiveAtomsBoundVariables.insert({atom_counter,set_term()});
-				for(auto v:current_atom->getTerms()){
-					v->getVariablesInArith(mapPositiveAtomsBoundVariables[atom_counter]);
-					if(mapPositiveAtomsBoundVariables[atom_counter].size()>0 && !mustBeBound){
-						positiveAtomsToBeBound.push_back(atom_counter);
-						mustBeBound=true;
+				if(Options::globalOptions()->getRewriteArith()){
+
+					for(unsigned i=0;i<current_atom->getTermsSize();i++){
+						if(current_atom->getTerm(i)->getType()==ARITH){
+							Term *newTerm=TermTable::getInstance()->generateVariableAuxTerm();
+							Atom * newBuiltin = new BuiltInAtom(Binop::EQUAL,false,newTerm,current_atom->getTerm(i));
+							rule->addInBody(newBuiltin);
+							current_atom->setTerm(i,newTerm);
+						}
+					}
+				}else{
+					mapPositiveAtomsBoundVariables.insert({atom_counter,set_term()});
+					for(auto v:current_atom->getTerms()){
+						v->getVariablesInArith(mapPositiveAtomsBoundVariables[atom_counter]);
+						if(mapPositiveAtomsBoundVariables[atom_counter].size()>0 && !mustBeBound){
+							positiveAtomsToBeBound.push_back(atom_counter);
+							mustBeBound=true;
+						}
 					}
 				}
+
+
 				if(!mustBeBound) positiveAtoms.push_back(atom_counter);
 			}
 		}

@@ -11,8 +11,8 @@
 
 #include "../term/Term.h"
 #include "../term/ConstantTerm.h"
+#include "../term/VariableTerm.h"
 #include "../hash/Hashable.h"
-
 
 using namespace std;
 
@@ -39,6 +39,13 @@ public:
 	//TODO
 	virtual int getCollision(){return 0;};
 
+	virtual Term* generateVariableAuxTerm(){
+		string s("#aux"+to_string(counter++));
+		Term * term=new VariableTerm(false,s);
+		addTerm(term);
+		return term;
+	}
+
 	// Method for fetch the instance of singleton
     // If termTable is null instance the table based on parameter in the configuration
 	static TermTable* getInstance();
@@ -53,7 +60,7 @@ protected:
 	static TermTable* termTable;
 private:
 //	TermTable(): term_max(new StringConstantTerm(false,"+∞")), term_min(new StringConstantTerm(false,"-∞")), term_zero(new NumericConstantTerm(false,0)) {
-	TermTable(): term_max(new StringConstantTerm(false,"#sup")), term_min(new StringConstantTerm(false,"#inf")), term_zero(new NumericConstantTerm(false,0)) {
+	TermTable(): term_max(new StringConstantTerm(false,"#sup")), term_min(new StringConstantTerm(false,"#inf")), term_zero(new NumericConstantTerm(false,0)),counter(0) {
 		addTerm(term_max);
 		addTerm(term_min);
 		addTerm(term_zero);
@@ -62,6 +69,8 @@ private:
 	 *  Flyweight Factory of terms
 	 */
 	FlyweightIndexFactory<Term> terms;
+
+	unsigned counter;
 };
 
 

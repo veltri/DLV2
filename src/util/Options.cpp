@@ -70,6 +70,8 @@ namespace DLV2
 #define OPTIONID_enableDictionaryIntersection ('z' + 44)
 #define OPTIONID_ruleTime ('z' + 45)
 #define OPTIONID_checkFactDuplicate ('z' + 46)
+#define OPTIONID_rewriteArith ('z' + 47)
+
 
 
 
@@ -125,7 +127,8 @@ Options::Options():
 		positiveOrderingProcedure(COMBINED_POSITIVE_ORDERING),
 		enabledDictionaryIntersection(false),
 		ruleTime(false),
-		checkFactDuplicate(false)
+		checkFactDuplicate(false),
+		rewriteArith(false)
 {
 
 }
@@ -150,7 +153,8 @@ Options::Options(
 		positiveOrderingProcedure(o.positiveOrderingProcedure),
 		enabledDictionaryIntersection(o.enabledDictionaryIntersection),
 		ruleTime(false),
-		checkFactDuplicate(false)
+		checkFactDuplicate(false),
+		rewriteArith(false)
 
 {
 
@@ -206,6 +210,7 @@ Options::init(
 		{"dictionary-intersection",no_argument, NULL, OPTIONID_enableDictionaryIntersection},
 		{"rule-time",no_argument, NULL, OPTIONID_ruleTime},
 		{"check-facts-duplication",no_argument, NULL, OPTIONID_checkFactDuplicate},
+		{"rewrite-arith",no_argument, NULL, OPTIONID_rewriteArith},
         // Required at end of array. 
         { NULL, 0, NULL, 0 }
     };
@@ -342,6 +347,10 @@ Options::init(
 
             case OPTIONID_checkFactDuplicate:
             	checkFactDuplicate=true;
+				break;
+
+            case OPTIONID_rewriteArith:
+            	rewriteArith=true;
 				break;
 
             default:

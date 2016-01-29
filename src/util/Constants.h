@@ -94,6 +94,8 @@ namespace grounder{
 	#define MAP_HISTORY_VECTOR 7
 	#define SINGLE_ARG_FULL 8
 	#define DEFAULT_RECURSIVE 9
+	#define MAP_PAIR_HISTORY_VECTOR 10
+
 
 
 	#define NATIVE_CHOICE 0

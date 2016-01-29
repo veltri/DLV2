@@ -61,6 +61,9 @@ namespace DLV2
             std::cout << "--outputformat                           - Set the output format: 0=NUmeric, 1=Textual." << std::endl;
             std::cout << "--positiveOrdering                       - 0=NO ORDERING, 1=COMBINED." << std::endl;
             std::cout << "--ruleTime                               - Print the time of instantiation of single rule" << std::endl;
+            std::cout << "--check-facts-duplication                - Remove the facts duplicates" << std::endl;
+            std::cout << "--rewrite-arith                          - Rewrite the Arith Term in Builtin Atom" << std::endl;
+
 
             std::cout << separator << std::endl;
 

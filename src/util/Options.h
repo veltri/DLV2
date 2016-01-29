@@ -126,6 +126,10 @@ namespace DLV2
 			return checkFactDuplicate;
 		}
 
+		bool getRewriteArith(){
+			return rewriteArith;
+		}
+
     private:
 
         static Options* instance;
@@ -197,6 +201,8 @@ namespace DLV2
     	bool ruleTime;
 
     	bool checkFactDuplicate;
+
+    	bool rewriteArith;
     };
     
 };

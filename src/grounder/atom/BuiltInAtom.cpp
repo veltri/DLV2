@@ -26,7 +26,7 @@ bool BuiltInAtom::calculateVariableInAssignment(Term* firstTerm, Term* secondTer
 		substitutionTerm[secondTerm->getLocalVariableIndex()]=firstTerm->calculate();
 		return true;
 	}
-	cerr<<"EVALUATE ";firstTerm->print(cerr);cerr<<" ";secondTerm->print(cerr);cerr<<endl;
+//	cerr<<"EVALUATE ";firstTerm->print(cerr);cerr<<" ";secondTerm->print(cerr);cerr<<endl;
 	LINE A=firstTerm->transformToLineEq(),B=secondTerm->transformToLineEq();
 
 	VAR x= A.evaluate(B);
@@ -37,7 +37,7 @@ bool BuiltInAtom::calculateVariableInAssignment(Term* firstTerm, Term* secondTer
 	set_term variables;
 	firstTerm->getVariablesInArith(variables);
 	secondTerm->getVariablesInArith(variables);
-	cerr<<"RESULT ";(*variables.begin())->print(cerr);cerr<<" "<<result<<endl;
+//	cerr<<"RESULT ";(*variables.begin())->print(cerr);cerr<<" "<<result<<endl;
 	substitutionTerm[(*variables.begin())->getLocalVariableIndex()]=constantTerm;
 
 	return true;

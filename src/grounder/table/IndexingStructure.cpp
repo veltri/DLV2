@@ -390,6 +390,74 @@ GeneralIterator* UnorderedMapOfHistoryVector::computeMatchIterator(Atom* templat
 	return currentMatch;
 }
 
+/******************************************************** Unordered Unordered Map Of Pair HistoryVector **************************************************/
+
+void UnorderedMapOfPairHistoryVector::add(Atom* atom) {
+
+}
+
+Atom* UnorderedMapOfPairHistoryVector::find(Atom* atom) {
+	if(lastUpdate<table->size())
+		update();
+
+	unsigned i=indexingTerms[0];
+	unsigned next=indexingTerms[1];
+
+	index_object term = atom->getTerm(i)->getIndex();
+	index_object nextTerm=atom->getTerm(next)->getIndex();
+
+	AtomHistoryVector& matchingTable=indexingStructure[{term,nextTerm}];
+
+	for(auto atom1:matchingTable){
+		if(*atom1==*atom){
+			return atom1;
+		}
+	}
+	return nullptr;
+}
+
+void UnorderedMapOfPairHistoryVector::update() {
+	unsigned i=indexingTerms[0];
+	unsigned next=indexingTerms[1];
+	unsigned currentIndexIteration=table->getIndexIteration();
+	unsigned currentIteration=table->getCurrentIteration();
+	for (;lastUpdate<table->size();++lastUpdate) {
+		Atom *a=(*table)[lastUpdate];
+		index_object termIndex=a->getTerm(i)->getIndex();
+		index_object nextTermIndex=a->getTerm(next)->getIndex();
+		unsigned atomIteration=(lastUpdate<currentIndexIteration)?currentIteration-1:currentIteration;
+		if(!indexingStructure.count({termIndex,nextTermIndex})){
+			AtomHistoryVector values;
+//			values.reserve(table->size()/PredicateExtTable::getInstance()->getPredicateExt(predicate)->getPredicateInformation()->getSelectivity(indexingTerm));
+			values.push_back_iteration(a,atomIteration);
+			indexingStructure.insert({{termIndex,nextTermIndex},values});
+		}
+		else
+			indexingStructure[{termIndex,nextTermIndex}].push_back_iteration(a,atomIteration);
+	}
+}
+
+
+GeneralIterator* UnorderedMapOfPairHistoryVector::computeMatchIterator(Atom* templateAtom, const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg) {
+	if(lastUpdate<table->size())
+		update();
+
+	GeneralIterator* currentMatch;
+	unsigned i=indexingTerms[0];
+	unsigned next=indexingTerms[1];
+
+	index_object term = templateAtom->getTerm(i)->getIndex();
+	index_object nextTerm=templateAtom->getTerm(next)->getIndex();
+
+	AtomHistoryVector& matchingTable=indexingStructure[{term,nextTerm}];
+
+	auto it=matchingTable.getElements(searchSpecification.first,searchSpecification.second);
+	currentMatch=new VectorIteratorIndex(it.first,it.second,&matchingTable);
+
+	return currentMatch;
+}
+
+
 /******************************************************** Unordered Multi Map **************************************************/
 
 void UnorderedMultiMap::add(Atom* atom) {

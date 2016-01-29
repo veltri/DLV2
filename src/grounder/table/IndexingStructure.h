@@ -222,6 +222,23 @@ private:
 
 /**
  * This class implements IndexingStructure and provides a single term indexing data structure
+ * implemented by means of an unordered map of history vectors of atoms as indexing data structure (@see Atom.h)
+ **/
+class UnorderedMapOfPairHistoryVector : public IndexingStructure {
+public:
+	UnorderedMapOfPairHistoryVector(AtomHistoryVector* table, vector<unsigned>& indexingTerm): IndexingStructure(table,indexingTerm){};
+	void add(Atom* atom);
+	Atom* find(Atom* atom);
+	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
+	virtual void update();
+	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg=0);
+	virtual unsigned getType(){return MAP_PAIR_HISTORY_VECTOR;}
+private:
+	unordered_map<pair<index_object,index_object>,AtomHistoryVector,HashPair<index_object>,HashPair<index_object>> indexingStructure;
+};
+
+/**
+ * This class implements IndexingStructure and provides a single term indexing data structure
  * implemented by means of an unordered multimap of atoms as indexing data structure (@see Atom.h)
  **/
 class UnorderedMultiMap : public IndexingStructure {

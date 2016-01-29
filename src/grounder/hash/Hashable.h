@@ -146,6 +146,23 @@ public:
 	unsigned int index_counter;
 };
 
+template<typename T>
+struct HashPair{
+	inline size_t operator()(pair<T,T> obj) const {
+		hash<T> hasher;
+		size_t seed=3;
+		seed ^= hasher(obj.first) + 0x9e3779b9 + (seed<<6) + (seed>>2);
+		seed ^= hasher(obj.second) + 0x9e3779b9 + (seed<<6) + (seed>>2);
+		return seed;
+	}
+
+	inline bool operator()(pair<T,T> obj1, pair<T,T> obj2) const {
+		return obj1.first==obj2.first && obj1.second==obj2.second;
+	}
+
+
+};
+
 template<class T>
 using hashSet = unordered_set<T*,HashForTable<T>,HashForTable<T>>;
 

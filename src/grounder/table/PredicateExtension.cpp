@@ -41,6 +41,9 @@ IndexingStructure* PredicateExtension::createAtomSearcher(unsigned table, unsign
 	case (MAP_HISTORY_VECTOR):
 		indexingStructure = new UnorderedMapOfHistoryVector(tables[table],*indexingTerms);
 		break;
+	case (MAP_PAIR_HISTORY_VECTOR):
+			indexingStructure = new UnorderedMapOfPairHistoryVector(tables[table],*indexingTerms);
+			break;
 	case (DEFAULT_RECURSIVE):
 		indexingStructure = new IndexingStructureRecursive(tables[table]);
 		break;
@@ -64,6 +67,7 @@ IndexingStructure* PredicateExtension::addAtomSearcher(unsigned table, vector<un
 
 		if(predicate->getArity()==0)
 			indexType=DEFAULT;
+
 
 	#ifdef DEBUG_ATOM_SEARCHER
 		cout<<"Predicate: "<<predicate->getName()<<"  Index type: "<<indexType<<endl;
@@ -111,6 +115,7 @@ IndexingStructure* PredicateExtension::addAtomSearcher(unsigned table, unsigned 
 			indexType=DEFAULT;
 		if(predicate->getArity()==1 && type!=DEFAULT_RECURSIVE)
 			indexType=HASHSET;
+
 		IndexingStructure* indexingStruct=atomSearchers[table]->getIndexingStructure(indexType,indexingTerms);
 		if(indexingStruct==nullptr){
 			indexingStruct = createAtomSearcher(table, indexType, indexingTerms,recursive);

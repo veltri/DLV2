@@ -552,7 +552,6 @@ void BackTrackingGrounder::findSearchTables() {
 }
 
 void BackTrackingGrounder::removeBindValueFromAssignment(const vector<index_object>& bind_variables) {
-	cerr<<"REMOVE "<<index_current_atom<<endl;
 	for (auto variable : bind_variables)
 		current_assignment[variable]=nullptr;
 

@@ -1,9 +1,4 @@
-/*
- * Equation.h
- *
- *  Created on: Jan 29, 2016
- *      Author: davide
- */
+
 
 #ifndef SRC_UTIL_EQUATION_H_
 #define SRC_UTIL_EQUATION_H_
