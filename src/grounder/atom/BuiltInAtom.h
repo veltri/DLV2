@@ -121,6 +121,8 @@ private:
 	bool negative;
 	//Is true if the built-in assigns value to a term, false if it is a comparison (like ==)
 	bool assignment;
+
+	bool calculateVariableInAssignment(Term* firstTerm,	Term* secondTerm, var_assignment& substitutionTerm);
 };
 
 };

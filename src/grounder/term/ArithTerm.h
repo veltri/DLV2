@@ -80,8 +80,6 @@ public:
 
 	virtual bool operator==(const Term& term)const;
 
-
-
 	virtual void getVariablesInArith(set_term& vars){this->getVariable(vars);}
 
 	/// Return the string composed by the concatenation of terms and operators
@@ -90,6 +88,8 @@ public:
 	/// Return the string of enum operator
 	static string getNameOperator(Operator op);
 	static Operator getOperatorName(char op);
+
+	virtual LINE transformToLineEq();
 
 	virtual ~ArithTerm(){};
 

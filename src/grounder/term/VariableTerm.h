@@ -78,6 +78,13 @@ public:
 		return getName()<=getName();
 	};
 
+	virtual LINE transformToLineEq(){
+		LINE A;
+		A.a=0;
+		A.k=1;
+		return A;
+	}
+
 	inline virtual index_object getLocalVariableIndex()const{return localIndex;};
 	inline virtual void setLocalVariableIndex(index_object index){localIndex=index;};
 

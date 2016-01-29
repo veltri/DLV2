@@ -18,6 +18,7 @@
 #include "../hash/Hashable.h"
 #include "../../util/Constants.h"
 #include "../table/AdvancedArray.h"
+#include "../../util/Equation.h"
 
 using namespace std;
 
@@ -160,6 +161,8 @@ public:
 	inline virtual index_object getLocalVariableIndex()const{return 0;};
 	///Set the local index of the variable in the rule
 	inline virtual void setLocalVariableIndex(index_object index){};
+	//Transform the arith term in LINE struct for the evaluation of the equation
+	virtual LINE transformToLineEq(){};
 
 	virtual ~Term(){};
 protected:

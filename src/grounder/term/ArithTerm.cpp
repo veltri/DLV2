@@ -40,6 +40,21 @@ Term* ArithTerm::calculate() {
 	return constantTerm;
 }
 
+LINE ArithTerm::transformToLineEq(){
+	LINE A=terms[0]->transformToLineEq();
+	for (unsigned int i = 1; i < terms.size(); i++) {
+			if (operators[i-1] == Operator::PLUS)
+				A=A+terms[i]->transformToLineEq();
+			else if (operators[i-1] == Operator::MINUS)
+				A=A-terms[i]->transformToLineEq();
+			else if (operators[i-1] == Operator::DIV)
+				A=A/terms[i]->transformToLineEq();
+			else if (operators[i-1] == Operator::TIMES)
+				A=A*terms[i]->transformToLineEq();
+		}
+	return A;
+}
+
 size_t ArithTerm::hash() {
 	vector<size_t> hashVec(terms.size()+operators.size());
 	hashVec[0]=terms[0]->getIndex();

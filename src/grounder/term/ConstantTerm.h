@@ -70,6 +70,11 @@ public:
 	virtual void print(ostream& stream=cout) {stream<<numeric_constant;}
 	void setNegative(bool n){numeric_constant=-numeric_constant;};
 
+	virtual LINE transformToLineEq(){
+		LINE A(numeric_constant);
+		return A;
+	}
+
 private:
 	int numeric_constant;
 };

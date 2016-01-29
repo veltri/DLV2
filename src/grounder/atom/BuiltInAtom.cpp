@@ -16,6 +16,32 @@ namespace DLV2{
 
 namespace grounder{
 
+bool BuiltInAtom::calculateVariableInAssignment(Term* firstTerm, Term* secondTerm, var_assignment& substitutionTerm) {
+	// If there is equal and variable assign that value
+	if(firstTerm->getType()==TermType::VARIABLE){
+		substitutionTerm[firstTerm->getLocalVariableIndex()]=secondTerm->calculate();
+		return true;
+	}
+	if(secondTerm->getType()==TermType::VARIABLE){
+		substitutionTerm[secondTerm->getLocalVariableIndex()]=firstTerm->calculate();
+		return true;
+	}
+	cerr<<"EVALUATE ";firstTerm->print(cerr);cerr<<" ";secondTerm->print(cerr);cerr<<endl;
+	LINE A=firstTerm->transformToLineEq(),B=secondTerm->transformToLineEq();
+
+	VAR x= A.evaluate(B);
+	int result=x.i;
+
+	Term *constantTerm=new NumericConstantTerm(result<0,result);
+	TermTable::getInstance()->addTerm(constantTerm);
+	set_term variables;
+	firstTerm->getVariablesInArith(variables);
+	secondTerm->getVariablesInArith(variables);
+	cerr<<"RESULT ";(*variables.begin())->print(cerr);cerr<<" "<<result<<endl;
+	substitutionTerm[(*variables.begin())->getLocalVariableIndex()]=constantTerm;
+
+	return true;
+}
 
 //TODO - This method have to be removed, use only groundAndEvaluate
 bool BuiltInAtom::evaluate(var_assignment& substitutionTerm){
@@ -24,15 +50,9 @@ bool BuiltInAtom::evaluate(var_assignment& substitutionTerm){
 
 	// If there is equal and variable assign that value
 	if(assignment){
-		if(firstTerm->getType()==TermType::VARIABLE || secondTerm->getType()!=TermType::VARIABLE ){
-			substitutionTerm[firstTerm->getLocalVariableIndex()]=secondTerm->calculate();
-			return true;
-		}if(firstTerm->getType()!=TermType::VARIABLE || secondTerm->getType()==TermType::VARIABLE ){
-			substitutionTerm[secondTerm->getLocalVariableIndex()]=firstTerm->calculate();
-			return true;
-	    }
-	}
+		return calculateVariableInAssignment(firstTerm,	secondTerm, substitutionTerm) ;
 
+	}
 
 	if(binop==Binop::EQUAL)
 		return firstTerm->getIndex()==secondTerm->getIndex();
@@ -51,21 +71,18 @@ bool BuiltInAtom::evaluate(var_assignment& substitutionTerm){
 }
 
 bool BuiltInAtom::groundAndEvaluate(var_assignment& substitutionTerm){
-	Term* firstTerm=terms[0]->substitute(substitutionTerm)->calculate();
+	Term* firstTerm=terms[0]->substitute(substitutionTerm);
 
-	Term* secondTerm=terms[1]->substitute(substitutionTerm)->calculate();
+	Term* secondTerm=terms[1]->substitute(substitutionTerm);
 
 
 	// If there is equal and variable assign that value
 	if(assignment){
-		if(firstTerm->getType()==TermType::VARIABLE || secondTerm->getType()!=TermType::VARIABLE ){
-			substitutionTerm[firstTerm->getLocalVariableIndex()]=secondTerm->calculate();
-			return true;
-		}if(firstTerm->getType()!=TermType::VARIABLE || secondTerm->getType()==TermType::VARIABLE ){
-			substitutionTerm[secondTerm->getLocalVariableIndex()]=firstTerm->calculate();
-			return true;
-	    }
+		return calculateVariableInAssignment(firstTerm,	secondTerm, substitutionTerm) ;
 	}
+
+	firstTerm=firstTerm->calculate();
+	secondTerm=secondTerm->calculate();
 
 
 	if(binop==Binop::EQUAL)
