@@ -478,8 +478,6 @@ void BackTrackingGrounder::findBindVariablesRule() {
 				unsigned var=variable->getLocalVariableIndex();
 				atoms_bind_variables[index_current_atom].push_back(var);
 				variablesBinder[var]=index_current_atom;
-				cout<<"VAR: ";variable->print();
-				cout<<" Binder: "<<index_current_atom<<endl;
 			}
 		}
 
@@ -508,12 +506,12 @@ void BackTrackingGrounder::findBindVariablesRule() {
 
 	current_assignment.setSize(currentRule->getVariablesSize(),nullptr);
 
-//	trace_action_tag(backjumping,1,cerr<<"VARIABLES BINDER: ";
+	trace_action_tag(backjumping,1,cerr<<"VARIABLES BINDER: ";
 		for(unsigned i=0;i<currentRule->getSizeBody();++i){
 			cerr<<variablesBinder[i]<<" ";
 		}
 		cerr<<endl;
-//	);
+	);
 
 
 	trace_action_tag(backtracking,1,
