@@ -36,6 +36,7 @@ void TextualOutputBuilder::onChoiceAtom(Atom* atom) {
 }
 
 unsigned TextualOutputBuilder::onAggregate(Atom* atom) {
+	return 0;
 }
 
 void TextualOutputBuilder::onAggregateElement(Atom* atom) {

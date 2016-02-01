@@ -15,7 +15,7 @@ struct VAR{
 struct LINE{//k*x+a
 	float a, k;
 
-	LINE(){}
+	LINE():a(0),k(0){}
 	LINE(int a) : a(a), k(0){}
 	LINE(VAR v) : a(0), k(1){}
 	LINE(const LINE& l):a(l.a),k(l.k){}

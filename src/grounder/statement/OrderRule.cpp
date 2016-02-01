@@ -16,7 +16,6 @@ namespace DLV2 {
 namespace grounder {
 
 OrderRule::OrderRule(Rule* r):rule(r){
-	unsigned atom_counter=0;
 	bindAtomsDependency.reserve(r->getSizeBody());
 	computeAtomsVariables();
 	for(unsigned atom_counter=0;atom_counter<rule->getSizeBody();++atom_counter){

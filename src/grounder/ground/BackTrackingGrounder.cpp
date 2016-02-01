@@ -576,7 +576,7 @@ void BackTrackingGrounder::findBuiltinFastEvaluated(){
 			auto varInBuiltin=atom->getVariable();
 			unsigned positionAtomBinder=0;
 			for(auto variable:varInBuiltin)
-				if(variablesBinder[variable->getLocalVariableIndex()]>positionAtomBinder)
+				if(variablesBinder[variable->getLocalVariableIndex()]>(int)positionAtomBinder)
 					positionAtomBinder=variablesBinder[variable->getLocalVariableIndex()];
 
 			Atom * possibleBinder=currentRule->getAtomInBody(positionAtomBinder);

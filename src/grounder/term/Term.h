@@ -162,7 +162,7 @@ public:
 	///Set the local index of the variable in the rule
 	inline virtual void setLocalVariableIndex(index_object index){};
 	//Transform the arith term in LINE struct for the evaluation of the equation
-	virtual LINE transformToLineEq(){};
+	virtual LINE transformToLineEq(){return LINE();};
 
 	virtual ~Term(){};
 protected:

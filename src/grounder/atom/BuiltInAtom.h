@@ -98,18 +98,6 @@ public:
 		return true;
 	}
 
-	virtual void rewriteBuiltin(Term* variableToRewrite){
-		unsigned count=0;
-		bool positive=true;
-		for(unsigned i=0;i<terms.size();i++){
-			if(terms[i]->getIndex()==variableToRewrite->getIndex()){
-//				if(operator =())
-				count++;
-			}
-		}
-
-	}
-
 
 	///Destructor
 	~BuiltInAtom() {};

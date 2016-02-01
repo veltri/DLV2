@@ -275,6 +275,10 @@ public:
 		return variablesSize;
 	}
 
+	virtual bool isWeakConstraint(){
+		return false;
+	}
+
 	//-----------------Rule Information Interface -------------------------------
 
 	set_term::const_iterator getDictionaryIntersectionBegin(index_object index) const {
@@ -352,6 +356,36 @@ private:
 
 	unsigned variablesSize;
 
+};
+
+class WeakConstraint : public Rule{
+public:
+
+	WeakConstraint():weight(nullptr),level(nullptr){}
+
+	WeakConstraint(const Rule& rule,Term* weight, Term* level,vector<Term*> terms):weight(weight),level(level),label(terms){
+
+	}
+
+	virtual bool isWeakConstraint(){return true;}
+
+	const vector<Term*>& getLabel() const {return label;}
+
+	void setLabel(vector<Term*> label) {	this->label = label;}
+
+	Term* getLevel() const {	return level;}
+
+	void setLevel(Term* level) {	this->level = level;}
+
+	Term* getWeight() const {return weight;}
+
+	void setWeight(Term* weight) {this->weight = weight;}
+
+private:
+	Term* weight;
+	Term* level;
+
+	vector<Term*> label;
 };
 
 
