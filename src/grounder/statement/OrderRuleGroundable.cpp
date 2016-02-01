@@ -20,6 +20,7 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchTy
 	this->predicate_searchInsert_table=predicate_searchInsert_table;
 	unsigned sizeBody=rule->getSizeBody();
 	atomsVariables.resize(sizeBody);
+
 	for(unsigned i=0;i<sizeBody;i++){
 		Atom* atom=rule->getAtomInBody(i);
 		if(atom->isAggregateAtom()){
@@ -181,6 +182,7 @@ void OrderRuleGroundable::computeDictionaryIntersection(Atom* atom) {
 	}
 }
 
+
 /****************************************** AllOrderRuleGroundable ***********************************************/
 
 unsigned AllOrderRuleGroundable::computePredicateExtensionSize(	unsigned atomPosition, Predicate* p) {
@@ -229,34 +231,19 @@ list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(list<unsigned>& a
 				cerr<<" Weight: "<<weight<<endl;
 			);
 
-		if(weight<bestWeight){
+		if(!bound && weight<bestWeight){
 			bestWeight=weight;
 			bestAtomIt=it;
-			Predicate* p=rule->getAtomInBody(*bestAtomIt)->getPredicate();
-			if(p!=nullptr)
-				bestAtomExtensionSize = computePredicateExtensionSize(*bestAtomIt, p);
-			else
-				bestAtomExtensionSize = 0;
+			bestAtomExtensionSize = manageEqualWeights(*bestAtomIt); //computePredicateExtensionSize(*bestAtomIt, p);
 		}
 //		If two atoms have the same weight we prefer the one with the lower extension size
-		else if(weight==bestWeight){
-			Predicate* p=rule->getAtomInBody(*it)->getPredicate();
-			if(p!=nullptr){
-//				unsigned extensionSize = computePredicateExtensionSize(*it, p);
-//				if(extensionSize<bestAtomExtensionSize)
-//				{
-//					bestWeight=weight;
-//					bestAtomIt=it;
-//					bestAtomExtensionSize=extensionSize;
-//				}
-				double forwardWeight=computeForwardWeight(*it);
-				if(forwardWeight<bestAtomExtensionSize){
-					bestWeight=weight;
-					bestAtomIt=it;
-					bestAtomExtensionSize=forwardWeight;
-				}
+		else if(!bound && weight==bestWeight){
+			double secondaryWeight=manageEqualWeights(*it);
+			if(secondaryWeight<bestAtomExtensionSize){
+				bestWeight=weight;
+				bestAtomIt=it;
+				bestAtomExtensionSize=secondaryWeight;
 			}
-
 		}
 	}
 	//TODO Add all bound atoms all together and avoid the weigh update if no bind atom has been added
@@ -266,6 +253,14 @@ list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(list<unsigned>& a
 	);
 
 	return bestAtomIt;
+}
+
+double AllOrderRuleGroundable::manageEqualWeights(unsigned originalPosition) {
+	Atom* atom=rule->getAtomInBody(originalPosition);
+	Predicate* predicate=atom->getPredicate();
+	if(predicate!=nullptr)
+		return computePredicateExtensionSize(originalPosition, predicate);
+	return 0;
 }
 
 /****************************************** CombinedCriterion ***********************************************/
@@ -431,8 +426,13 @@ double CombinedCriterion4::assignWeightPositiveClassicalLit(Atom* atom, unsigned
 	return sel_c;
 }
 
-double IndexingArgumentsOrderRuleGroundable::computeForwardWeight(unsigned originalPosition) {
-	PredicateExtension* predicateExtension=PredicateExtTable::getInstance()->getPredicateExt(rule->getAtomInBody(originalPosition)->getPredicate());
+double IndexingArgumentsOrderRuleGroundable::manageEqualWeights(unsigned originalPosition) {
+	Atom* atom=rule->getAtomInBody(originalPosition);
+	Predicate* predicate=atom->getPredicate();
+	if(predicate==nullptr)
+		return 0;
+
+	PredicateExtension* predicateExtension=PredicateExtTable::getInstance()->getPredicateExt(atom->getPredicate());
 	double forwardWeight = predicateExtension->getPredicateExtentionSize();
 	for (auto j : atomsToInsert) {
 		Atom* a = rule->getAtomInBody(j);
@@ -484,7 +484,7 @@ double IndexingArgumentsOrderRuleGroundable::assignWeightPositiveClassicalLit(At
 	double max=0;
 	double secondMax=0;
 	double backwardWeight=currentJoinSize;
-	if(currentJoinSize==0)
+	if(currentJoinSize==1)
 		backwardWeight=size;
 	else{
 		for(unsigned i=0;i<atom->getTermsSize();++i){
@@ -512,7 +512,7 @@ double IndexingArgumentsOrderRuleGroundable::assignWeightPositiveClassicalLit(At
 }
 
 void IndexingArgumentsOrderRuleGroundable::update(Atom* atomAdded, unsigned originalPosition) {
-	if(atomAdded->isClassicalLiteral() && !atomAdded->isNegative())
+	if(atomAdded->isClassicalLiteral() && !atomAdded->isNegative() && originalPosition<backwardWeights.size())
 		currentJoinSize*=backwardWeights[originalPosition];
 }
 
@@ -520,7 +520,7 @@ void IndexingArgumentsOrderRuleGroundable::computeBoundArgumentsSelectivities() 
 	unsigned sizeBody=rule->getSizeBody();
 	boundArgumentsSelectivities.resize(sizeBody);
 	variablesInTerms.resize(sizeBody);
-	backwardWeights.resize(sizeBody,0);
+	backwardWeights.resize(sizeBody,1);
 	unsigned atom_pos=0;
 	for(auto it=rule->getBeginBody();it!=rule->getEndBody();++it,++atom_pos){
 		Atom* atom=*it;

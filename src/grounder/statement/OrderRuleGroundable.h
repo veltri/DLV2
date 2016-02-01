@@ -83,7 +83,7 @@ public:
 	virtual double assignWeightAggregateAtom(Atom* atom, unsigned originalPosition){return priorities.UNDEFINED_AGGREGATE_ASSIGNMENT;};
 	virtual double assignWeightBuiltInAtom(Atom* atom, unsigned originalPosition){return priorities.BUILT_IN;};
 	virtual void update(Atom* atomAdded, unsigned originalPosition){};
-	virtual double computeForwardWeight(unsigned originalPosition){return 0;};
+	virtual double manageEqualWeights(unsigned originalPosition);
 
 private:
 	unsigned computePredicateExtensionSize(unsigned atomPosition, Predicate* p);
@@ -106,12 +106,12 @@ protected:
 
 class IndexingArgumentsOrderRuleGroundable  : public AllOrderRuleGroundable{
 public:
-	IndexingArgumentsOrderRuleGroundable(Rule* rule):AllOrderRuleGroundable(rule),DOUBLE_INDEX_THRESHOLD(0.3),currentJoinSize(0){}
-	IndexingArgumentsOrderRuleGroundable(Rule* rule,Priority p):AllOrderRuleGroundable(rule,p),DOUBLE_INDEX_THRESHOLD(0.3),currentJoinSize(0){}
+	IndexingArgumentsOrderRuleGroundable(Rule* rule):AllOrderRuleGroundable(rule),DOUBLE_INDEX_THRESHOLD(0.3),currentJoinSize(1){}
+	IndexingArgumentsOrderRuleGroundable(Rule* rule,Priority p):AllOrderRuleGroundable(rule,p),DOUBLE_INDEX_THRESHOLD(0.3),currentJoinSize(1){}
 	virtual ~IndexingArgumentsOrderRuleGroundable(){}
 	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
 	virtual void update(Atom* atomAdded, unsigned originalPosition);
-	double computeForwardWeight(unsigned originalPosition);
+	virtual double manageEqualWeights(unsigned originalPosition);
 
 private:
 	void computeBoundArgumentsSelectivities();
