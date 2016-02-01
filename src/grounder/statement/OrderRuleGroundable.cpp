@@ -232,10 +232,11 @@ list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(list<unsigned>& a
 				cerr<<" Weight: "<<weight<<endl;
 			);
 
-		if(!bound && weight<bestWeight){
+		if(weight<bestWeight){
 			bestWeight=weight;
 			bestAtomIt=it;
-			bestAtomExtensionSize = manageEqualWeights(*bestAtomIt); //computePredicateExtensionSize(*bestAtomIt, p);
+			if(!bound)
+				bestAtomExtensionSize = manageEqualWeights(*bestAtomIt); //computePredicateExtensionSize(*bestAtomIt, p);
 		}
 //		If two atoms have the same weight we prefer the one with the lower extension size
 		else if(!bound && weight==bestWeight){
