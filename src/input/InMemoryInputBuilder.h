@@ -96,6 +96,10 @@ private:
 
 	vector<Term*> terms_parsered;
 
+	Term* weight;
+
+	Term* level;
+
 	bool foundARangeAtomInCurrentRule;
 
 	Rule *currentRule;

@@ -597,6 +597,8 @@ void StatementDependency::addRuleMapping(Rule* r) {
 	if(r->isAStrongConstraint()){
 		constraints.push_back(r);
 		statementAtomMapping.addRule(r);
+	}else if(r->isWeakConstraint()){
+		weak.push_back(r);
 	}else{
 		set_predicate pred_head=r->getPredicateInHead();
 		for(auto p:pred_head)p->setIdb();

@@ -30,7 +30,9 @@ InMemoryInputBuilder::InMemoryInputBuilder() :
 	currentAggregate(nullptr),
 	currentAggregateElement(new AggregateElement),
 	currentChoice(nullptr),
-	currentChoiceElement(new ChoiceElement)
+	currentChoiceElement(new ChoiceElement),
+	weight(nullptr),
+	level(nullptr)
 {
 	switch (Options::globalOptions()->getRewritingType()) {
 		case DISJUNCTION:
@@ -105,6 +107,17 @@ void InMemoryInputBuilder::onConstraint() {
 }
 
 void InMemoryInputBuilder::onWeakConstraint() {
+
+	Rule * weakRule=new WeakConstraint(currentRule->getBody(),weight,level,terms_parsered);
+	OrderRule orderRule(weakRule);
+	bool isSafe = orderRule.order();
+	safetyError(isSafe,"RULE IS UNSAFE");
+	statementDependency->addRuleMapping(weakRule);
+
+	currentRule = new Rule;
+	terms_parsered.clear();
+	weight=nullptr;
+	level=nullptr;
 }
 
 void InMemoryInputBuilder::onQuery() {
@@ -314,6 +327,17 @@ void InMemoryInputBuilder::onArithmeticOperation(char arithOperator) {
 
 void InMemoryInputBuilder::onWeightAtLevels(int nWeight, int nLevel,
 		int nTerm) {
+	//TODO ERROR IN PARSER
+	if(nWeight==0){
+		nTerm--;
+		nWeight=1;
+	}
+	weight=terms_parsered[0];
+	if(nLevel>0){
+		level=terms_parsered[nWeight];
+	}
+	if(nLevel+nWeight>0)
+		terms_parsered.erase(terms_parsered.begin(),terms_parsered.begin()+nLevel+nWeight);
 }
 
 void InMemoryInputBuilder::onChoiceLowerGuard() {

@@ -269,5 +269,73 @@ void Rule::computeVariablesLocalIndices() {
 	this->variablesSize=variableLocalIndex.size();
 }
 
-}}
+// ******************************* WeakConstraint *****************************************
 
+void WeakConstraint::print(ostream& stream){
+	//Print for debug
+	if(!ground){printNonGround(stream);return;}
+	bool firstAtomPrinted=false;
+	stream<<":~";
+	unsigned int i=0;
+	for (auto atom:body) {
+		if(firstAtomPrinted && !simplifiedBody[i])
+			stream<<";";
+		if(!simplifiedBody[i]){
+			atom->print(stream);
+			if(!firstAtomPrinted)
+				firstAtomPrinted=true;
+		}
+		i++;
+	}
+	stream<<". [";
+	if(weight!=nullptr)
+		weight->print(stream);
+	stream<<"@";
+	if(level!=nullptr)
+		level->print(stream);
+	for(unsigned i=0;i<label.size();i++){
+		stream<<",";
+		label[i]->print(stream);
+	}
+	stream<<"]"<<endl;
+}
+
+void WeakConstraint::printNonGround(ostream& stream){
+	bool firstAtomPrinted=false;
+	stream<<":~";
+	for(unsigned i=0;i<body.size();i++){
+		if(i!=0)stream<<",";
+		body[i]->print(stream);
+	}
+	stream<<". [";
+	if(weight!=nullptr)
+		weight->print(stream);
+	stream<<"@";
+	if(level!=nullptr)
+		level->print(stream);
+	for(unsigned i=0;i<label.size();i++){
+		stream<<",";
+		label[i]->print(stream);
+	}
+	stream<<"]"<<endl;
+}
+
+
+
+tupleWeak WeakConstraint::groundWeightLevel(var_assignment& current_assignment){
+	tupleWeak groundSquare;
+	get<0>(groundSquare)=weight->substitute(current_assignment)->calculate();
+	get<1>(groundSquare)=level->substitute(current_assignment)->calculate();
+	for(auto t:label)
+		get<2>(groundSquare).push_back(t->substitute(current_assignment)->calculate());
+
+	return groundSquare;
+}
+
+
+
+
+
+
+}
+}

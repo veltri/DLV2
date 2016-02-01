@@ -19,6 +19,10 @@ namespace DLV2{
 
 namespace grounder{
 
+///Tuple for the grounding part of the weak: Weight,Level, Terms (the label of the weak)
+using tupleWeak = tuple<Term*,Term*,vector<Term*>>;
+
+
 ///RuleInformation contain the information of rule relative:
 ///		- The number of the variable in the body of the rule
 ///		- The intersection of the dictionary for each positive classical literal
@@ -129,6 +133,8 @@ private:
 	vector<vector<Atom*>> bounderBuiltins;
 };
 
+
+
 /**
  * @brief This class represents a rule with its body and head atoms
  */
@@ -164,7 +170,7 @@ public:
 	void setHead(const vector<Atom*>& head) {this->head = head;}
 
 	///This method returns true if it is a strong constrain
-	bool isAStrongConstraint(){return head.empty();}
+	virtual bool isAStrongConstraint(){return head.empty();}
 	///This method returns true if it is a fact
 	bool isAFact(){return body.empty() && head.size()==1 && head[0]->isClassicalLiteral();}
 
@@ -232,7 +238,7 @@ public:
 	void clear(){head.clear();body.clear();};
 
 	///Printer method
-	void print(ostream& stream=cout);
+	virtual void print(ostream& stream=cout);
 
 	/** @brief Equal-to operator for rules
 	 *  @details Two rules are equal if they have the same atoms in the body and in the head regardless the order in which they appear
@@ -278,6 +284,13 @@ public:
 	virtual bool isWeakConstraint(){
 		return false;
 	}
+
+	virtual const vector<Term*>& getLabel() const {}
+	virtual Term* getLevel() const {	return nullptr;}
+	virtual Term* getWeight() const {return nullptr;}
+	virtual void setWeightLevelLabel(tupleWeak&& tp){};
+	virtual tupleWeak groundWeightLevel(var_assignment& current_assignment){return make_tuple(nullptr,nullptr,vector<Term*>());}
+
 
 	//-----------------Rule Information Interface -------------------------------
 
@@ -327,7 +340,7 @@ public:
 		ruleInformation.clearBounderBuiltin();
 	}
 
-private:
+protected:
 
 	/// Return the predicate in atoms vector, if checkNegative is true compare the negative of atom with the parameter
 	/// else insert the predicate
@@ -348,7 +361,7 @@ private:
 	///An array containing true at a position in the body if that atom has to be simplified, false otherwise
 	bool* simplifiedBody;
 
-	void printNonGround(ostream& stream=cout);
+	virtual void printNonGround(ostream& stream=cout);
 
 	bool mustBeRewritedForAggregates;
 
@@ -358,20 +371,26 @@ private:
 
 };
 
+
+
 class WeakConstraint : public Rule{
 public:
 
+
 	WeakConstraint():weight(nullptr),level(nullptr){}
 
-	WeakConstraint(const Rule& rule,Term* weight, Term* level,vector<Term*> terms):weight(weight),level(level),label(terms){
-
+	WeakConstraint(const vector<Atom*>& body,Term* weight, Term* level,const vector<Term*>& terms):weight(weight),level((level==nullptr)?TermTable::getInstance()->term_zero:level),label(terms){
+		this->body=body;
 	}
 
+	WeakConstraint(bool g, unsigned sizeBody,const vector<Atom*>& body,Term* weight, Term* level,const vector<Term*>& terms):Rule(g,0,sizeBody),weight(weight),level((level==nullptr)?TermTable::getInstance()->term_zero:level),label(terms){
+		this->body=body;
+	}
 	virtual bool isWeakConstraint(){return true;}
 
 	const vector<Term*>& getLabel() const {return label;}
 
-	void setLabel(vector<Term*> label) {	this->label = label;}
+	void setLabel(const vector<Term*>& label) {	this->label = move(label);}
 
 	Term* getLevel() const {	return level;}
 
@@ -380,6 +399,21 @@ public:
 	Term* getWeight() const {return weight;}
 
 	void setWeight(Term* weight) {this->weight = weight;}
+
+	virtual void print(ostream& stream=cout);
+
+	bool isAStrongConstraint(){return false;}
+
+	void printNonGround(ostream& stream=cout);
+
+	virtual void setWeightLevelLabel(tupleWeak&& groundWeightLevelLabel){
+		weight=get<0>(groundWeightLevelLabel);
+		level=get<1>(groundWeightLevelLabel);
+		label=move(get<2>(groundWeightLevelLabel));
+	};
+
+	///Ground the Weight, the level and the label of the weak and return with the tuple
+	tupleWeak groundWeightLevel(var_assignment& current_assignment);
 
 private:
 	Term* weight;

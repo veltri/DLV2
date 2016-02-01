@@ -196,7 +196,7 @@ public:
 	vector<Rule*>::iterator getBeginConstraints(){return constraints.begin();}
 	vector<Rule*>::iterator getEndConstraints(){return constraints.end();}
 
-
+	const vector<Rule*>& getWeakContraint(){return weak;}
 
 	bool isOnlyInHead(index_object predicate){
 		return (!statementAtomMapping.isInBody(predicate));
@@ -248,6 +248,8 @@ private:
 	vector<Rule*> rules;
 	/// The vector of contraints composing the program
 	vector<Rule*> constraints;
+	/// The vector of weak contraints composing the program
+	vector<Rule*> weak;
 	/// This method checks if a rule is a recursive rule or an exit rule
 	/// An rule occurring in a component is recursive if there is a predicate belonging
 	/// to the component in its positive body, otherwise it is said to be an exit rule.

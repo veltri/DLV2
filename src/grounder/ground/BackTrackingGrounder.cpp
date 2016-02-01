@@ -271,10 +271,11 @@ bool BackTrackingGrounder::foundAssignment() {
 	callFoundAssignment=true;
 	bool isAChoiceRule=currentRule->isChoiceRule();
 	bool undefinedAtomInBody=ground_rule->areThereUndefinedAtomInBody();
-	bool strongConstraint=ground_rule->isAStrongConstraint();
+	bool strongConstraint=currentRule->isAStrongConstraint();
 	bool head_true=(currentRule->getSizeHead() <= 1  && !isAChoiceRule) && (!undefinedAtomInBody);
 	bool ground_new_atom=false;
 	bool find_new_true_atom=false;
+	bool isWeak=currentRule->isWeakConstraint();
 	unsigned atom_counter=0;
 	Atom *searchAtom=nullptr;
 	if(isAChoiceRule)
@@ -345,7 +346,11 @@ bool BackTrackingGrounder::foundAssignment() {
 		}
 	}
 	//Print if ground new atom, an atom changed from undef to true, the rule is a strong constraint, there are some undefined atom in body
-	else if( ground_new_atom || (!ground_new_atom && !head_true) || (find_new_true_atom && head_true) || strongConstraint || undefinedAtomInBody){
+	else if( ground_new_atom || (!ground_new_atom && !head_true) || (find_new_true_atom && head_true) || strongConstraint || undefinedAtomInBody || isWeak){
+		if(isWeak)
+			ground_rule->setWeightLevelLabel(currentRule->groundWeightLevel(current_assignment));
+
+
 		outputBuilder->onRule(ground_rule);
 	}
 	if(strongConstraint && !undefinedAtomInBody){throw ConstrainException{};};
@@ -407,6 +412,16 @@ void BackTrackingGrounder::inizialize(Rule* rule, unordered_set<index_object>* c
 
 	if(ground_rule==0)
 		ground_rule=new Rule(true, rule->getSizeHead(), rule->getSizeBody());
+	else if(ground_rule->isWeakConstraint() != currentRule->isWeakConstraint()){
+		bool isGroundRuleWeak=ground_rule->isWeakConstraint();
+		delete ground_rule;
+		if(!isGroundRuleWeak && currentRule->isWeakConstraint()){
+			ground_rule=new WeakConstraint(true,rule->getSizeBody(),currentRule->getBody(),currentRule->getWeight(),currentRule->getLevel(),currentRule->getLabel());
+			cout<<"CHANGE"<<endl;
+		}else
+			ground_rule=new Rule(true, rule->getSizeHead(), rule->getSizeBody());
+
+	}
 	else{
 		ground_rule->deleteGroundRule();
 		ground_rule=new Rule(true, rule->getSizeHead(), rule->getSizeBody());
