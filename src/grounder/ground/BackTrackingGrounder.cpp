@@ -95,7 +95,7 @@ bool BackTrackingGrounder::findGroundMatch(){
 
 	//If at least a possible undef atom has been found then update accordingly the vector of undef atoms of this rule
 	if(negativeToClone){
-		while(!atomsPossibleUndef.empty() && atomsPossibleUndef.back()>=index_current_atom)
+		while(!atomsPossibleUndef.empty() && int(atomsPossibleUndef.back())>=index_current_atom)
 			atomsPossibleUndef.pop_back();
 		if(isPossibleUndef && !ground_rule->isAtomToSimplifyInBody(index_current_atom))
 			atomsPossibleUndef.push_back(index_current_atom);
@@ -443,8 +443,8 @@ void BackTrackingGrounder::findBoundTerms(unsigned int index_current_atom, unsig
 		bool bound = true;
 		for(auto v:vars){
 			unsigned localIdx=v->getLocalVariableIndex();
-			if(variablesBinder[localIdx]==-1 || variablesBinder[localIdx]>=index_current_atom){
-				bound=false;
+			if(variablesBinder[localIdx]==-1 || (variablesBinder[localIdx]>=0 && unsigned(variablesBinder[localIdx])>=index_current_atom)){
+			bound=false;
 				break;
 			}
 		}
@@ -929,7 +929,7 @@ void BackTrackingGrounder::createAtomSearchersForPredicateBody(unsigned position
 			unsigned nextBestSelectivityArg=0;
 			PredicateInformation* predicateInfo=predicateExtTable->getPredicateExt(predicate)->getPredicateInformation();
 			for(auto boundArg:boundTermsInAtoms[position-currentRule->getSizeHead()][atomPos]){
-				if(boundArg==indexingTermSetByUser){
+				if(indexingTermSetByUser>=0 && boundArg==unsigned(indexingTermSetByUser)){
 					bestArg=indexingTermSetByUser;
 					break;
 				}
