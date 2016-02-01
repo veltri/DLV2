@@ -13,7 +13,7 @@ namespace grounder {
 
 /******************************************************* ATOM SEARCHER ***************************************************/
 
-bool AtomSearcher::checkMatch(Atom *genericAtom, Atom *templateAtom, var_assignment& currentAssignment,const RuleInformation& ruleInformation){
+bool AtomSearcher::checkMatch(Atom *genericAtom, Atom *templateAtom, var_assignment& currentAssignment,const RuleInformation& ruleInformation,const vector<unsigned>& outputVariables){
 	// Checks the match for each term and, if all the terms match, updates the current assignment accordingly
 	var_assignment assignInTerm(currentAssignment);
 
@@ -30,13 +30,21 @@ bool AtomSearcher::checkMatch(Atom *genericAtom, Atom *templateAtom, var_assignm
 	for(auto variable:variablesAdded){
 		currentAssignment[variable]=assignInTerm[variable];
 	}
-	vector<Term*> outputVariablesValue;
+	if(!outputVariables.empty()&& outputVariables.size()!=genericAtom->getPredicate()->getArity()){
+		vector<Term*> outputVariablesTerms;
+		outputVariablesTerms.reserve(outputVariables.size());
+		for(auto i:outputVariables){
+			outputVariablesTerms.push_back(genericAtom->getTerm(i));
+			genericAtom->getTerm(i)->print();
+		}
 
-	//TODO .....
+		if(!(outputVariablesValues.insert(outputVariablesTerms).second)){
+			cout<<" False"<<endl;
+			return false;
+		}
+	}
 
-	//Aggiungere anche controllo su quante sono le var di output
-	if(!outputVariablesValues.insert(outputVariablesValue).second)
-		return false;
+	cout<<" True"<<endl;
 
 	return true;
 }
@@ -111,9 +119,9 @@ bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, var_assignmen
 
 }
 
-void AtomSearcher::firstMatch(unsigned id,Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation,IndexingStructure* indexingStructure,unsigned arg,const pair<SearchType,unsigned>& searchSpecification) {
+void AtomSearcher::firstMatch(unsigned id,Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation,IndexingStructure* indexingStructure,unsigned arg,const vector<unsigned>& outputVariables,const pair<SearchType,unsigned>& searchSpecification) {
 	GeneralIterator* currentMatch=indexingStructure->computeMatchIterator(templateAtom,ruleInformation,searchSpecification,arg);
-	if(computeMatch(currentMatch,templateAtom,currentAssignment,atomFound,ruleInformation)){
+	if(computeMatch(currentMatch,templateAtom,currentAssignment,atomFound,ruleInformation,outputVariables)){
 		delete resultVector[id];
 		resultVector[id]=currentMatch;
 		outputVariablesValues.clear();
@@ -122,9 +130,9 @@ void AtomSearcher::firstMatch(unsigned id,Atom *templateAtom, var_assignment& cu
 	delete currentMatch;
 }
 
-bool AtomSearcher::computeMatch(GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation){
+bool AtomSearcher::computeMatch(GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation,const vector<unsigned>& outputVariables){
 	for(;!currentMatch->isDone();currentMatch->next()){
-		if (checkMatch(currentMatch->currentItem(),templateAtom,currentAssignment,ruleInformation)){
+		if (checkMatch(currentMatch->currentItem(),templateAtom,currentAssignment,ruleInformation,outputVariables)){
 			atomFound=currentMatch->currentItem();
 			return true;
 		}
@@ -133,10 +141,10 @@ bool AtomSearcher::computeMatch(GeneralIterator* currentMatch, Atom *templateAto
 	return false;
 }
 
-void AtomSearcher::nextMatch(unsigned int id, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation) {
+void AtomSearcher::nextMatch(unsigned int id, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation,const vector<unsigned>& outputVariables) {
 	GeneralIterator* currentMatch=resultVector[id];
 	currentMatch->next();
-	computeMatch(currentMatch,templateAtom,currentAssignment,atomFound,ruleInformation);
+	computeMatch(currentMatch,templateAtom,currentAssignment,atomFound,ruleInformation,outputVariables);
 
 }
 

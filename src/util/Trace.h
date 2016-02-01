@@ -103,8 +103,8 @@ TraceLevels::TraceLevels()
     types.push_back( pair< string, unsigned >( "grounding", 2 ) );
     types.push_back( pair< string, unsigned >( "aggregates", 0 ) );
     types.push_back( pair< string, unsigned >( "weakconstraints", 0 ) );
-    types.push_back( pair< string, unsigned >( "backjumping", 2 ) );
-    types.push_back( pair< string, unsigned >( "backtracking", 2 ) );
+    types.push_back( pair< string, unsigned >( "backjumping", 0 ) );
+    types.push_back( pair< string, unsigned >( "backtracking", 0 ) );
 
 }
 

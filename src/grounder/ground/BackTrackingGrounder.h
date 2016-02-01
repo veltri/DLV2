@@ -130,6 +130,8 @@ protected:
 
 	vector<vector<unsigned>> indexingArguments;
 
+	vector<vector<unsigned>> outputVariablesInAtoms;
+
 	virtual void createAtomSearchersForPredicateBody(unsigned position, unsigned atomPos, Predicate* predicate, unsigned sizeRule, unordered_set<index_object>* componentPredicateInHead);
 
 #ifdef TRACE_ON

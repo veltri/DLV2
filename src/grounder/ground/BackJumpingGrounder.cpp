@@ -84,9 +84,6 @@ void BackJumpingGrounder::inizialize(Rule* rule, unordered_set<index_object>* co
 
 	failureMap.resize(current_assignment.size(),false);
 
-	outputVariablesInAtoms.clear();
-	outputVariablesInAtoms.resize(currentRule->getSizeBody());
-
 	outputVariables.clear();
 	for (auto it=currentRule->getBeginHead();it!=currentRule->getEndHead(); ++it) {
 		Atom* atom=*it;
@@ -125,16 +122,16 @@ void BackJumpingGrounder::inizialize(Rule* rule, unordered_set<index_object>* co
 		Atom* atom=*it;
 		if(atom->isClassicalLiteral() && !atom->isNegative() && atom->getPredicate()->isSolved()){
 			outputVariablesInAtoms[position].reserve(atom->getTermsSize());
-//			atom->print();cout<<endl;
+			atom->print();cout<<endl;
 			for(unsigned i=0;i<atom->getTermsSize();++i){
 				set_term variables;
 				atom->getTerm(i)->getVariable(variables);
 				if(!Utils::isDisjoint(variables,outputVariables)){
 					outputVariablesInAtoms[position].push_back(i);
-//					cout<<i<<" "<<"Output"<<endl;
+					cout<<i<<" "<<"Output"<<endl;
 				}
-//				else
-//					cout<<i<<" "<<"No"<<endl;
+				else
+					cout<<i<<" "<<"No"<<endl;
 
 			}
 		}
