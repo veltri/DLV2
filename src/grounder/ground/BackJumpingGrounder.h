@@ -67,6 +67,8 @@ private:
 	/// Map of variables bool. If the boolean is true the variable is in the failure set
 	vector<bool> failureMap;
 
+	vector<vector<unsigned>> outputVariablesInAtoms;
+
 
 	int historyBackFromSolutionFound;
 

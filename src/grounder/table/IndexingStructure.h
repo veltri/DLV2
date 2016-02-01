@@ -290,6 +290,20 @@ private:
 };
 
 
+struct HashVectorOfTerms{
+	inline size_t operator()(const vector<Term*>& obj) const {
+		return HashVecInt::getHashVecInt()->computeHashTerm(obj);
+	}
+
+	inline bool operator()(const vector<Term*>& obj1, const vector<Term*>& obj2) const {
+		if(obj1.size()!=obj2.size())
+			return false;
+		for(unsigned i=0;i<obj1.size();++i)
+			if(obj1[i]->getIndex()!=obj2[i]->getIndex())
+				return false;
+		return true;
+	}
+};
 
 
 
@@ -361,6 +375,8 @@ protected:
 
 	//This vector stores the created indexing structures for the table
 	vector<IndexingStructure*> indexingStructures;
+
+	unordered_set<vector<Term*>,HashVectorOfTerms,HashVectorOfTerms> outputVariablesValues;
 
 };
 

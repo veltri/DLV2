@@ -30,9 +30,15 @@ bool AtomSearcher::checkMatch(Atom *genericAtom, Atom *templateAtom, var_assignm
 	for(auto variable:variablesAdded){
 		currentAssignment[variable]=assignInTerm[variable];
 	}
+	vector<Term*> outputVariablesValue;
+
+	//TODO .....
+
+	//Aggiungere anche controllo su quante sono le var di output
+	if(!outputVariablesValues.insert(outputVariablesValue).second)
+		return false;
 
 	return true;
-
 }
 
 /*
@@ -110,10 +116,10 @@ void AtomSearcher::firstMatch(unsigned id,Atom *templateAtom, var_assignment& cu
 	if(computeMatch(currentMatch,templateAtom,currentAssignment,atomFound,ruleInformation)){
 		delete resultVector[id];
 		resultVector[id]=currentMatch;
+		outputVariablesValues.clear();
 		return;
 	}
 	delete currentMatch;
-
 }
 
 bool AtomSearcher::computeMatch(GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation){
