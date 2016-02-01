@@ -39,34 +39,34 @@ void ProgramGrounder::printProgram(const vector<vector<Rule*> >& exitRules,	cons
 }
 
 #ifdef TRACE_ON
-void printTableInRule(Rule *rule,vector<vector<unsigned>>& predicate_searchInsert_table,bool body=true){
-	cerr<<endl;
-	PredicateExtTable *predicateExtTable=PredicateExtTable::getInstance();
+//void printTableInRule(Rule *rule,vector<vector<unsigned>>& predicate_searchInsert_table,bool body=true){
+//	cerr<<endl;
+//	PredicateExtTable *predicateExtTable=PredicateExtTable::getInstance();
 //	if(body){
-		for(unsigned i=0;i<rule->getSizeBody();i++){
-			Predicate* p=rule->getAtomInBody(i)->getPredicate();
-			if(p==nullptr) continue;
-			cerr<<"---> ATOM: ";rule->getAtomInBody(i)->print(cerr);cerr<<endl;
-			for(auto tableToSearch:predicate_searchInsert_table[i+rule->getSizeHead()]){
-				cerr<<"TABLE: "<<tableToSearch<<" --> ";
-				predicateExtTable->getPredicateExt(p)->getAtomSearcher(tableToSearch,0)->print(cerr);
-				cerr<<endl;
-			}
-		}
+//		for(unsigned i=0;i<rule->getSizeBody();i++){
+//			Predicate* p=rule->getAtomInBody(i)->getPredicate();
+//			if(p==nullptr) continue;
+//			cerr<<"---> ATOM: ";rule->getAtomInBody(i)->print(cerr);cerr<<endl;
+//			for(auto tableToSearch:predicate_searchInsert_table[i+rule->getSizeHead()]){
+//				cerr<<"TABLE: "<<tableToSearch<<" --> ";
+//				predicateExtTable->getPredicateExt(p)->getAtomSearcher(tableToSearch,0)->print(cerr);
+//				cerr<<endl;
+//			}
+//		}
 //	}
 //	else{
-		for(unsigned i=0;i<rule->getSizeHead();i++){
-			Predicate* p=rule->getAtomInHead(i)->getPredicate();
-			if(p==nullptr) continue;
-			cerr<<"---> ATOM: ";rule->getAtomInHead(i)->print(cerr);cerr<<endl;
-			for(auto tableToSearch:predicate_searchInsert_table[i]){
-				cerr<<"TABLE: "<<tableToSearch<<" --> ";
-				predicateExtTable->getPredicateExt(p)->getAtomSearcher(tableToSearch,0)->print(cerr);
-				cerr<<endl;
-			}
-		}
+//		for(unsigned i=0;i<rule->getSizeHead();i++){
+//			Predicate* p=rule->getAtomInHead(i)->getPredicate();
+//			if(p==nullptr) continue;
+//			cerr<<"---> ATOM: ";rule->getAtomInHead(i)->print(cerr);cerr<<endl;
+//			for(auto tableToSearch:predicate_searchInsert_table[i]){
+//				cerr<<"TABLE: "<<tableToSearch<<" --> ";
+//				predicateExtTable->getPredicateExt(p)->getAtomSearcher(tableToSearch,0)->print(cerr);
+//				cerr<<endl;
+//			}
+//		}
 //	}
-}
+//}
 #endif
 
 void ProgramGrounder::findRecursivePredicatesInComponentRules(const unordered_set<index_object>& componentPredicateInHead, vector<unsigned>& recursivePredicatesPositions, Rule* rule, vector<unsigned >& orderedBody) {
@@ -171,7 +171,7 @@ void ProgramGrounder::ground() {
 					continue;
 				}
 				trace_msg(grounding,1,"At first iteration the tables to search in  are: ");
-				trace_action_tag(grounding,2,printTableInRule(rule,predicate_searchInsert_table););
+//				trace_action_tag(grounding,2,printTableInRule(rule,predicate_searchInsert_table););
 
 				findRecursivePredicatesInComponentRules(componentPredicateInHead[component], recursivePredicatesPositions[i], rule, originalOrderBody[i]);
 				orderPositiveAtomsBody(originalOrderBody[i], rule);
@@ -180,7 +180,7 @@ void ProgramGrounder::ground() {
 
 				trace_action_tag(grounding,1,cerr<<"Found New Knowledge: "<<found_something;);
 				trace_msg(grounding,1,"After the first iteration the tables to insert in  are: ");
-				trace_action_tag(grounding,2,printTableInRule(rule,predicate_searchInsert_table,false););
+//				trace_action_tag(grounding,2,printTableInRule(rule,predicate_searchInsert_table,false););
 
 			}
 			++iterationToInsert;
@@ -205,7 +205,7 @@ void ProgramGrounder::ground() {
 						}
 //						rule->sortPositiveLiteralInBody(predicate_searchInsert_table,originalOrderBody[i]);
 						trace_msg(grounding,1,"At this iteration the tables to search in  are: ");
-						trace_action_tag(grounding,2,printTableInRule(rule,predicate_searchInsert_table););
+//						trace_action_tag(grounding,2,printTableInRule(rule,predicate_searchInsert_table););
 
 						orderPositiveAtomsBody(originalOrderBody[i],rule);
 						if (groundRule(rule,&componentPredicateInHead[component]))
@@ -213,7 +213,7 @@ void ProgramGrounder::ground() {
 
 						trace_action_tag(grounding,1,cerr<<"Found New Knowledge: "<<found_something;);
 						trace_msg(grounding,1,"After the first iteration the tables to insert in  are: ");
-						trace_action_tag(grounding,2,printTableInRule(rule,predicate_searchInsert_table,false););
+//						trace_action_tag(grounding,2,printTableInRule(rule,predicate_searchInsert_table,false););
 					}
 				}
 

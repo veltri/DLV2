@@ -478,6 +478,8 @@ void BackTrackingGrounder::findBindVariablesRule() {
 				unsigned var=variable->getLocalVariableIndex();
 				atoms_bind_variables[index_current_atom].push_back(var);
 				variablesBinder[var]=index_current_atom;
+				cout<<"VAR: ";variable->print();
+				cout<<" Binder: "<<index_current_atom<<endl;
 			}
 		}
 
@@ -506,12 +508,12 @@ void BackTrackingGrounder::findBindVariablesRule() {
 
 	current_assignment.setSize(currentRule->getVariablesSize(),nullptr);
 
-	trace_action_tag(backjumping,1,cerr<<"VARIABLES BINDER: ";
+//	trace_action_tag(backjumping,1,cerr<<"VARIABLES BINDER: ";
 		for(unsigned i=0;i<currentRule->getSizeBody();++i){
 			cerr<<variablesBinder[i]<<" ";
 		}
 		cerr<<endl;
-	);
+//	);
 
 
 	trace_action_tag(backtracking,1,
@@ -574,12 +576,14 @@ void BackTrackingGrounder::findBuiltinFastEvaluated(){
 		if(atom->isBuiltIn() && !atom->isAssignment()){
 			//Find the greatest classical literal that bind some variable in the builtin
 			auto varInBuiltin=atom->getVariable();
+			unsigned positionAtomBinder=0;
+			for(auto variable:varInBuiltin)
+				if(variablesBinder[variable->getLocalVariableIndex()]>positionAtomBinder)
+					positionAtomBinder=variablesBinder[variable->getLocalVariableIndex()];
 
-			bool find=false;
-			//For each classical literal get the variable and if the leftmost variable is in the builtin and is binded of this classical literal
-			// then the builtin can be evaluated when we bind this variable.
-			for(int positionAtomBinder=index_current_atom-1;positionAtomBinder>=0&&!find;--positionAtomBinder){
-				Atom * possibleBinder=currentRule->getAtomInBody(positionAtomBinder);
+			Atom * possibleBinder=currentRule->getAtomInBody(positionAtomBinder);
+			if(possibleBinder->isClassicalLiteral()){
+				set_term variablePossibleBinder=possibleBinder->getVariable();
 				if(possibleBinder->isClassicalLiteral()){
 					vector<Term*> variable=possibleBinder->getVectorVariable();
 
@@ -591,84 +595,15 @@ void BackTrackingGrounder::findBuiltinFastEvaluated(){
 								builtAlreadyEvaluated[index_current_atom]=true;
 								matchBuiltin[positionAtomBinder].push_back(atom);
 								currentRule->addBounderBuiltin(lastTerm->getLocalVariableIndex(),atom);
-//								cerr<<"FAST ";lastTerm->print(cerr);cerr<<" ";atom->print(cerr);cerr<<endl;
-								find=true;
 								break;
 							}
 						}
 
 					}
 				}
-
 			}
+		}
 	}
-
-}
-
-///*
-// * For each atom in the body of the rule, find an a BuiltinAtom that is not an assignment. Then find the greates atom that bind some of the variable
-// * in the builtin that is an a classical literal. After that the greatest binder is founded we have to find the rightmost variable ,in the classical literal, is also in the builtin.
-// * Then the variable selected in the classical literal have to evaluate the built-in while do the matchTerm.
-// */
-//void BackTrackingGrounder::findBuiltinFastEvaluated(){
-//	builtAlreadyEvaluated.clear();
-//	builtAlreadyEvaluated.resize(currentRule->getSizeBody(),false);
-//	matchBuiltin.clear();
-//	matchBuiltin.resize(currentRule->getSizeBody());
-//	currentRule->clearBounderBuiltin();
-//	unsigned index_current_atom=0;
-//	for (auto current_atom_it = currentRule->getBeginBody(); current_atom_it != currentRule->getEndBody(); ++current_atom_it,++index_current_atom) {
-//		Atom *atom=*current_atom_it;
-//		if(atom->isBuiltIn() && !atom->isAssignment()){
-//			//Find the greatest classical literal that bind some variable in the builtin
-//			auto varInBuiltin=atom->getVariable();
-//
-//			bool convertAssignment=(atom->plusMinusBuiltin()&&varInBuiltin.size()>1&&atom->getBinop()==EQUAL);
-//			bool find=false;
-//
-//			//For each classical literal get the variable and if the leftmost variable is in the builtin and is binded of this classical literal
-//			// then the builtin can be evaluated when we bind this variable. If the builtin can be changed is assignment then we have to find the next to last variable.
-//			unsigned count=0;
-//			Term* lastVar=nullptr;
-//			for(int positionAtomBinder=index_current_atom-1;positionAtomBinder>=0&&!find;--positionAtomBinder){
-//				Atom * possibleBinder=currentRule->getAtomInBody(positionAtomBinder);
-//				if(possibleBinder->isClassicalLiteral()){
-//					vector<Term*> variable=possibleBinder->getVectorVariable();
-//
-//					//Find the rightmost variable in the classical literal that is contained also in the builtin
-//					for(int i=variable.size()-1;i>=0;--i){
-//						Term *lastTerm=variable[i];
-//						if(lastTerm->getType()==VARIABLE && varInBuiltin.count(lastTerm) && variablesBinder[lastTerm->getLocalVariableIndex()]==(int)positionAtomBinder){
-//							if(!convertAssignment || (convertAssignment&&count>=1)){
-//								//VARIABLE FINDED, then the builtin can be evaluated while matching the term in the classical literal
-//								builtAlreadyEvaluated[index_current_atom]=true;
-//								matchBuiltin[positionAtomBinder].push_back(atom);
-//								currentRule->addBounderBuiltin(lastTerm->getLocalVariableIndex(),atom);
-//								cerr<<"FAST ";lastTerm->print(cerr);cerr<<" ";atom->print(cerr);cerr<<endl;
-//								count++;
-//								find=true;
-//
-//								if(convertAssignment){
-//									atom->setAssignment(true);
-//									atoms_bind_variables[positionAtomBinder].push_back(lastVar->getLocalVariableIndex());
-//								}
-//
-//								break;
-//							}else
-//								count++;
-//							lastVar=lastTerm;
-//						}
-//
-//					}
-//				}
-//
-//			}
-//
-//
-//		}
-//	}
-//
-//}
 
 
 /*

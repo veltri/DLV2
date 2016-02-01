@@ -53,16 +53,16 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchTy
 	for(unsigned i=0;i<sizeBody;++i)
 		atomsToInsert.push_back(i);
 
-	trace_action_tag(grounding,1,
-		cerr<<"Before Ordering Body and Search/Insert tables are: ";
-		for(unsigned i=0;i<rule->getSizeBody();++i){
-			rule->getAtomInBody(i)->print(cerr);
-			for(auto j:predicate_searchInsert_table[i+sizeHead])
-				cerr<<" "<<j;
-			cerr<<"  ";
-		}
-		cerr<<endl;
-	);
+//	trace_action_tag(grounding,1,
+//		cerr<<"Before Ordering Body and Search/Insert tables are: ";
+//		for(unsigned i=0;i<rule->getSizeBody();++i){
+//			rule->getAtomInBody(i)->print(cerr);
+//			for(auto j:predicate_searchInsert_table[i+sizeHead])
+//				cerr<<" "<<j;
+//			cerr<<"  ";
+//		}
+//		cerr<<endl;
+//	);
 
 	rule->clearDictionaryIntersection();
 	rule->setDictionaryIntersectionSize(rule->getVariablesSize()+2);
@@ -82,16 +82,16 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchTy
 	rule->setBody(orderedBody);
 	predicate_searchInsert_table=orderdedPredicateSearchInsertTable;
 
-	trace_action_tag(grounding,1,
-		cerr<<"After Ordering Body and Search/Insert tables are: ";
-		for(unsigned i=0;i<rule->getSizeBody();++i){
-			rule->getAtomInBody(i)->print(cerr);
-			for(auto j:orderdedPredicateSearchInsertTable[i+sizeHead])
-				cerr<<" "<<j;
-			cerr<<"  ";
-		}
-		cerr<<endl;
-	);
+//	trace_action_tag(grounding,1,
+//		cerr<<"After Ordering Body and Search/Insert tables are: ";
+//		for(unsigned i=0;i<rule->getSizeBody();++i){
+//			rule->getAtomInBody(i)->print(cerr);
+//			for(auto j:orderdedPredicateSearchInsertTable[i+sizeHead])
+//				cerr<<" "<<j;
+//			cerr<<"  ";
+//		}
+//		cerr<<endl;
+//	);
 
 	return orderedPositions;
 
@@ -249,7 +249,7 @@ list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(list<unsigned>& a
 	//TODO Add all bound atoms all together and avoid the weigh update if no bind atom has been added
 	update(rule->getAtomInBody(*bestAtomIt),*bestAtomIt);
 	trace_action_tag(grounding,2,
-		cout<<"Chosen atom: ";rule->getAtomInBody(*bestAtomIt)->print(cout);cout<<" "<<bestWeight<<endl;
+		cerr<<"Chosen atom: ";rule->getAtomInBody(*bestAtomIt)->print(cerr);cerr<<" "<<bestWeight<<endl;
 	);
 
 	return bestAtomIt;
