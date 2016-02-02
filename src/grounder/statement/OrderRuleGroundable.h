@@ -84,6 +84,7 @@ public:
 	virtual double assignWeightBuiltInAtom(Atom* atom, unsigned originalPosition){return priorities.BUILT_IN;};
 	virtual void update(Atom* atomAdded, unsigned originalPosition){};
 	virtual double manageEqualWeights(unsigned originalPosition);
+	virtual bool ckeckSimilarity(double weight1,double weight2){return weight1==weight2;};
 
 private:
 	unsigned computePredicateExtensionSize(unsigned atomPosition, Predicate* p);
@@ -123,6 +124,31 @@ private:
 };
 
 
+class SemiJoinIndexingArgumentsOrderRuleGroundable  : public CombinedCriterion{
+public:
+	SemiJoinIndexingArgumentsOrderRuleGroundable(Rule* rule):CombinedCriterion(rule),DOUBLE_INDEX_THRESHOLD(0.3){}
+	SemiJoinIndexingArgumentsOrderRuleGroundable(Rule* rule,Priority p):CombinedCriterion(rule,p),DOUBLE_INDEX_THRESHOLD(0.3){}
+	virtual ~SemiJoinIndexingArgumentsOrderRuleGroundable(){}
+	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
+protected:
+	void computeBoundArgumentsSelectivities();
+	vector<unordered_map<unsigned,double>> boundArgumentsSelectivities;
+	const double DOUBLE_INDEX_THRESHOLD;
+	vector<vector<set_term>> variablesInTerms;
+};
+
+
+class SemiJoinIndexingArgumentsOrderRuleGroundable2  : public SemiJoinIndexingArgumentsOrderRuleGroundable{
+public:
+	SemiJoinIndexingArgumentsOrderRuleGroundable2(Rule* rule):SemiJoinIndexingArgumentsOrderRuleGroundable(rule),SIMILARITY_THRESHOLD(0.7){}
+	SemiJoinIndexingArgumentsOrderRuleGroundable2(Rule* rule,Priority p):SemiJoinIndexingArgumentsOrderRuleGroundable(rule,p),SIMILARITY_THRESHOLD(0.7){}
+	virtual ~SemiJoinIndexingArgumentsOrderRuleGroundable2(){}
+	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
+	virtual double manageEqualWeights(unsigned originalPosition);
+	virtual bool ckeckSimilarity(double weight1,double weight2);
+private:
+	const double SIMILARITY_THRESHOLD;
+};
 
 
 class CombinedCriterion1 : public CombinedCriterion {
@@ -161,7 +187,7 @@ public:
 				return	nullptr;
 				break;
 			case INDEXING_ORDERING:
-				return new IndexingArgumentsOrderRuleGroundable(rule);
+				return new SemiJoinIndexingArgumentsOrderRuleGroundable(rule);
 				break;
 			default:
 				return	new CombinedCriterion(rule);
