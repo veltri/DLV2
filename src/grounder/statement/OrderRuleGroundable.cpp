@@ -120,11 +120,10 @@ bool OrderRuleGroundable::isBound(Atom* atom, unsigned orginalPosition) {
 			for(auto var:variablesInAtom){
 				if(!variablesInTheBody.count(var))
 					count++;
-				if(count>1)
-					break;
+				if(count>1)break;
 			}
-			if(count==1){
-				atom->setAssignment(true);
+			if(count<=1){
+				atom->setAssignment(count==1);
 				return true;
 			}
 		}else{
@@ -132,16 +131,18 @@ bool OrderRuleGroundable::isBound(Atom* atom, unsigned orginalPosition) {
 			// the free variable must be alone in first or second term in the atom
 			set_term varsFirst;
 			atom->getTerm(0)->getVariable(varsFirst);
-			if(Utils::isContained(varsFirst,variablesInTheBody) && atom->getTerm(1)->getType()==VARIABLE){
+			if(Utils::isContained(varsFirst,variablesInTheBody) && atom->getTerm(1)->getType()==VARIABLE && !variablesInTheBody.count(atom->getTerm(1))){
 				atom->setAssignment(true);
 				return true;
 			}
 			set_term varSecond;
 			atom->getTerm(1)->getVariable(varSecond);
-			if(Utils::isContained(varSecond,variablesInTheBody) && atom->getTerm(0)->getType()==VARIABLE){
+			if(Utils::isContained(varSecond,variablesInTheBody) && atom->getTerm(0)->getType()==VARIABLE && !variablesInTheBody.count(atom->getTerm(0))){
 				atom->setAssignment(true);
 				return true;
 			}
+			if(Utils::isContained(atomsVariables[orginalPosition],variablesInTheBody))
+				return true;
 		}
 
 		return false;
