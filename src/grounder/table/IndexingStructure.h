@@ -323,20 +323,20 @@ public:
 	virtual Atom* findGroundAtom(Atom *atom, IndexingStructure* indexingStructure);
 	/// This method checks if the two given atoms match according to the current assignment.
 	/// If they match the current assignment is update accordingly.
-	bool checkMatch(Atom *genericAtom, Atom *templateAtom, var_assignment& currentAssignment,const RuleInformation& ruleInformation,const vector<unsigned>& outputVariables);
+	bool checkMatch(unsigned int id,Atom *genericAtom, Atom *templateAtom, var_assignment& currentAssignment,const RuleInformation& ruleInformation,const vector<unsigned>& outputVariables);
 	/// Match a function with given id of term, compare the constant term and put in binds
 	/// a value of the variable term present in termToMatch
 	/// Return true if constant term are equal, else false
 	bool matchTerm(Term *genericTerm, Term *termToMatch, var_assignment& varAssignment,vector<index_object>& addedVariables,const RuleInformation& ruleInformation);
 	/// This method given an iterator increases it in order to find matching atoms with the given atom
 	/// according to the current assignment.
-	bool computeMatch(GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation,const vector<unsigned>& outputVariables);
+	bool computeMatch(unsigned int id,GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation,const vector<unsigned>& outputVariables);
 
 	/// Erase the indexing structures
 	inline virtual void clear(){indexingStructures.clear();}
 
 	///Set the size of the result vector
-	inline void setSizeResultVector(unsigned int size){	if(size>resultVector.size()) resultVector.resize(size,nullptr);}
+	inline void setSizeResultVector(unsigned int size){	if(size>resultVector.size()) resultVector.resize(size,nullptr);outputVariablesValues.resize(size);}
 
 	///Function for evaluation of builtin related with the current matching atom
 	static bool evaluateFastBuiltin(const RuleInformation& ruleInformation, index_object index,	var_assignment& varAssignment, Term* genericTerm);
@@ -376,7 +376,7 @@ protected:
 	//This vector stores the created indexing structures for the table
 	vector<IndexingStructure*> indexingStructures;
 
-	unordered_set<vector<Term*>,HashVectorOfTerms,HashVectorOfTerms> outputVariablesValues;
+	vector<unordered_set<vector<Term*>,HashVectorOfTerms,HashVectorOfTerms>> outputVariablesValues;
 
 };
 
