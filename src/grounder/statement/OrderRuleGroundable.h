@@ -111,7 +111,7 @@ public:
 	virtual ~IndexingArgumentsOrderRuleGroundable(){}
 	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
 	virtual void update(Atom* atomAdded, unsigned originalPosition);
-	virtual double manageEqualWeights(unsigned originalPosition);
+//	virtual double manageEqualWeights(unsigned originalPosition);
 
 private:
 	void computeBoundArgumentsSelectivities();
