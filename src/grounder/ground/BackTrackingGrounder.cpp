@@ -410,22 +410,12 @@ void BackTrackingGrounder::inizialize(Rule* rule, unordered_set<index_object>* c
 		generateTemplateAtom();
 	findBuiltinFastEvaluated();
 
-	if(ground_rule==0)
-		ground_rule=new Rule(true, rule->getSizeHead(), rule->getSizeBody());
-	else if(ground_rule->isWeakConstraint() != currentRule->isWeakConstraint()){
-		bool isGroundRuleWeak=ground_rule->isWeakConstraint();
-		delete ground_rule;
-		if(!isGroundRuleWeak && currentRule->isWeakConstraint()){
-			ground_rule=new WeakConstraint(true,rule->getSizeBody(),currentRule->getBody(),currentRule->getWeight(),currentRule->getLevel(),currentRule->getLabel());
-			cout<<"CHANGE"<<endl;
-		}else
-			ground_rule=new Rule(true, rule->getSizeHead(), rule->getSizeBody());
-
-	}
-	else{
+	if(ground_rule!=0)
 		ground_rule->deleteGroundRule();
-		ground_rule=new Rule(true, rule->getSizeHead(), rule->getSizeBody());
-	}
+	ground_rule=(currentRule->isWeakConstraint())
+			? new WeakConstraint(true,rule->getSizeBody(),currentRule->getBody(),currentRule->getWeight(),currentRule->getLevel(),currentRule->getLabel())
+			: new Rule(true, rule->getSizeHead(), rule->getSizeBody());
+
 	atomsPossibleUndef.clear();
 
 	if(!currentRule->isChoiceRule()){

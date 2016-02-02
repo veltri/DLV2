@@ -276,12 +276,12 @@ void ProgramGrounder::ground() {
 		//Ground weak constraint
 		for(auto weak:statementDependency->getWeakContraint()){
 			weak->print();
-				if(nonGroundSimplificator.simplifyRule(weak) || inizializeSearchInsertPredicate(weak)){
-					continue;
-				}
-				orderPositiveAtomsBody(weak);
-				trace_action_tag(grounding,1,cerr<<"Grounding Constraint Rule: ";rule->print(cerr););
-				groundRule(weak);
+			if(nonGroundSimplificator.simplifyRule(weak) || inizializeSearchInsertPredicate(weak)){
+				continue;
+			}
+			orderPositiveAtomsBody(weak);
+			trace_action_tag(grounding,1,cerr<<"Grounding Constraint Rule: ";rule->print(cerr););
+			groundRule(weak);
 		}
 	}
 
