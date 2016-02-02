@@ -428,14 +428,96 @@ double CombinedCriterion4::assignWeightPositiveClassicalLit(Atom* atom, unsigned
 	return sel_c;
 }
 
-double IndexingArgumentsOrderRuleGroundable::manageEqualWeights(unsigned originalPosition) {
-	Atom* atom=rule->getAtomInBody(originalPosition);
-	Predicate* predicate=atom->getPredicate();
-	if(predicate==nullptr)
-		return 0;
+//double IndexingArgumentsOrderRuleGroundable::manageEqualWeights(unsigned originalPosition) {
+//	Atom* atom=rule->getAtomInBody(originalPosition);
+//	Predicate* predicate=atom->getPredicate();
+//	if(predicate==nullptr)
+//		return 0;
+//
+//	PredicateExtension* predicateExtension=PredicateExtTable::getInstance()->getPredicateExt(atom->getPredicate());
+//	double forwardWeight = predicateExtension->getPredicateExtentionSize();
+//	for (auto j : atomsToInsert) {
+//		Atom* a = rule->getAtomInBody(j);
+//		if (j == originalPosition
+//				|| !(a->isClassicalLiteral() && !a->isNegative())
+//				|| a->getPredicate()->getArity() <= 1)
+//			continue;
+//
+//		PredicateExtension* predicateExtension =
+//				PredicateExtTable::getInstance()->getPredicateExt(
+//						a->getPredicate());
+//		unsigned s = predicateExtension->getPredicateExtentionSize();
+//		double maxOther = 0;
+//		double secondMaxOther = 0;
+//		double bestIndex = 0;
+//		for (unsigned i = 0; i < a->getTermsSize(); ++i) {
+//			bool bound = true;
+//			for (auto v : variablesInTerms[j][i]) {
+//				if (!variablesInTheBody.count(v)) {
+//					if (!atomsVariables[originalPosition].count(v))
+//						bound = false;
+//				}
+//			}
+//			if (bound && boundArgumentsSelectivities[j][i] > maxOther) {
+//				secondMaxOther = maxOther;
+//				maxOther = boundArgumentsSelectivities[j][i];
+//			} else if (boundArgumentsSelectivities[j][i] == maxOther) {
+//				secondMaxOther = maxOther;
+//			}
+//		}
+//		if (maxOther > 0 && secondMaxOther > 0
+//				&& (maxOther / s) < DOUBLE_INDEX_THRESHOLD) {
+//			bestIndex = (1 - ((maxOther * secondMaxOther) / s));
+//		} else
+//			bestIndex = (1 - maxOther / s);
+//
+//		forwardWeight *= bestIndex;
+//	}
+//
+//	return forwardWeight;
+//}
 
+double IndexingArgumentsOrderRuleGroundable::assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition) {
+	if(boundArgumentsSelectivities.empty())
+		computeBoundArgumentsSelectivities();
+
+	cout<<"-->";atom->print();cout<<endl;
 	PredicateExtension* predicateExtension=PredicateExtTable::getInstance()->getPredicateExt(atom->getPredicate());
-	double forwardWeight = predicateExtension->getPredicateExtentionSize();
+	unsigned size=predicateExtension->getPredicateExtentionSize();
+	double max=0;
+	double secondMax=0;
+	double backwardWeight=currentJoinSize;
+	if(currentJoinSize==1)
+		backwardWeight=size;
+	else{
+		for(unsigned i=0;i<atom->getTermsSize();++i){
+			if(Utils::isContained(variablesInTerms[originalPosition][i],variablesInTheBody)){
+				if(boundArgumentsSelectivities[originalPosition][i]>max){
+					secondMax=max;
+					max=boundArgumentsSelectivities[originalPosition][i];
+				}
+				else if(boundArgumentsSelectivities[originalPosition][i]==max){
+					secondMax=max;
+				}
+			}
+		}
+		if(max>0 && secondMax>0 && (max/size)<DOUBLE_INDEX_THRESHOLD){
+			backwardWeight*=(((max*secondMax)/size));
+		}
+		else
+			backwardWeight*=(max/size);
+	}
+
+	backwardWeights[originalPosition]=backwardWeight;
+
+	cout<<"BACK: "<<backwardWeights[originalPosition]<<endl;
+
+	//	Predicate* predicate=atom->getPredicate();
+//	if(predicate==nullptr)
+//		return 0;
+
+//	PredicateExtension* predicateExtension=PredicateExtTable::getInstance()->getPredicateExt(atom->getPredicate());
+	double forwardWeight = 1; //backwardWeights[originalPosition]; //predicateExtension->getPredicateExtentionSize();
 	for (auto j : atomsToInsert) {
 		Atom* a = rule->getAtomInBody(j);
 		if (j == originalPosition
@@ -467,55 +549,28 @@ double IndexingArgumentsOrderRuleGroundable::manageEqualWeights(unsigned origina
 		}
 		if (maxOther > 0 && secondMaxOther > 0
 				&& (maxOther / s) < DOUBLE_INDEX_THRESHOLD) {
-			bestIndex = (1 - ((maxOther * secondMaxOther) / s));
+			bestIndex = (((maxOther * secondMaxOther) / s));
 		} else
-			bestIndex = (1 - maxOther / s);
+			bestIndex = (maxOther / s);
+
+		cout<<"MAX: "<<maxOther<<endl;
 
 		forwardWeight *= bestIndex;
 	}
 
-	return forwardWeight;
-}
 
-double IndexingArgumentsOrderRuleGroundable::assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition) {
-	if(boundArgumentsSelectivities.empty())
-		computeBoundArgumentsSelectivities();
+	cout<<"FORWARD: "<<forwardWeight<<endl;
+	cout<<"FINAL: "<<(backwardWeight*forwardWeight)<<endl;
 
-	PredicateExtension* predicateExtension=PredicateExtTable::getInstance()->getPredicateExt(atom->getPredicate());
-	unsigned size=predicateExtension->getPredicateExtentionSize();
-	double max=0;
-	double secondMax=0;
-	double backwardWeight=currentJoinSize;
-	if(currentJoinSize==1)
-		backwardWeight=size;
-	else{
-		for(unsigned i=0;i<atom->getTermsSize();++i){
-			if(Utils::isContained(variablesInTerms[originalPosition][i],variablesInTheBody)){
-				if(boundArgumentsSelectivities[originalPosition][i]>max){
-					secondMax=max;
-					max=boundArgumentsSelectivities[originalPosition][i];
-				}
-				else if(boundArgumentsSelectivities[originalPosition][i]==max){
-					secondMax=max;
-				}
-			}
-		}
-		if(max>0 && secondMax>0 && (max/size)<DOUBLE_INDEX_THRESHOLD){
-			backwardWeight*=(1-((max*secondMax)/size));
-		}
-		else
-			backwardWeight*=(1-max/size);
-	}
+	return backwardWeight*forwardWeight;
 
-	backwardWeights[originalPosition]=backwardWeight;
 
-	return backwardWeight;
 
 }
 
 void IndexingArgumentsOrderRuleGroundable::update(Atom* atomAdded, unsigned originalPosition) {
 	if(atomAdded->isClassicalLiteral() && !atomAdded->isNegative() && originalPosition<backwardWeights.size())
-		currentJoinSize*=backwardWeights[originalPosition];
+		currentJoinSize=backwardWeights[originalPosition];
 }
 
 void IndexingArgumentsOrderRuleGroundable::computeBoundArgumentsSelectivities() {
