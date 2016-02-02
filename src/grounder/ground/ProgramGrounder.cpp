@@ -275,7 +275,6 @@ void ProgramGrounder::ground() {
 
 		//Ground weak constraint
 		for(auto weak:statementDependency->getWeakContraint()){
-			weak->print();
 			if(nonGroundSimplificator.simplifyRule(weak) || inizializeSearchInsertPredicate(weak)){
 				continue;
 			}
