@@ -239,7 +239,7 @@ list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(list<unsigned>& a
 				bestAtomExtensionSize = manageEqualWeights(*bestAtomIt); //computePredicateExtensionSize(*bestAtomIt, p);
 		}
 //		If two atoms have the same weight we prefer the one with the lower extension size
-		else if(!bound && weight==bestWeight){
+		else if(!bound && ckeckSimilarity(weight,bestWeight)){
 			double secondaryWeight=manageEqualWeights(*it);
 			if(secondaryWeight<bestAtomExtensionSize){
 				bestWeight=weight;
@@ -598,7 +598,8 @@ void IndexingArgumentsOrderRuleGroundable::computeBoundArgumentsSelectivities() 
 						break;
 					}
 				}
-				if(!bound){
+				if(!bound){if(boundArgumentsSelectivities.empty())
+					computeBoundArgumentsSelectivities();
 					boundTerm=false;
 				}
 				else
@@ -632,6 +633,157 @@ void IndexingArgumentsOrderRuleGroundable::computeBoundArgumentsSelectivities() 
 
 }
 
+/******************************************************* SemiJoinIndexingArgumentsOrderRuleGroundable************************************************************************/
+
+double SemiJoinIndexingArgumentsOrderRuleGroundable::assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition) {
+	if(variablesDomains.empty())
+		computeVariablesDomains();
+
+	if(boundArgumentsSelectivities.empty())
+		computeBoundArgumentsSelectivities();
+
+//	cout<<"-->";atom->print();cout<<endl;
+	unsigned sizeTablesToSearch=0;
+	for(auto j:predicate_searchInsert_table[originalPosition+rule->getSizeHead()])
+		sizeTablesToSearch+=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(j.first,j.second);
+
+	long double prod=1;
+	for(unsigned i=0;i<atom->getTermsSize();++i){
+		Term* var=atom->getTerm(i);
+		if(var->getType()==TermType::VARIABLE){
+			if(variablesInTheBody.count(var)){
+				prod*=variablesSelectivities[var]/variablesDomains[var];
+			}
+		}
+	}
+	double semiJoinSize=sizeTablesToSearch*prod;
+//	cout<<"SemiJoin: "<<semiJoinSize<<endl;
+
+	double max=0;
+	double secondMax=0;
+	double bestIndex=1;
+	for(unsigned i=0;i<atom->getTermsSize();++i){
+		if(Utils::isContained(variablesInTerms[originalPosition][i],variablesInTheBody)){
+			if(boundArgumentsSelectivities[originalPosition][i]>max){
+				secondMax=max;
+				max=boundArgumentsSelectivities[originalPosition][i];
+			}
+			else if(boundArgumentsSelectivities[originalPosition][i]==max){
+				secondMax=max;
+			}
+		}
+	}
+	if(max>0 && secondMax>0 && (1-max/sizeTablesToSearch)<DOUBLE_INDEX_THRESHOLD){
+		bestIndex=(1-((max*secondMax)/sizeTablesToSearch));
+	}
+	else if(max>0){
+		bestIndex=(1-max/sizeTablesToSearch);
+	}
+//	cout<<"Best: "<<bestIndex<<endl;
+
+	return semiJoinSize*bestIndex;
+}
+
+void SemiJoinIndexingArgumentsOrderRuleGroundable::computeBoundArgumentsSelectivities() {
+	unsigned sizeBody=rule->getSizeBody();
+	boundArgumentsSelectivities.resize(sizeBody);
+	variablesInTerms.resize(sizeBody);
+	unsigned atom_pos=0;
+	for(auto it=rule->getBeginBody();it!=rule->getEndBody();++it,++atom_pos){
+		Atom* atom=*it;
+		if(!(atom->isClassicalLiteral() && !atom->isNegative())) continue;
+		PredicateExtension* predicateExtension=PredicateExtTable::getInstance()->getPredicateExt(atom->getPredicate());
+		unsigned termSize=atom->getTermsSize();
+		variablesInTerms[atom_pos].resize(termSize);
+		for(unsigned i=0;i<termSize;++i){
+			Term* term=atom->getTerm(i);
+			set_term variables;
+			term->getVariable(variables);
+			bool boundTerm=true;
+			for(auto var:variables){
+				bool bound=false;
+				for(unsigned j=0;j<sizeBody;++j){
+					if(j!=atom_pos && atomsVariables[j].count(var)){
+						bound=true;
+						break;
+					}
+				}
+				if(!bound){if(boundArgumentsSelectivities.empty())
+					computeBoundArgumentsSelectivities();
+					boundTerm=false;
+				}
+				else
+					variablesInTerms[atom_pos][i].insert(var);
+			}
+			if(boundTerm){
+				double selectivity=predicateExtension->getPredicateInformation()->getSelectivity(i);
+				boundArgumentsSelectivities[atom_pos].insert({i,(selectivity)});
+			}
+		}
+	}
+}
+
+double SemiJoinIndexingArgumentsOrderRuleGroundable2::assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition) {
+	if(variablesDomains.empty())
+		computeVariablesDomains();
+
+	if(boundArgumentsSelectivities.empty())
+		computeBoundArgumentsSelectivities();
+
+//	cout<<"-->";atom->print();cout<<endl;
+	unsigned sizeTablesToSearch=0;
+	for(auto j:predicate_searchInsert_table[originalPosition+rule->getSizeHead()])
+		sizeTablesToSearch+=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(j.first,j.second);
+
+	long double prod=1;
+	for(unsigned i=0;i<atom->getTermsSize();++i){
+		Term* var=atom->getTerm(i);
+		if(var->getType()==TermType::VARIABLE){
+			if(variablesInTheBody.count(var)){
+				prod*=variablesSelectivities[var]/variablesDomains[var];
+			}
+		}
+	}
+	double semiJoinSize=sizeTablesToSearch*prod;
+//	cout<<"SemiJoin: "<<semiJoinSize<<endl;
+
+	return semiJoinSize;
+}
+
+double SemiJoinIndexingArgumentsOrderRuleGroundable2::manageEqualWeights(unsigned originalPosition) {
+	Atom* atom=rule->getAtomInBody(originalPosition);
+	unsigned sizeTablesToSearch=0;
+	for(auto j:predicate_searchInsert_table[originalPosition+rule->getSizeHead()])
+		sizeTablesToSearch+=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(j.first,j.second);
+
+	double max=0;
+	double secondMax=0;
+	double bestIndex=1;
+	for(unsigned i=0;i<atom->getTermsSize();++i){
+		if(Utils::isContained(variablesInTerms[originalPosition][i],variablesInTheBody)){
+			if(boundArgumentsSelectivities[originalPosition][i]>max){
+				secondMax=max;
+				max=boundArgumentsSelectivities[originalPosition][i];
+			}
+			else if(boundArgumentsSelectivities[originalPosition][i]==max){
+				secondMax=max;
+			}
+		}
+	}
+	if(max>0 && secondMax>0 && (1-max/sizeTablesToSearch)<DOUBLE_INDEX_THRESHOLD){
+		bestIndex=(1-((max*secondMax)/sizeTablesToSearch));
+	}
+	else if(max>0){
+		bestIndex=(1-max/sizeTablesToSearch);
+	}
+	return bestIndex;
+}
+
+bool SemiJoinIndexingArgumentsOrderRuleGroundable2::ckeckSimilarity(double weight1, double weight2) {
+	if(weight1>weight2)
+		return (weight2/weight1)>SIMILARITY_THRESHOLD;
+	return (weight1/weight2)>SIMILARITY_THRESHOLD;
+}
 
 }
 }
