@@ -250,9 +250,9 @@ list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(list<unsigned>& a
 	}
 	//TODO Add all bound atoms all together and avoid the weigh update if no bind atom has been added
 	update(rule->getAtomInBody(*bestAtomIt),*bestAtomIt);
-//	trace_action_tag(grounding,2,
+	trace_action_tag(grounding,2,
 		cerr<<"Chosen atom: ";rule->getAtomInBody(*bestAtomIt)->print(cerr);cerr<<" "<<bestWeight<<endl;
-//	);
+	);
 
 	return bestAtomIt;
 }
@@ -481,7 +481,7 @@ double IndexingArgumentsOrderRuleGroundable::assignWeightPositiveClassicalLit(At
 	if(boundArgumentsSelectivities.empty())
 		computeBoundArgumentsSelectivities();
 
-	cout<<"-->";atom->print();cout<<endl;
+//	cout<<"-->";atom->print();cout<<endl;
 	PredicateExtension* predicateExtension=PredicateExtTable::getInstance()->getPredicateExt(atom->getPredicate());
 	unsigned size=predicateExtension->getPredicateExtentionSize();
 	double max=0;
@@ -510,7 +510,7 @@ double IndexingArgumentsOrderRuleGroundable::assignWeightPositiveClassicalLit(At
 
 	backwardWeights[originalPosition]=backwardWeight;
 
-	cout<<"BACK: "<<backwardWeights[originalPosition]<<endl;
+//	cout<<"BACK: "<<backwardWeights[originalPosition]<<endl;
 
 	//	Predicate* predicate=atom->getPredicate();
 //	if(predicate==nullptr)
@@ -553,14 +553,14 @@ double IndexingArgumentsOrderRuleGroundable::assignWeightPositiveClassicalLit(At
 		} else
 			bestIndex = (maxOther / s);
 
-		cout<<"MAX: "<<maxOther<<endl;
+//		cout<<"MAX: "<<maxOther<<endl;
 
 		forwardWeight *= bestIndex;
 	}
 
 
-	cout<<"FORWARD: "<<forwardWeight<<endl;
-	cout<<"FINAL: "<<(backwardWeight*forwardWeight)<<endl;
+//	cout<<"FORWARD: "<<forwardWeight<<endl;
+//	cout<<"FINAL: "<<(backwardWeight*forwardWeight)<<endl;
 
 	return backwardWeight*forwardWeight;
 
