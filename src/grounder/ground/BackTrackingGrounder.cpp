@@ -739,6 +739,7 @@ bool BackTrackingGrounder::groundCartesian(Rule* rule){
 bool BackTrackingGrounder::groundAggregate() {
 	Atom *aggregateAtom=templateSetAtom[index_current_atom];
 
+
 	//Check if we can simplify without evaluate the aggregate
 	bool alwaysTrue;
 	if(aggregateAtom->checkAggregateSumCountStringGuard(alwaysTrue) || aggregateAtom->checkAggregateCountNegativeGuard(alwaysTrue)){
@@ -806,9 +807,12 @@ bool BackTrackingGrounder::groundAggregate() {
 
 				//Add the id ground term in the ground aggregate element
 				for(auto term_aggregateElement:aggregateAtom->getAggregateElement(i)->getTerms()){
-					if(term_aggregateElement->getType()==VARIABLE)
+					auto termType=term_aggregateElement->getType();
+					if(termType==NUMERIC_CONSTANT || termType==STRING_CONSTANT || termType==SYMBOLIC_CONSTANT)
+						ground_aggregateElement->addTerm(term_aggregateElement);
+					else if(termType==VARIABLE)
 						ground_aggregateElement->addTerm(current_assignment[term_aggregateElement->getLocalVariableIndex()]);
-					else if(term_aggregateElement->getType()==FUNCTION){
+					else if(termType==FUNCTION){
 						ground_aggregateElement->addTerm(term_aggregateElement->substitute(current_assignment));
 					}
 				}

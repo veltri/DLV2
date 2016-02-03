@@ -69,6 +69,7 @@ bool FunctionTerm::operator>=(const Term& term) const {
 }
 
 bool FunctionTerm::operator<(const Term& term) const {
+
 	int checkMaxMin=checkMaxAndMinTerm(term,false);
 	if(checkMaxMin!=2) return !checkMaxMin;
 	if(term.getType()==NUMERIC_CONSTANT || term.getType()==STRING_CONSTANT || term.getType()==SYMBOLIC_CONSTANT)
@@ -79,12 +80,10 @@ bool FunctionTerm::operator<(const Term& term) const {
 		if(getTermsSize()==term.getTermsSize()){
 			string functor_term=term.getName();
 			if(name!=functor_term)return name<functor_term;
-			bool findLess=false;
 			for(unsigned int i=0;i<terms.size();i++){
 				if(*terms[i]>*term.getTerm(i))return false;
-				if(!findLess && *terms[i]<*term.getTerm(i))findLess=true;
+				if(*terms[i]<*term.getTerm(i))return true;
 			}
-			return findLess;
 		}
 	}
 
