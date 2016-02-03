@@ -21,9 +21,10 @@ bool AtomSearcher::checkMatch(Atom *genericAtom, Atom *templateAtom, var_assignm
 	for(unsigned int i=0;i<genericAtom->getTermsSize();++i){
 		Term* genericTerm=genericAtom->getTerm(i);
 		Term* termToMatch=templateAtom->getTerm(i);
-		if (termToMatch->getIndex() == genericTerm->getIndex()) continue;
-		if(!matchTerm(genericTerm,termToMatch,assignInTerm,variablesAdded,ruleInformation))
+		if (termToMatch->getIndex() == genericTerm->getIndex() || termToMatch->getType()==ANONYMOUS) continue;
+		if(!matchTerm(genericTerm,termToMatch,assignInTerm,variablesAdded,ruleInformation)){
 			return false;
+		}
 	}
 
 	//TODO TEST LINEAR SCANNING THE ARRAY
@@ -54,11 +55,10 @@ bool AtomSearcher::evaluateFastBuiltin(const RuleInformation& ruleInformation,in
 }
 
 bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, var_assignment& varAssignment,vector<index_object>& addedVariables,const RuleInformation& ruleInformation){
-
 	TermType termToMatchType=termToMatch->getType();
 	TermType genericTermType=genericTerm->getType();
 	if((termToMatchType==TermType::NUMERIC_CONSTANT || termToMatchType==TermType::STRING_CONSTANT || termToMatchType==TermType::SYMBOLIC_CONSTANT))
-		return false;
+		return termToMatch->getIndex() == genericTerm->getIndex();
 	else if (termToMatchType==TermType::VARIABLE) {
 		index_object index=termToMatch->getLocalVariableIndex();
 		if(ruleInformation.isCreatedDictionaryIntersection(index) && !ruleInformation.countInDictionaryIntersection(index,genericTerm)){
