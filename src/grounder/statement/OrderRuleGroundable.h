@@ -140,8 +140,8 @@ protected:
 
 class SemiJoinIndexingArgumentsOrderRuleGroundable2  : public SemiJoinIndexingArgumentsOrderRuleGroundable{
 public:
-	SemiJoinIndexingArgumentsOrderRuleGroundable2(Rule* rule):SemiJoinIndexingArgumentsOrderRuleGroundable(rule),SIMILARITY_THRESHOLD(0.7){}
-	SemiJoinIndexingArgumentsOrderRuleGroundable2(Rule* rule,Priority p):SemiJoinIndexingArgumentsOrderRuleGroundable(rule,p),SIMILARITY_THRESHOLD(0.7){}
+	SemiJoinIndexingArgumentsOrderRuleGroundable2(Rule* rule):SemiJoinIndexingArgumentsOrderRuleGroundable(rule),SIMILARITY_THRESHOLD(0.3){}
+	SemiJoinIndexingArgumentsOrderRuleGroundable2(Rule* rule,Priority p):SemiJoinIndexingArgumentsOrderRuleGroundable(rule,p),SIMILARITY_THRESHOLD(0.3){}
 	virtual ~SemiJoinIndexingArgumentsOrderRuleGroundable2(){}
 	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
 	virtual double manageEqualWeights(unsigned originalPosition);
@@ -150,6 +150,13 @@ private:
 	const double SIMILARITY_THRESHOLD;
 };
 
+class SemiJoinIndexingArgumentsOrderRuleGroundable3  : public SemiJoinIndexingArgumentsOrderRuleGroundable {
+public:
+	SemiJoinIndexingArgumentsOrderRuleGroundable3(Rule* rule):SemiJoinIndexingArgumentsOrderRuleGroundable(rule){}
+	SemiJoinIndexingArgumentsOrderRuleGroundable3(Rule* rule,Priority p):SemiJoinIndexingArgumentsOrderRuleGroundable(rule,p){}
+	virtual ~SemiJoinIndexingArgumentsOrderRuleGroundable3(){}
+	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
+};
 
 class CombinedCriterion1 : public CombinedCriterion {
 public:
@@ -187,7 +194,10 @@ public:
 				return	nullptr;
 				break;
 			case INDEXING_ORDERING:
-				return new SemiJoinIndexingArgumentsOrderRuleGroundable(rule);
+				return new SemiJoinIndexingArgumentsOrderRuleGroundable2(rule);
+				break;
+			case DLV_INDEXING_ORDERING:
+				return new SemiJoinIndexingArgumentsOrderRuleGroundable3(rule);
 				break;
 			default:
 				return	new CombinedCriterion(rule);
