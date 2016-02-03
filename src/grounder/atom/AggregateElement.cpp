@@ -80,8 +80,9 @@ namespace grounder{
 			if(terms[i]->getIndex()!=element.terms[i]->getIndex())
 				return false;
 		for(unsigned i=0;i<nafLiterals.size();i++)
-			if(!(nafLiterals[i]==nafLiterals[i]))
+			if(!(*nafLiterals[i]==*element.nafLiterals[i]))
 				return false;
+
 
 		return true;
 	}
