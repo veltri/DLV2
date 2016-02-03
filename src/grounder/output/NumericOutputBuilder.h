@@ -17,7 +17,11 @@ namespace grounder {
 class NumericOutputBuilder: public OutputBuilder {
 public:
 	NumericOutputBuilder():printStream(false){};
-	virtual ~NumericOutputBuilder(){};
+	virtual ~NumericOutputBuilder(){
+		for(auto list:weakLevelConstraints)
+			for(auto rule:list)
+				delete rule;
+	};
 
     virtual void onRule(Rule *rule);
     virtual void onWeakConstraint();

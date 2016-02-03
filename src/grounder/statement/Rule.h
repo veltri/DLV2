@@ -390,6 +390,10 @@ public:
 	WeakConstraint(bool g, unsigned sizeBody,const vector<Atom*>& body,Term* weight, Term* level,const vector<Term*>& terms):Rule(g,0,sizeBody),weight(weight),level((level==nullptr)?TermTable::getInstance()->term_zero:level),label(terms),levelInt((g)?level->getConstantValue():0){
 		this->body=body;
 	}
+
+	WeakConstraint(bool g, unsigned sizeBody,Term* weight, Term* level,const vector<Term*>& terms):Rule(g,0,sizeBody),weight(weight),level((level==nullptr)?TermTable::getInstance()->term_zero:level),label(terms),levelInt((g)?level->getConstantValue():0){
+	}
+
 	virtual bool isWeakConstraint(){return true;}
 
 	const vector<Term*>& getLabel() const {return label;}

@@ -339,12 +339,23 @@ unsigned NumericOutputBuilder::printMaxMinAggregate(Atom* atom) {
 
 void NumericOutputBuilder::printWeak(){
 
+	for(auto r:*levelWeak[0]){
+		cout<<levelWeak[0]->size()<<endl;
+		r->print();
+	}
+
 	weakLevelConstraints.sort([](const list<Rule*>& l1,const list<Rule*>& l2){
 		return l1.front()->getLevelInt() < l2.front()->getLevelInt();
 	});
 
 	for(auto list:weakLevelConstraints){
 		printWeakAtLevel(list);
+	}
+
+	if(printStream){
+		cout<<stream.str();
+		stream.str("");
+		printStream=false;
 	}
 }
 

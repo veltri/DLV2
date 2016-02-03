@@ -413,7 +413,7 @@ void BackTrackingGrounder::inizialize(Rule* rule, unordered_set<index_object>* c
 	if(ground_rule!=0)
 		ground_rule->deleteGroundRule();
 	ground_rule=(currentRule->isWeakConstraint())
-			? new WeakConstraint(true,rule->getSizeBody(),currentRule->getBody(),currentRule->getWeight(),currentRule->getLevel(),currentRule->getLabel())
+			? new WeakConstraint(true,rule->getSizeBody(),currentRule->getWeight(),currentRule->getLevel(),currentRule->getLabel())
 			: new Rule(true, rule->getSizeHead(), rule->getSizeBody());
 
 	atomsPossibleUndef.clear();
