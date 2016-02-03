@@ -35,12 +35,10 @@ bool FunctionTerm::operator>(const Term& term) const {
 		if(getTermsSize()==term.getTermsSize()){
 			string functor_term=term.getName();
 			if(name!=functor_term)return name>functor_term;
-			bool findGreater=false;
 			for(unsigned int i=0;i<terms.size();i++){
+				if(*terms[i]>*term.getTerm(i))return true;
 				if(*terms[i]<*term.getTerm(i))return false;
-				if(!findGreater && *terms[i]>*term.getTerm(i))findGreater=true;
 			}
-			return findGreater;
 		}
 	}
 
@@ -59,8 +57,10 @@ bool FunctionTerm::operator>=(const Term& term) const {
 		if(getTermsSize()==term.getTermsSize()){
 			string functor_term=term.getName();
 			if(name!=functor_term)return name>=functor_term;
-			for(unsigned int i=0;i<terms.size();i++)
+			for(unsigned int i=0;i<terms.size();i++){
+				if(*terms[i]>*term.getTerm(i))return true;
 				if(*terms[i]<*term.getTerm(i))return false;
+			}
 			return true;
 		}
 	}
@@ -103,6 +103,7 @@ bool FunctionTerm::operator<=(const Term& term) const {
 			if(name!=functor_term)return name<=functor_term;
 			for(unsigned int i=0;i<terms.size();i++){
 				if(*terms[i]>*term.getTerm(i))return false;
+				if(*terms[i]<*term.getTerm(i))return true;
 			}
 			return true;
 		}
