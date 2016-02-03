@@ -253,6 +253,9 @@ public:
 		}
 	}
 
+	//Clone the rule, used in weka contraints
+	virtual Rule* clone(){return nullptr;};
+
 	bool isGround() const {return ground;}
 	void setGround(bool ground) {this->ground=ground;}
 
@@ -286,6 +289,7 @@ public:
 	}
 
 	virtual const vector<Term*>& getLabel() const {}
+	virtual unsigned getLevelInt(){return 0;}
 	virtual Term* getLevel() const {	return nullptr;}
 	virtual Term* getWeight() const {return nullptr;}
 	virtual void setWeightLevelLabel(tupleWeak&& tp){};
@@ -377,13 +381,13 @@ class WeakConstraint : public Rule{
 public:
 
 
-	WeakConstraint():weight(nullptr),level(nullptr){}
+	WeakConstraint():weight(nullptr),level(nullptr),levelInt(0){}
 
-	WeakConstraint(const vector<Atom*>& body,Term* weight, Term* level,const vector<Term*>& terms):weight(weight),level((level==nullptr)?TermTable::getInstance()->term_zero:level),label(terms){
+	WeakConstraint(const vector<Atom*>& body,Term* weight, Term* level,const vector<Term*>& terms):weight(weight),level((level==nullptr)?TermTable::getInstance()->term_zero:level),label(terms),levelInt(0){
 		this->body=body;
 	}
 
-	WeakConstraint(bool g, unsigned sizeBody,const vector<Atom*>& body,Term* weight, Term* level,const vector<Term*>& terms):Rule(g,0,sizeBody),weight(weight),level((level==nullptr)?TermTable::getInstance()->term_zero:level),label(terms){
+	WeakConstraint(bool g, unsigned sizeBody,const vector<Atom*>& body,Term* weight, Term* level,const vector<Term*>& terms):Rule(g,0,sizeBody),weight(weight),level((level==nullptr)?TermTable::getInstance()->term_zero:level),label(terms),levelInt((g)?level->getConstantValue():0){
 		this->body=body;
 	}
 	virtual bool isWeakConstraint(){return true;}
@@ -393,6 +397,8 @@ public:
 	void setLabel(const vector<Term*>& label) {	this->label = move(label);}
 
 	Term* getLevel() const {	return level;}
+
+	unsigned getLevelInt(){return levelInt;}
 
 	void setLevel(Term* level) {	this->level = level;}
 
@@ -412,6 +418,12 @@ public:
 		label=move(get<2>(groundWeightLevelLabel));
 	};
 
+	virtual Rule* clone(){
+		Rule *newWeak = new WeakConstraint(true,body.size(),body,weight,level,label);
+		for(unsigned i=0;i<body.size();i++)newWeak->setAtomToSimplifyInBody(i,simplifiedBody[i]);
+		return newWeak;
+	};
+
 	///Ground the Weight, the level and the label of the weak and return with the tuple
 	tupleWeak groundWeightLevel(var_assignment& current_assignment);
 
@@ -420,6 +432,8 @@ private:
 	Term* level;
 
 	vector<Term*> label;
+
+	unsigned levelInt;
 };
 
 

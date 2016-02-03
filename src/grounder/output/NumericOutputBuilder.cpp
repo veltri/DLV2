@@ -14,13 +14,21 @@ namespace grounder {
 void NumericOutputBuilder::onRule(Rule* rule) {
 //	cout<<"RULE ";
 //	rule->print();
-	if(rule->isAStrongConstraint())
+	if(rule->isAStrongConstraint()){
 		onConstraint(rule);
-	else{
+	}else if(rule->isWeakConstraint()){
+		int level=rule->getLevel()->getConstantValue();
+		if(levelWeak.count(level))
+			(*levelWeak[level]).push_back(rule->clone());
+		else{
+			weakLevelConstraints.emplace_back(1,rule->clone());
+			levelWeak[level]=prev(weakLevelConstraints.end());
+		}
+	}else{
 		onHead(rule->getHead());
 		onBody(rule);
+		cout<<endl;
 	}
-	cout<<endl;
 	if(printStream){
 		cout<<stream.str();
 		stream.str("");
@@ -51,6 +59,7 @@ void NumericOutputBuilder::onHead(const vector<Atom*>& head) {
 void NumericOutputBuilder::onConstraint(Rule* rule){
 	cout<<"1 1 ";
 	onBody(rule);
+	cout<<endl;
 }
 
 
@@ -328,7 +337,130 @@ unsigned NumericOutputBuilder::printMaxMinAggregate(Atom* atom) {
 	return index_aggregate;
 }
 
+void NumericOutputBuilder::printWeak(){
+
+	weakLevelConstraints.sort([](const list<Rule*>& l1,const list<Rule*>& l2){
+		return l1.front()->getLevelInt() < l2.front()->getLevelInt();
+	});
+
+	for(auto list:weakLevelConstraints){
+		printWeakAtLevel(list);
+	}
+}
+
+
+
+void NumericOutputBuilder::printWeakAtLevel(list<Rule*> listOfWeak){
+
+	auto hash=[](const pair<int,vector<Term*>>& ele){
+		size_t seed=3;
+		seed^= (ele.first + 0x9e3779b9 + (seed<<6) + (seed>>2));
+		for(auto t:ele.second)
+			seed ^= t->getIndex() + 0x9e3779b9 + (seed<<6) + (seed>>2);
+		return seed;
+	};
+	auto equal=[](const pair<int,vector<Term*>>& ele1,const pair<int,vector<Term*>>& ele2){
+		if(ele1.first!=ele2.first)return false;
+		if(ele1.second.size()!=ele2.second.size())return false;
+		for(unsigned i=0;i<ele1.second.size();i++)
+			if(ele1.second[i]->getIndex()!=ele2.second[i]->getIndex())
+				return false;
+		return true;
+	};
+
+
+
+	unordered_map<pair<int,vector<Term*>>,unsigned,decltype(hash),decltype(equal)> weightLabel(1,hash,equal);
+	vector<vector<Rule*>> weaks;
+	for(auto weak:listOfWeak){
+		pair<int,vector<Term*>> pair={weak->getWeight()->getConstantValue(),weak->getLabel()};
+		auto it=weightLabel.find(pair);
+		if(it!=weightLabel.end())
+			weaks[it->second].push_back(weak);
+		else{
+			weightLabel.insert({pair,weaks.size()});
+			weaks.emplace_back(1,weak);
+		}
+	}
+
+//	cout<<"LEVEL "<<listOfWeak.front()->getLevelInt()<<endl;
+//	for(auto& p:weaks){
+//		cout<<"BLOCK"<<endl;
+//		for(auto& w:p){
+//			w->print();
+//		}
+//		cout<<endl;
+//	}
+	stringstream atomsId;
+	stringstream weightAtomsId;
+	for(unsigned i=0;i<weaks.size();i++){
+		if(i!=0)atomsId<<" ";
+		if(weaks[i].size()==1)
+			atomsId<<rewriteBodyInAux(weaks[i][0]);
+		else{
+			vector<unsigned> aux;
+			for(auto weak:weaks[i])
+				aux.push_back(rewriteBodyInAux(weak));
+			atomsId<<createMultipleRule(aux);
+		}
+		weightAtomsId<<" "<<weaks[i][0]->getWeight()->getConstantValue();
+	}
+	cout<<"6 0 "<<weaks.size()<<" 0 "<<atomsId.str()<<weightAtomsId.str()<<endl;
+}
+
+unsigned NumericOutputBuilder::rewriteBodyInAux(Rule* rule) {
+	unsigned body_size=rule->getSizeBody();
+	vector<Atom*> negative,positive;
+	negative.reserve(body_size);
+	positive.reserve(body_size);
+	Atom* firstPrinted=nullptr;
+	Atom *atom;
+	for(unsigned i=0;i<body_size;i++){
+		if(rule->isAtomToSimplifyInBody(i))continue;
+		atom=rule->getAtomInBody(i);
+		if(!atom->isNegative())
+			positive.push_back(atom);
+		else
+			negative.push_back(atom);
+		if(firstPrinted==nullptr)firstPrinted=atom;
+	}
+	if(negative.size()+positive.size()==1){
+		if(firstPrinted->isAggregateAtom())
+			return onAggregate(firstPrinted);
+		else{
+			return firstPrinted->getIndex();
+		}
+	}
+
+	unsigned index_head=IdGenerator::getInstance()->getNewId(1);
+	cout<<"1 "<<index_head<<" ";
+	cout<<negative.size()+positive.size()<<" "<<negative.size()<<" ";
+	for(auto& atom:negative)
+		if(atom->isAggregateAtom()){
+			unsigned agg_pred=onAggregate(atom);
+			cout<<agg_pred<<" ";
+		}else
+			onClassicalLiteral(atom);
+	for(auto& atom:positive)
+		if(atom->isAggregateAtom()){
+			unsigned agg_pred=onAggregate(atom);
+			cout<<agg_pred<<" ";
+		}else
+			onClassicalLiteral(atom);
+	cout<<endl;
+	return index_head;
+}
+
+unsigned NumericOutputBuilder::createMultipleRule(vector<unsigned> idatoms){
+	unsigned index_head=IdGenerator::getInstance()->getNewId(1);
+	for(auto id:idatoms)
+		cout<<"1 "<<index_head<<" 1 0 "<<id<<endl;
+	return index_head;
+}
+
 void NumericOutputBuilder::onEnd() {
+	printWeak();
+
 	cout<<"0"<<endl;
 //	PredicateExtTable::getInstance()->print();
 	cout<<streamAtomTable.str();

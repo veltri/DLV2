@@ -43,10 +43,30 @@ public:
 
     virtual void appendToStreamAtomTable(Atom* atom);
 
+    ///Print weak constraint
+	virtual void printWeak();
+
+	///Write the body of the rule in a new rule with in the head new aux atom and return the id of the new aux
+	virtual unsigned rewriteBodyInAux(Rule* rule);
+
+	///Create for each id in idatoms a rule with in the head a new aux atom and in the body an element in the vector. Return
+	/// the id of the new aux atom in the head.
+	virtual unsigned createMultipleRule(vector<unsigned> idatoms);
+
+	///Print the weak in the list. All the weak on the list have the same level
+	void printWeakAtLevel(list<Rule*> listOfWeak);
+
+
+
 private:
     stringstream stream;
     stringstream streamAtomTable;
     bool printStream;
+
+    using list_pair_it=list<list<Rule*>>::iterator;
+
+    list<list<Rule*>> weakLevelConstraints;
+    unordered_map<unsigned,list_pair_it> levelWeak;
 };
 
 } /* namespace grounder */
