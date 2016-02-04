@@ -787,6 +787,43 @@ bool SemiJoinIndexingArgumentsOrderRuleGroundable2::ckeckSimilarity(double weigh
 	return (weight1/weight2)>SIMILARITY_THRESHOLD;
 }
 
+double SemiJoinIndexingArgumentsOrderRuleGroundable3::assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition) {
+	if(variablesDomains.empty())
+		computeVariablesDomains();
+
+	if(boundArgumentsSelectivities.empty())
+		computeBoundArgumentsSelectivities();
+
+	double combinedCriterion=CombinedCriterion::assignWeightPositiveClassicalLit(atom,originalPosition);
+
+	unsigned sizeTablesToSearch=0;
+	for(auto j:predicate_searchInsert_table[originalPosition+rule->getSizeHead()])
+		sizeTablesToSearch+=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(j.first,j.second);
+
+	double max=0;
+	double secondMax=0;
+	double bestIndex=1;
+	for(unsigned i=0;i<atom->getTermsSize();++i){
+		if(Utils::isContained(variablesInTerms[originalPosition][i],variablesInTheBody)){
+			if(boundArgumentsSelectivities[originalPosition][i]>max){
+				secondMax=max;
+				max=boundArgumentsSelectivities[originalPosition][i];
+			}
+			else if(boundArgumentsSelectivities[originalPosition][i]==max){
+				secondMax=max;
+			}
+		}
+	}
+	if(max>0 && secondMax>0 && (1-max/sizeTablesToSearch)<DOUBLE_INDEX_THRESHOLD){
+		bestIndex=(1-((max*secondMax)/sizeTablesToSearch));
+	}
+	else if(max>0){
+		bestIndex=(1-max/sizeTablesToSearch);
+	}
+
+	return combinedCriterion*bestIndex;
+}
+
 }
 }
 
