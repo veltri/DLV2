@@ -10,7 +10,7 @@
 
 #include <vector>
 #include <unordered_set>
-#include "../atom/Atom.h"
+#include "../atom/AggregateAtom.h"
 #include "../hash/HashVecInt.h"
 
 using namespace std;
@@ -423,8 +423,19 @@ public:
 	};
 
 	virtual Rule* clone(){
-		Rule *newWeak = new WeakConstraint(true,body.size(),body,weight,level,label);
-		for(unsigned i=0;i<body.size();i++)newWeak->setAtomToSimplifyInBody(i,simplifiedBody[i]);
+		Rule *newWeak = new WeakConstraint(true,body.size(),weight,level,label);
+		for(unsigned i=0;i<body.size();i++){
+			newWeak->setAtomToSimplifyInBody(i,simplifiedBody[i]);
+			if(!simplifiedBody[i]){
+				Atom *atom=body[i];
+				if(atom->isClassicalLiteral())
+					newWeak->setAtomInBody(i,atom);
+				else if(atom->isAggregateAtom()){
+					//CLONE AGGREGATE ATOM GROUND, the atom inside the aggregate only the pointer
+					newWeak->setAtomInBody(i,atom->clonePointerAtom());
+				}
+			}
+		}
 		return newWeak;
 	};
 

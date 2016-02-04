@@ -493,12 +493,11 @@ void InMemoryInputBuilder::rewriteAggregate(Rule* rule) {
 	//Translate the rule
 	vector<Rule*> rules;
 	inputRewriter->translateAggregate(rule, rules, &orderRule);
-
 	for (auto r : rules) {
 		OrderRule orderR(r);
 		isSafe = orderR.order();
 		if (!isSafe)
-		safetyError(isSafe,"RULE IS UNSAFE");
+			safetyError(isSafe,"RULE IS UNSAFE");
 		statementDependency->addRuleMapping(r);
 	}
 

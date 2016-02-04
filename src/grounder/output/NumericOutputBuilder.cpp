@@ -218,9 +218,9 @@ unsigned NumericOutputBuilder::onConstraintRule(Atom* aggregateAtom,unsigned bou
 	stream<<negative.size()+positive.size()<<" "<<negative.size()<<" "<<bound<<" ";
 	for(auto& atom:negative)
 		stream<<atom->getIndex()<<" ";
-	for(auto& atom:positive)
+	for(auto& atom:positive) {
 		stream<<atom->getIndex()<<" ";
-
+	}
 	stream<<endl;
 	return pred_id;
 }
@@ -339,10 +339,6 @@ unsigned NumericOutputBuilder::printMaxMinAggregate(Atom* atom) {
 
 void NumericOutputBuilder::printWeak(){
 
-	for(auto r:*levelWeak[0]){
-		cout<<levelWeak[0]->size()<<endl;
-		r->print();
-	}
 
 	weakLevelConstraints.sort([](const list<Rule*>& l1,const list<Rule*>& l2){
 		return l1.front()->getLevelInt() < l2.front()->getLevelInt();

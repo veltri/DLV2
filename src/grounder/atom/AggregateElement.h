@@ -33,7 +33,7 @@ class AggregateElement {
 
 		AggregateElement(Atom * atom,vector<Term*>& terms):terms(terms) {nafLiterals.push_back(atom);}
 
-		AggregateElement* clone();
+		AggregateElement* clone(bool cloneOnlyPointer=false);
 
 		///Getter for terms
 		const vector<Term*>& getTerms() const {return terms;}

@@ -73,6 +73,25 @@ public:
 		return atom;
 	};
 
+	Atom* clonePointerAtom() {
+		AggregateAtom* atom = new AggregateAtom(firstGuard,firstBinop,secondGuard,secondBinop,aggregateFunction,negative);
+		atom->setAssignment(assignment);
+		atom->setTerms(this->terms);
+		for(auto agg_element:aggregateElements)
+			atom->addAggregateElement(agg_element->clone(true));
+
+		atom->partialEvaluation=this->partialEvaluation;
+		atom->undefAtomEvaluation=this->undefAtomEvaluation;
+		for(auto element:map_undefAtom_position)
+			atom->map_undefAtom_position.insert(element);
+		for(auto boolean:current_number)
+			atom->current_number.push_back(boolean);
+		for(auto term:possibleUndefValue)
+			atom->possibleUndefValue.insert(term);
+
+		return atom;
+	};
+
 	///This method compute the resulting hash a classical atom using its terms
 	size_t hash() ;
 	///This method compute the resulting hash for an aggregateElement TODO
