@@ -35,7 +35,7 @@ namespace grounder{
 	set_term AggregateElement::getSafeVariable() {
 		set_term safeVars;
 		for(auto atom:nafLiterals)
-			if(!atom->isNegative())
+			if(!atom->isNegative() && ! atom->isBuiltIn())
 				for(auto variable:atom->getVariable())
 					safeVars.insert(variable);
 		return safeVars;
@@ -45,10 +45,11 @@ namespace grounder{
 		set_term safeVars=getSafeVariable();
 		set_term unsafeVars;
 		for(auto atom:nafLiterals)
-			if(atom->isNegative())
+			if(atom->isNegative() || atom->isBuiltIn())
 				for(auto variable:atom->getVariable())
 					if(!safeVars.count(variable))
 						unsafeVars.insert(variable);
+
 		return unsafeVars;
 	}
 
