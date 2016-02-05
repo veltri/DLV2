@@ -216,6 +216,9 @@ public:
 		for(Rule* r:constraints)
 			clearRule(r);
 
+		for(Rule* r:weak)
+			clearRule(r);
+
 	}
 
 	void clearRule(Rule *r){
