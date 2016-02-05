@@ -17,14 +17,12 @@ namespace grounder {
 
 class NumericOutputBuilder: public OutputBuilder {
 public:
+
+    using id_weight_label= tuple<unsigned,int,vector<Term*>>;
+    using list_pair_it=list<list<id_weight_label>>::iterator;
+
 	NumericOutputBuilder():printStream(false){};
-	virtual ~NumericOutputBuilder(){
-		for(auto list:weakLevelConstraints)
-			for(auto rule:list){
-				rule->deleteBody([](Atom* atom){return 2;});
-				delete rule;
-			}
-	};
+	virtual ~NumericOutputBuilder(){};
 
     virtual void onRule(Rule *rule);
     virtual void onWeakConstraint();
@@ -58,10 +56,10 @@ public:
 
 	///Create for each id in idatoms a rule with in the head a new aux atom and in the body an element in the vector. Return
 	/// the id of the new aux atom in the head.
-	virtual unsigned createMultipleRule(vector<unsigned> idatoms);
+	virtual unsigned createMultipleRule(vector<unsigned>& idatoms);
 
 	///Print the weak in the list. All the weak on the list have the same level
-	void printWeakAtLevel(list<Rule*> listOfWeak);
+	void printWeakAtLevel(list<id_weight_label>& listOfWeak);
 
 
 
@@ -70,9 +68,10 @@ private:
     stringstream streamAtomTable;
     bool printStream;
 
-    using list_pair_it=list<list<Rule*>>::iterator;
-
-    list<list<Rule*>> weakLevelConstraints;
+    //id_weight_label represent a tuple of : body of the weak rewrited, the weight and the label of the weak
+    // weakLevelConstraints is a list of list, which the second list group the weak with the same level
+    list<list<id_weight_label>> weakLevelConstraints;
+    // Map for each level return the iterator of the list that group the weak with the level in the key
     unordered_map<unsigned,list_pair_it> levelWeak;
 };
 

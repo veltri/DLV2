@@ -11,6 +11,7 @@
 namespace DLV2 {
 namespace grounder {
 
+
 void NumericOutputBuilder::onRule(Rule* rule) {
 //	cout<<"RULE ";
 //	rule->print();
@@ -18,10 +19,11 @@ void NumericOutputBuilder::onRule(Rule* rule) {
 		onConstraint(rule);
 	}else if(rule->isWeakConstraint()){
 		int level=rule->getLevel()->getConstantValue();
-		if(levelWeak.count(level))
-			(*levelWeak[level]).push_back(rule->clone());
-		else{
-			weakLevelConstraints.emplace_back(1,rule->clone());
+		unsigned idHead= rewriteBodyInAux(rule);
+		if(levelWeak.count(level)){
+			(*levelWeak[level]).push_back(make_tuple(idHead,rule->getWeight()->getConstantValue(),rule->getLabel()));
+		}else{
+			weakLevelConstraints.emplace_back(1,make_tuple(idHead,rule->getWeight()->getConstantValue(),rule->getLabel()));
 			levelWeak[level]=prev(weakLevelConstraints.end());
 		}
 	}else{
@@ -340,24 +342,19 @@ unsigned NumericOutputBuilder::printMaxMinAggregate(Atom* atom) {
 void NumericOutputBuilder::printWeak(){
 
 
-	weakLevelConstraints.sort([](const list<Rule*>& l1,const list<Rule*>& l2){
-		return l1.front()->getLevelInt() < l2.front()->getLevelInt();
+	weakLevelConstraints.sort([](const list<id_weight_label>& l1,const list<id_weight_label>& l2){
+		return get<1>(l1.front()) < get<1>(l2.front());
 	});
 
 	for(auto list:weakLevelConstraints){
 		printWeakAtLevel(list);
 	}
 
-	if(printStream){
-		cout<<stream.str();
-		stream.str("");
-		printStream=false;
-	}
 }
 
 
 
-void NumericOutputBuilder::printWeakAtLevel(list<Rule*> listOfWeak){
+void NumericOutputBuilder::printWeakAtLevel(list<id_weight_label>& listOfWeak){
 
 	auto hash=[](const pair<int,vector<Term*>>& ele){
 		size_t seed=3;
@@ -378,15 +375,15 @@ void NumericOutputBuilder::printWeakAtLevel(list<Rule*> listOfWeak){
 
 
 	unordered_map<pair<int,vector<Term*>>,unsigned,decltype(hash),decltype(equal)> weightLabel(1,hash,equal);
-	vector<vector<Rule*>> weaks;
-	for(auto weak:listOfWeak){
-		pair<int,vector<Term*>> pair={weak->getWeight()->getConstantValue(),weak->getLabel()};
+	vector<vector<id_weight_label>> weaks;
+	for(auto idWeightLabel:listOfWeak){
+		pair<int,vector<Term*>> pair={get<1>(idWeightLabel),get<2>(idWeightLabel)};
 		auto it=weightLabel.find(pair);
 		if(it!=weightLabel.end())
-			weaks[it->second].push_back(weak);
+			weaks[it->second].push_back(idWeightLabel);
 		else{
 			weightLabel.insert({pair,weaks.size()});
-			weaks.emplace_back(1,weak);
+			weaks.emplace_back(1,idWeightLabel);
 		}
 	}
 
@@ -403,14 +400,14 @@ void NumericOutputBuilder::printWeakAtLevel(list<Rule*> listOfWeak){
 	for(unsigned i=0;i<weaks.size();i++){
 		if(i!=0)atomsId<<" ";
 		if(weaks[i].size()==1)
-			atomsId<<rewriteBodyInAux(weaks[i][0]);
+			atomsId<<get<0>(weaks[i][0]);
 		else{
 			vector<unsigned> aux;
 			for(auto weak:weaks[i])
-				aux.push_back(rewriteBodyInAux(weak));
+				aux.push_back(get<0>(weak));
 			atomsId<<createMultipleRule(aux);
 		}
-		weightAtomsId<<" "<<weaks[i][0]->getWeight()->getConstantValue();
+		weightAtomsId<<" "<<get<1>(weaks[i][0]);
 	}
 	cout<<"6 0 "<<weaks.size()<<" 0 "<<atomsId.str()<<weightAtomsId.str()<<endl;
 }
@@ -458,7 +455,7 @@ unsigned NumericOutputBuilder::rewriteBodyInAux(Rule* rule) {
 	return index_head;
 }
 
-unsigned NumericOutputBuilder::createMultipleRule(vector<unsigned> idatoms){
+unsigned NumericOutputBuilder::createMultipleRule(vector<unsigned>& idatoms){
 	unsigned index_head=IdGenerator::getInstance()->getNewId(1);
 	for(auto id:idatoms)
 		cout<<"1 "<<index_head<<" 1 0 "<<id<<endl;

@@ -253,9 +253,6 @@ public:
 		}
 	}
 
-	//Clone the rule, used in weka contraints
-	virtual Rule* clone(){return nullptr;};
-
 	bool isGround() const {return ground;}
 	void setGround(bool ground) {this->ground=ground;}
 
@@ -422,23 +419,6 @@ public:
 		label=move(get<2>(groundWeightLevelLabel));
 	};
 
-	virtual Rule* clone(){
-		Rule *newWeak = new WeakConstraint(true,body.size(),weight,level,label);
-		for(unsigned i=0;i<body.size();i++){
-			newWeak->setAtomToSimplifyInBody(i,simplifiedBody[i]);
-			if(!simplifiedBody[i]){
-				Atom *atom=body[i];
-				if(atom->isClassicalLiteral() && !atom->isNegative())
-					newWeak->setAtomInBody(i,atom);
-				else if(atom->isAggregateAtom())
-					//CLONE AGGREGATE ATOM GROUND, the atom inside the aggregate only the pointer
-					newWeak->setAtomInBody(i,atom->clonePointerAtom());
-				else
-					newWeak->setAtomInBody(i,atom->clone());
-			}
-		}
-		return newWeak;
-	};
 
 	///Ground the Weight, the level and the label of the weak and return with the tuple
 	tupleWeak groundWeightLevel(var_assignment& current_assignment);
