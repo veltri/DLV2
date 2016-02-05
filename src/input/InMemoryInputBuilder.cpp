@@ -114,6 +114,7 @@ void InMemoryInputBuilder::onWeakConstraint() {
 	safetyError(isSafe,"RULE IS UNSAFE");
 	statementDependency->addRuleMapping(weakRule);
 
+	delete currentRule;
 	currentRule = new Rule;
 	terms_parsered.clear();
 	weight=nullptr;

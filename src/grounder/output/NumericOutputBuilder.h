@@ -10,6 +10,7 @@
 
 #include <sstream>
 #include "OutputBuilder.h"
+#include "../ground/StatementDependency.h"
 
 namespace DLV2 {
 namespace grounder {
@@ -19,8 +20,10 @@ public:
 	NumericOutputBuilder():printStream(false){};
 	virtual ~NumericOutputBuilder(){
 		for(auto list:weakLevelConstraints)
-			for(auto rule:list)
+			for(auto rule:list){
+				rule->deleteBody([](Atom* atom){return 2;});
 				delete rule;
+			}
 	};
 
     virtual void onRule(Rule *rule);
