@@ -55,15 +55,17 @@ public:
 	Term* term_max;
 	Term* term_min;
 	Term* term_zero;
+	Term* term_minus_one;
 protected:
 	// Instance of the singleton
 	static TermTable* termTable;
 private:
 //	TermTable(): term_max(new StringConstantTerm(false,"+∞")), term_min(new StringConstantTerm(false,"-∞")), term_zero(new NumericConstantTerm(false,0)) {
-	TermTable(): term_max(new StringConstantTerm(false,"#sup")), term_min(new StringConstantTerm(false,"#inf")), term_zero(new NumericConstantTerm(false,0)),counter(0) {
+	TermTable(): term_max(new StringConstantTerm(false,"#sup")), term_min(new StringConstantTerm(false,"#inf")), term_zero(new NumericConstantTerm(false,0)),term_minus_one(new NumericConstantTerm(false,-1)),counter(0) {
 		addTerm(term_max);
 		addTerm(term_min);
 		addTerm(term_zero);
+		addTerm(term_minus_one);
 	}
 	/*
 	 *  Flyweight Factory of terms

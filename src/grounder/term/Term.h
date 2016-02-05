@@ -67,8 +67,6 @@ public:
 
 	virtual bool isRange() const {return false;}
 
-	virtual Term* clone(){return nullptr;};
-
 	///Return the negation of the term
 	bool isNegative(){return negative;};
 	///Set the negation of the term

@@ -282,8 +282,15 @@ void InMemoryInputBuilder::onTermDash() {
 	}
 	else
 	{
-		Term * newTerm=oldTerm->clone();
-		newTerm->setNegative(true);
+		Term *newTerm = nullptr;
+
+		if(oldTerm->getType()==NUMERIC_CONSTANT)
+			newTerm=new NumericConstantTerm(false,oldTerm->getConstantValue()*(-1));
+		else{
+			vector<Operator> op(1,TIMES);
+			vector<Term*> terms={oldTerm,termTable->term_minus_one};
+			newTerm = new ArithTerm(false,op,terms);
+		}
 		TermTable::getInstance()->addTerm(newTerm);
 		terms_parsered.pop_back();
 		terms_parsered.push_back(newTerm);

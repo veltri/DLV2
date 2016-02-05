@@ -50,7 +50,6 @@ class NumericConstantTerm: public ConstantTerm{
 public:
 	NumericConstantTerm(bool negative,int n): ConstantTerm(negative), numeric_constant(n){};
 
-	virtual Term* clone(){return new NumericConstantTerm(negative,numeric_constant);};
 
 	virtual bool operator==(const Term& term) const {return (TermType::NUMERIC_CONSTANT==term.getType() && this->numeric_constant==term.getConstantValue());}
 

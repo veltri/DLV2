@@ -428,12 +428,13 @@ public:
 			newWeak->setAtomToSimplifyInBody(i,simplifiedBody[i]);
 			if(!simplifiedBody[i]){
 				Atom *atom=body[i];
-				if(atom->isClassicalLiteral())
+				if(atom->isClassicalLiteral() && !atom->isNegative())
 					newWeak->setAtomInBody(i,atom);
-				else if(atom->isAggregateAtom()){
+				else if(atom->isAggregateAtom())
 					//CLONE AGGREGATE ATOM GROUND, the atom inside the aggregate only the pointer
 					newWeak->setAtomInBody(i,atom->clonePointerAtom());
-				}
+				else
+					newWeak->setAtomInBody(i,atom->clone());
 			}
 		}
 		return newWeak;

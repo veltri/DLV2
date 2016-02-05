@@ -39,6 +39,7 @@ public:
 	Atom* clone() {
 		Atom* atom = new ClassicalLiteral(this->predicate,this->hasMinus,this->negative,this->fact);
 		atom->setTerms(this->terms);
+		atom->setIndex(this->getIndex());
 		return atom;
 	};
 
