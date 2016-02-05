@@ -152,7 +152,7 @@ public:
 	///Return true if the built in assign value in term, else compare the variable like ==
 	virtual bool isAssignment(){return false;};
 	virtual void setAssignment(bool assigment){};
-	//Return true if the builtin not contains in the operator of Airth term a DIV or a TIMES
+	//Return true if the builtin not contains in the operator of Airth term a DIV or a TIMES and not contain function
 	virtual bool plusMinusBuiltin(){return true;};
 	/*****************************************************/
 

@@ -44,11 +44,16 @@ namespace grounder{
 	set_term AggregateElement::getUnsafeVariable() {
 		set_term safeVars=getSafeVariable();
 		set_term unsafeVars;
-		for(auto atom:nafLiterals)
-			if(atom->isNegative() || atom->isBuiltIn())
+		for(auto atom:nafLiterals){
+			set_term variableInArith;
+			for(auto t:atom->getTerms())t->getVariablesInArith(variableInArith);
+			if(variableInArith.size()>0)unsafeVars.insert(variableInArith.begin(),variableInArith.end());
+			if(atom->isNegative() || atom->isBuiltIn()){
 				for(auto variable:atom->getVariable())
 					if(!safeVars.count(variable))
 						unsafeVars.insert(variable);
+			}
+		}
 
 		return unsafeVars;
 	}

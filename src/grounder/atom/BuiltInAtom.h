@@ -91,6 +91,7 @@ public:
 	virtual bool plusMinusBuiltin(){
 		for(unsigned i=0;i<terms.size();i++){
 			Term *t=terms[i];
+			if(t->getType()==FUNCTION)return false;
 			for(unsigned j=0;j<t->getSizeOperator();j++)
 				if(t->getOperator(j)==DIV || t->getOperator(j)==TIMES)
 					return false;
