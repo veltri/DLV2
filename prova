@@ -1,39 +1,61 @@
 
-%ancestor(X,Y) :- edge(X,Y).
-%ancestor(X,Y) :- ancestor(X,U), ancestor(U,Y).
-
-%edge(1,2).
-%edge(2,3).
-%edge(3,4).
-%edge(3,5).
-%edge(4,6).
-%edge(4,7).
-%edge(7,8).
-
-%d(X,Y,Z,W):-a(X,Y),a(X,E),b(Y,Z),c(Z,W).
-%a(1,1). b(2,3). c(3,1).
-%a(1,2). b(2,4). c(3,2).
-%a(4,7). b(3,1). c(5,7).
-
-filled(X,Y) :- bottle(B,X,Y), not unfilled(X,Y).
-unfilled(X,Y) :- bottle(B,X,Y), not filled(X,Y).
-
-%:- xvalue(Y,V), not #count{ X : filled(X,Y) } = V.
-%:- yvalue(X,V), not #count{ Y : filled(X,Y) } = V.
-
-:- bottle(B,X1,Y1), bottle(B,X2,Y2), ysucc(Y1,Y2), filled(X1,Y1), unfilled(X2,Y2).
-:- bottle(B,X1,Y), bottle(B,X2,Y), filled(X1,Y), unfilled(X2,Y), X1 != X2.
-
-%xvalue(1,3).
-%yvalue(1,5).
-bottle(1,1,1).
-bottle(2,1,2).
-filled(1,1).
-unfilled(1,2).
-ysucc(1,2).
+%fuel( T,Fuelpre - Fueldelta,S ) :- drive( T,L1,L2,S ), fuelcost(Fueldelta,L1,L2), fuel(T,Fuelpre,S-1).
+%fuel( T,Fuelpre - Fueldelta,S ) :- drive( T,L1,L2,S ), fuelcost(Fueldelta,L1,L2), fuel(T,Fuelpre,H), H=S-1.
+ %, Fuelpost = Fuelpre - Fueldelta.
 
 
+%fuel( T,Level,S ) :- fuel( T,Level,H ),H=S-1, not del( fuel( T,Level) ,S ), truck( T ), step(S).
 
+%fuel(1,1,1).
+%drive(1..5,1..5,1..5,1..5).
+%fuelcost(1..10,1..10,1..10).
+%truck(1..10).
+%step(1..10).
 
+%samequare(0,0,0,0).
+%samequare(0,1,0,1).
+%samequare(1,0,1,0).
+%samequare(1,1,1,1).
+%value(0,0,1).
+%value(0,1,2).
+%value(1,0,2).
+%value(1,1,1).
+%:-value(X,Y,Z),value(X1,Y1,Z),samequare(X,Y,X1,Y1).
 
- 
+a(1, 1..3).
+b(X):- a(X,_), a(X,Y), not c(X). %, d(Y).
+c(X):-b(X).
+d(1..10).
+
+%b(1,1).
+%b(1,2).
+%b(1,3).
+%b(2,1).
+%b(2,2).
+%b(2,3).
+%b(3,1).
+%b(3,2).
+%b(3,3).
+%p(X,Z):-b(X,_), b(_,Z), b(X,Y), b(Y,Z), not q(X,Z).
+%q(X,Z):-b(X,_), b(_,Z), b(X,Y), b(Y,Z), not p(X,Z).
+
+%reaches(X,X) :- node(X). %, not offline(X).
+%reaches(X,Z) :- r(X,_), connected(_,Z), r(X,Y),  connected(Y,Z). %, not offline(Z).
+
+%connected(a,b).
+%connected(b,c).
+%connected(c,e).
+%connected(b,d).
+%connected(d,e).
+%connected(a,f).
+%connected(f,e).
+
+%r(a,f).
+%r(a,b).
+
+%node(a).
+%node(b).
+%node(c).
+%node(d).
+%node(e).
+%node(f).
