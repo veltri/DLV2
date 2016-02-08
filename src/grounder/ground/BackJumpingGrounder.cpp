@@ -125,12 +125,29 @@ void BackJumpingGrounder::inizialize(Rule* rule, unordered_set<index_object>* co
 			for(unsigned i=0;i<atom->getTermsSize();++i){
 				set_term variables;
 				atom->getTerm(i)->getVariable(variables);
-				if(!Utils::isDisjoint(variables,outputVariables)){
+				bool isBinder=false;
+				for(auto v:variables){
+					if(variablesBinder[v->getLocalVariableIndex()]==position)
+						isBinder=true;
+				}
+				if(isBinder && !Utils::isDisjoint(variables,outputVariables)){
 					outputVariablesInAtoms[position].push_back(i);
 				}
 			}
 		}
 	}
+
+//	position=0;
+//	for (auto it=currentRule->getBeginBody();it!=currentRule->getEndBody(); ++it,++position) {
+//		if(outputVariablesInAtoms[position].size()>0){
+//			cout<<"---> Binder: ";(*it)->print();cout<<" ";
+//			for(auto i:outputVariablesInAtoms[position]){
+//				cout<<i<<" ";
+//			}
+//			cout<<endl;
+//		}
+//	}
+
 
 
 

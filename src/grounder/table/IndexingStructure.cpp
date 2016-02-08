@@ -26,12 +26,8 @@ bool AtomSearcher::checkMatch(unsigned int id,Atom *genericAtom, Atom *templateA
 			return false;
 	}
 
-	//TODO TEST LINEAR SCANNING THE ARRAY
-	for(auto variable:variablesAdded){
-		currentAssignment[variable]=assignInTerm[variable];
-	}
-//	cout<<"--->";genericAtom->print();cout<<endl;
-//	cout<<outputVariables.size()<<endl;
+//	cout<<"--->";templateAtom->print();cout<<endl;
+//	cout<<"--->";genericAtom->print();
 	if(!outputVariables.empty() && outputVariables.size()!=genericAtom->getPredicate()->getArity()){
 		vector<Term*> outputVariablesTerms;
 		outputVariablesTerms.reserve(outputVariables.size());
@@ -44,7 +40,11 @@ bool AtomSearcher::checkMatch(unsigned int id,Atom *genericAtom, Atom *templateA
 			return false;
 		}
 	}
-//	cout<<"true"<<endl;
+	//TODO TEST LINEAR SCANNING THE ARRAY
+	for(auto variable:variablesAdded){
+		currentAssignment[variable]=assignInTerm[variable];
+	}
+//	cout<<" true"<<endl;
 	return true;
 }
 
@@ -131,10 +131,14 @@ void AtomSearcher::firstMatch(unsigned id, Atom *templateAtom, var_assignment& c
 
 bool AtomSearcher::computeMatch(unsigned int id,GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation,const vector<unsigned>& outputVariables){
 	for(;!currentMatch->isDone();currentMatch->next()){
+//		cout<<"***";templateAtom->print();
 		if (checkMatch(id,currentMatch->currentItem(),templateAtom,currentAssignment,ruleInformation,outputVariables)){
 			atomFound=currentMatch->currentItem();
+//			cout<<"***";atomFound->print();
+//			cout<<" true"<<endl;;
 			return true;
 		}
+//		cout<<" false"<<endl;;
 	}
 	atomFound=nullptr;
 	return false;
@@ -142,7 +146,6 @@ bool AtomSearcher::computeMatch(unsigned int id,GeneralIterator* currentMatch, A
 
 void AtomSearcher::nextMatch(unsigned int id, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation,const vector<unsigned>& outputVariables) {
 	GeneralIterator* currentMatch=resultVector[id];
-	outputVariablesValues[id].clear();
 	currentMatch->next();
 	computeMatch(id,currentMatch,templateAtom,currentAssignment,atomFound,ruleInformation,outputVariables);
 
