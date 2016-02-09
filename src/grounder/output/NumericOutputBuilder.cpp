@@ -341,7 +341,6 @@ unsigned NumericOutputBuilder::printMaxMinAggregate(Atom* atom) {
 
 void NumericOutputBuilder::printWeak(){
 
-
 	weakLevelConstraints.sort([](const list<id_weight_label>& l1,const list<id_weight_label>& l2){
 		return get<1>(l1.front()) < get<1>(l2.front());
 	});
@@ -463,7 +462,9 @@ unsigned NumericOutputBuilder::createMultipleRule(vector<unsigned>& idatoms){
 }
 
 void NumericOutputBuilder::onEnd() {
-	printWeak();
+	if(weakLevelConstraints.size()>0)
+		printWeak();
+
 
 	cout<<"0"<<endl;
 //	PredicateExtTable::getInstance()->print();

@@ -193,8 +193,6 @@ public:
 	virtual void setSecondBinop(Binop secondBinop) {};
 	/// Add aggregate Element
 	virtual void addAggregateElement(AggregateElement* element){};
-	/// Clone the aggregate atom but in the aggregate elements copy only the pointer
-	virtual Atom* clonePointerAtom(){return nullptr;};
 
 	virtual ResultEvaluation partialEvaluate(){return ResultEvaluation::SATISFY;};
 

@@ -13,11 +13,11 @@ namespace DLV2{
 
 namespace grounder{
 
-	AggregateElement* AggregateElement::clone(bool cloneOnlyPointer){
+	AggregateElement* AggregateElement::clone(){
 		AggregateElement *element=new AggregateElement;
 		element->setTerms(terms);
 		for(auto atom:nafLiterals)
-			element->addNafLiterals((!cloneOnlyPointer)?atom->clone():atom);
+			element->addNafLiterals(atom->clone());
 		return element;
 	}
 

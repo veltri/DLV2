@@ -10,7 +10,7 @@
 
 #include <vector>
 #include <unordered_set>
-#include "../atom/AggregateAtom.h"
+#include "../atom/Atom.h"
 #include "../hash/HashVecInt.h"
 
 using namespace std;
