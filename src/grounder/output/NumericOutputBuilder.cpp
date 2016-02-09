@@ -475,7 +475,8 @@ void NumericOutputBuilder::onEnd() {
 }
 
 void NumericOutputBuilder::appendToStreamAtomTable(Atom* atom) {
-	streamAtomTable<<atom->getIndex()<<" ";ClassicalLiteral::print(atom->getPredicate(),atom->getTerms(),false,false,streamAtomTable);streamAtomTable<<endl;
+	if(predicateToPrint.size()>0 && predicateToPrint.count(atom->getPredicate()->getIndex()))
+		streamAtomTable<<atom->getIndex()<<" ";ClassicalLiteral::print(atom->getPredicate(),atom->getTerms(),false,false,streamAtomTable);streamAtomTable<<endl;
 }
 
 

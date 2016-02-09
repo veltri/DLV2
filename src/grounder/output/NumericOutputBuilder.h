@@ -62,18 +62,23 @@ public:
 	///Print the weak in the list. All the weak on the list have the same level
 	void printWeakAtLevel(list<id_weight_label>& listOfWeak);
 
-
+	inline void addShowPredicate(Predicate* predicate){
+		predicateToPrint.insert(predicate->getIndex());
+	}
 
 private:
     stringstream stream;
     stringstream streamAtomTable;
     bool printStream;
 
-    //id_weight_label represent a tuple of : body of the weak rewrited, the weight and the label of the weak
-    // weakLevelConstraints is a list of list, which the second list group the weak with the same level
+    /// id_weight_label represent a tuple of : body of the weak rewrited, the weight and the label of the weak
+    /// weakLevelConstraints is a list of list, which the second list group the weak with the same level
     list<pair_level_tuple_list> weakLevelConstraints;
-    // Map for each level return the iterator of the list that group the weak with the level in the key
+    /// Map for each level return the iterator of the list that group the weak with the level in the key
     unordered_map<unsigned,list_pair_it> levelWeak;
+
+    /// Set of predicate index to print in numeric output. If empty no filter is applied then print all atom
+    unordered_set<index_object> predicateToPrint;
 };
 
 } /* namespace grounder */
