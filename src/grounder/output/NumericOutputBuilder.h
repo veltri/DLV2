@@ -19,7 +19,8 @@ class NumericOutputBuilder: public OutputBuilder {
 public:
 
     using id_weight_label= tuple<unsigned,int,vector<Term*>>;
-    using list_pair_it=list<list<id_weight_label>>::iterator;
+    using pair_level_tuple_list = pair<int,list<id_weight_label>>;
+    using list_pair_it=list<pair_level_tuple_list>::iterator;
 
 	NumericOutputBuilder():printStream(false){};
 	virtual ~NumericOutputBuilder(){};
@@ -70,7 +71,7 @@ private:
 
     //id_weight_label represent a tuple of : body of the weak rewrited, the weight and the label of the weak
     // weakLevelConstraints is a list of list, which the second list group the weak with the same level
-    list<list<id_weight_label>> weakLevelConstraints;
+    list<pair_level_tuple_list> weakLevelConstraints;
     // Map for each level return the iterator of the list that group the weak with the level in the key
     unordered_map<unsigned,list_pair_it> levelWeak;
 };

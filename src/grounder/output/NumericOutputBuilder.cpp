@@ -21,9 +21,11 @@ void NumericOutputBuilder::onRule(Rule* rule) {
 		int level=rule->getLevel()->getConstantValue();
 		unsigned idHead= rewriteBodyInAux(rule);
 		if(levelWeak.count(level)){
-			(*levelWeak[level]).push_back(make_tuple(idHead,rule->getWeight()->getConstantValue(),rule->getLabel()));
+			(*levelWeak[level]).second.push_back(make_tuple(idHead,rule->getWeight()->getConstantValue(),rule->getLabel()));
 		}else{
-			weakLevelConstraints.emplace_back(1,make_tuple(idHead,rule->getWeight()->getConstantValue(),rule->getLabel()));
+			list<id_weight_label> list(1,make_tuple(idHead,rule->getWeight()->getConstantValue(),rule->getLabel()));
+			pair_level_tuple_list pair={level,list};
+			weakLevelConstraints.push_back(pair);
 			levelWeak[level]=prev(weakLevelConstraints.end());
 		}
 	}else{
@@ -341,12 +343,12 @@ unsigned NumericOutputBuilder::printMaxMinAggregate(Atom* atom) {
 
 void NumericOutputBuilder::printWeak(){
 
-	weakLevelConstraints.sort([](const list<id_weight_label>& l1,const list<id_weight_label>& l2){
-		return get<1>(l1.front()) < get<1>(l2.front());
+	weakLevelConstraints.sort([](const pair_level_tuple_list& l1,const pair_level_tuple_list& l2){
+		return l1.first < l2.first;
 	});
 
 	for(auto list:weakLevelConstraints){
-		printWeakAtLevel(list);
+		printWeakAtLevel(list.second);
 	}
 
 }
