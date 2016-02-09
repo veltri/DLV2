@@ -427,7 +427,7 @@ unsigned NumericOutputBuilder::rewriteBodyInAux(Rule* rule) {
 			negative.push_back(atom);
 		if(firstPrinted==nullptr)firstPrinted=atom;
 	}
-	if(negative.size()+positive.size()==1){
+	if(positive.size()==1 && negative.size()==0){
 		if(firstPrinted->isAggregateAtom())
 			return onAggregate(firstPrinted);
 		else{
