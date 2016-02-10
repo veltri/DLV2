@@ -93,8 +93,27 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchTy
 //		cerr<<endl;
 //	);
 
+	for(unsigned j=0;j<rule->getSizeBody();++j){
+		Atom* atom=rule->getAtomInBody(j);
+		for(unsigned t=0;t<atom->getTermsSize();++t){
+			Term* term=atom->getTerm(t);
+			if(term->getType()==VARIABLE){
+				bool found=false;
+				for(unsigned i=0;i<rule->getSizeBody();++i){
+					if(j!=i && atomsVariables[i].count(term))
+						found=true;
+				}
+				for(unsigned i=0;i<rule->getSizeHead();++i){
+					if(rule->getAtomInHead(i)->getVariable().count(term))
+						found=true;
+				}
+				if(!found){
+					atom->setTerm(t,TermTable::getInstance()->term_anonymous);
+				}
+			}
+		}
+	}
 	return orderedPositions;
-
 }
 
 void OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchType>> >& predicate_searchInsert_table, vector<unsigned>& originalOrderBody) {

@@ -29,6 +29,7 @@ public:
 	VariableTerm(bool negative):Term(negative),isAnonymous(0),localIndex(0){};
 	VariableTerm(bool negative,index_object index,string& name):Term(negative,index),name(name),localIndex(0){setAnonymous();};
 	VariableTerm(bool negative,string& name):Term(negative),name(name),localIndex(0){setAnonymous();};
+	VariableTerm(bool negative,const char* name):Term(negative),name(name),localIndex(0){setAnonymous();};
 
 	virtual string getName()const{return name;};
 	virtual void setName(const string& name){setAnonymous();};
