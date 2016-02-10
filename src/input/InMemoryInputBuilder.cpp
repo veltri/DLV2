@@ -11,6 +11,7 @@
 #include "../grounder/ground/ProgramGrounder.h"
 #include "../grounder/atom/AggregateAtom.h"
 #include "../grounder/atom/Choice.h"
+#include "../util/Utils.h"
 
 #include <string>
 #include "algorithm"
@@ -32,7 +33,8 @@ InMemoryInputBuilder::InMemoryInputBuilder() :
 	currentChoice(nullptr),
 	currentChoiceElement(new ChoiceElement),
 	weight(nullptr),
-	level(nullptr)
+	level(nullptr),
+	hiddenNewPredicate(false)
 {
 	switch (Options::globalOptions()->getRewritingType()) {
 		case DISJUNCTION:
@@ -55,6 +57,26 @@ InMemoryInputBuilder::~InMemoryInputBuilder() {
 
 void InMemoryInputBuilder::onDirective(char* directiveName,
 		char* directiveValue) {
+
+	if(strcmp(directiveName,"#show")==0){
+		hiddenNewPredicate=true;
+		string value(directiveValue);
+		vector<string> splitString=Utils::split(value,'/');
+		if(splitString.size()!=2)
+			assert_msg(false,"#show value:"+value+" unsafe ");
+
+		string predicateName=splitString[0];
+		//Remove space
+		predicateName.erase(std::remove(predicateName.begin(),predicateName.end(),' '),predicateName.end());
+		string arityString=splitString[1];
+		arityString.erase(std::remove(arityString.begin(),arityString.end(),' '),arityString.end());
+		unsigned arity;
+		try{arity=atoi(arityString.c_str());}catch(...){assert_msg(false,"#show value:"+value+" unsafe, failed to parse arity");}
+		Predicate *predicate = new Predicate(predicateName,arity);
+		predicate->setHiddenForPrinting(false);
+		predicateTable->getInstance()->insertPredicate(predicate);
+	}
+
 }
 
 void InMemoryInputBuilder::onRule() {
@@ -159,6 +181,7 @@ void InMemoryInputBuilder::onAtom(bool isStrongNeg) {
 		string predicatename=oldPredicate->getName();
 		Predicate *strongPredicate=new Predicate(predicatename,oldPredicate->getArity(),oldPredicate->isEdb());
 		strongPredicate->setTrueNegated(true);
+		strongPredicate->setHiddenForPrinting(hiddenNewPredicate);
 		predicateTable->getInstance()->insertPredicate(strongPredicate);
 		instancesTable->addPredicateExt(strongPredicate);
 		currentAtom->setPredicate(strongPredicate);
@@ -171,6 +194,7 @@ void InMemoryInputBuilder::onExistentialAtom() {
 void InMemoryInputBuilder::onPredicateName(char* name) {
 	string name_predicate(name);
 	Predicate *predicate = new Predicate(name_predicate,terms_parsered.size());
+	predicate->setHiddenForPrinting(hiddenNewPredicate);
 	predicateTable->getInstance()->insertPredicate(predicate);
 	instancesTable->addPredicateExt(predicate);
 	currentAtom = new ClassicalLiteral(predicate,terms_parsered,false,false);

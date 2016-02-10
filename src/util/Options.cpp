@@ -129,7 +129,8 @@ Options::Options():
 		enabledDictionaryIntersection(false),
 		ruleTime(false),
 		checkFactDuplicate(false),
-		rewriteArith(false)
+		rewriteArith(false),
+		enabledBinderSplitting(false)
 {
 
 }
@@ -155,7 +156,8 @@ Options::Options(
 		enabledDictionaryIntersection(o.enabledDictionaryIntersection),
 		ruleTime(false),
 		checkFactDuplicate(false),
-		rewriteArith(false)
+		rewriteArith(false),
+		enabledBinderSplitting(false)
 
 {
 

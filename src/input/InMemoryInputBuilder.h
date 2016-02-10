@@ -117,6 +117,8 @@ private:
 
 	Term* level;
 
+	bool hiddenNewPredicate;
+
  	void addRule(Rule* rule);
  	void createRule(vector<Atom*>* head, vector<Atom*>* body=0);
 	void createFact(Atom* fact);

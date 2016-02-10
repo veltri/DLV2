@@ -115,6 +115,7 @@ public:
 template<typename T>
 class FlyweightIndexFactory{
 public:
+
 	FlyweightIndexFactory():index_counter(0){};
 	~FlyweightIndexFactory(){for(auto obj:flyweight_set){delete obj;}};
 
@@ -140,6 +141,11 @@ public:
 	void print(){
 		for(auto obj:flyweight_set)
 			obj->print();
+	}
+
+	void callForEachObj(function<void(T*)> f){
+		for(auto ele:flyweight_set)
+			f(ele);
 	}
 
 	unordered_set<T*,HashForTable<T>,HashForTable<T>> flyweight_set;
