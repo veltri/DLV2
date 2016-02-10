@@ -178,7 +178,7 @@ bool BackTrackingGrounder::firstMatch(){
 		bool undef=false;
 
 		Atom* atomFound=nullptr;
-		atomSearcher->firstMatch(index_current_atom,templateAtom,current_assignment,atomFound,currentRule->getRuleInformation(),searcher,indexingArguments[index_current_atom][0],{predicate_searchInsert_table[predSearch][current_table].second,iteration});
+		atomSearcher->firstMatch(index_current_atom,templateAtom,current_assignment,atomFound,currentRule->getRuleInformation(),searcher,indexingArguments[index_current_atom][0],outputVariablesInAtoms[index_current_atom],{predicate_searchInsert_table[predSearch][current_table].second,iteration});
 		find=(atomFound!=nullptr);
 		if(atomFound!=nullptr)
 			undef=!atomFound->isFact();
@@ -227,11 +227,11 @@ bool BackTrackingGrounder::nextMatch(){
 		Atom* atomFound=nullptr;
 		if(match != NO_MATCH){
 			trace_action_tag(grounding,2,cerr<<"Invoked Next Match on table: "<<tableToSearch<<endl;);
-			atomSearcher->nextMatch(index_current_atom,templateAtom,current_assignment,atomFound,currentRule->getRuleInformation());
+			atomSearcher->nextMatch(index_current_atom,templateAtom,current_assignment,atomFound,currentRule->getRuleInformation(),outputVariablesInAtoms[index_current_atom]);
 		}
 		else{
 			trace_action_tag(grounding,2,cerr<<"Invoked First Match on table: "<<tableToSearch<<endl;);
-			atomSearcher->firstMatch(index_current_atom,templateAtom,current_assignment,atomFound,currentRule->getRuleInformation(),searcher,indexingArguments[index_current_atom][0],{predicate_searchInsert_table[predSearch][current_table].second,iteration});
+			atomSearcher->firstMatch(index_current_atom,templateAtom,current_assignment,atomFound,currentRule->getRuleInformation(),searcher,indexingArguments[index_current_atom][0],outputVariablesInAtoms[index_current_atom],{predicate_searchInsert_table[predSearch][current_table].second,iteration});
 		}
 
 		find=(atomFound!=nullptr);
@@ -409,6 +409,10 @@ void BackTrackingGrounder::inizialize(Rule* rule, unordered_set<index_object>* c
 	if(rule->getSizeBody()>0)
 		generateTemplateAtom();
 	findBuiltinFastEvaluated();
+
+	outputVariablesInAtoms.clear();
+	outputVariablesInAtoms.resize(currentRule->getSizeBody());
+
 
 	if(ground_rule!=0)
 		ground_rule->deleteGroundRule();
@@ -797,7 +801,7 @@ bool BackTrackingGrounder::groundAggregate() {
 
 			//Each aggregate element have one atom with no relation with the other atoms in the aggregate elements, then we can
 			//overwrite the general iterator in the Atom Searcher with index_current_atom
-			atomSearcher->firstMatch(index_current_atom,atom,current_assignment,atomFound,currentRule->getRuleInformation(),searcher,indexingArguments[index_current_atom][i]);
+			atomSearcher->firstMatch(index_current_atom,atom,current_assignment,atomFound,currentRule->getRuleInformation(),searcher,indexingArguments[index_current_atom][i],vector<unsigned>());
 			find=(atomFound!=nullptr);
 			while(find){
 				counter++;
@@ -828,7 +832,7 @@ bool BackTrackingGrounder::groundAggregate() {
 
 				if(result!=UNDEF || atom->isGround())break;
 
-				atomSearcher->nextMatch(index_current_atom,atom,current_assignment,atomFound,currentRule->getRuleInformation());
+				atomSearcher->nextMatch(index_current_atom,atom,current_assignment,atomFound,currentRule->getRuleInformation(),vector<unsigned>());
 				find=(atomFound!=nullptr);
 			}
 		}

@@ -145,6 +145,10 @@ bool OrderRuleGroundable::isBound(Atom* atom, unsigned orginalPosition) {
 				atom->setAssignment(false);
 				return true;
 			}
+			if(Utils::isContained(atomsVariables[orginalPosition],variablesInTheBody)){
+				atom->setAssignment(false);
+				return true;
+			}
 		}
 
 		return false;
