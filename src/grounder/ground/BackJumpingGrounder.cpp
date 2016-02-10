@@ -123,16 +123,19 @@ void BackJumpingGrounder::inizialize(Rule* rule, unordered_set<index_object>* co
 		if(atom->isClassicalLiteral() && atom->getPredicate()->isSolved()){
 			outputVariablesInAtoms[position].reserve(atom->getTermsSize());
 			for(unsigned i=0;i<atom->getTermsSize();++i){
-				set_term variables;
-				atom->getTerm(i)->getVariable(variables);
-				bool isBinder=false;
-				for(auto v:variables){
-					if(variablesBinder[v->getLocalVariableIndex()]==position)
-						isBinder=true;
-				}
-				if(isBinder && !Utils::isDisjoint(variables,outputVariables)){
+				if(!atom->getTerm(i)->contain(TermType::ANONYMOUS)){
 					outputVariablesInAtoms[position].push_back(i);
 				}
+//				set_term variables;
+//				atom->getTerm(i)->getVariable(variables);
+//				bool isBinder=false;
+//				for(auto v:variables){
+//					if(variablesBinder[v->getLocalVariableIndex()]==position)
+//						isBinder=true;
+//				}
+//				if(isBinder && !Utils::isDisjoint(variables,outputVariables)){
+//					outputVariablesInAtoms[position].push_back(i);
+//				}
 			}
 		}
 	}

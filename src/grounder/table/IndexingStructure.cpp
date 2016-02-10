@@ -27,8 +27,6 @@ bool AtomSearcher::checkMatch(unsigned int id,Atom *genericAtom, Atom *templateA
 		}
 	}
 
-//	cout<<"--->";templateAtom->print();cout<<endl;
-//	cout<<"--->";genericAtom->print();
 	if(!outputVariables.empty() && outputVariables.size()!=genericAtom->getPredicate()->getArity()){
 		vector<Term*> outputVariablesTerms;
 		outputVariablesTerms.reserve(outputVariables.size());
@@ -37,7 +35,6 @@ bool AtomSearcher::checkMatch(unsigned int id,Atom *genericAtom, Atom *templateA
 		}
 
 		if(!outputVariablesValues[id].insert(outputVariablesTerms).second){
-//			cout<<"  False"<<endl;
 			return false;
 		}
 	}
@@ -45,7 +42,6 @@ bool AtomSearcher::checkMatch(unsigned int id,Atom *genericAtom, Atom *templateA
 	for(auto variable:variablesAdded){
 		currentAssignment[variable]=assignInTerm[variable];
 	}
-//	cout<<" true"<<endl;
 	return true;
 }
 
@@ -55,11 +51,8 @@ bool AtomSearcher::checkMatch(unsigned int id,Atom *genericAtom, Atom *templateA
  */
 bool AtomSearcher::evaluateFastBuiltin(const RuleInformation& ruleInformation,index_object index, var_assignment& varAssignment, Term* genericTerm) {
 	for (auto builtin : ruleInformation.getBounderBuiltin(index)) {
-//		Atom* groundBuiiltin1 = nullptr;
-//		builtin->ground(currentAssignment, groundBuiiltin1);
 		varAssignment[index] = genericTerm;
 		bool evaluation = builtin->groundAndEvaluate(varAssignment);
-//		delete groundBuiiltin1;
 		if (!evaluation) {
 			return false;
 		}
@@ -131,14 +124,10 @@ void AtomSearcher::firstMatch(unsigned id, Atom *templateAtom, var_assignment& c
 
 bool AtomSearcher::computeMatch(unsigned int id,GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation,const vector<unsigned>& outputVariables){
 	for(;!currentMatch->isDone();currentMatch->next()){
-//		cout<<"***";templateAtom->print();
 		if (checkMatch(id,currentMatch->currentItem(),templateAtom,currentAssignment,ruleInformation,outputVariables)){
 			atomFound=currentMatch->currentItem();
-//			cout<<"***";atomFound->print();
-//			cout<<" true"<<endl;;
 			return true;
 		}
-//		cout<<" false"<<endl;;
 	}
 	atomFound=nullptr;
 	return false;
