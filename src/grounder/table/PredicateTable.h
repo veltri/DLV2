@@ -30,13 +30,20 @@ public:
 	static PredicateTable* getInstance();
 
 	/// Insert predicate in a table and return the index of the predicate
-	void insertPredicate(Predicate *&p){predicate_set.insert(p);};
+	/// If the predicate is true negated insert also in the set predicate_true_negated
+	inline void insertPredicate(Predicate *&p){
+		predicate_set.insert(p);
+		if(p->isTrueNegated())predicate_true_negated.insert(p);
+	};
 	/// Get the predicate
 	void getPredicate(Predicate*& p){predicate_set.get(p);};
 	/// Get all the Edb predicate
 	void getEdbPredicate(set_predicate& edb_pred);
 	/// Get all the Edb predicate index
 	void getEdbPredicate(unordered_set<index_object>& edb_pred);
+
+	const set_predicate& getPredicateTrueNegated(){return predicate_true_negated;}
+
 	~PredicateTable(){};
 protected:
 	static PredicateTable* predicateTable;
@@ -44,6 +51,9 @@ private:
 	PredicateTable(){};
 
 	FlyweightIndexFactory<Predicate> predicate_set;
+
+	/// Set of predicate that have an atom true negated
+	set_predicate predicate_true_negated;
 };
 
 };

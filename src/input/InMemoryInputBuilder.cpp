@@ -153,7 +153,16 @@ void InMemoryInputBuilder::onNafLiteral(bool naf) {
 }
 
 void InMemoryInputBuilder::onAtom(bool isStrongNeg) {
-	currentAtom->setHasMinus(isStrongNeg);
+	if(isStrongNeg){
+		//Create a new predicate like the old predicate but with trueNegative = true
+		Predicate * oldPredicate=currentAtom->getPredicate();
+		string predicatename=oldPredicate->getName();
+		Predicate *strongPredicate=new Predicate(predicatename,oldPredicate->getArity(),oldPredicate->isEdb());
+		strongPredicate->setTrueNegated(true);
+		predicateTable->getInstance()->insertPredicate(strongPredicate);
+		instancesTable->addPredicateExt(strongPredicate);
+		currentAtom->setPredicate(strongPredicate);
+	}
 }
 
 void InMemoryInputBuilder::onExistentialAtom() {

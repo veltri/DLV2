@@ -25,20 +25,23 @@ class Predicate : public Hashable,public Indexable{
 public:
 
 	///Default constructor
-	Predicate() : Indexable(), arity(0), edb(true), hiddenForPrinting(false), solved(true) {};
+	Predicate() : Indexable(), arity(0), edb(true), hiddenForPrinting(false), solved(true),trueNegated(false) {};
 
 	/** Constructor
 	 * @param name set the name of the predicate
 	 * @param arity set the arity of the predicate
 	 */
-	Predicate(string& name, unsigned int arity) : Indexable(), arity(arity), name(name), edb(true), hiddenForPrinting(false), solved(true) {};
+	Predicate(string& name, unsigned int arity) : Indexable(), arity(arity), name(name), edb(true), hiddenForPrinting(false), solved(true),trueNegated(false) {};
+
 
 	/** Constructor
 	 * @param name set the name of the predicate
 	 * @param arity set the arity of the predicate
 	 * @param edbIdb set whether the the predicate is an EDB or not
 	 */
-	Predicate(string& name, unsigned int arity, bool edbIdb) : Indexable(), arity(arity), name(name), edb(edbIdb), hiddenForPrinting(false), solved(true)  {};
+	Predicate(string& name, unsigned int arity, bool edbIdb) : Indexable(), arity(arity), name(name), edb(edbIdb), hiddenForPrinting(false), solved(true),trueNegated(false)  {};
+
+
 
 	///Getter method for the arity
 	unsigned int getArity() const {return arity;}
@@ -57,11 +60,12 @@ public:
 
 	/// @brief Equal-to operator for predicates
 	/// @details Two predicates are equal if they have the same name and the same arity
-	bool operator==(Predicate &p)const{return p.getArity()==this->getArity() && p.getName()==this->getName();}
+	bool operator==(Predicate &p)const{return p.getArity()==this->getArity() && p.getName()==this->getName() && trueNegated==p.trueNegated;}
 
 	virtual size_t hash(){
 		vector<size_t> hash_vec(2);
-		hash_vec[0]=HashString::getHashString()->computeHash(name);
+		string nameToHash=(trueNegated)?"-"+name:name;
+		hash_vec[0]=HashString::getHashString()->computeHash(nameToHash);
 		hash_vec[1]=arity;
 		return HashVecInt::getHashVecInt()->computeHashSize_T(hash_vec);
 	}
@@ -74,6 +78,9 @@ public:
 	inline bool isSolved() const {	return solved;}
 	inline void setSolved(bool solved) { this->solved = solved; }
 
+	inline bool isTrueNegated(){return trueNegated;}
+	inline void setTrueNegated(bool trueN){trueNegated=trueN;}
+
 private:
 	///Arity
 	unsigned int arity;
@@ -85,8 +92,8 @@ private:
 	bool hiddenForPrinting;
 	///Whether the predicate is solved (not undefined)
 	bool solved;
-
-
+	///Is true if the predicate have is a true negation
+	bool trueNegated;
 };
 
 

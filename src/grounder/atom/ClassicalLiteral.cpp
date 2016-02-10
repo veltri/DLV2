@@ -30,8 +30,8 @@ void ClassicalLiteral::print(ostream& stream){
 void ClassicalLiteral::print(Predicate* predicate,const vector<Term*>& terms,bool negative,bool hasMinus,ostream& stream){
 	if(negative)
 		stream<<"not ";
-	if(hasMinus)
-		stream<<"- ";
+	if(predicate->isTrueNegated())
+		stream<<"-";
 	stream<<predicate->getName();
 	for (unsigned int i = 0; i < terms.size(); ++i){
 		if(i==0)
