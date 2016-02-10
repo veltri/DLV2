@@ -301,7 +301,6 @@ void WeakConstraint::print(ostream& stream){
 }
 
 void WeakConstraint::printNonGround(ostream& stream){
-	bool firstAtomPrinted=false;
 	stream<<":~";
 	for(unsigned i=0;i<body.size();i++){
 		if(i!=0)stream<<",";

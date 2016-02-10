@@ -96,9 +96,6 @@ private:
 
 	vector<Term*> terms_parsered;
 
-	Term* weight;
-
-	Term* level;
 
 	bool foundARangeAtomInCurrentRule;
 
@@ -115,6 +112,10 @@ private:
 	Atom* currentChoice;
 
 	ChoiceElement* currentChoiceElement;
+
+	Term* weight;
+
+	Term* level;
 
  	void addRule(Rule* rule);
  	void createRule(vector<Atom*>* head, vector<Atom*>* body=0);

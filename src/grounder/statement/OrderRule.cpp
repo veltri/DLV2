@@ -92,6 +92,10 @@ bool OrderRule::order() {
 
 	// Finally, set the ordered body as the body of the rule
 	rule->setBody(orderedBody);
+
+	//If is a weak contraint check the variable in the level weight and label
+	if(rule->isWeakConstraint() && !checkWeakSafety())
+		return false;
 	// Check head safety once that the safe variables are known
 	return checkHeadSafety();
 
@@ -114,6 +118,21 @@ bool OrderRule::checkHeadSafety(){
 		if(!safeVariables.count(variable))
 			return false;
 	return true;
+}
+
+bool OrderRule::checkWeakSafety(){
+	set_term variableToCheck;
+	if(rule->getLevel()!=nullptr)
+		rule->getLevel()->getVariable(variableToCheck);
+
+	if(rule->getWeight()!=nullptr)
+		rule->getWeight()->getVariable(variableToCheck);
+	for(auto term:rule->getLabel())
+		term->getVariable(variableToCheck);
+
+
+
+	return Utils::isContained(variableToCheck,safeVariables);
 }
 
 void OrderRule::addSafeVariablesInAtom(Atom* atom, unsigned pos) {

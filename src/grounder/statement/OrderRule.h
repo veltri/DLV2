@@ -40,6 +40,7 @@ private:
 	void checkBuiltInSafety(bool& firstSafe, Term* firstTerm,Term*& bindVariable);
 	void foundAnAssigment(Atom* atom, Term* bindVariable, unsigned pos);
 	bool checkHeadSafety();
+	bool checkWeakSafety();
 
 public:
 	OrderRule(Rule* r);
