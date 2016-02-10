@@ -27,7 +27,7 @@ bool AtomSearcher::checkMatch(unsigned int id,Atom *genericAtom, Atom *templateA
 		}
 	}
 
-	if(!outputVariables.empty() && outputVariables.size()!=genericAtom->getPredicate()->getArity()){
+	if(!outputVariables.empty()){
 		vector<Term*> outputVariablesTerms;
 		outputVariablesTerms.reserve(outputVariables.size());
 		for(auto i:outputVariables){

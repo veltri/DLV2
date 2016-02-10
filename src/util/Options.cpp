@@ -71,6 +71,7 @@ namespace DLV2
 #define OPTIONID_ruleTime ('z' + 45)
 #define OPTIONID_checkFactDuplicate ('z' + 46)
 #define OPTIONID_rewriteArith ('z' + 47)
+#define OPTIONID_binderSplitting ('z' + 48)
 
 
 
@@ -211,6 +212,7 @@ Options::init(
 		{"rule-time",no_argument, NULL, OPTIONID_ruleTime},
 		{"check-facts-duplication",no_argument, NULL, OPTIONID_checkFactDuplicate},
 		{"rewrite-arith",no_argument, NULL, OPTIONID_rewriteArith},
+		{"binder-splitting",no_argument, NULL, OPTIONID_binderSplitting},
         // Required at end of array. 
         { NULL, 0, NULL, 0 }
     };
@@ -351,6 +353,10 @@ Options::init(
 
             case OPTIONID_rewriteArith:
             	rewriteArith=true;
+				break;
+
+            case OPTIONID_binderSplitting:
+            	enabledBinderSplitting=true;
 				break;
 
             default:

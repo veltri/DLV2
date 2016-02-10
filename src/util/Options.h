@@ -130,6 +130,14 @@ namespace DLV2
 			return rewriteArith;
 		}
 
+		bool isEnabledBinderSplitting() const {
+			return enabledBinderSplitting;
+		}
+
+		void setEnabledBinderSplitting(bool enabledBinderSplitting) {
+			this->enabledBinderSplitting = enabledBinderSplitting;
+		}
+
     private:
 
         static Options* instance;
@@ -203,6 +211,8 @@ namespace DLV2
     	bool checkFactDuplicate;
 
     	bool rewriteArith;
+
+    	bool enabledBinderSplitting;
     };
     
 };

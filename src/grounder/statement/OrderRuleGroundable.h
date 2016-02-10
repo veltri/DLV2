@@ -67,6 +67,9 @@ protected:
 	unordered_map<unsigned,set_term> mapPositiveAtomsBoundVariables;
 
 	void computeDictionaryIntersection(Atom* atom);
+
+private:
+	void applyBinderSplittingRewriting();
 };
 
 class AllOrderRuleGroundable : public OrderRuleGroundable{

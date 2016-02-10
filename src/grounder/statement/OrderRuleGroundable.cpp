@@ -14,6 +14,49 @@
 namespace DLV2 {
 namespace grounder {
 
+void OrderRuleGroundable::applyBinderSplittingRewriting() {
+	for (unsigned j = 0; j < rule->getSizeBody(); ++j) {
+		Atom* atom = rule->getAtomInBody(j);
+		if (atom->isClassicalLiteral() && atom->getPredicate()->isSolved()) {
+			for (unsigned t = 0; t < atom->getTermsSize(); ++t) {
+				Term* term = atom->getTerm(t);
+				if (term->getType() == VARIABLE) {
+					bool found = false;
+					for (unsigned i = 0; i < rule->getSizeBody(); ++i) {
+						if (j != i && atomsVariables[i].count(term)) {
+							found = true;
+							break;
+						}
+					}
+					if (found)
+						continue;
+
+					for (unsigned i = 0; i < rule->getSizeHead(); ++i) {
+						if (rule->getAtomInHead(i)->getVariable().count(term)) {
+							found = true;
+							break;
+						}
+					}
+					if (found)
+						continue;
+
+					for (unsigned t1 = 0; t1 < atom->getTermsSize(); ++t1) {
+						Term* term1 = atom->getTerm(t1);
+						if (t1 != t && term1->containsVariable(term)) {
+							found = true;
+							break;
+						}
+					}
+					if (found)
+						continue;
+
+					atom->setTerm(t, TermTable::getInstance()->term_anonymous);
+				}
+			}
+		}
+	}
+}
+
 /****************************************** OrderRuleGroundable ***********************************************/
 
 vector<unsigned> OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchType>>>& predicate_searchInsert_table) {
@@ -93,40 +136,9 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchTy
 //		cerr<<endl;
 //	);
 
-	for(unsigned j=0;j<rule->getSizeBody();++j){
-		Atom* atom=rule->getAtomInBody(j);
-		if(atom->isClassicalLiteral() && atom->getPredicate()->isSolved()){
-			for(unsigned t=0;t<atom->getTermsSize();++t){
-				Term* term=atom->getTerm(t);
-				if(term->getType()==VARIABLE){
-					bool found=false;
-					for(unsigned i=0;i<rule->getSizeBody();++i){
-						if(j!=i && atomsVariables[i].count(term)){
-							found=true;
-							break;
-						}
-					}
-					if(found) continue;
-					for(unsigned i=0;i<rule->getSizeHead();++i){
-						if(rule->getAtomInHead(i)->getVariable().count(term)){
-							found=true;
-							break;
-						}
-					}
-					if(found) continue;
-					for(unsigned t1=0;t1<atom->getTermsSize();++t1){
-						Term* term1=atom->getTerm(t1);
-						if(t1!=t && term1->containsVariable(term)){
-							found=true;
-							break;
-						}
-					}
-					if(found) continue;
-					atom->setTerm(t,TermTable::getInstance()->term_anonymous);
-				}
-			}
-		}
-	}
+	if(Options::globalOptions()->isEnabledBinderSplitting())
+		applyBinderSplittingRewriting();
+
 	return orderedPositions;
 }
 
