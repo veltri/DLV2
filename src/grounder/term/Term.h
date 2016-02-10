@@ -162,6 +162,12 @@ public:
 	//Transform the arith term in LINE struct for the evaluation of the equation
 	virtual LINE transformToLineEq(){return LINE();};
 
+	virtual bool containsVariable(Term* t){
+		set_term variables;
+		getVariable(variables);
+		return variables.count(t);
+	}
+
 	virtual ~Term(){};
 protected:
 	/*

@@ -137,6 +137,8 @@ void BackJumpingGrounder::inizialize(Rule* rule, unordered_set<index_object>* co
 //					outputVariablesInAtoms[position].push_back(i);
 //				}
 			}
+			if(outputVariablesInAtoms[position].size()==atom->getPredicate()->getArity())
+				outputVariablesInAtoms[position].clear();
 		}
 	}
 
@@ -150,9 +152,6 @@ void BackJumpingGrounder::inizialize(Rule* rule, unordered_set<index_object>* co
 //			cout<<endl;
 //		}
 //	}
-
-
-
 
 	trace_action_tag(backjumping,1,
 		cerr<<"OUTPUT VARIABLES: ";
