@@ -40,8 +40,6 @@ public:
 
     virtual ~OutputBuilder(){};
 
-	inline virtual void addShowPredicate(Predicate* predicate){};
-
     static OutputBuilder* getInstance();
     static void freeInstance(){delete outputBuilder;}
 
