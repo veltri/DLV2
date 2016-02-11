@@ -63,6 +63,8 @@ namespace DLV2
             std::cout << "--ruleTime                               - Print the time of instantiation of single rule" << std::endl;
             std::cout << "--check-facts-duplication                - Remove the facts duplicates" << std::endl;
             std::cout << "--rewrite-arith                          - Rewrite the Arith Term in Builtin Atom" << std::endl;
+            std::cout << "--binder-splitting                       - Enable the binder splitting" << std::endl;
+            std::cout << "--filter                                 - Filter the specified predicate with the specified arity. Example: --filter=p1/2,p2/3" << std::endl;
 
 
             std::cout << separator << std::endl;

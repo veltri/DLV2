@@ -19,6 +19,23 @@
 namespace DLV2 {
 namespace grounder {
 
+
+pair<string,unsigned> extractPredicateNameArity(string& predicateArity){
+	vector<string> splitString=Utils::split(predicateArity,'/');
+	if(splitString.size()!=2)
+		assert_msg(false,"#show value:"+predicateArity+" unsafe ");
+
+	string predicateName=splitString[0];
+	//Remove space
+	predicateName.erase(std::remove(predicateName.begin(),predicateName.end(),' '),predicateName.end());
+	string arityString=splitString[1];
+	arityString.erase(std::remove(arityString.begin(),arityString.end(),' '),arityString.end());
+	unsigned arity;
+	try{arity=atoi(arityString.c_str());}catch(...){assert_msg(false,"#show value:"+predicateArity+" unsafe, failed to parse arity");}
+
+	return {predicateName,arity};
+}
+
 InMemoryInputBuilder::InMemoryInputBuilder() :
 	termTable(TermTable::getInstance()),
 	predicateTable(PredicateTable::getInstance()),
@@ -36,13 +53,29 @@ InMemoryInputBuilder::InMemoryInputBuilder() :
 	level(nullptr),
 	hiddenNewPredicate(false)
 {
-	switch (Options::globalOptions()->getRewritingType()) {
+
+	Options * opt=Options::globalOptions();
+
+	switch (opt->getRewritingType()) {
 		case DISJUNCTION:
 			inputRewriter=new BaseInputRewriter();
 			break;
 		default:
 			inputRewriter=new ChoiceBaseInputRewriter();
 			break;
+	}
+
+	string filter=opt->getPredicateToFilter();
+	if(filter.size()>0){
+		//If exist a filter hidden all new predicate and create the predicate to show and set hidden to this predicate to false
+		hiddenNewPredicate=true;
+		vector<string> splitString=Utils::split(filter,',');
+		for(auto predicateArity:splitString){
+			auto nameArity = extractPredicateNameArity(predicateArity);
+			Predicate *predicate = new Predicate(nameArity.first,nameArity.second);
+			predicate->setHiddenForPrinting(false);
+			predicateTable->getInstance()->insertPredicate(predicate);
+		}
 	}
 
 }
@@ -61,18 +94,10 @@ void InMemoryInputBuilder::onDirective(char* directiveName,
 	if(strcmp(directiveName,"#show")==0){
 		hiddenNewPredicate=true;
 		string value(directiveValue);
-		vector<string> splitString=Utils::split(value,'/');
-		if(splitString.size()!=2)
-			assert_msg(false,"#show value:"+value+" unsafe ");
 
-		string predicateName=splitString[0];
-		//Remove space
-		predicateName.erase(std::remove(predicateName.begin(),predicateName.end(),' '),predicateName.end());
-		string arityString=splitString[1];
-		arityString.erase(std::remove(arityString.begin(),arityString.end(),' '),arityString.end());
-		unsigned arity;
-		try{arity=atoi(arityString.c_str());}catch(...){assert_msg(false,"#show value:"+value+" unsafe, failed to parse arity");}
-		Predicate *predicate = new Predicate(predicateName,arity);
+		auto nameArity=extractPredicateNameArity(value);
+
+		Predicate *predicate = new Predicate(nameArity.first,nameArity.second);
 		predicate->setHiddenForPrinting(false);
 		predicateTable->getInstance()->insertPredicate(predicate);
 	}

@@ -72,6 +72,8 @@ namespace DLV2
 #define OPTIONID_checkFactDuplicate ('z' + 46)
 #define OPTIONID_rewriteArith ('z' + 47)
 #define OPTIONID_binderSplitting ('z' + 48)
+#define OPTIONID_predicateToFilter ('z' + 49)
+
 
 
 
@@ -215,6 +217,8 @@ Options::init(
 		{"check-facts-duplication",no_argument, NULL, OPTIONID_checkFactDuplicate},
 		{"rewrite-arith",no_argument, NULL, OPTIONID_rewriteArith},
 		{"binder-splitting",no_argument, NULL, OPTIONID_binderSplitting},
+		{"filter",required_argument, NULL, OPTIONID_predicateToFilter},
+
         // Required at end of array. 
         { NULL, 0, NULL, 0 }
     };
@@ -359,6 +363,10 @@ Options::init(
 
             case OPTIONID_binderSplitting:
             	enabledBinderSplitting=true;
+				break;
+
+            case OPTIONID_predicateToFilter:
+            	predicateToFilter.append(optarg);
 				break;
 
             default:

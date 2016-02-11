@@ -138,6 +138,8 @@ namespace DLV2
 			this->enabledBinderSplitting = enabledBinderSplitting;
 		}
 
+		string getPredicateToFilter(){return predicateToFilter;}
+
     private:
 
         static Options* instance;
@@ -213,6 +215,8 @@ namespace DLV2
     	bool rewriteArith;
 
     	bool enabledBinderSplitting;
+
+    	string predicateToFilter;
     };
     
 };
