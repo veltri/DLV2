@@ -21,7 +21,6 @@ bool AtomSearcher::checkMatch(unsigned int id,Atom *genericAtom, Atom *templateA
 	for(unsigned int i=0;i<genericAtom->getTermsSize();++i){
 		Term* genericTerm=genericAtom->getTerm(i);
 		Term* termToMatch=templateAtom->getTerm(i);
-		if (termToMatch->getIndex() == genericTerm->getIndex() || termToMatch->getType()==ANONYMOUS) continue;
 		if(!matchTerm(genericTerm,termToMatch,assignInTerm,variablesAdded,ruleInformation)){
 			return false;
 		}
