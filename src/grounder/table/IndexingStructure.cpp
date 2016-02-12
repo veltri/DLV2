@@ -21,6 +21,7 @@ bool AtomSearcher::checkMatch(unsigned int id,Atom *genericAtom, Atom *templateA
 	for(unsigned int i=0;i<genericAtom->getTermsSize();++i){
 		Term* genericTerm=genericAtom->getTerm(i);
 		Term* termToMatch=templateAtom->getTerm(i);
+		if(termToMatch->getIndex() == genericTerm->getIndex() || termToMatch->getType()==ANONYMOUS) continue;
 		if(!matchTerm(genericTerm,termToMatch,assignInTerm,variablesAdded,ruleInformation)){
 			return false;
 		}
@@ -63,7 +64,7 @@ bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, var_assignmen
 	TermType termToMatchType=termToMatch->getType();
 	TermType genericTermType=genericTerm->getType();
 	if((termToMatchType==TermType::NUMERIC_CONSTANT || termToMatchType==TermType::STRING_CONSTANT || termToMatchType==TermType::SYMBOLIC_CONSTANT))
-		return termToMatch->getIndex() == genericTerm->getIndex();
+		return false;
 	else if (termToMatchType==TermType::VARIABLE) {
 		index_object index=termToMatch->getLocalVariableIndex();
 		if(ruleInformation.isCreatedDictionaryIntersection(index) && !ruleInformation.countInDictionaryIntersection(index,genericTerm)){
@@ -99,9 +100,11 @@ bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, var_assignmen
 		if(termToMatchType!=TermType::FUNCTION) return false;
 		if(termToMatch->getName().compare(genericTerm->getName()) != 0)return false;
 		if(termToMatch->getTermsSize() != genericTerm->getTermsSize())return false;
-		for(unsigned int i=0;i<genericTerm->getTermsSize();++i)
+		for(unsigned int i=0;i<genericTerm->getTermsSize();++i){
+			if(genericTerm->getTerm(i)->getIndex() == termToMatch->getTerm(i)->getIndex() || termToMatch->getTerm(i)->getType()==ANONYMOUS) continue;
 			if(!matchTerm(genericTerm->getTerm(i),termToMatch->getTerm(i),varAssignment,addedVariables,ruleInformation))
 				return false;
+		}
 
 		return true;
 	}
