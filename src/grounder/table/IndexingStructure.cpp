@@ -21,7 +21,7 @@ bool AtomSearcher::checkMatch(unsigned int id,Atom *genericAtom, Atom *templateA
 	for(unsigned int i=0;i<genericAtom->getTermsSize();++i){
 		Term* genericTerm=genericAtom->getTerm(i);
 		Term* termToMatch=templateAtom->getTerm(i);
-		if(termToMatch->getIndex() == genericTerm->getIndex() || termToMatch->getType()==ANONYMOUS) continue;
+		if(termToMatch->getIndex() == genericTerm->getIndex()) continue;
 		if(!matchTerm(genericTerm,termToMatch,assignInTerm,variablesAdded,ruleInformation)){
 			return false;
 		}
@@ -101,7 +101,7 @@ bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, var_assignmen
 		if(termToMatch->getName().compare(genericTerm->getName()) != 0)return false;
 		if(termToMatch->getTermsSize() != genericTerm->getTermsSize())return false;
 		for(unsigned int i=0;i<genericTerm->getTermsSize();++i){
-			if(genericTerm->getTerm(i)->getIndex() == termToMatch->getTerm(i)->getIndex() || termToMatch->getTerm(i)->getType()==ANONYMOUS) continue;
+			if(genericTerm->getTerm(i)->getIndex() == termToMatch->getTerm(i)->getIndex() ) continue;
 			if(!matchTerm(genericTerm->getTerm(i),termToMatch->getTerm(i),varAssignment,addedVariables,ruleInformation))
 				return false;
 		}
