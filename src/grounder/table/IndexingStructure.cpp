@@ -28,10 +28,10 @@ bool AtomSearcher::checkMatch(unsigned int id,Atom *genericAtom, Atom *templateA
 	}
 
 	if(!outputVariables.empty()){
-		vector<Term*> outputVariablesTerms;
+		vector<unsigned> outputVariablesTerms;
 		outputVariablesTerms.reserve(outputVariables.size());
 		for(auto i:outputVariables){
-			outputVariablesTerms.push_back(genericAtom->getTerm(i));
+			outputVariablesTerms.push_back(genericAtom->getTerm(i)->getIndex());
 		}
 
 		if(!outputVariablesValues[id].insert(outputVariablesTerms).second){
