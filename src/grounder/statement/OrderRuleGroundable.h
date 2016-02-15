@@ -186,12 +186,10 @@ public:
 
 class BindersOrderRuleGroundable : public AllOrderRuleGroundable {
 public:
-	BindersOrderRuleGroundable(Rule* rule):AllOrderRuleGroundable(rule){outputVariablesInAtoms.resize(rule->getSizeBody());}
-	BindersOrderRuleGroundable(Rule* rule,Priority p):AllOrderRuleGroundable(rule,p){outputVariablesInAtoms.resize(rule->getSizeBody());}
+	BindersOrderRuleGroundable(Rule* rule):AllOrderRuleGroundable(rule){}
+	BindersOrderRuleGroundable(Rule* rule,Priority p):AllOrderRuleGroundable(rule,p){}
 	virtual ~BindersOrderRuleGroundable(){}
 	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
-private:
-	vector<pair<vector<unsigned>,bool>> outputVariablesInAtoms;
 };
 
 class CombinedCriterionBindersOrderRuleGroundable: public CombinedCriterion {

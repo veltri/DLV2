@@ -21,18 +21,12 @@ void OrderRuleGroundable::applyBinderSplittingRewriting() {
 			for (unsigned t = 0; t < atom->getTermsSize(); ++t) {
 				Term* term = atom->getTerm(t);
 				if (term->getType() == VARIABLE) {
+					if (rule->isAnOutputVariable(term))
+						continue;
+
 					bool found = false;
 					for (unsigned i = 0; i < rule->getSizeBody(); ++i) {
 						if (j != i && atomsVariables[i].count(term)) {
-							found = true;
-							break;
-						}
-					}
-					if (found)
-						continue;
-
-					for (unsigned i = 0; i < rule->getSizeHead(); ++i) {
-						if (rule->getAtomInHead(i)->getVariable().count(term)) {
 							found = true;
 							break;
 						}
@@ -879,30 +873,26 @@ double BindersOrderRuleGroundable::assignWeightPositiveClassicalLit(Atom* atom, 
 	unsigned numBinders=0;
 	unsigned arity=atom->getPredicate()->getArity();
 	if(atom->getPredicate()->isSolved()){
-		if(!outputVariablesInAtoms[originalPosition].second){
-			outputVariablesInAtoms[originalPosition].first.reserve(atom->getTermsSize());
-			outputVariablesInAtoms[originalPosition].second=true;
-			for(unsigned i=0;i<atom->getTermsSize();++i){
-				set_term variables;
-				atom->getTerm(i)->getVariable(variables);
-				bool isBinder=false;
-				bool boundAll=true;
-				for(auto v:variables){
-					if(!variablesInTheBody.count(v)){
-						if(!atomsVariables[originalPosition].count(v))
-							boundAll=false;
-						else
-							isBinder=true;
-					}
-				}
-				if(isBinder && boundAll && !Utils::isDisjoint(variables,rule->getOutputVariables())){
-					outputVariablesInAtoms[originalPosition].first.push_back(i);
+		for(unsigned i=0;i<atom->getTermsSize();++i){
+			set_term variables;
+			atom->getTerm(i)->getVariable(variables);
+			bool isBinder=false;
+			bool boundAll=true;
+			for(auto v:variables){
+				if(!rule->isAnOutputVariable(v))
+					continue;
+				if(!variablesInTheBody.count(v)){
+					if(!atomsVariables[originalPosition].count(v))
+						boundAll=false;
+					else
+						isBinder=true;
 				}
 			}
-			if(outputVariablesInAtoms[originalPosition].first.size()==atom->getPredicate()->getArity())
-				outputVariablesInAtoms[originalPosition].first.clear();
+			if(isBinder && boundAll && !Utils::isDisjoint(variables,rule->getOutputVariables())){
+//				atom->getTerm(i)->print(cout);cout<<" ";
+				numBinders++;
+			}
 		}
-		numBinders=outputVariablesInAtoms[originalPosition].first.size();
 //		cout<<"Predicate: "<<atom->getPredicate()->getName()<<" "<<numBinders<<endl;
 	}
 	else{
@@ -913,9 +903,11 @@ double BindersOrderRuleGroundable::assignWeightPositiveClassicalLit(Atom* atom, 
 	return (1-(numBinders/arity));
 }
 
-
 //double CombinedCriterionBindersOrderRuleGroundable::assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition) {
+//
 //}
+
+
 }
 }
 
