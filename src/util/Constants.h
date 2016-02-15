@@ -115,6 +115,8 @@ namespace grounder{
 	#define COMBINED_POSITIVE_ORDERING 1
 	#define INDEXING_ORDERING 2
 	#define DLV_INDEXING_ORDERING 3
+	#define DLV_BINDER_ORDERING 4
+	#define BINDER_ORDERING 5
 
 	typedef unsigned index_object;
 

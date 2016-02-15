@@ -95,8 +95,8 @@ private:
 
 class CombinedCriterion : public AllOrderRuleGroundable {
 public:
-	CombinedCriterion(Rule* rule):AllOrderRuleGroundable(rule){}
-	CombinedCriterion(Rule* rule,Priority p):AllOrderRuleGroundable(rule,p){}
+	CombinedCriterion(Rule* rule):AllOrderRuleGroundable(rule),DOUBLE_INDEX_THRESHOLD(0.3){}
+	CombinedCriterion(Rule* rule,Priority p):AllOrderRuleGroundable(rule,p),DOUBLE_INDEX_THRESHOLD(0.3){}
 	virtual ~CombinedCriterion(){}
 	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
 	virtual void update(Atom* atomAdded, unsigned originalPosition){updateVariableSelectivity(atomAdded);};
@@ -105,6 +105,16 @@ protected:
 	void updateVariableSelectivity(Atom* atomAdded);
 	map_term<unsigned> variablesDomains;
 	map_term<double> variablesSelectivities;
+
+	double computeBestIndexingTerms(Atom* atom, unsigned originalPosition);
+	void computeBoundArgumentsSelectivities();
+	vector<unordered_map<unsigned,double>> boundArgumentsSelectivities;
+	const double DOUBLE_INDEX_THRESHOLD;
+	vector<vector<set_term>> variablesInTerms;
+
+	//TODO
+	double computeBoundAtoms(Atom* atom, unsigned originalPosition);
+
 };
 
 class CombinedCriterion1 : public CombinedCriterion {
@@ -157,12 +167,10 @@ public:
 	virtual ~SemiJoinIndexingArgumentsOrderRuleGroundable(){}
 	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
 protected:
-	void computeBoundArgumentsSelectivities();
 	vector<unordered_map<unsigned,double>> boundArgumentsSelectivities;
 	const double DOUBLE_INDEX_THRESHOLD;
 	vector<vector<set_term>> variablesInTerms;
 };
-
 
 class SemiJoinIndexingArgumentsOrderRuleGroundable2  : public SemiJoinIndexingArgumentsOrderRuleGroundable{
 public:
@@ -217,9 +225,15 @@ public:
 			case DLV_INDEXING_ORDERING:
 				return new CombinedCriterionIndexingArgumentsOrderRuleGroundable(rule);
 				break;
+			case DLV_BINDER_ORDERING:
+				return new CombinedCriterionBindersOrderRuleGroundable(rule);
+				break;
+			case BINDER_ORDERING:
+				return new BindersOrderRuleGroundable(rule);
+				break;
 			default:
-//				return	new BindersOrderRuleGroundable(rule);
-				return	new CombinedCriterion(rule);
+				return	new CombinedCriterionBindersOrderRuleGroundable(rule);
+//				return	new CombinedCriterion(rule);
 				break;
 		}
 	}

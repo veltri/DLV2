@@ -368,9 +368,11 @@ double CombinedCriterion::assignWeightPositiveClassicalLit(Atom* atom, unsigned 
 	long unsigned prodDomains_a=1;
 	long double prodSelectivity_b=1;
 	long unsigned prodDomains_b=1;
+	set_term variablesFound;
 	for(unsigned i=0;i<atom->getTermsSize();++i){
 		Term* var=atom->getTerm(i);
 		if(var->getType()==TermType::VARIABLE){
+			if(!variablesFound.insert(var).second) continue;
 			if(variablesInTheBody.count(var)){
 				prodSelectivity_a*=variablesSelectivities[var]/variablesDomains[var];
 				prodDomains_a*=variablesDomains[var];
@@ -395,8 +397,38 @@ double CombinedCriterion::assignWeightPositiveClassicalLit(Atom* atom, unsigned 
 	double sel_a=sizeTablesToSearch*prodSelectivity_a/prodDomains_a;
 	double sel_b=prodSelectivity_b/prodDomains_b;
 
+//	atom->print();cout<<" ";
+//	cout<<sel_a<<" "<<sel_b<<" "<<endl;
 	return sel_a*sel_b;
 
+}
+
+double CombinedCriterion::computeBestIndexingTerms(Atom* atom, unsigned originalPosition) {
+	unsigned sizeTablesToSearch=0;
+	for(auto j:predicate_searchInsert_table[originalPosition+rule->getSizeHead()])
+		sizeTablesToSearch+=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(j.first,j.second);
+
+	double max=0;
+	double secondMax=0;
+	double bestIndex=1;
+	for(unsigned i=0;i<atom->getTermsSize();++i){
+		if(Utils::isContained(variablesInTerms[originalPosition][i],variablesInTheBody)){
+			if(boundArgumentsSelectivities[originalPosition][i]>max){
+				secondMax=max;
+				max=boundArgumentsSelectivities[originalPosition][i];
+			}
+			else if(boundArgumentsSelectivities[originalPosition][i]==max){
+				secondMax=max;
+			}
+		}
+	}
+	if(max>0 && secondMax>0 && (1-max/sizeTablesToSearch)<DOUBLE_INDEX_THRESHOLD){
+		bestIndex=(1-((max*secondMax)/sizeTablesToSearch));
+	}
+	else if(max>0){
+		bestIndex=(1-max/sizeTablesToSearch);
+	}
+	return bestIndex;
 }
 
 double CombinedCriterion1::assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition) {
@@ -731,7 +763,7 @@ double SemiJoinIndexingArgumentsOrderRuleGroundable::assignWeightPositiveClassic
 	return semiJoinSize*bestIndex;
 }
 
-void SemiJoinIndexingArgumentsOrderRuleGroundable::computeBoundArgumentsSelectivities() {
+void CombinedCriterion::computeBoundArgumentsSelectivities() {
 	unsigned sizeBody=rule->getSizeBody();
 	boundArgumentsSelectivities.resize(sizeBody);
 	variablesInTerms.resize(sizeBody);
@@ -833,38 +865,11 @@ bool SemiJoinIndexingArgumentsOrderRuleGroundable2::ckeckSimilarity(double weigh
 }
 
 double CombinedCriterionIndexingArgumentsOrderRuleGroundable::assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition) {
-	if(variablesDomains.empty())
-		computeVariablesDomains();
-
 	if(boundArgumentsSelectivities.empty())
 		computeBoundArgumentsSelectivities();
 
 	double combinedCriterion=CombinedCriterion::assignWeightPositiveClassicalLit(atom,originalPosition);
-
-	unsigned sizeTablesToSearch=0;
-	for(auto j:predicate_searchInsert_table[originalPosition+rule->getSizeHead()])
-		sizeTablesToSearch+=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(j.first,j.second);
-
-	double max=0;
-	double secondMax=0;
-	double bestIndex=1;
-	for(unsigned i=0;i<atom->getTermsSize();++i){
-		if(Utils::isContained(variablesInTerms[originalPosition][i],variablesInTheBody)){
-			if(boundArgumentsSelectivities[originalPosition][i]>max){
-				secondMax=max;
-				max=boundArgumentsSelectivities[originalPosition][i];
-			}
-			else if(boundArgumentsSelectivities[originalPosition][i]==max){
-				secondMax=max;
-			}
-		}
-	}
-	if(max>0 && secondMax>0 && (1-max/sizeTablesToSearch)<DOUBLE_INDEX_THRESHOLD){
-		bestIndex=(1-((max*secondMax)/sizeTablesToSearch));
-	}
-	else if(max>0){
-		bestIndex=(1-max/sizeTablesToSearch);
-	}
+	double bestIndex=CombinedCriterion::computeBestIndexingTerms(atom,originalPosition);
 
 	return combinedCriterion*bestIndex;
 }
@@ -889,24 +894,39 @@ double BindersOrderRuleGroundable::assignWeightPositiveClassicalLit(Atom* atom, 
 				}
 			}
 			if(isBinder && boundAll && !Utils::isDisjoint(variables,rule->getOutputVariables())){
-//				atom->getTerm(i)->print(cout);cout<<" ";
+//				atom->getTerm(i)->print(cerr);cerr<<" ";
 				numBinders++;
 			}
 		}
-//		cout<<"Predicate: "<<atom->getPredicate()->getName()<<" "<<numBinders<<endl;
+//		cerr<<"Predicate: "<<atom->getPredicate()->getName()<<" "<<numBinders<<endl;
 	}
 	else{
 		numBinders=arity;
-//		cout<<"Predicate: "<<atom->getPredicate()->getName()<<" "<<numBinders<<endl;
+//		cerr<<"Predicate: "<<atom->getPredicate()->getName()<<" "<<numBinders<<endl;
 	}
 
 	return (1-(numBinders/arity));
 }
 
-//double CombinedCriterionBindersOrderRuleGroundable::assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition) {
-//
-//}
-
+double CombinedCriterionBindersOrderRuleGroundable::assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition) {
+	//TODO anche partendo da DLV Indexing
+	double combinedCriterion=CombinedCriterion::assignWeightPositiveClassicalLit(atom,originalPosition);
+	double prod_selectivity_output=1;
+	double prod_domains_output=1;
+	set_term variablesFound;
+	for(unsigned i=0;i<atom->getTermsSize();++i){
+		Term* var=atom->getTerm(i);
+		set_term variables;
+		atom->getTerm(i)->getVariable(variables);
+		for(auto v:variables){
+			if(!variablesFound.insert(var).second) continue;
+			if(!rule->isAnOutputVariable(v)) continue;
+			prod_selectivity_output*=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateInformation()->getSelectivity(i);
+			prod_domains_output*=pow(variablesDomains[var],2);
+		}
+	}
+	return combinedCriterion*(prod_selectivity_output/prod_domains_output);
+}
 
 }
 }
