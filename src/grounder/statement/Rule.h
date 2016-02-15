@@ -22,6 +22,7 @@ namespace grounder{
 ///Tuple for the grounding part of the weak: Weight,Level, Terms (the label of the weak)
 using tupleWeak = tuple<Term*,Term*,vector<Term*>>;
 
+class Rule;
 
 ///RuleInformation contain the information of rule relative:
 ///		- The number of the variable in the body of the rule
@@ -126,11 +127,27 @@ public:
 
 	bool isAJoinVariable(Term* term) const {return joinVariables.count(term);}
 
+	void computeOutputVariables(Rule* rule);
+
+	bool isAnOutputVariable(Term* term, Rule* rule){
+		if(outputVariables.empty())
+			computeOutputVariables(rule);
+		return outputVariables.count(term);
+	}
+
+	set_term& getOutputVariables(Rule* rule){
+		if(outputVariables.empty())
+			computeOutputVariables(rule);
+		return outputVariables;
+	}
+
 private:
 	vector<set_term> dictionaryIntersection;
 	vector<bool> dictionaryIntersectionCreation;
 	set_term joinVariables;
 	vector<vector<Atom*>> bounderBuiltins;
+	/// The set of variables appearing in the head of the current rule
+	set_term outputVariables;
 };
 
 
@@ -339,6 +356,14 @@ public:
 
 	inline void clearBounderBuiltin(){
 		ruleInformation.clearBounderBuiltin();
+	}
+
+	bool isAnOutputVariable(Term* term){
+		return ruleInformation.isAnOutputVariable(term,this);
+	}
+
+	set_term& getOutputVariables() {
+		return ruleInformation.getOutputVariables(this);
 	}
 
 protected:

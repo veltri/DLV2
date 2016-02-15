@@ -16,7 +16,32 @@ namespace grounder{
 
 //-------------------------------RuleInformation---------------------
 
-
+void RuleInformation::computeOutputVariables(Rule* rule) {
+	for (auto it=rule->getBeginHead();it!=rule->getEndHead(); ++it) {
+		Atom* atom=*it;
+		const set_term& variables=atom->getVariable();
+		outputVariables.insert(variables.begin(),variables.end());
+	}
+	unsigned position=0;
+	for (auto it=rule->getBeginBody();it!=rule->getEndBody(); ++it,++position) {
+		Atom* atom=*it;
+		const set_term& variablesInAtom=atom->getVariable();
+		if(atom->isClassicalLiteral()){
+			if(!atom->getPredicate()->isSolved()){
+				outputVariables.insert(variablesInAtom.begin(),variablesInAtom.end());
+			}
+		}
+		else if(atom->isAggregateAtom()){
+			set_term variablesUnsolved;
+			atom->getUnsolvedPredicateVariable(variablesUnsolved);
+			outputVariables.insert(variablesUnsolved.begin(),variablesUnsolved.end());
+			if(!variablesUnsolved.empty()){
+				set_term guards=atom->getGuardVariable();
+				outputVariables.insert(guards.begin(),guards.end());
+			}
+		}
+	}
+}
 
 
 // ------------------------------Rule---------------------------------
@@ -338,3 +363,5 @@ tupleWeak WeakConstraint::groundWeightLevel(var_assignment& current_assignment){
 
 }
 }
+
+

@@ -105,7 +105,30 @@ protected:
 	void updateVariableSelectivity(Atom* atomAdded);
 	map_term<unsigned> variablesDomains;
 	map_term<double> variablesSelectivities;
+};
 
+class CombinedCriterion1 : public CombinedCriterion {
+public:
+	CombinedCriterion1(Rule* rule):CombinedCriterion(rule){}
+	CombinedCriterion1(Rule* rule,Priority p):CombinedCriterion(rule,p){}
+	virtual ~CombinedCriterion1(){}
+	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
+};
+
+class CombinedCriterion3 : public CombinedCriterion {
+public:
+	CombinedCriterion3(Rule* rule):CombinedCriterion(rule){}
+	CombinedCriterion3(Rule* rule,Priority p):CombinedCriterion(rule,p){}
+	virtual ~CombinedCriterion3(){}
+	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
+};
+
+class CombinedCriterion4 : public CombinedCriterion {
+public:
+	CombinedCriterion4(Rule* rule):CombinedCriterion(rule){}
+	CombinedCriterion4(Rule* rule,Priority p):CombinedCriterion(rule,p){}
+	virtual ~CombinedCriterion4(){}
+	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
 };
 
 class IndexingArgumentsOrderRuleGroundable  : public AllOrderRuleGroundable{
@@ -153,35 +176,29 @@ private:
 	const double SIMILARITY_THRESHOLD;
 };
 
-class SemiJoinIndexingArgumentsOrderRuleGroundable3  : public SemiJoinIndexingArgumentsOrderRuleGroundable {
+class CombinedCriterionIndexingArgumentsOrderRuleGroundable  : public SemiJoinIndexingArgumentsOrderRuleGroundable {
 public:
-	SemiJoinIndexingArgumentsOrderRuleGroundable3(Rule* rule):SemiJoinIndexingArgumentsOrderRuleGroundable(rule){}
-	SemiJoinIndexingArgumentsOrderRuleGroundable3(Rule* rule,Priority p):SemiJoinIndexingArgumentsOrderRuleGroundable(rule,p){}
-	virtual ~SemiJoinIndexingArgumentsOrderRuleGroundable3(){}
+	CombinedCriterionIndexingArgumentsOrderRuleGroundable(Rule* rule):SemiJoinIndexingArgumentsOrderRuleGroundable(rule){}
+	CombinedCriterionIndexingArgumentsOrderRuleGroundable(Rule* rule,Priority p):SemiJoinIndexingArgumentsOrderRuleGroundable(rule,p){}
+	virtual ~CombinedCriterionIndexingArgumentsOrderRuleGroundable(){}
 	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
 };
 
-class CombinedCriterion1 : public CombinedCriterion {
+class BindersOrderRuleGroundable : public AllOrderRuleGroundable {
 public:
-	CombinedCriterion1(Rule* rule):CombinedCriterion(rule){}
-	CombinedCriterion1(Rule* rule,Priority p):CombinedCriterion(rule,p){}
-	virtual ~CombinedCriterion1(){}
+	BindersOrderRuleGroundable(Rule* rule):AllOrderRuleGroundable(rule){outputVariablesInAtoms.resize(rule->getSizeBody());}
+	BindersOrderRuleGroundable(Rule* rule,Priority p):AllOrderRuleGroundable(rule,p){outputVariablesInAtoms.resize(rule->getSizeBody());}
+	virtual ~BindersOrderRuleGroundable(){}
 	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
+private:
+	vector<pair<vector<unsigned>,bool>> outputVariablesInAtoms;
 };
 
-class CombinedCriterion3 : public CombinedCriterion {
+class CombinedCriterionBindersOrderRuleGroundable: public CombinedCriterion {
 public:
-	CombinedCriterion3(Rule* rule):CombinedCriterion(rule){}
-	CombinedCriterion3(Rule* rule,Priority p):CombinedCriterion(rule,p){}
-	virtual ~CombinedCriterion3(){}
-	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
-};
-
-class CombinedCriterion4 : public CombinedCriterion {
-public:
-	CombinedCriterion4(Rule* rule):CombinedCriterion(rule){}
-	CombinedCriterion4(Rule* rule,Priority p):CombinedCriterion(rule,p){}
-	virtual ~CombinedCriterion4(){}
+	CombinedCriterionBindersOrderRuleGroundable(Rule* rule):CombinedCriterion(rule){}
+	CombinedCriterionBindersOrderRuleGroundable(Rule* rule,Priority p):CombinedCriterion(rule,p){}
+	virtual ~CombinedCriterionBindersOrderRuleGroundable(){}
 	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
 };
 
@@ -197,12 +214,13 @@ public:
 				return	nullptr;
 				break;
 			case INDEXING_ORDERING:
-				return new SemiJoinIndexingArgumentsOrderRuleGroundable2(rule);
+				return new SemiJoinIndexingArgumentsOrderRuleGroundable(rule);
 				break;
 			case DLV_INDEXING_ORDERING:
-				return new SemiJoinIndexingArgumentsOrderRuleGroundable3(rule);
+				return new CombinedCriterionIndexingArgumentsOrderRuleGroundable(rule);
 				break;
 			default:
+//				return	new BindersOrderRuleGroundable(rule);
 				return	new CombinedCriterion(rule);
 				break;
 		}

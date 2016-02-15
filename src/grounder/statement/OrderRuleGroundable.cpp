@@ -60,6 +60,8 @@ void OrderRuleGroundable::applyBinderSplittingRewriting() {
 /****************************************** OrderRuleGroundable ***********************************************/
 
 vector<unsigned> OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchType>>>& predicate_searchInsert_table) {
+//	rule->print();
+
 	this->predicate_searchInsert_table=predicate_searchInsert_table;
 	unsigned sizeBody=rule->getSizeBody();
 	atomsVariables.resize(sizeBody);
@@ -836,7 +838,7 @@ bool SemiJoinIndexingArgumentsOrderRuleGroundable2::ckeckSimilarity(double weigh
 	return (weight1/weight2)>SIMILARITY_THRESHOLD;
 }
 
-double SemiJoinIndexingArgumentsOrderRuleGroundable3::assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition) {
+double CombinedCriterionIndexingArgumentsOrderRuleGroundable::assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition) {
 	if(variablesDomains.empty())
 		computeVariablesDomains();
 
@@ -873,6 +875,47 @@ double SemiJoinIndexingArgumentsOrderRuleGroundable3::assignWeightPositiveClassi
 	return combinedCriterion*bestIndex;
 }
 
+double BindersOrderRuleGroundable::assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition) {
+	unsigned numBinders=0;
+	unsigned arity=atom->getPredicate()->getArity();
+	if(atom->getPredicate()->isSolved()){
+		if(!outputVariablesInAtoms[originalPosition].second){
+			outputVariablesInAtoms[originalPosition].first.reserve(atom->getTermsSize());
+			outputVariablesInAtoms[originalPosition].second=true;
+			for(unsigned i=0;i<atom->getTermsSize();++i){
+				set_term variables;
+				atom->getTerm(i)->getVariable(variables);
+				bool isBinder=false;
+				bool boundAll=true;
+				for(auto v:variables){
+					if(!variablesInTheBody.count(v)){
+						if(!atomsVariables[originalPosition].count(v))
+							boundAll=false;
+						else
+							isBinder=true;
+					}
+				}
+				if(isBinder && boundAll && !Utils::isDisjoint(variables,rule->getOutputVariables())){
+					outputVariablesInAtoms[originalPosition].first.push_back(i);
+				}
+			}
+			if(outputVariablesInAtoms[originalPosition].first.size()==atom->getPredicate()->getArity())
+				outputVariablesInAtoms[originalPosition].first.clear();
+		}
+		numBinders=outputVariablesInAtoms[originalPosition].first.size();
+//		cout<<"Predicate: "<<atom->getPredicate()->getName()<<" "<<numBinders<<endl;
+	}
+	else{
+		numBinders=arity;
+//		cout<<"Predicate: "<<atom->getPredicate()->getName()<<" "<<numBinders<<endl;
+	}
+
+	return (1-(numBinders/arity));
+}
+
+
+//double CombinedCriterionBindersOrderRuleGroundable::assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition) {
+//}
 }
 }
 

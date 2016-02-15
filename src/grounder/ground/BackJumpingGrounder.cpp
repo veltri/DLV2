@@ -80,25 +80,16 @@ void BackJumpingGrounder::inizialize(Rule* rule, unordered_set<index_object>* co
 	historyBackOutputVars.setSize(currentRule->getSizeBody(),-2);
 	historyBackFromSolutionFound=-2;
 
+	outputVariables=&(rule->getOutputVariables());
 	atomsVariables.clear();
 
 	failureMap.resize(current_assignment.size(),false);
-
-	outputVariables.clear();
-	for (auto it=currentRule->getBeginHead();it!=currentRule->getEndHead(); ++it) {
-		Atom* atom=*it;
-		const set_term& variables=atom->getVariable();
-		outputVariables.insert(variables.begin(),variables.end());
-	}
 	unsigned position=0;
 	for (auto it=currentRule->getBeginBody();it!=currentRule->getEndBody(); ++it,++position) {
 		Atom* atom=*it;
 		const set_term& variablesInAtom=atom->getVariable();
 		atomsVariables.push_back(variablesInAtom);
 		if(atom->isClassicalLiteral()){
-			if(!atom->getPredicate()->isSolved()){
-				outputVariables.insert(variablesInAtom.begin(),variablesInAtom.end());
-			}
 			//Add also the variable in the builtin that the atom evaluate inside the matchTerm
 			if(!matchBuiltin[position].empty())
 				for(auto builtinAtom:matchBuiltin[position]){
@@ -106,42 +97,33 @@ void BackJumpingGrounder::inizialize(Rule* rule, unordered_set<index_object>* co
 					atomsVariables[position].insert(variablesInBuiltIn.begin(),variablesInBuiltIn.end());
 				}
 		}
-		else if(atom->isAggregateAtom()){ //&& atom->isAssignment()
-			set_term variablesUnsolved;
-			atom->getUnsolvedPredicateVariable(variablesUnsolved);
-			outputVariables.insert(variablesUnsolved.begin(),variablesUnsolved.end());
-			if(!variablesUnsolved.empty()){
-				set_term guards=atom->getGuardVariable();
-				outputVariables.insert(guards.begin(),guards.end());
-			}
-		}
 	}
 
 	if(Options::globalOptions()->isEnabledBinderSplitting()){
 	position=0;
-		for (auto it=currentRule->getBeginBody();it!=currentRule->getEndBody(); ++it,++position) {
-			Atom* atom=*it;
-			if(atom->isClassicalLiteral() && atom->getPredicate()->isSolved()){
-				outputVariablesInAtoms[position].reserve(atom->getTermsSize());
-				for(unsigned i=0;i<atom->getTermsSize();++i){
-					if(!atom->getTerm(i)->contain(TermType::ANONYMOUS)){
-						outputVariablesInAtoms[position].push_back(i);
-					}
-	//				set_term variables;
-	//				atom->getTerm(i)->getVariable(variables);
-	//				bool isBinder=false;
-	//				for(auto v:variables){
-	//					if(variablesBinder[v->getLocalVariableIndex()]==position)
-	//						isBinder=true;
-	//				}
-	//				if(isBinder && !Utils::isDisjoint(variables,outputVariables)){
-	//					outputVariablesInAtoms[position].push_back(i);
-	//				}
+	for (auto it=currentRule->getBeginBody();it!=currentRule->getEndBody(); ++it,++position) {
+		Atom* atom=*it;
+		if(atom->isClassicalLiteral() && atom->getPredicate()->isSolved()){
+			outputVariablesInAtoms[position].reserve(atom->getTermsSize());
+			for(unsigned i=0;i<atom->getTermsSize();++i){
+				if(!atom->getTerm(i)->contain(TermType::ANONYMOUS)){
+					outputVariablesInAtoms[position].push_back(i);
 				}
-				if(outputVariablesInAtoms[position].size()==atom->getPredicate()->getArity())
-					outputVariablesInAtoms[position].clear();
+//				set_term variables;
+//				atom->getTerm(i)->getVariable(variables);
+//				bool isBinder=false;
+//				for(auto v:variables){
+//					if(variablesBinder[v->getLocalVariableIndex()]==position)
+//						isBinder=true;
+//				}
+//				if(isBinder && !Utils::isDisjoint(variables,outputVariables)){
+//					outputVariablesInAtoms[position].push_back(i);
+//				}
 			}
+			if(outputVariablesInAtoms[position].size()==atom->getPredicate()->getArity())
+				outputVariablesInAtoms[position].clear();
 		}
+	}
 	//	position=0;
 	//	for (auto it=currentRule->getBeginBody();it!=currentRule->getEndBody(); ++it,++position) {
 	//		if(outputVariablesInAtoms[position].size()>0){
@@ -194,10 +176,10 @@ void BackJumpingGrounder::backFromSolutionFound() {
 	else{
 		vector<Atom*>::iterator closestBinder_it;
 		int closestBinder_pos;
-		closestBinder(index_current_atom,outputVariables,closestBinder_pos,true);
+		closestBinder(index_current_atom,*outputVariables,closestBinder_pos,true);
 		historyBackFromSolutionFound=closestBinder_pos;
 		index_current_atom=closestBinder_pos;
-		closestBinder(index_current_atom,outputVariables,closestSuccessfulBinder_index,false);
+		closestBinder(index_current_atom,*outputVariables,closestSuccessfulBinder_index,false);
 		if(index_current_atom>=0)
 			historyBackOutputVars[index_current_atom]=closestSuccessfulBinder_index;
 	}
@@ -290,7 +272,7 @@ void BackJumpingGrounder::backFromNextMatch() {
 			closestSuccessfulBinder_index=it;
 		}
 		else{
-			closestBinder(index_current_atom,outputVariables,closestSuccessfulBinder_index,false);
+			closestBinder(index_current_atom,*outputVariables,closestSuccessfulBinder_index,false);
 			historyBackOutputVars[index_current_atom]=closestSuccessfulBinder_index;
 		}
 	}

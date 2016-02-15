@@ -130,6 +130,9 @@ protected:
 
 	vector<vector<unsigned>> indexingArguments;
 
+	/// Output variables in each atom
+	/// (if its predicate is solved in the corresponding vector are present the positions of the output variable)
+	/// (if either the predicate is solved or all the terms are of output the corresponding vector is empty)
 	vector<vector<unsigned>> outputVariablesInAtoms;
 
 	virtual void createAtomSearchersForPredicateBody(unsigned position, unsigned atomPos, Predicate* predicate, unsigned sizeRule, unordered_set<index_object>* componentPredicateInHead);
