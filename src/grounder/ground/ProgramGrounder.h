@@ -164,7 +164,7 @@ private:
 	void printProgram(const vector<vector<Rule*> >& exitRules,const vector<vector<Rule*> >& recursiveRules);
 	bool inizializeSearchInsertPredicateBody(Rule* rule);
 	void findRecursivePredicatesInComponentRules(const unordered_set<index_object>& componentPredicateInHead, vector<unsigned>& recursivePredicatesPositions, Rule* rule, vector<unsigned >& orderedBody);
-	void orderPositiveAtomsBody(vector<unsigned>& originalOrderBody,Rule* rule);
+	void orderPositiveAtomsBody(vector<unsigned>& originalOrderBody,Rule* rule, unordered_set<index_object>* componentPredicateInHead);
 	void orderPositiveAtomsBody(Rule* rule);
 
 	///Utility method for setDefaultAtomSearchers

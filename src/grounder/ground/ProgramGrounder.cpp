@@ -78,20 +78,26 @@ void ProgramGrounder::findRecursivePredicatesInComponentRules(const unordered_se
 	}
 }
 
-void ProgramGrounder::orderPositiveAtomsBody(vector<unsigned>& originalOrderBody,Rule* rule) {
+void ProgramGrounder::orderPositiveAtomsBody(vector<unsigned>& originalOrderBody,Rule* rule, unordered_set<index_object>* componentPredicateInHead) {
 	rule->computeVariablesLocalIndices();
+	unsigned sizeRule=rule->getSizeBody();
+	predicate_searchInsert_atomSearcher.clear();
+	predicate_searchInsert_atomSearcher.resize(rule->getSizeHead()+rule->getSizeBody());
 	OrderRuleGroundable* orderRuleGroundable = OrderRuleGroundableFactory::getInstance(rule);
 	if (orderRuleGroundable != nullptr) {
-		orderRuleGroundable->order(predicate_searchInsert_table,originalOrderBody);
+		orderRuleGroundable->order(predicate_searchInsert_table,predicate_searchInsert_atomSearcher,originalOrderBody,componentPredicateInHead);
 		delete orderRuleGroundable;
 	}
 }
 
 void ProgramGrounder::orderPositiveAtomsBody(Rule* rule) {
 	rule->computeVariablesLocalIndices();
+	unsigned sizeRule=rule->getSizeBody();
+	predicate_searchInsert_atomSearcher.clear();
+	predicate_searchInsert_atomSearcher.resize(rule->getSizeHead()+rule->getSizeBody());
 	OrderRuleGroundable* orderRuleGroundable = OrderRuleGroundableFactory::getInstance(rule);
 	if (orderRuleGroundable != nullptr) {
-		orderRuleGroundable->order(predicate_searchInsert_table);
+		orderRuleGroundable->order(predicate_searchInsert_table,predicate_searchInsert_atomSearcher);
 		delete orderRuleGroundable;
 	}
 }
@@ -174,7 +180,7 @@ void ProgramGrounder::ground() {
 //				trace_action_tag(grounding,2,printTableInRule(rule,predicate_searchInsert_table););
 
 				findRecursivePredicatesInComponentRules(componentPredicateInHead[component], recursivePredicatesPositions[i], rule, originalOrderBody[i]);
-				orderPositiveAtomsBody(originalOrderBody[i], rule);
+				orderPositiveAtomsBody(originalOrderBody[i], rule, &componentPredicateInHead[component]);
 				if(groundRule(rule,&componentPredicateInHead[component]))
 					found_something=true;
 
@@ -207,7 +213,7 @@ void ProgramGrounder::ground() {
 						trace_msg(grounding,1,"At this iteration the tables to search in  are: ");
 //						trace_action_tag(grounding,2,printTableInRule(rule,predicate_searchInsert_table););
 
-						orderPositiveAtomsBody(originalOrderBody[i],rule);
+						orderPositiveAtomsBody(originalOrderBody[i],rule,&componentPredicateInHead[component]);
 						if (groundRule(rule,&componentPredicateInHead[component]))
 							found_something = true;
 
@@ -519,9 +525,7 @@ void ProgramGrounder::createAtomSearchersForPredicateHead(unsigned position, Pre
 
 void ProgramGrounder::setDefaultAtomSearchers(Rule* rule, unordered_set<index_object>* componentPredicateInHead) {
 	unsigned sizeRule=rule->getSizeBody();
-	predicate_searchInsert_atomSearcher.clear();
 	unsigned atomIndex=rule->getSizeHead();
-	predicate_searchInsert_atomSearcher.resize(atomIndex+rule->getSizeBody());
 	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();++atom,++atomIndex){
 		if((*atom)->isClassicalLiteral()){
 			Predicate *predicate=(*atom)->getPredicate();

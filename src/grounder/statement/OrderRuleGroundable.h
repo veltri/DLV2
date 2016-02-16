@@ -38,13 +38,13 @@ struct Priority{
 
 class OrderRuleGroundable {
 public:
-	OrderRuleGroundable(Rule* rule):predicateExtTable(PredicateExtTable::getInstance()),rule(rule){}
-	OrderRuleGroundable(Rule* rule, Priority p):predicateExtTable(PredicateExtTable::getInstance()),rule(rule),priorities(p){}
+	OrderRuleGroundable(Rule* rule):predicateExtTable(PredicateExtTable::getInstance()),rule(rule),componentPredicateInHead(0){}
+	OrderRuleGroundable(Rule* rule, Priority p):predicateExtTable(PredicateExtTable::getInstance()),rule(rule),priorities(p),componentPredicateInHead(0){}
 	virtual ~OrderRuleGroundable(){}
 	///This method orders the body of a given exit rule
-	vector<unsigned> order(vector<vector<pair<unsigned,SearchType>>>& predicate_searchInsert_table);
+	vector<unsigned> order(vector<vector<pair<unsigned,SearchType>>>& predicate_searchInsert_table, vector<vector<IndexingStructure*>>& predicate_searchInsert_atomSearcher, unordered_set<index_object>* componentPredicateInHead=0);
 	///This method orders the body of a given recursive rule
-	void order(vector<vector<pair<unsigned,SearchType>>>& predicate_searchInsert_table, vector<unsigned>& originalOrderBody);
+	void order(vector<vector<pair<unsigned,SearchType>>>& predicate_searchInsert_table,vector<vector<IndexingStructure*>>& predicate_searchInsert_atomSearcher, vector<unsigned>& originalOrderBody, unordered_set<index_object>* componentPredicateInHead=0);
 
 	/// This method assigns to each remained atom (to be added in the sorted body) a weight,
 	/// and returns the iterator to the atom with the best weight.
@@ -66,7 +66,19 @@ protected:
 	/// (for example variables appearing in arith terms)
 	unordered_map<unsigned,set_term> mapPositiveAtomsBoundVariables;
 
+	/// For each predicate in the current rule this vector stores the atom searchers of insertion and look-up for head atoms and
+	/// the atom searchers of look-up for body atoms
+	vector<vector<IndexingStructure*>> predicate_searchInsert_atomSearcher;
+
+	//Set of recursive predicates
+	unordered_set<index_object>* componentPredicateInHead;
+
 	void computeDictionaryIntersection(Atom* atom);
+
+	void setAtomSearchersDefault(Atom* atom, unsigned orginalPosition);
+	void setAtomSearchersBoundAtom(Atom* atom, unsigned orginalPosition);
+	void setAtomSearchers(Atom* atom, unsigned orginalPosition,unsigned indexingTerm);
+	void setAtomSearchers(Atom* atom, unsigned orginalPosition,unsigned indexingTerm1,unsigned indexingTerm2);
 
 private:
 	void applyBinderSplittingRewriting();
@@ -100,6 +112,7 @@ public:
 	virtual ~CombinedCriterion(){}
 	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
 	virtual void update(Atom* atomAdded, unsigned originalPosition){updateVariableSelectivity(atomAdded);};
+
 protected:
 	void computeVariablesDomains();
 	void updateVariableSelectivity(Atom* atomAdded);

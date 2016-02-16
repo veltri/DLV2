@@ -309,7 +309,6 @@ public:
 	virtual void setWeightLevelLabel(tupleWeak&& tp){};
 	virtual tupleWeak groundWeightLevel(var_assignment& current_assignment){return make_tuple(nullptr,nullptr,vector<Term*>());}
 
-
 	//-----------------Rule Information Interface -------------------------------
 
 	set_term::const_iterator getDictionaryIntersectionBegin(index_object index) const {
