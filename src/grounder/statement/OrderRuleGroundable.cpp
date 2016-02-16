@@ -149,17 +149,17 @@ void OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchType>> >& pred
 	originalOrderBody=newOriginalOrderBody;
 }
 
-bool OrderRuleGroundable::isBound(Atom* atom, unsigned orginalPosition) {
+bool OrderRuleGroundable::isBound(Atom* atom, unsigned orginalPosition, const set_term& terms) {
 	if(atom->isBuiltIn() && atom->getBinop()==Binop::EQUAL){
 
 		if(atom->plusMinusBuiltin()){
-			//If the builtin is an = and contain only + and - operatos, then we count only the total variable
+			//If the builtin is an = and contain only + and - operators, then we count only the total variable
 			// of the builtin and if only 1 variable is free we can put this atom because even if the free variable is in
 			// arithmetic operators we can calculate like an equation
 			set_term variablesInAtom=atom->getVariable();
 			unsigned count=0;
 			for(auto var:variablesInAtom){
-				if(!variablesInTheBody.count(var))
+				if(!terms.count(var))
 					count++;
 				if(count>1)break;
 			}
@@ -172,21 +172,21 @@ bool OrderRuleGroundable::isBound(Atom* atom, unsigned orginalPosition) {
 			// the free variable must be alone in first or second term in the atom
 			set_term varsFirst;
 			atom->getTerm(0)->getVariable(varsFirst);
-			if(Utils::isContained(varsFirst,variablesInTheBody) && atom->getTerm(1)->getType()==VARIABLE && !variablesInTheBody.count(atom->getTerm(1))){
+			if(Utils::isContained(varsFirst,terms) && atom->getTerm(1)->getType()==VARIABLE && !terms.count(atom->getTerm(1))){
 				atom->setAssignment(true);
 				return true;
 			}
 			set_term varSecond;
 			atom->getTerm(1)->getVariable(varSecond);
-			if(Utils::isContained(varSecond,variablesInTheBody) && atom->getTerm(0)->getType()==VARIABLE && !variablesInTheBody.count(atom->getTerm(0))){
+			if(Utils::isContained(varSecond,terms) && atom->getTerm(0)->getType()==VARIABLE && !terms.count(atom->getTerm(0))){
 				atom->setAssignment(true);
 				return true;
 			}
-			if(Utils::isContained(atomsVariables[orginalPosition],variablesInTheBody)){
+			if(Utils::isContained(atomsVariables[orginalPosition],terms)){
 				atom->setAssignment(false);
 				return true;
 			}
-			if(Utils::isContained(atomsVariables[orginalPosition],variablesInTheBody)){
+			if(Utils::isContained(atomsVariables[orginalPosition],terms)){
 				atom->setAssignment(false);
 				return true;
 			}
@@ -201,12 +201,12 @@ bool OrderRuleGroundable::isBound(Atom* atom, unsigned orginalPosition) {
 			variables.insert(guards.begin(),guards.end());
 		else
 			variables.erase(atom->getFirstGuard());
-		return Utils::isContained(variables,variablesInTheBody);
+		return Utils::isContained(variables,terms);
 	}
 	else if(mapPositiveAtomsBoundVariables[orginalPosition].size()>0){
-		return !(atom->containsAnonymous()) && Utils::isContained(mapPositiveAtomsBoundVariables[orginalPosition],variablesInTheBody);
+		return !(atom->containsAnonymous()) && Utils::isContained(mapPositiveAtomsBoundVariables[orginalPosition],terms);
 	}
-	return !(atom->containsAnonymous()) && Utils::isContained(atomsVariables[orginalPosition],variablesInTheBody);
+	return !(atom->containsAnonymous()) && Utils::isContained(atomsVariables[orginalPosition],terms);
 }
 
 void OrderRuleGroundable::computeDictionaryIntersection(Atom* atom) {
@@ -253,7 +253,7 @@ list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(list<unsigned>& a
 			atom->print(cerr);
 		);
 
-		bool bound=isBound(atom,*it);
+		bool bound=isBound(atom,*it,variablesInTheBody);
 		if(atom->isClassicalLiteral() && !atom->isNegative() && ((!bound && mapPositiveAtomsBoundVariables[*it].empty()) || (bound && mapPositiveAtomsBoundVariables[*it].size()>0))){
 			// If in a positive classical literal all variables that must be bound are bound then it can be safely added to the new body
 			weight=assignWeightPositiveClassicalLit(atom,*it);
@@ -429,6 +429,36 @@ double CombinedCriterion::computeBestIndexingTerms(Atom* atom, unsigned original
 		bestIndex=(1-max/sizeTablesToSearch);
 	}
 	return bestIndex;
+}
+
+double CombinedCriterion::computeBoundAtoms(Atom* atom, unsigned originalPosition) {
+	unsigned numBoundAtoms=0;
+	set_term set=variablesInTheBody;
+	set.insert(atomsVariables[originalPosition].begin(),atomsVariables[originalPosition].end());
+	for(auto a:atomsToInsert){
+		if(isBound(rule->getAtomInBody(a),a,set)){
+			numBoundAtoms++;
+		}
+	}
+	return (1-numBoundAtoms/atomsToInsert.size());
+}
+
+double CombinedCriterion::computeOutputVariablesBounded(Atom* atom, unsigned originalPosition){
+	double prod_selectivity_output=1;
+	double prod_domains_output=1;
+	set_term variablesFound;
+	for(unsigned i=0;i<atom->getTermsSize();++i){
+		Term* var=atom->getTerm(i);
+		set_term variables;
+		atom->getTerm(i)->getVariable(variables);
+		for(auto v:variables){
+			if(!variablesFound.insert(var).second) continue;
+			if(!rule->isAnOutputVariable(v)) continue;
+			prod_selectivity_output*=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateInformation()->getSelectivity(i);
+			prod_domains_output*=pow(variablesDomains[var],2);
+		}
+	}
+	return (prod_selectivity_output/prod_domains_output);
 }
 
 double CombinedCriterion1::assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition) {
@@ -889,7 +919,6 @@ double BindersOrderRuleGroundable::assignWeightPositiveClassicalLit(Atom* atom, 
 				if(!variablesInTheBody.count(v)){
 					if(!atomsVariables[originalPosition].count(v))
 						boundAll=false;
-					else
 						isBinder=true;
 				}
 			}
@@ -909,23 +938,18 @@ double BindersOrderRuleGroundable::assignWeightPositiveClassicalLit(Atom* atom, 
 }
 
 double CombinedCriterionBindersOrderRuleGroundable::assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition) {
-	//TODO anche partendo da DLV Indexing
 	double combinedCriterion=CombinedCriterion::assignWeightPositiveClassicalLit(atom,originalPosition);
-	double prod_selectivity_output=1;
-	double prod_domains_output=1;
-	set_term variablesFound;
-	for(unsigned i=0;i<atom->getTermsSize();++i){
-		Term* var=atom->getTerm(i);
-		set_term variables;
-		atom->getTerm(i)->getVariable(variables);
-		for(auto v:variables){
-			if(!variablesFound.insert(var).second) continue;
-			if(!rule->isAnOutputVariable(v)) continue;
-			prod_selectivity_output*=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateInformation()->getSelectivity(i);
-			prod_domains_output*=pow(variablesDomains[var],2);
-		}
-	}
-	return combinedCriterion*(prod_selectivity_output/prod_domains_output);
+	return combinedCriterion*computeOutputVariablesBounded(atom,originalPosition);
+//	double bestIndex=CombinedCriterion::computeBestIndexingTerms(atom,originalPosition);
+//	return combinedCriterion*bestIndex*computeOutputVariablesBounded(atom,originalPosition);
+}
+
+double CombinedCriterionAdvanced::assignWeightPositiveClassicalLit(Atom* atom,unsigned originalPosition) {
+	double combinedCriterion=CombinedCriterion::assignWeightPositiveClassicalLit(atom,originalPosition);
+	double bestIndex=computeBestIndexingTerms(atom,originalPosition);
+	double boundAtoms=computeBoundAtoms(atom,originalPosition);
+	double outputVariablesBound=computeOutputVariablesBounded(atom,originalPosition);
+	return combinedCriterion*bestIndex*boundAtoms*outputVariablesBound;
 }
 
 }

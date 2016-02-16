@@ -111,12 +111,13 @@ namespace grounder{
 	#define ARRAY_SIZE 64
 	#define ATOMS_IN_RULE 32
 
-	#define NO_POSITIVE_ORDERING 0
-	#define COMBINED_POSITIVE_ORDERING 1
+	#define NO_ORDERING 0
+	#define DLV_ORDERING 1
 	#define INDEXING_ORDERING 2
 	#define DLV_INDEXING_ORDERING 3
 	#define DLV_BINDER_ORDERING 4
-	#define BINDER_ORDERING 5
+	#define DLV_BINDER_INDEXING_BOUND_ATOMS_ORDERING 5
+	#define BINDER_ORDERING 6
 
 	typedef unsigned index_object;
 

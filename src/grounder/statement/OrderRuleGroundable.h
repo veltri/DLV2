@@ -51,7 +51,7 @@ public:
 	/// It is virtual pure, because it has to be defined in each concrete class.
 	virtual list<unsigned>::iterator assignWeights(list<unsigned>& atomsToInsert) = 0;
 
-	virtual bool isBound(Atom* atom, unsigned orginalPosition);
+	virtual bool isBound(Atom* atom, unsigned orginalPosition,const set_term& terms);
 
 
 protected:
@@ -112,8 +112,9 @@ protected:
 	const double DOUBLE_INDEX_THRESHOLD;
 	vector<vector<set_term>> variablesInTerms;
 
-	//TODO
 	double computeBoundAtoms(Atom* atom, unsigned originalPosition);
+
+	double computeOutputVariablesBounded(Atom* atom, unsigned originalPosition);
 
 };
 
@@ -208,6 +209,14 @@ public:
 	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
 };
 
+class CombinedCriterionAdvanced: public CombinedCriterion {
+public:
+	CombinedCriterionAdvanced(Rule* rule):CombinedCriterion(rule){}
+	CombinedCriterionAdvanced(Rule* rule,Priority p):CombinedCriterion(rule,p){}
+	virtual ~CombinedCriterionAdvanced(){}
+	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
+};
+
 /**
  * Return the instance of OrderRuleGroundable based on the Option parameter
  */
@@ -216,7 +225,7 @@ class OrderRuleGroundableFactory{
 public:
 	static OrderRuleGroundable* getInstance(Rule *rule){
 		switch (Options::globalOptions()->getPositiveOrderingProcedure()) {
-			case NO_POSITIVE_ORDERING:
+			case NO_ORDERING:
 				return	nullptr;
 				break;
 			case INDEXING_ORDERING:
@@ -228,12 +237,14 @@ public:
 			case DLV_BINDER_ORDERING:
 				return new CombinedCriterionBindersOrderRuleGroundable(rule);
 				break;
+			case DLV_BINDER_INDEXING_BOUND_ATOMS_ORDERING:
+				return new CombinedCriterionAdvanced(rule);
+				break;
 			case BINDER_ORDERING:
 				return new BindersOrderRuleGroundable(rule);
 				break;
 			default:
-				return	new CombinedCriterionBindersOrderRuleGroundable(rule);
-//				return	new CombinedCriterion(rule);
+				return new CombinedCriterion(rule);
 				break;
 		}
 	}
