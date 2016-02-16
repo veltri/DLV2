@@ -42,8 +42,8 @@ IndexingStructure* PredicateExtension::createAtomSearcher(unsigned table, unsign
 		indexingStructure = new UnorderedMapOfHistoryVector(tables[table],*indexingTerms);
 		break;
 	case (MAP_PAIR_HISTORY_VECTOR):
-			indexingStructure = new UnorderedMapOfPairHistoryVector(tables[table],*indexingTerms);
-			break;
+		indexingStructure = new UnorderedMapOfPairHistoryVector(tables[table],*indexingTerms);
+		break;
 	case (DEFAULT_RECURSIVE):
 		indexingStructure = new IndexingStructureRecursive(tables[table]);
 		break;
@@ -61,6 +61,8 @@ IndexingStructure* PredicateExtension::addAtomSearcher(unsigned table, vector<un
 		if(indexType==-1){
 			if(predicate->getArity()==1 && indexType!=DEFAULT_RECURSIVE) //StatementDependency::getInstance()->isOnlyInHead(predicate->getIndex()) ||
 				indexType=HASHSET;
+			else if(indexingTerms->size()>1)
+				indexType=DOUBLEMAP;
 			else
 				indexType=Options::globalOptions()->getIndexType();
 		}

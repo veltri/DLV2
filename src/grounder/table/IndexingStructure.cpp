@@ -343,6 +343,7 @@ GeneralIterator* UnorderedMapOfVector::computeMatchIterator(Atom* templateAtom, 
 
 /******************************************************** Unordered Map of History Vector **************************************************/
 
+//TODO for full index version
 void UnorderedMapOfHistoryVector::add(Atom* atom) {
 
 }
@@ -400,6 +401,7 @@ GeneralIterator* UnorderedMapOfHistoryVector::computeMatchIterator(Atom* templat
 
 /******************************************************** Unordered Unordered Map Of Pair HistoryVector **************************************************/
 
+//TODO for full index version
 void UnorderedMapOfPairHistoryVector::add(Atom* atom) {
 
 }

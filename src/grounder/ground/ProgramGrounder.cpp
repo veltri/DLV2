@@ -92,7 +92,6 @@ void ProgramGrounder::orderPositiveAtomsBody(vector<unsigned>& originalOrderBody
 
 void ProgramGrounder::orderPositiveAtomsBody(Rule* rule) {
 	rule->computeVariablesLocalIndices();
-	unsigned sizeRule=rule->getSizeBody();
 	predicate_searchInsert_atomSearcher.clear();
 	predicate_searchInsert_atomSearcher.resize(rule->getSizeHead()+rule->getSizeBody());
 	OrderRuleGroundable* orderRuleGroundable = OrderRuleGroundableFactory::getInstance(rule);
@@ -120,8 +119,6 @@ void ProgramGrounder::ground() {
 	statementDependency->createComponentGraphAndComputeAnOrdering(exitRules, recursiveRules, componentPredicateInHead,constraintRules,remainedConstraint);
 
 	trace_msg(grounding,1,"Grounding Starts Now.");
-
-
 
 	// Ground each module according to the ordering:
 	// For each component, each rule is either recursive or exit,

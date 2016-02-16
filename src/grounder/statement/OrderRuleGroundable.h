@@ -74,11 +74,7 @@ protected:
 	unordered_set<index_object>* componentPredicateInHead;
 
 	void computeDictionaryIntersection(Atom* atom);
-
-	void setAtomSearchersDefault(Atom* atom, unsigned orginalPosition);
-	void setAtomSearchersBoundAtom(Atom* atom, unsigned orginalPosition);
-	void setAtomSearchers(Atom* atom, unsigned orginalPosition,unsigned indexingTerm);
-	void setAtomSearchers(Atom* atom, unsigned orginalPosition,unsigned indexingTerm1,unsigned indexingTerm2);
+	virtual bool setAtomSearcher(Atom* atom, unsigned orginalPosition){return false;};
 
 private:
 	void applyBinderSplittingRewriting();
@@ -107,12 +103,12 @@ private:
 
 class CombinedCriterion : public AllOrderRuleGroundable {
 public:
-	CombinedCriterion(Rule* rule):AllOrderRuleGroundable(rule),DOUBLE_INDEX_THRESHOLD(0.3){}
-	CombinedCriterion(Rule* rule,Priority p):AllOrderRuleGroundable(rule,p),DOUBLE_INDEX_THRESHOLD(0.3){}
+	CombinedCriterion(Rule* rule):AllOrderRuleGroundable(rule),DOUBLE_INDEX_THRESHOLD(0.3){positiveAtomsIndexingTerms.resize(rule->getSizeBody());}
+	CombinedCriterion(Rule* rule,Priority p):AllOrderRuleGroundable(rule,p),DOUBLE_INDEX_THRESHOLD(0.3){positiveAtomsIndexingTerms.resize(rule->getSizeBody());}
 	virtual ~CombinedCriterion(){}
 	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
 	virtual void update(Atom* atomAdded, unsigned originalPosition){updateVariableSelectivity(atomAdded);};
-
+//	virtual bool setAtomSearcher(Atom* atom, unsigned orginalPosition);
 protected:
 	void computeVariablesDomains();
 	void updateVariableSelectivity(Atom* atomAdded);
@@ -124,9 +120,9 @@ protected:
 	vector<unordered_map<unsigned,double>> boundArgumentsSelectivities;
 	const double DOUBLE_INDEX_THRESHOLD;
 	vector<vector<set_term>> variablesInTerms;
+	vector<vector<unsigned>> positiveAtomsIndexingTerms;
 
 	double computeBoundAtoms(Atom* atom, unsigned originalPosition);
-
 	double computeOutputVariablesBounded(Atom* atom, unsigned originalPosition);
 
 };

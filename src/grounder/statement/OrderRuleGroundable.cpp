@@ -83,14 +83,14 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchTy
 	vector<vector<pair<unsigned,SearchType>>> orderdedPredicateSearchInsertTable;
 	orderdedPredicateSearchInsertTable.reserve(predicate_searchInsert_table.size());
 
-	vector<vector<IndexingStructure*>> orderdedPredicateSearchInsertAtomSearcher;
-	orderdedPredicateSearchInsertAtomSearcher.reserve(predicate_searchInsert_atomSearcher.size());
+//	vector<vector<IndexingStructure*>> orderdedPredicateSearchInsertAtomSearcher;
+//	orderdedPredicateSearchInsertAtomSearcher.reserve(predicate_searchInsert_atomSearcher.size());
 
 	unsigned sizeHead=predicate_searchInsert_table.size()-sizeBody;
 
 	for(unsigned i=0;i<sizeHead;++i){
 		orderdedPredicateSearchInsertTable.push_back(predicate_searchInsert_table[i]);
-		orderdedPredicateSearchInsertAtomSearcher.push_back(predicate_searchInsert_atomSearcher[i]);
+//		orderdedPredicateSearchInsertAtomSearcher.push_back(predicate_searchInsert_atomSearcher[i]);
 	}
 
 	for(unsigned i=0;i<sizeBody;++i)
@@ -112,9 +112,16 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchTy
 
 	while(!atomsToInsert.empty()){
 		list<unsigned>::iterator bestAtom=assignWeights(atomsToInsert);
-		orderdedPredicateSearchInsertTable.push_back(predicate_searchInsert_table[sizeHead+*bestAtom]);
-		orderdedPredicateSearchInsertAtomSearcher.push_back(predicate_searchInsert_atomSearcher[sizeHead+*bestAtom]);
 		Atom* atom=rule->getAtomInBody((*bestAtom));
+		orderdedPredicateSearchInsertTable.push_back(predicate_searchInsert_table[sizeHead+*bestAtom]);
+//		if(atom->isClassicalLiteral() && setAtomSearcher(atom,*bestAtom)){
+//			cout<<"aaaaaaaaaaa ";
+//			atom->print();
+//			cout<<endl;
+//			orderdedPredicateSearchInsertAtomSearcher.push_back(predicate_searchInsert_atomSearcher[sizeHead+*bestAtom]);
+//		}
+//		else
+//			orderdedPredicateSearchInsertAtomSearcher.push_back(vector<IndexingStructure*>());
 		orderedBody.push_back(atom);
 		orderedPositions.push_back(*bestAtom);
 		if(Options::globalOptions()->isEnabledDictionaryIntersection() && atom->isClassicalLiteral() && !atom->isNegative())
@@ -125,7 +132,7 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchTy
 
 	rule->setBody(orderedBody);
 	predicate_searchInsert_table=orderdedPredicateSearchInsertTable;
-	predicate_searchInsert_atomSearcher=orderdedPredicateSearchInsertAtomSearcher;
+//	predicate_searchInsert_atomSearcher=orderdedPredicateSearchInsertAtomSearcher;
 
 //	trace_action_tag(grounding,1,
 //		cerr<<"After Ordering Body and Search/Insert tables are: ";
@@ -417,22 +424,31 @@ double CombinedCriterion::computeBestIndexingTerms(Atom* atom, unsigned original
 	double max=0;
 	double secondMax=0;
 	double bestIndex=1;
+	unsigned bestTerm=0;
+	unsigned secondBestTerm=0;
+	positiveAtomsIndexingTerms[originalPosition].clear();
 	for(unsigned i=0;i<atom->getTermsSize();++i){
 		if(Utils::isContained(variablesInTerms[originalPosition][i],variablesInTheBody)){
 			if(boundArgumentsSelectivities[originalPosition][i]>max){
+				secondBestTerm=bestTerm;
 				secondMax=max;
+				bestTerm=i;
 				max=boundArgumentsSelectivities[originalPosition][i];
 			}
 			else if(boundArgumentsSelectivities[originalPosition][i]==max){
 				secondMax=max;
+				secondBestTerm=bestTerm;
 			}
 		}
 	}
 	if(max>0 && secondMax>0 && (1-max/sizeTablesToSearch)<DOUBLE_INDEX_THRESHOLD){
 		bestIndex=(1-((max*secondMax)/sizeTablesToSearch));
+		positiveAtomsIndexingTerms[originalPosition].push_back(bestIndex);
+		positiveAtomsIndexingTerms[originalPosition].push_back(secondBestTerm);
 	}
 	else if(max>0){
 		bestIndex=(1-max/sizeTablesToSearch);
+		positiveAtomsIndexingTerms[originalPosition].push_back(bestIndex);
 	}
 	return bestIndex;
 }
@@ -906,7 +922,6 @@ double CombinedCriterionIndexingArgumentsOrderRuleGroundable::assignWeightPositi
 
 	double combinedCriterion=CombinedCriterion::assignWeightPositiveClassicalLit(atom,originalPosition);
 	double bestIndex=CombinedCriterion::computeBestIndexingTerms(atom,originalPosition);
-
 	return combinedCriterion*bestIndex;
 }
 
@@ -946,87 +961,77 @@ double BindersOrderRuleGroundable::assignWeightPositiveClassicalLit(Atom* atom, 
 double CombinedCriterionBindersOrderRuleGroundable::assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition) {
 	double combinedCriterion=CombinedCriterion::assignWeightPositiveClassicalLit(atom,originalPosition);
 	return combinedCriterion*computeOutputVariablesBounded(atom,originalPosition);
+//	if(boundArgumentsSelectivities.empty())
+//		computeBoundArgumentsSelectivities();
 //	double bestIndex=CombinedCriterion::computeBestIndexingTerms(atom,originalPosition);
 //	return combinedCriterion*bestIndex*computeOutputVariablesBounded(atom,originalPosition);
 }
 
 double CombinedCriterionAdvanced::assignWeightPositiveClassicalLit(Atom* atom,unsigned originalPosition) {
+	if(boundArgumentsSelectivities.empty())
+		computeBoundArgumentsSelectivities();
+
 	double combinedCriterion=CombinedCriterion::assignWeightPositiveClassicalLit(atom,originalPosition);
-	double bestIndex=computeBestIndexingTerms(atom,originalPosition);
-	double boundAtoms=computeBoundAtoms(atom,originalPosition);
-	double outputVariablesBound=computeOutputVariablesBounded(atom,originalPosition);
-	return combinedCriterion*bestIndex*boundAtoms*outputVariablesBound;
+	double bestIndex=CombinedCriterion::computeBestIndexingTerms(atom,originalPosition);
+//	double boundAtoms=CombinedCriterion::computeBoundAtoms(atom,originalPosition);
+	double outputVariablesBound=CombinedCriterion::computeOutputVariablesBounded(atom,originalPosition);
+	return combinedCriterion*bestIndex*outputVariablesBound;
 }
 
-void OrderRuleGroundable::setAtomSearchersDefault(Atom* atom, unsigned orginalPosition) {
-	Predicate* predicate=atom->getPredicate();
-	PredicateExtension* predicateExtension = predicateExtTable->getPredicateExt(predicate);
-	for(auto tablePair:predicate_searchInsert_table[orginalPosition]){
-		unsigned table=tablePair.first;
-		IndexingStructure* atomSearcher;
-		if (componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex()))
-			atomSearcher=predicateExtension->addAtomSearcher(table,DEFAULT_RECURSIVE,nullptr,true);
-		else
-			atomSearcher=predicateExtension->addAtomSearcher(table,DEFAULT,nullptr,false);
-		predicate_searchInsert_atomSearcher[orginalPosition].push_back(atomSearcher);
-	}
-}
-
-void OrderRuleGroundable::setAtomSearchersBoundAtom(Atom* atom, unsigned orginalPosition) {
-	PredicateExtension* predicateExtension = predicateExtTable->getPredicateExt(atom->getPredicate());
-	for(auto tablePair:predicate_searchInsert_table[orginalPosition]){
-		unsigned table=tablePair.first;
-		IndexingStructure* atomSearcher;
-		auto atomSearcherMAP=predicateExtension->getIndexingStructure(table,MAP);
-		auto atomSearcherHASH=predicateExtension->getIndexingStructure(table,HASHSET);
-		if(atomSearcherMAP!=nullptr)
-			atomSearcher=atomSearcherMAP;
-		else if(atomSearcherHASH!=nullptr)
-			atomSearcher=atomSearcherHASH;
-		else{
-			vector<unsigned> terms(1,0);
-			atomSearcher=predicateExtension->addAtomSearcher(table,MAP,&terms);
-		}
-		predicate_searchInsert_atomSearcher[orginalPosition].push_back(atomSearcher);
-	}
-}
-
-void OrderRuleGroundable::setAtomSearchers(Atom* atom, unsigned orginalPosition,unsigned indexingTerm1) {
-	Predicate* predicate=atom->getPredicate();
-	PredicateExtension* predicateExtension = predicateExtTable->getPredicateExt(predicate);
-	IndexingStructure* atomSearcher;
-	vector<unsigned> indexingTerm(2);
-	indexingTerm[0]=indexingTerm1;
-	for(auto tablePair:predicate_searchInsert_table[orginalPosition]){
-		unsigned table=tablePair.first;
-//		For FULL INDEXING ON EACH SINGLE ARGUMENT:
-//		atomSearcher=predicateExtension->addFullIndexAtomSearcher(table,(componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex())));
-		if (componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex()))
-			atomSearcher=predicateExtension->addAtomSearcher(table, MAP_HISTORY_VECTOR, &indexingTerm, true);
-		else
-			atomSearcher=predicateExtension->addAtomSearcher(table, &indexingTerm);
-	//	indexingArguments[position-currentRule->getSizeHead()][atomPos]=bestArg;
-	}
-}
-
-void OrderRuleGroundable::setAtomSearchers(Atom* atom, unsigned orginalPosition, unsigned indexingTerm1, unsigned indexingTerm2) {
-	Predicate* predicate=atom->getPredicate();
-	PredicateExtension* predicateExtension = predicateExtTable->getPredicateExt(predicate);
-	vector<unsigned> indexingTerm(2);
-	IndexingStructure* atomSearcher;
-	indexingTerm[0]=indexingTerm1;
-	indexingTerm[1]=indexingTerm2;
-	for(auto tablePair:predicate_searchInsert_table[orginalPosition]){
-		unsigned table=tablePair.first;
-//		For FULL INDEXING ON EACH SINGLE ARGUMENT:
-//		atomSearcher=predicateExtension->addFullIndexAtomSearcher(table,(componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex())));
-		if (componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex()))
-			atomSearcher=predicateExtension->addAtomSearcher(table, MAP_HISTORY_VECTOR, &indexingTerm, true);
-		else
-			atomSearcher=predicateExtension->addAtomSearcher(table, &indexingTerm);
-//	indexingArguments[position-currentRule->getSizeHead()][atomPos]=bestArg;
-	}
-}
+//bool CombinedCriterion::setAtomSearcher(Atom* atom, unsigned orginalPosition) {
+//	Predicate* predicate=atom->getPredicate();
+//	PredicateExtension* predicateExtension = predicateExtTable->getPredicateExt(predicate);
+//	predicate_searchInsert_atomSearcher[orginalPosition].clear();
+//	if(!positiveAtomsIndexingTerms[orginalPosition].empty()){
+//		cout<<"bbbbbbbbbbb"<<endl;
+//		for(auto tablePair:predicate_searchInsert_table[orginalPosition]){
+//			unsigned table=tablePair.first;
+//			IndexingStructure* atomSearcher;
+//			if (componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex()))
+//				atomSearcher=predicateExtension->addAtomSearcher(table,DEFAULT_RECURSIVE,nullptr,true);
+//			else
+//				atomSearcher=predicateExtension->addAtomSearcher(table,DEFAULT,nullptr,false);
+//			predicate_searchInsert_atomSearcher[orginalPosition].push_back(atomSearcher);
+//		}
+//	}
+//	else if(positiveAtomsIndexingTerms[orginalPosition].size()==predicate->getArity()){
+//		for(auto tablePair:predicate_searchInsert_table[orginalPosition]){
+//			unsigned table=tablePair.first;
+//			IndexingStructure* atomSearcher;
+//			auto atomSearcherMAP=predicateExtension->getIndexingStructure(table,MAP);
+//			auto atomSearcherHASH=predicateExtension->getIndexingStructure(table,HASHSET);
+//			if(atomSearcherMAP!=nullptr)
+//				atomSearcher=atomSearcherMAP;
+//			else if(atomSearcherHASH!=nullptr)
+//				atomSearcher=atomSearcherHASH;
+//			else{
+//				vector<unsigned> terms(1,0);
+//				atomSearcher=predicateExtension->addAtomSearcher(table,MAP,&terms);
+//			}
+//			predicate_searchInsert_atomSearcher[orginalPosition].push_back(atomSearcher);
+//		}
+//	}
+//	if(!positiveAtomsIndexingTerms[orginalPosition].empty() && positiveAtomsIndexingTerms[orginalPosition].size()!=predicate->getArity()){
+//		Predicate* predicate=atom->getPredicate();
+//		PredicateExtension* predicateExtension = predicateExtTable->getPredicateExt(predicate);
+//		IndexingStructure* atomSearcher;
+//		vector<unsigned> indexingTerm=positiveAtomsIndexingTerms[orginalPosition];
+//		predicate_searchInsert_atomSearcher[orginalPosition].clear();
+//		for(auto tablePair:predicate_searchInsert_table[orginalPosition]){
+//			unsigned table=tablePair.first;
+//	//		For FULL INDEXING ON EACH SINGLE ARGUMENT:
+//	//		atomSearcher=predicateExtension->addFullIndexAtomSearcher(table,(componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex())));
+//			if (componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex()))
+//				atomSearcher=predicateExtension->addAtomSearcher(table, MAP_HISTORY_VECTOR, &indexingTerm, true);
+//			else
+//				atomSearcher=predicateExtension->addAtomSearcher(table, &indexingTerm);
+//			predicate_searchInsert_atomSearcher[orginalPosition].push_back(atomSearcher);
+//		//	indexingArguments[position-currentRule->getSizeHead()][atomPos]=bestArg;
+//		}
+//		return true;
+//	}
+////	return false;
+//}
 
 }
 }
