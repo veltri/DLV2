@@ -108,7 +108,7 @@ public:
 	virtual ~CombinedCriterion(){}
 	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
 	virtual void update(Atom* atomAdded, unsigned originalPosition){updateVariableSelectivity(atomAdded);};
-//	virtual bool setAtomSearcher(Atom* atom, unsigned orginalPosition);
+	virtual bool setAtomSearcher(Atom* atom, unsigned orginalPosition);
 protected:
 	void computeVariablesDomains();
 	void updateVariableSelectivity(Atom* atomAdded);

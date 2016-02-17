@@ -917,11 +917,13 @@ void BackTrackingGrounder::groundChoice(bool& find_new_true_atom,bool& ground_ne
 }
 
 void BackTrackingGrounder::createAtomSearchersForPredicateBody(unsigned position, unsigned atomPos, Predicate* predicate, unsigned sizeRule, unordered_set<index_object>* componentPredicateInHead){
+	if(!predicate_searchInsert_atomSearcher[position].empty() && atomPos==0){
+		return;
+	}
 	PredicateExtension* predicateExtension = predicateExtTable->getPredicateExt(predicate);
 	for(auto tablePair:predicate_searchInsert_table[position]){
 		unsigned table=tablePair.first;
 		predicateExtension->getAtomSearcher(table)->setSizeResultVector(sizeRule);
-//		if(predicate_searchInsert_atomSearcher[position].empty()){
 			IndexingStructure* atomSearcher;
 			if(boundTermsInAtoms[position-currentRule->getSizeHead()][atomPos].size()==predicate->getArity()){
 				auto atomSearcherMAP=predicateExtension->getIndexingStructure(table,MAP);
@@ -975,7 +977,6 @@ void BackTrackingGrounder::createAtomSearchersForPredicateBody(unsigned position
 			}
 			predicate_searchInsert_atomSearcher[position].push_back(atomSearcher);
 		}
-//	}
 }
 
 } /* namespace grounder */

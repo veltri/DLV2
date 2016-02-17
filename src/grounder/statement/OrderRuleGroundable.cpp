@@ -789,27 +789,7 @@ double SemiJoinIndexingArgumentsOrderRuleGroundable::assignWeightPositiveClassic
 	}
 	double semiJoinSize=sizeTablesToSearch*prod;
 //	cout<<"SemiJoin: "<<semiJoinSize<<endl;
-
-	double max=0;
-	double secondMax=0;
-	double bestIndex=1;
-	for(unsigned i=0;i<atom->getTermsSize();++i){
-		if(Utils::isContained(variablesInTerms[originalPosition][i],variablesInTheBody)){
-			if(boundArgumentsSelectivities[originalPosition][i]>max){
-				secondMax=max;
-				max=boundArgumentsSelectivities[originalPosition][i];
-			}
-			else if(boundArgumentsSelectivities[originalPosition][i]==max){
-				secondMax=max;
-			}
-		}
-	}
-	if(max>0 && secondMax>0 && (1-max/sizeTablesToSearch)<DOUBLE_INDEX_THRESHOLD){
-		bestIndex=(1-((max*secondMax)/sizeTablesToSearch));
-	}
-	else if(max>0){
-		bestIndex=(1-max/sizeTablesToSearch);
-	}
+	double bestIndex=CombinedCriterion::computeBestIndexingTerms(atom,originalPosition);
 //	cout<<"Best: "<<bestIndex<<endl;
 
 	return semiJoinSize*bestIndex;
@@ -978,12 +958,10 @@ double CombinedCriterionAdvanced::assignWeightPositiveClassicalLit(Atom* atom,un
 	return combinedCriterion*bestIndex*outputVariablesBound;
 }
 
-//bool CombinedCriterion::setAtomSearcher(Atom* atom, unsigned orginalPosition) {
-//	Predicate* predicate=atom->getPredicate();
+bool CombinedCriterion::setAtomSearcher(Atom* atom, unsigned orginalPosition) {
+	Predicate* predicate=atom->getPredicate();
 //	PredicateExtension* predicateExtension = predicateExtTable->getPredicateExt(predicate);
-//	predicate_searchInsert_atomSearcher[orginalPosition].clear();
 //	if(!positiveAtomsIndexingTerms[orginalPosition].empty()){
-//		cout<<"bbbbbbbbbbb"<<endl;
 //		for(auto tablePair:predicate_searchInsert_table[orginalPosition]){
 //			unsigned table=tablePair.first;
 //			IndexingStructure* atomSearcher;
@@ -991,7 +969,7 @@ double CombinedCriterionAdvanced::assignWeightPositiveClassicalLit(Atom* atom,un
 //				atomSearcher=predicateExtension->addAtomSearcher(table,DEFAULT_RECURSIVE,nullptr,true);
 //			else
 //				atomSearcher=predicateExtension->addAtomSearcher(table,DEFAULT,nullptr,false);
-//			predicate_searchInsert_atomSearcher[orginalPosition].push_back(atomSearcher);
+//			predicate_searchInsert_atomSearcher[orginalPosition+rule->getSizeHead()].push_back(atomSearcher);
 //		}
 //	}
 //	else if(positiveAtomsIndexingTerms[orginalPosition].size()==predicate->getArity()){
@@ -1008,30 +986,30 @@ double CombinedCriterionAdvanced::assignWeightPositiveClassicalLit(Atom* atom,un
 //				vector<unsigned> terms(1,0);
 //				atomSearcher=predicateExtension->addAtomSearcher(table,MAP,&terms);
 //			}
-//			predicate_searchInsert_atomSearcher[orginalPosition].push_back(atomSearcher);
+//			predicate_searchInsert_atomSearcher[orginalPosition+rule->getSizeHead()].push_back(atomSearcher);
 //		}
 //	}
-//	if(!positiveAtomsIndexingTerms[orginalPosition].empty() && positiveAtomsIndexingTerms[orginalPosition].size()!=predicate->getArity()){
-//		Predicate* predicate=atom->getPredicate();
-//		PredicateExtension* predicateExtension = predicateExtTable->getPredicateExt(predicate);
-//		IndexingStructure* atomSearcher;
-//		vector<unsigned> indexingTerm=positiveAtomsIndexingTerms[orginalPosition];
-//		predicate_searchInsert_atomSearcher[orginalPosition].clear();
-//		for(auto tablePair:predicate_searchInsert_table[orginalPosition]){
-//			unsigned table=tablePair.first;
-//	//		For FULL INDEXING ON EACH SINGLE ARGUMENT:
-//	//		atomSearcher=predicateExtension->addFullIndexAtomSearcher(table,(componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex())));
-//			if (componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex()))
-//				atomSearcher=predicateExtension->addAtomSearcher(table, MAP_HISTORY_VECTOR, &indexingTerm, true);
-//			else
-//				atomSearcher=predicateExtension->addAtomSearcher(table, &indexingTerm);
-//			predicate_searchInsert_atomSearcher[orginalPosition].push_back(atomSearcher);
-//		//	indexingArguments[position-currentRule->getSizeHead()][atomPos]=bestArg;
-//		}
-//		return true;
-//	}
-////	return false;
-//}
+	if(!positiveAtomsIndexingTerms[orginalPosition].empty() && positiveAtomsIndexingTerms[orginalPosition].size()<predicate->getArity()){
+		Predicate* predicate=atom->getPredicate();
+		PredicateExtension* predicateExtension = predicateExtTable->getPredicateExt(predicate);
+		IndexingStructure* atomSearcher;
+		vector<unsigned> indexingTerm=positiveAtomsIndexingTerms[orginalPosition];
+		predicate_searchInsert_atomSearcher[orginalPosition].clear();
+		for(auto tablePair:predicate_searchInsert_table[orginalPosition]){
+			unsigned table=tablePair.first;
+	//		For FULL INDEXING ON EACH SINGLE ARGUMENT:
+	//		atomSearcher=predicateExtension->addFullIndexAtomSearcher(table,(componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex())));
+			if (componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex()))
+				atomSearcher=predicateExtension->addAtomSearcher(table, MAP_HISTORY_VECTOR, &indexingTerm, true);
+			else
+				atomSearcher=predicateExtension->addAtomSearcher(table, &indexingTerm);
+			predicate_searchInsert_atomSearcher[orginalPosition+rule->getSizeHead()].push_back(atomSearcher);
+		//	indexingArguments[position-currentRule->getSizeHead()][atomPos]=bestArg;
+		}
+		return true;
+	}
+	return false;
+}
 
 }
 }
