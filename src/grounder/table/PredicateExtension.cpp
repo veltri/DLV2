@@ -61,8 +61,8 @@ IndexingStructure* PredicateExtension::addAtomSearcher(unsigned table, vector<un
 		if(indexType==-1){
 			if(predicate->getArity()==1 && indexType!=DEFAULT_RECURSIVE) //StatementDependency::getInstance()->isOnlyInHead(predicate->getIndex()) ||
 				indexType=HASHSET;
-			else if(indexingTerms->size()>1)
-				indexType=DOUBLEMAP;
+//			else if(indexingTerms->size()>1)
+//				indexType=DOUBLEMAP;
 			else
 				indexType=Options::globalOptions()->getIndexType();
 		}

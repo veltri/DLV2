@@ -556,12 +556,11 @@ void ProgramGrounder::setDefaultAtomSearchers(Rule* rule, unordered_set<index_ob
 //	for(unsigned atom=0;atom<predicate_searchInsert_table.size();atom++){
 //		cout<<"Atom: "<<atom<<" --> ";
 //		for(auto i:predicate_searchInsert_table[atom]){
-//			cout<<i<<" ";
+//			cout<<i.first<<" ";
 //		}
 //		cout<<endl;
 //	}
 //	cout<<endl;
-//
 //	for(unsigned atom=0;atom<predicate_searchInsert_atomSearcher.size();atom++){
 //		cout<<"Atom: "<<atom<<" --> ";
 //		for(auto i:predicate_searchInsert_atomSearcher[atom]){

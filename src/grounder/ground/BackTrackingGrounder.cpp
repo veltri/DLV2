@@ -917,66 +917,71 @@ void BackTrackingGrounder::groundChoice(bool& find_new_true_atom,bool& ground_ne
 }
 
 void BackTrackingGrounder::createAtomSearchersForPredicateBody(unsigned position, unsigned atomPos, Predicate* predicate, unsigned sizeRule, unordered_set<index_object>* componentPredicateInHead){
+	PredicateExtension* predicateExtension = predicateExtTable->getPredicateExt(predicate);
 	if(!predicate_searchInsert_atomSearcher[position].empty() && atomPos==0){
+		for(auto tablePair:predicate_searchInsert_table[position]){
+			unsigned table=tablePair.first;
+			predicateExtension->getAtomSearcher(table)->setSizeResultVector(sizeRule);
+//			indexingArguments[position-currentRule->getSizeHead()][atomPos]=??;
+		}
 		return;
 	}
-	PredicateExtension* predicateExtension = predicateExtTable->getPredicateExt(predicate);
 	for(auto tablePair:predicate_searchInsert_table[position]){
 		unsigned table=tablePair.first;
 		predicateExtension->getAtomSearcher(table)->setSizeResultVector(sizeRule);
-			IndexingStructure* atomSearcher;
-			if(boundTermsInAtoms[position-currentRule->getSizeHead()][atomPos].size()==predicate->getArity()){
-				auto atomSearcherMAP=predicateExtension->getIndexingStructure(table,MAP);
-				auto atomSearcherHASH=predicateExtension->getIndexingStructure(table,HASHSET);
-				if(atomSearcherMAP!=nullptr)
-					atomSearcher=atomSearcherMAP;
-				else if(atomSearcherHASH!=nullptr)
-					atomSearcher=atomSearcherHASH;
-				else{
-					vector<unsigned> terms(1,0);
-					atomSearcher=predicateExtension->addAtomSearcher(table,MAP,&terms);
-				}
-			}
-			else if(!boundTermsInAtoms[position-currentRule->getSizeHead()][atomPos].empty()){
-				int indexingTermSetByUser=Options::globalOptions()->getPredicateIndexTerm(predicate->getName());
-				unsigned bestArg=0;
-				unsigned bestSelectivityArg=0;
-				unsigned nextBestArg=0;
-				unsigned nextBestSelectivityArg=0;
-				PredicateInformation* predicateInfo=predicateExtTable->getPredicateExt(predicate)->getPredicateInformation();
-				for(auto boundArg:boundTermsInAtoms[position-currentRule->getSizeHead()][atomPos]){
-					if(indexingTermSetByUser>=0 && boundArg==unsigned(indexingTermSetByUser)){
-						bestArg=indexingTermSetByUser;
-						break;
-					}
-					if(predicateInfo->getSelectivity(boundArg)>bestSelectivityArg){
-						bestSelectivityArg=predicateInfo->getSelectivity(boundArg);
-						bestArg=boundArg;
-					}
-					else if(predicateInfo->getSelectivity(boundArg)>nextBestSelectivityArg){
-						nextBestSelectivityArg=predicateInfo->getSelectivity(boundArg);
-						nextBestArg=boundArg;
-					}
-				}
-				vector<unsigned> indexingTerm(2);
-				indexingTerm[0]=bestArg;
-				indexingTerm[1]=nextBestArg;
-	//			For FULL INDEXING ON EACH SINGLE ARGUMENT:
-	//			atomSearcher=predicateExtension->addFullIndexAtomSearcher(table,(componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex())));
-				if (componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex()))
-					atomSearcher=predicateExtension->addAtomSearcher(table, MAP_HISTORY_VECTOR, &indexingTerm, true);
-				else
-					atomSearcher=predicateExtension->addAtomSearcher(table, &indexingTerm);
-				indexingArguments[position-currentRule->getSizeHead()][atomPos]=bestArg;
-			}
+		IndexingStructure* atomSearcher;
+		if(boundTermsInAtoms[position-currentRule->getSizeHead()][atomPos].size()==predicate->getArity()){
+			auto atomSearcherMAP=predicateExtension->getIndexingStructure(table,MAP);
+			auto atomSearcherHASH=predicateExtension->getIndexingStructure(table,HASHSET);
+			if(atomSearcherMAP!=nullptr)
+				atomSearcher=atomSearcherMAP;
+			else if(atomSearcherHASH!=nullptr)
+				atomSearcher=atomSearcherHASH;
 			else{
-				if (componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex()))
-					atomSearcher=predicateExtension->addAtomSearcher(table,DEFAULT_RECURSIVE,nullptr,true);
-				else
-					atomSearcher=predicateExtension->addAtomSearcher(table,DEFAULT,nullptr,false);
+				vector<unsigned> terms(1,0);
+				atomSearcher=predicateExtension->addAtomSearcher(table,MAP,&terms);
 			}
-			predicate_searchInsert_atomSearcher[position].push_back(atomSearcher);
 		}
+		else if(!boundTermsInAtoms[position-currentRule->getSizeHead()][atomPos].empty()){
+			int indexingTermSetByUser=Options::globalOptions()->getPredicateIndexTerm(predicate->getName());
+			unsigned bestArg=0;
+			unsigned bestSelectivityArg=0;
+			unsigned nextBestArg=0;
+			unsigned nextBestSelectivityArg=0;
+			PredicateInformation* predicateInfo=predicateExtTable->getPredicateExt(predicate)->getPredicateInformation();
+			for(auto boundArg:boundTermsInAtoms[position-currentRule->getSizeHead()][atomPos]){
+				if(indexingTermSetByUser>=0 && boundArg==unsigned(indexingTermSetByUser)){
+					bestArg=indexingTermSetByUser;
+					break;
+				}
+				if(predicateInfo->getSelectivity(boundArg)>bestSelectivityArg){
+					bestSelectivityArg=predicateInfo->getSelectivity(boundArg);
+					bestArg=boundArg;
+				}
+				else if(predicateInfo->getSelectivity(boundArg)>nextBestSelectivityArg){
+					nextBestSelectivityArg=predicateInfo->getSelectivity(boundArg);
+					nextBestArg=boundArg;
+				}
+			}
+			vector<unsigned> indexingTerm(2);
+			indexingTerm[0]=bestArg;
+			indexingTerm[1]=nextBestArg;
+//			For FULL INDEXING ON EACH SINGLE ARGUMENT:
+//			atomSearcher=predicateExtension->addFullIndexAtomSearcher(table,(componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex())));
+			if (componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex()))
+				atomSearcher=predicateExtension->addAtomSearcher(table, MAP_HISTORY_VECTOR, &indexingTerm, true);
+			else
+				atomSearcher=predicateExtension->addAtomSearcher(table, &indexingTerm);
+//			indexingArguments[position-currentRule->getSizeHead()][atomPos]=bestArg;
+		}
+		else{
+			if (componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex()))
+				atomSearcher=predicateExtension->addAtomSearcher(table,DEFAULT_RECURSIVE,nullptr,true);
+			else
+				atomSearcher=predicateExtension->addAtomSearcher(table,DEFAULT,nullptr,false);
+		}
+		predicate_searchInsert_atomSearcher[position].push_back(atomSearcher);
+	}
 }
 
 } /* namespace grounder */

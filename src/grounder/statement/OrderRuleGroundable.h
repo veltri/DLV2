@@ -68,13 +68,13 @@ protected:
 
 	/// For each predicate in the current rule this vector stores the atom searchers of insertion and look-up for head atoms and
 	/// the atom searchers of look-up for body atoms
-	vector<vector<IndexingStructure*>> predicate_searchInsert_atomSearcher;
+	vector<vector<IndexingStructure*>> orderdedPredicateSearchInsertAtomSearcher;
 
 	//Set of recursive predicates
 	unordered_set<index_object>* componentPredicateInHead;
 
 	void computeDictionaryIntersection(Atom* atom);
-	virtual bool setAtomSearcher(Atom* atom, unsigned orginalPosition){return false;};
+	virtual bool setAtomSearcher(Atom* atom, unsigned orginalPosition,unsigned newPosition){return false;};
 
 private:
 	void applyBinderSplittingRewriting();
@@ -108,7 +108,7 @@ public:
 	virtual ~CombinedCriterion(){}
 	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
 	virtual void update(Atom* atomAdded, unsigned originalPosition){updateVariableSelectivity(atomAdded);};
-	virtual bool setAtomSearcher(Atom* atom, unsigned orginalPosition);
+	virtual bool setAtomSearcher(Atom* atom, unsigned orginalPosition,unsigned newPosition);
 protected:
 	void computeVariablesDomains();
 	void updateVariableSelectivity(Atom* atomAdded);
