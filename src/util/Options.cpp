@@ -71,7 +71,7 @@ namespace DLV2
 #define OPTIONID_ruleTime ('z' + 45)
 #define OPTIONID_checkFactDuplicate ('z' + 46)
 #define OPTIONID_rewriteArith ('z' + 47)
-#define OPTIONID_binderSplitting ('z' + 48)
+#define OPTIONID_anonymousFilter ('z' + 48)
 #define OPTIONID_predicateToFilter ('z' + 49)
 
 
@@ -132,7 +132,7 @@ Options::Options():
 		ruleTime(false),
 		checkFactDuplicate(false),
 		rewriteArith(false),
-		enabledBinderSplitting(false)
+		disabledAnonymousFilter(false)
 {
 
 }
@@ -159,7 +159,7 @@ Options::Options(
 		ruleTime(false),
 		checkFactDuplicate(false),
 		rewriteArith(false),
-		enabledBinderSplitting(false)
+		disabledAnonymousFilter(false)
 
 {
 
@@ -216,7 +216,7 @@ Options::init(
 		{"rule-time",no_argument, NULL, OPTIONID_ruleTime},
 		{"check-facts-duplication",no_argument, NULL, OPTIONID_checkFactDuplicate},
 		{"rewrite-arith",no_argument, NULL, OPTIONID_rewriteArith},
-		{"binder-splitting",no_argument, NULL, OPTIONID_binderSplitting},
+		{"no-anonymous-filter",no_argument, NULL, OPTIONID_anonymousFilter},
 		{"filter",required_argument, NULL, OPTIONID_predicateToFilter},
 
         // Required at end of array. 
@@ -361,8 +361,8 @@ Options::init(
             	rewriteArith=true;
 				break;
 
-            case OPTIONID_binderSplitting:
-            	enabledBinderSplitting=true;
+            case OPTIONID_anonymousFilter:
+            	disabledAnonymousFilter=true;
 				break;
 
             case OPTIONID_predicateToFilter:

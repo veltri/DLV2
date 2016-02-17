@@ -139,7 +139,7 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchTy
 //		cerr<<endl;
 //	);
 
-	if(Options::globalOptions()->isEnabledBinderSplitting())
+	if(!Options::globalOptions()->isDisabledAnonymousFilter())
 		applyBinderSplittingRewriting();
 
 	return orderedPositions;

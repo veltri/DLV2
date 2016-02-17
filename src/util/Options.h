@@ -130,15 +130,15 @@ namespace DLV2
 			return rewriteArith;
 		}
 
-		bool isEnabledBinderSplitting() const {
-			return enabledBinderSplitting;
-		}
-
-		void setEnabledBinderSplitting(bool enabledBinderSplitting) {
-			this->enabledBinderSplitting = enabledBinderSplitting;
-		}
-
 		string getPredicateToFilter(){return predicateToFilter;}
+
+		bool isDisabledAnonymousFilter() const {
+			return disabledAnonymousFilter;
+		}
+
+		void setDisabledAnonymousFilter(bool disabledAnonymousFilter) {
+			this->disabledAnonymousFilter = disabledAnonymousFilter;
+		}
 
     private:
 
@@ -214,7 +214,7 @@ namespace DLV2
 
     	bool rewriteArith;
 
-    	bool enabledBinderSplitting;
+    	bool disabledAnonymousFilter;
 
     	string predicateToFilter;
     };

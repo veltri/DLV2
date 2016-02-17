@@ -99,7 +99,7 @@ void BackJumpingGrounder::inizialize(Rule* rule, unordered_set<index_object>* co
 		}
 	}
 
-	if(Options::globalOptions()->isEnabledBinderSplitting()){
+	if(!Options::globalOptions()->isDisabledAnonymousFilter()){
 		position=0;
 		for (auto it=currentRule->getBeginBody();it!=currentRule->getEndBody(); ++it,++position) {
 			Atom* atom=*it;
@@ -124,16 +124,16 @@ void BackJumpingGrounder::inizialize(Rule* rule, unordered_set<index_object>* co
 					outputVariablesInAtoms[position].clear();
 			}
 		}
-		position=0;
-		for (auto it=currentRule->getBeginBody();it!=currentRule->getEndBody(); ++it,++position) {
-			if(outputVariablesInAtoms[position].size()>0){
-				cerr<<"---> Binder: ";(*it)->print(cerr);cerr<<" ";
-				for(auto i:outputVariablesInAtoms[position]){
-					cerr<<i<<" ";
-				}
-				cerr<<endl;
-			}
-		}
+//		position=0;
+//		for (auto it=currentRule->getBeginBody();it!=currentRule->getEndBody(); ++it,++position) {
+//			if(outputVariablesInAtoms[position].size()>0){
+//				cerr<<"---> Binder: ";(*it)->print(cerr);cerr<<" ";
+//				for(auto i:outputVariablesInAtoms[position]){
+//					cerr<<i<<" ";
+//				}
+//				cerr<<endl;
+//			}
+//		}
 	}
 
 
