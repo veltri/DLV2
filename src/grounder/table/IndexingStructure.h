@@ -296,8 +296,6 @@ struct HashVectorOfTerms{
 	}
 
 	inline bool operator()(const vector<index_object>& obj1, const vector<index_object>& obj2) const {
-//		if(obj1.size()!=obj2.size())
-//			return false;
 		for(unsigned i=0;i<obj1.size();++i)
 			if(obj1[i]!=obj2[i])
 				return false;

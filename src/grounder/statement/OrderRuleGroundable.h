@@ -103,8 +103,8 @@ private:
 
 class CombinedCriterion : public AllOrderRuleGroundable {
 public:
-	CombinedCriterion(Rule* rule):AllOrderRuleGroundable(rule),DOUBLE_INDEX_THRESHOLD(0.3){positiveAtomsIndexingTerms.resize(rule->getSizeBody());}
-	CombinedCriterion(Rule* rule,Priority p):AllOrderRuleGroundable(rule,p),DOUBLE_INDEX_THRESHOLD(0.3){positiveAtomsIndexingTerms.resize(rule->getSizeBody());}
+	CombinedCriterion(Rule* rule):AllOrderRuleGroundable(rule),DOUBLE_INDEX_THRESHOLD(2){positiveAtomsIndexingTerms.resize(rule->getSizeBody());}
+	CombinedCriterion(Rule* rule,Priority p):AllOrderRuleGroundable(rule,p),DOUBLE_INDEX_THRESHOLD(2){positiveAtomsIndexingTerms.resize(rule->getSizeBody());}
 	virtual ~CombinedCriterion(){}
 	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
 	virtual void update(Atom* atomAdded, unsigned originalPosition){updateVariableSelectivity(atomAdded);};

@@ -421,21 +421,23 @@ double CombinedCriterion::computeBestIndexingTerms(Atom* atom, unsigned original
 	unsigned bestTerm=0;
 	unsigned secondBestTerm=0;
 	positiveAtomsIndexingTerms[originalPosition].clear();
+//	atom->print();cout<<endl;
 	for(unsigned i=0;i<atom->getTermsSize();++i){
 		if(!variablesInTerms[originalPosition][i].empty() && Utils::isContained(variablesInTerms[originalPosition][i],variablesInTheBody)){
+//			atom->getTerm(i)->print();cout<<" "<<boundArgumentsSelectivities[originalPosition][i]<<endl;
 			if(boundArgumentsSelectivities[originalPosition][i]>max){
 				secondBestTerm=bestTerm;
-				secondMax=max;
 				bestTerm=i;
+				secondMax=max;
 				max=boundArgumentsSelectivities[originalPosition][i];
 			}
-			else if(boundArgumentsSelectivities[originalPosition][i]==max){
+			else if(boundArgumentsSelectivities[originalPosition][i]==max || boundArgumentsSelectivities[originalPosition][i]>secondMax){
 				secondMax=max;
 				secondBestTerm=bestTerm;
 			}
 		}
 	}
-	if(max>0 && secondMax>0 && (1-max/sizeTablesToSearch)<DOUBLE_INDEX_THRESHOLD){
+	if(max>0 && secondMax>0){ // && (1-max/sizeTablesToSearch)<DOUBLE_INDEX_THRESHOLD){
 		bestIndex=(1-((max*secondMax)/sizeTablesToSearch));
 		positiveAtomsIndexingTerms[originalPosition].push_back(bestTerm);
 		positiveAtomsIndexingTerms[originalPosition].push_back(secondBestTerm);
@@ -993,10 +995,18 @@ bool CombinedCriterion::setAtomSearcher(Atom* atom, unsigned orginalPosition,uns
 			vector<unsigned> indexingTerm=positiveAtomsIndexingTerms[orginalPosition];
 	//		For FULL INDEXING ON EACH SINGLE ARGUMENT:
 	//		atomSearcher=predicateExtension->addFullIndexAtomSearcher(table,(componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex())));
-			if (componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex()))
-				atomSearcher=predicateExtension->addAtomSearcher(table, MAP_HISTORY_VECTOR, &indexingTerm, true);
-			else
-				atomSearcher=predicateExtension->addAtomSearcher(table, &indexingTerm);
+			if (componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex())){
+				if(indexingTerm.size()>1)
+					atomSearcher=predicateExtension->addAtomSearcher(table, MAP_HISTORY_VECTOR, &indexingTerm, true);
+				else
+					atomSearcher=predicateExtension->addAtomSearcher(table, MAP_PAIR_HISTORY_VECTOR, &indexingTerm);
+			}
+			else{
+				if(indexingTerm.size()>1)
+					atomSearcher=predicateExtension->addAtomSearcher(table, DOUBLEMAP, &indexingTerm);
+				else
+					atomSearcher=predicateExtension->addAtomSearcher(table, &indexingTerm);
+			}
 			orderdedPredicateSearchInsertAtomSearcher[newPosition+rule->getSizeHead()].push_back(atomSearcher);
 		//	indexingArguments[position-currentRule->getSizeHead()][atomPos]=bestArg;
 		}
