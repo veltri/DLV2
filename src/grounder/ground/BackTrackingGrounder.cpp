@@ -955,10 +955,12 @@ void BackTrackingGrounder::createAtomSearchersForPredicateBody(unsigned position
 					break;
 				}
 				if(predicateInfo->getSelectivity(boundArg)>bestSelectivityArg){
+					nextBestSelectivityArg=bestSelectivityArg;
+					nextBestArg=bestArg;
 					bestSelectivityArg=predicateInfo->getSelectivity(boundArg);
 					bestArg=boundArg;
 				}
-				else if(predicateInfo->getSelectivity(boundArg)>nextBestSelectivityArg){
+				else if(predicateInfo->getSelectivity(boundArg)==bestSelectivityArg || predicateInfo->getSelectivity(boundArg)>nextBestSelectivityArg){
 					nextBestSelectivityArg=predicateInfo->getSelectivity(boundArg);
 					nextBestArg=boundArg;
 				}
@@ -966,13 +968,27 @@ void BackTrackingGrounder::createAtomSearchersForPredicateBody(unsigned position
 			vector<unsigned> indexingTerm(2);
 			indexingTerm[0]=bestArg;
 			indexingTerm[1]=nextBestArg;
+//			cout<<"---> Predicate: "<<predicate->getName()<<endl;
+//			for(auto e: indexingTerm)
+//				cout<<e<<" ";
+//			cout<<endl;
 //			For FULL INDEXING ON EACH SINGLE ARGUMENT:
 //			atomSearcher=predicateExtension->addFullIndexAtomSearcher(table,(componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex())));
-			if (componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex()))
-				atomSearcher=predicateExtension->addAtomSearcher(table, MAP_HISTORY_VECTOR, &indexingTerm, true);
-			else
-				atomSearcher=predicateExtension->addAtomSearcher(table, &indexingTerm);
 //			indexingArguments[position-currentRule->getSizeHead()][atomPos]=bestArg;
+			if (componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex())){
+//				if(nextBestSelectivityArg>0)
+//					atomSearcher=predicateExtension->addAtomSearcher(table, MAP_HISTORY_VECTOR, &indexingTerm, true);
+//				else
+					atomSearcher=predicateExtension->addAtomSearcher(table, MAP_PAIR_HISTORY_VECTOR, &indexingTerm);
+			}
+			else{
+//				if(nextBestSelectivityArg>0){
+////					cout<<"**** DOUBLE"<<endl;
+//					atomSearcher=predicateExtension->addAtomSearcher(table, DOUBLEMAP, &indexingTerm);
+//				}
+//				else
+					atomSearcher=predicateExtension->addAtomSearcher(table, &indexingTerm);
+			}
 		}
 		else{
 			if (componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex()))

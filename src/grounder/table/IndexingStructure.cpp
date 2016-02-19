@@ -67,9 +67,9 @@ bool AtomSearcher::matchTerm(Term *generic, Term *toMatch, var_assignment& varAs
 		termsToProcess.pop_back();
 		Term* genericTerm=pair.first;
 		Term* termToMatch=pair.second;
-		TermType genericTermType=genericTerm->getType();
+//		TermType genericTermType=genericTerm->getType();
 		TermType termToMatchType=termToMatch->getType();
-		if((termToMatchType==TermType::NUMERIC_CONSTANT || termToMatchType==TermType::STRING_CONSTANT || termToMatchType==TermType::SYMBOLIC_CONSTANT))
+		if(termToMatchType==TermType::NUMERIC_CONSTANT || termToMatchType==TermType::STRING_CONSTANT || termToMatchType==TermType::SYMBOLIC_CONSTANT)
 			return false;
 		else if (termToMatchType==TermType::VARIABLE) {
 			index_object index=termToMatch->getLocalVariableIndex();
@@ -98,7 +98,7 @@ bool AtomSearcher::matchTerm(Term *generic, Term *toMatch, var_assignment& varAs
 			return false;
 		}
 
-		else if(genericTermType==TermType::FUNCTION){
+		else if(termToMatchType==TermType::FUNCTION){
 			if(termToMatchType!=TermType::FUNCTION) return false;
 			if(termToMatch->getName().compare(genericTerm->getName()) != 0)return false;
 			if(termToMatch->getTermsSize() != genericTerm->getTermsSize())return false;

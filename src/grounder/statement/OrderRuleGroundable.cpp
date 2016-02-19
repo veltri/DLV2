@@ -432,8 +432,8 @@ double CombinedCriterion::computeBestIndexingTerms(Atom* atom, unsigned original
 				max=boundArgumentsSelectivities[originalPosition][i];
 			}
 			else if(boundArgumentsSelectivities[originalPosition][i]==max || boundArgumentsSelectivities[originalPosition][i]>secondMax){
-				secondMax=max;
-				secondBestTerm=bestTerm;
+				secondMax=boundArgumentsSelectivities[originalPosition][i];
+				secondBestTerm=i;
 			}
 		}
 	}
@@ -993,6 +993,10 @@ bool CombinedCriterion::setAtomSearcher(Atom* atom, unsigned orginalPosition,uns
 			unsigned table=tablePair.first;
 			IndexingStructure* atomSearcher;
 			vector<unsigned> indexingTerm=positiveAtomsIndexingTerms[orginalPosition];
+//			cout<<"---> Predicate: "<<predicate->getName()<<endl;
+//			for(auto e: indexingTerm)
+//				cout<<e<<" ";
+//			cout<<endl;
 	//		For FULL INDEXING ON EACH SINGLE ARGUMENT:
 	//		atomSearcher=predicateExtension->addFullIndexAtomSearcher(table,(componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex())));
 			if (componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex())){
@@ -1002,8 +1006,10 @@ bool CombinedCriterion::setAtomSearcher(Atom* atom, unsigned orginalPosition,uns
 					atomSearcher=predicateExtension->addAtomSearcher(table, MAP_PAIR_HISTORY_VECTOR, &indexingTerm);
 			}
 			else{
-				if(indexingTerm.size()>1)
+				if(indexingTerm.size()>1){
+//					cout<<"**** DOUBLE"<<endl;
 					atomSearcher=predicateExtension->addAtomSearcher(table, DOUBLEMAP, &indexingTerm);
+				}
 				else
 					atomSearcher=predicateExtension->addAtomSearcher(table, &indexingTerm);
 			}
