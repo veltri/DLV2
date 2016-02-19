@@ -22,8 +22,13 @@ bool AtomSearcher::checkMatch(unsigned int id,Atom *genericAtom, Atom *templateA
 		Term* genericTerm=genericAtom->getTerm(i);
 		Term* termToMatch=templateAtom->getTerm(i);
 		if(termToMatch->getIndex() == genericTerm->getIndex()) continue;
-		if(!matchTerm(genericTerm,termToMatch,assignInTerm,variablesAdded,ruleInformation)){
-			return false;
+		if(genericTerm->getType()==TermType::FUNCTION ){
+			if(!matchTermFunctional(genericTerm,termToMatch,assignInTerm,variablesAdded,ruleInformation))
+				return false;
+		}
+		else{
+			if(!matchTerm(genericTerm,termToMatch,assignInTerm,variablesAdded,ruleInformation))
+				return false;
 		}
 	}
 
@@ -60,7 +65,7 @@ bool AtomSearcher::evaluateFastBuiltin(const RuleInformation& ruleInformation,in
 	return true;
 }
 
-bool AtomSearcher::matchTerm(Term *generic, Term *toMatch, var_assignment& varAssignment,vector<index_object>& addedVariables,const RuleInformation& ruleInformation){
+bool AtomSearcher::matchTermFunctional(Term *generic, Term *toMatch, var_assignment& varAssignment,vector<index_object>& addedVariables,const RuleInformation& ruleInformation){
 	list<pair<Term*,Term*>> termsToProcess;
 	termsToProcess.push_back({generic,toMatch});
 	while(!termsToProcess.empty()){
@@ -116,58 +121,42 @@ bool AtomSearcher::matchTerm(Term *generic, Term *toMatch, var_assignment& varAs
 	return true;
 }
 
-//bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, var_assignment& varAssignment,vector<index_object>& addedVariables,const RuleInformation& ruleInformation){
-//	TermType termToMatchType=termToMatch->getType();
-//	TermType genericTermType=genericTerm->getType();
-//	if((termToMatchType==TermType::NUMERIC_CONSTANT || termToMatchType==TermType::STRING_CONSTANT || termToMatchType==TermType::SYMBOLIC_CONSTANT))
-//		return false;
-//	else if (termToMatchType==TermType::VARIABLE) {
-//		index_object index=termToMatch->getLocalVariableIndex();
-//		if(ruleInformation.isCreatedDictionaryIntersection(index) && !ruleInformation.countInDictionaryIntersection(index,genericTerm)){
-//			return false;
-//		}
-//		Term* term=varAssignment[index];
-//		if(term!=nullptr){
-//			if( term->getIndex() == genericTerm->getIndex())
-//				return true;
-//			else
-//				return false;
-//		}
-//
-//		if(ruleInformation.isBounderBuiltin(index)){
-//			if(!evaluateFastBuiltin(ruleInformation, index, varAssignment, genericTerm))
-//				return false;
-//		}
-//
-//		varAssignment[index]=genericTerm;
-//		addedVariables.push_back(index);
-//		return true;
-//	}
-//	else if (termToMatchType==TermType::ANONYMOUS) return true;
-//
-//	else if(termToMatchType==TermType::ARITH){
-//		Term *new_term=termToMatch->substitute(varAssignment);
-//		assert_msg(new_term->isGround(),"Arith term not safe");
-//		termToMatch=new_term->calculate();
-//	}
-//
-//	else if(genericTermType==TermType::FUNCTION){
-//
-//		if(termToMatchType!=TermType::FUNCTION) return false;
-//		if(termToMatch->getName().compare(genericTerm->getName()) != 0)return false;
-//		if(termToMatch->getTermsSize() != genericTerm->getTermsSize())return false;
-//		for(unsigned int i=0;i<genericTerm->getTermsSize();++i){
-//			if(genericTerm->getTerm(i)->getIndex() == termToMatch->getTerm(i)->getIndex() ) continue;
-//			if(!matchTerm(genericTerm->getTerm(i),termToMatch->getTerm(i),varAssignment,addedVariables,ruleInformation))
-//				return false;
-//		}
-//
-//		return true;
-//	}
-//
-//	return false;
-//
-//}
+bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, var_assignment& varAssignment,vector<index_object>& addedVariables,const RuleInformation& ruleInformation){
+	TermType termToMatchType=termToMatch->getType();
+	if((termToMatchType==TermType::NUMERIC_CONSTANT || termToMatchType==TermType::STRING_CONSTANT || termToMatchType==TermType::SYMBOLIC_CONSTANT))
+		return false;
+	else if (termToMatchType==TermType::VARIABLE) {
+		index_object index=termToMatch->getLocalVariableIndex();
+		if(ruleInformation.isCreatedDictionaryIntersection(index) && !ruleInformation.countInDictionaryIntersection(index,genericTerm)){
+			return false;
+		}
+		Term* term=varAssignment[index];
+		if(term!=nullptr){
+			if( term->getIndex() == genericTerm->getIndex())
+				return true;
+			return false;
+		}
+
+		if(ruleInformation.isBounderBuiltin(index)){
+			if(!evaluateFastBuiltin(ruleInformation, index, varAssignment, genericTerm))
+				return false;
+		}
+
+		varAssignment[index]=genericTerm;
+		addedVariables.push_back(index);
+		return true;
+	}
+	else if (termToMatchType==TermType::ANONYMOUS) return true;
+
+	else if(termToMatchType==TermType::ARITH){
+		Term *new_term=termToMatch->substitute(varAssignment);
+		assert_msg(new_term->isGround(),"Arith term not safe");
+		termToMatch=new_term->calculate();
+	}
+
+	return false;
+
+}
 
 void AtomSearcher::firstMatch(unsigned id, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation,IndexingStructure* indexingStructure,unsigned arg,const vector<unsigned>& outputVariables,const pair<SearchType,unsigned>& searchSpecification) {
 	GeneralIterator* currentMatch=indexingStructure->computeMatchIterator(templateAtom,ruleInformation,searchSpecification,arg);

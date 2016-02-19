@@ -326,6 +326,8 @@ public:
 	/// a value of the variable term present in termToMatch
 	/// Return true if constant term are equal, else false
 	bool matchTerm(Term *genericTerm, Term *termToMatch, var_assignment& varAssignment,vector<index_object>& addedVariables,const RuleInformation& ruleInformation);
+	bool matchTermFunctional(Term *genericTerm, Term *termToMatch, var_assignment& varAssignment,vector<index_object>& addedVariables,const RuleInformation& ruleInformation);
+
 	/// This method given an iterator increases it in order to find matching atoms with the given atom
 	/// according to the current assignment.
 	bool computeMatch(unsigned int id,GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation,const vector<unsigned>& outputVariables);
