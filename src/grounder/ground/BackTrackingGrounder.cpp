@@ -976,17 +976,15 @@ void BackTrackingGrounder::createAtomSearchersForPredicateBody(unsigned position
 //			atomSearcher=predicateExtension->addFullIndexAtomSearcher(table,(componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex())));
 //			indexingArguments[position-currentRule->getSizeHead()][atomPos]=bestArg;
 			if (componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex())){
-//				if(nextBestSelectivityArg>0)
-//					atomSearcher=predicateExtension->addAtomSearcher(table, MAP_HISTORY_VECTOR, &indexingTerm, true);
-//				else
+				if(nextBestSelectivityArg>0)
 					atomSearcher=predicateExtension->addAtomSearcher(table, MAP_PAIR_HISTORY_VECTOR, &indexingTerm);
+				else
+					atomSearcher=predicateExtension->addAtomSearcher(table, MAP_HISTORY_VECTOR, &indexingTerm, true);
 			}
 			else{
-//				if(nextBestSelectivityArg>0){
-////					cout<<"**** DOUBLE"<<endl;
-//					atomSearcher=predicateExtension->addAtomSearcher(table, DOUBLEMAP, &indexingTerm);
-//				}
-//				else
+				if(nextBestSelectivityArg>0)
+					atomSearcher=predicateExtension->addAtomSearcher(table, DOUBLEMAP, &indexingTerm);
+				else
 					atomSearcher=predicateExtension->addAtomSearcher(table, &indexingTerm);
 			}
 		}

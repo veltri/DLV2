@@ -1001,15 +1001,13 @@ bool CombinedCriterion::setAtomSearcher(Atom* atom, unsigned orginalPosition,uns
 	//		atomSearcher=predicateExtension->addFullIndexAtomSearcher(table,(componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex())));
 			if (componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex())){
 				if(indexingTerm.size()>1)
-					atomSearcher=predicateExtension->addAtomSearcher(table, MAP_HISTORY_VECTOR, &indexingTerm, true);
-				else
 					atomSearcher=predicateExtension->addAtomSearcher(table, MAP_PAIR_HISTORY_VECTOR, &indexingTerm);
+				else
+					atomSearcher=predicateExtension->addAtomSearcher(table, MAP_HISTORY_VECTOR, &indexingTerm, true);
 			}
 			else{
-				if(indexingTerm.size()>1){
-//					cout<<"**** DOUBLE"<<endl;
+				if(indexingTerm.size()>1)
 					atomSearcher=predicateExtension->addAtomSearcher(table, DOUBLEMAP, &indexingTerm);
-				}
 				else
 					atomSearcher=predicateExtension->addAtomSearcher(table, &indexingTerm);
 			}

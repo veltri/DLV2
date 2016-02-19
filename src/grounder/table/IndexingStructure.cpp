@@ -22,8 +22,9 @@ bool AtomSearcher::checkMatch(unsigned int id,Atom *genericAtom, Atom *templateA
 		Term* genericTerm=genericAtom->getTerm(i);
 		Term* termToMatch=templateAtom->getTerm(i);
 		if(termToMatch->getIndex() == genericTerm->getIndex()) continue;
-		if(!matchTerm(genericTerm,termToMatch,assignInTerm,variablesAdded,ruleInformation))
+		if(!matchTerm(genericTerm,termToMatch,assignInTerm,variablesAdded,ruleInformation)){
 			return false;
+		}
 	}
 
 	if(!outputVariables.empty()){
@@ -67,7 +68,7 @@ bool AtomSearcher::matchTerm(Term *generic, Term *toMatch, var_assignment& varAs
 		termsToProcess.pop_back();
 		Term* genericTerm=pair.first;
 		Term* termToMatch=pair.second;
-//		TermType genericTermType=genericTerm->getType();
+		TermType genericTermType=genericTerm->getType();
 		TermType termToMatchType=termToMatch->getType();
 		if(termToMatchType==TermType::NUMERIC_CONSTANT || termToMatchType==TermType::STRING_CONSTANT || termToMatchType==TermType::SYMBOLIC_CONSTANT)
 			return false;
@@ -77,8 +78,11 @@ bool AtomSearcher::matchTerm(Term *generic, Term *toMatch, var_assignment& varAs
 				return false;
 			}
 			Term* term=varAssignment[index];
-			if(term!=nullptr && term->getIndex() != genericTerm->getIndex())
+			if(term!=nullptr){
+				if( term->getIndex() == genericTerm->getIndex())
+					continue;
 				return false;
+			}
 
 			if(ruleInformation.isBounderBuiltin(index)){
 				if(!evaluateFastBuiltin(ruleInformation, index, varAssignment, genericTerm))
@@ -97,8 +101,7 @@ bool AtomSearcher::matchTerm(Term *generic, Term *toMatch, var_assignment& varAs
 			termToMatch=new_term->calculate();
 			return false;
 		}
-
-		else if(termToMatchType==TermType::FUNCTION){
+		else if(genericTermType==TermType::FUNCTION){
 			if(termToMatchType!=TermType::FUNCTION) return false;
 			if(termToMatch->getName().compare(genericTerm->getName()) != 0)return false;
 			if(termToMatch->getTermsSize() != genericTerm->getTermsSize())return false;
@@ -107,6 +110,8 @@ bool AtomSearcher::matchTerm(Term *generic, Term *toMatch, var_assignment& varAs
 				termsToProcess.push_back({genericTerm->getTerm(i),termToMatch->getTerm(i)});
 			}
 		}
+		else
+			return false;
 	}
 	return true;
 }
