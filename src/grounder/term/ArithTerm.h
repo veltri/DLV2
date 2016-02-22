@@ -31,6 +31,8 @@ public:
 	ArithTerm():Term(){};
 	ArithTerm(vector<Operator>& operators):operators(operators){};
 	ArithTerm(bool negative,vector<Operator>& operators,vector<Term*>& terms):Term(negative),operators(operators),terms(terms){};
+	ArithTerm(const ArithTerm& arith):Term(arith.negative),operators(arith.operators),terms(arith.terms){};
+
 
 	///Add an operator in the vector
 	virtual void setOperator(Operator op){operators.push_back(op);};
@@ -77,6 +79,9 @@ public:
 				return false;
 		return true;
 	}
+
+	virtual vector<Operator> getOperators(){return operators;};
+
 
 	virtual bool operator==(const Term& term)const;
 

@@ -381,9 +381,11 @@ void InMemoryInputBuilder::onArithmeticOperation(char arithOperator) {
 		termTable->addTerm(arithTerm);
 
 	}else{
-		arithTerm = *second_last;
+		ArithTerm *arithCasted=dynamic_cast<ArithTerm*>(*second_last);
+		arithTerm = new ArithTerm(*arithCasted);
 		arithTerm->addTerm(terms_parsered.back());
 		arithTerm->setOperator(ArithTerm::getOperatorName(arithOperator));
+		termTable->addTerm(arithTerm);
 	}
 
 	terms_parsered.pop_back();
