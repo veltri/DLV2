@@ -125,6 +125,23 @@ public:
 
 	virtual ~IndexingStructure(){}
 
+	virtual bool isEqual(unsigned type, vector<unsigned>* indexingTerms){
+		if(this->getType()==type){
+			if(indexingTerms==nullptr)
+				return true;
+			else{
+				if(this->indexingTerms.size()!=indexingTerms->size())
+					return false;
+				for(unsigned i=0;i<indexingTerms->size();++i){
+					if(this->indexingTerms[i]!=(*indexingTerms)[i])
+						return false;
+				}
+				return true;
+			}
+		}
+		return false;
+	}
+
 protected:
 	///Vector of atoms for which the indexing data structure is created
 	AtomHistoryVector* table;
@@ -182,6 +199,13 @@ public:
 	virtual void update();
 	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg=0);
 	virtual unsigned getType(){return MAP;}
+	virtual bool isEqual(unsigned type, vector<unsigned>* indexingTerms){
+		if(indexingTerms!=nullptr && (type==MAP || type==MULTIMAP || type==MAP_VECTOR)){
+			if(this->indexingTerms[0]==(*indexingTerms)[0])
+				return true;
+		}
+		return false;
+	}
 private:
 	unordered_map<index_object,AtomTable> indexingStructure;
 };
@@ -199,6 +223,13 @@ public:
 	virtual void update();
 	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg=0);
 	virtual unsigned getType(){return MAP_VECTOR;}
+	virtual bool isEqual(unsigned type, vector<unsigned>* indexingTerms){
+		if(indexingTerms!=nullptr && (type==MAP || type==MULTIMAP || type==DOUBLEMAP || type==MAP_VECTOR)){
+			if(this->indexingTerms[0]==(*indexingTerms)[0])
+				return true;
+		}
+		return false;
+	}
 private:
 	unordered_map<index_object,vector<Atom*>> indexingStructure;
 };
@@ -250,6 +281,13 @@ public:
 	virtual void update();
 	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg=0);
 	virtual unsigned getType(){return MULTIMAP;}
+	virtual bool isEqual(unsigned type, vector<unsigned>* indexingTerms){
+		if(indexingTerms!=nullptr && (type==MAP || type==MULTIMAP || type==DOUBLEMAP || type==MAP_VECTOR)){
+			if(this->indexingTerms[0]==(*indexingTerms)[0])
+				return true;
+		}
+		return false;
+	}
 private:
 	unordered_multimap<index_object,Atom*> indexingStructure;
 };
@@ -267,6 +305,20 @@ public:
 	virtual void update();
 	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg=0);
 	virtual unsigned getType(){return DOUBLEMAP;};
+	virtual bool isEqual(unsigned type, vector<unsigned>* indexingTerms){
+		if(indexingTerms!=nullptr){
+//			if(type==MAP || type==MULTIMAP || type==MAP_VECTOR){
+//				if(this->indexingTerms[0]==(*indexingTerms)[0])
+//					return true;
+//			}
+//			else
+			if(type==DOUBLEMAP){
+				if(this->indexingTerms[0]==(*indexingTerms)[0] && this->indexingTerms[1]==(*indexingTerms)[1])
+					return true;
+			}
+		}
+		return false;
+	}
 private:
 	unordered_map<index_object,unordered_multimap<index_object,Atom*>> indexingStructure;
 };
@@ -361,7 +413,7 @@ public:
 	}
 
 	///Printer method. Useful mainly for debug purpose.
-	virtual void print(ostream& stream=cout){for(auto atom:*table)atom->print(stream);}
+	virtual void print(ostream& stream=cout){for(auto atom:*table) atom->print(stream);}
 
 	virtual ~AtomSearcher();
 
