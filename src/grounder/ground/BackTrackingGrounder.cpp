@@ -967,7 +967,6 @@ void BackTrackingGrounder::createAtomSearchersForPredicateBody(unsigned position
 			}
 			vector<unsigned> indexingTerm(2);
 			indexingTerm[0]=bestArg;
-			indexingTerm[1]=nextBestArg;
 //			cout<<"---> Predicate: "<<predicate->getName()<<endl;
 //			for(auto e: indexingTerm)
 //				cout<<e<<" ";
@@ -976,16 +975,22 @@ void BackTrackingGrounder::createAtomSearchersForPredicateBody(unsigned position
 //			atomSearcher=predicateExtension->addFullIndexAtomSearcher(table,(componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex())));
 //			indexingArguments[position-currentRule->getSizeHead()][atomPos]=bestArg;
 			if (componentPredicateInHead!=nullptr && componentPredicateInHead->count(predicate->getIndex())){
-				if(nextBestSelectivityArg>0)
+				if(nextBestSelectivityArg>0){
+					indexingTerm[1]=nextBestArg;
 					atomSearcher=predicateExtension->addAtomSearcher(table, MAP_PAIR_HISTORY_VECTOR, &indexingTerm, true);
-				else
+				}
+				else{
 					atomSearcher=predicateExtension->addAtomSearcher(table, MAP_HISTORY_VECTOR, &indexingTerm, true);
+				}
 			}
 			else{
-				if(nextBestSelectivityArg>0)
+				if(nextBestSelectivityArg>0){
+					indexingTerm[1]=nextBestArg;
 					atomSearcher=predicateExtension->addAtomSearcher(table, DOUBLEMAP, &indexingTerm);
-				else
+				}
+				else{
 					atomSearcher=predicateExtension->addAtomSearcher(table, &indexingTerm);
+				}
 			}
 		}
 		else{
