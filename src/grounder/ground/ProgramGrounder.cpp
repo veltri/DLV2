@@ -276,6 +276,35 @@ void ProgramGrounder::ground() {
 		substituteIndicesInRulesWithPossibleUndefAtoms();
 
 
+		Rule *constraintRule=new Rule(true,0,2);
+		//Add constraint for true negation
+		for(auto predicate:predicateTable->getPredicateTrueNegated()){
+			//For each predicate true negated for table FACT and NOFACT try to find an a equal atom
+			// but with the predicate not true negated. If exist print the constraint
+			string predName=predicate->getName();
+			Predicate *predNotTrueNegated=new Predicate(predName,predicate->getArity());
+			predicateTable->getPredicate(predNotTrueNegated);
+			auto predExt= predicateExtTable->getPredicateExt(predicate);
+			auto predExtNotTrueNegated= predicateExtTable->getPredicateExt(predNotTrueNegated);
+			for(unsigned i=0;i<2;i++){
+				if(predExt->getPredicateExtentionSize(i)==0)continue;
+				for(auto atom:*predExt->getTable(i)){
+					atom->setPredicate(predNotTrueNegated);
+					Atom* atomNotTrueNegated=predExtNotTrueNegated->getGroundAtom(atom);
+					atom->setPredicate(predicate);
+					if(atomNotTrueNegated!=nullptr){
+						constraintRule->setAtomInBody(0,atom);
+						constraintRule->setAtomInBody(1,atomNotTrueNegated);
+						constraintRule->setAtomToSimplifyInBody(0,atom->isFact());
+						constraintRule->setAtomToSimplifyInBody(1,atomNotTrueNegated->isFact());
+						outputBuilder->onRule(constraintRule);
+					}
+				}
+			}
+		}
+		delete constraintRule;
+
+
 		//Ground weak constraint
 		for(auto weak:statementDependency->getWeakContraint()){
 			if(nonGroundSimplificator.simplifyRule(weak) || inizializeSearchInsertPredicate(weak)){

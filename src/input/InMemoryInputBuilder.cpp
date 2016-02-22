@@ -387,7 +387,6 @@ void InMemoryInputBuilder::onArithmeticOperation(char arithOperator) {
 		arithTerm->setOperator(ArithTerm::getOperatorName(arithOperator));
 		termTable->addTerm(arithTerm);
 	}
-	arithTerm->print();cout<<" ";
 
 	terms_parsered.pop_back();
 	terms_parsered.pop_back();
