@@ -18,6 +18,7 @@ namespace grounder {
 OrderRule::OrderRule(Rule* r):rule(r){
 	bindAtomsDependency.reserve(r->getSizeBody());
 	computeAtomsVariables();
+	unordered_map<Term*,Term*,IndexForTable<Term>,IndexForTable<Term>> arithRewrited;
 	for(unsigned atom_counter=0;atom_counter<rule->getSizeBody();++atom_counter){
 		bindAtomsDependency.push_back(unordered_set<unsigned>());
 		Atom* current_atom=rule->getAtomInBody(atom_counter);
@@ -29,12 +30,20 @@ OrderRule::OrderRule(Rule* r):rule(r){
 				/// (for example variables appearing in arith terms)
 				bool mustBeBound=false;
 				if(Options::globalOptions()->getRewriteArith()){
-
 					for(unsigned i=0;i<current_atom->getTermsSize();i++){
-						if(current_atom->getTerm(i)->getType()==ARITH){
-							Term *newTerm=TermTable::getInstance()->generateVariableAuxTerm();
-							Atom * newBuiltin = new BuiltInAtom(Binop::EQUAL,false,newTerm,current_atom->getTerm(i));
-							rule->addInBody(newBuiltin);
+						auto currentTerm=current_atom->getTerm(i);
+						if(currentTerm->getType()==ARITH){
+							Term *newTerm=nullptr;
+
+							//Check if is already rewrite
+							if(arithRewrited.count(currentTerm)){
+								newTerm=arithRewrited[currentTerm];
+							}else{
+								newTerm=TermTable::getInstance()->generateVariableAuxTerm();
+								arithRewrited.insert({currentTerm,newTerm});
+								Atom * newBuiltin = new BuiltInAtom(Binop::EQUAL,false,newTerm,current_atom->getTerm(i));
+								rule->addInBody(newBuiltin);
+							}
 							current_atom->setTerm(i,newTerm);
 						}
 					}
