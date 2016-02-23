@@ -110,6 +110,8 @@ public:
 
 	///Set the index of the atom with new id if the atom is not yet indexed, and send it to the output builder
 	void setIndexOfAtom(Atom* atom){
+		if(atom->getPredicate()->isEdb() && Options::globalOptions()->isNofacts())
+			return;
 		atom->setIndex(IdGenerator::getInstance()->getNewId(1));
 		if(!atom->getPredicate()->isHiddenForPrinting())
 			OutputBuilder::getInstance()->appendToStreamAtomTable(atom);

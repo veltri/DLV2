@@ -171,8 +171,9 @@ void AtomSearcher::firstMatch(unsigned id, Atom *templateAtom, var_assignment& c
 
 bool AtomSearcher::computeMatch(unsigned int id,GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation,const vector<unsigned>& outputVariables){
 	for(;!currentMatch->isDone();currentMatch->next()){
-		if (checkMatch(id,currentMatch->currentItem(),templateAtom,currentAssignment,ruleInformation,outputVariables)){
-			atomFound=currentMatch->currentItem();
+		Atom* atom=currentMatch->currentItem();
+		if (checkMatch(id,atom,templateAtom,currentAssignment,ruleInformation,outputVariables)){
+			atomFound=atom;
 			return true;
 		}
 	}
