@@ -88,7 +88,23 @@ public:
 	virtual bool isAssignment(){return assignment;};
 	virtual void setAssignment(bool assignment){this->assignment=assignment;};
 
+	bool checkArithIsMinusOne(Term* term,TermTable* termTable){
+		if(term->getSizeOperator()==1 && term->getOperator(0)==TIMES){
+			if(term->getTermsSize()==2 && (term->getTerm(0)==termTable->term_minus_one || term->getTerm(1)==termTable->term_minus_one ))
+				return true;
+		}
+		return false;
+	}
+
 	virtual bool plusMinusBuiltin(){
+		//Check if is X=Y*-1
+		TermTable *termTable=TermTable::getInstance();
+		if(terms[0]->getType()==ARITH && terms[1]->getType()!=ARITH && checkArithIsMinusOne(terms[0],termTable)){
+			return true;
+		}else if(terms[1]->getType()==ARITH && terms[0]->getType()!=ARITH && checkArithIsMinusOne(terms[1],termTable)){
+			return true;
+		}
+
 		for(unsigned i=0;i<terms.size();i++){
 			Term *t=terms[i];
 			if(t->getType()==FUNCTION)return false;
