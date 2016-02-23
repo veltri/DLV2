@@ -207,6 +207,9 @@ IndexingStructure* AtomSearcher::getIndexingStructure(unsigned type, vector<unsi
 				return indexingStruct;
 			}
 		}
+//		if(indexingStruct->isEqual(type,indexingTerms)){
+//			return indexingStruct;
+//		}
 	}
 	return nullptr;
 }
