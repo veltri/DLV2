@@ -23,7 +23,7 @@ public:
     using pair_level_tuple_list = pair<int,list<id_weight_label>>;
     using list_pair_it=list<pair_level_tuple_list>::iterator;
 
-	NumericOutputBuilder():printStream(false),SIZE_COMPACT_FACTS(1024){idCompactFacts=IdGenerator::getInstance()->getNewId(1);streamAtomTable<<idCompactFacts;};
+	NumericOutputBuilder():printStream(false),SIZE_COMPACT_FACTS(1024){idCompactFacts=IdGenerator::getInstance()->getNewId(1);streamCompactFacts_NumericTable<<idCompactFacts;};
 	virtual ~NumericOutputBuilder(){};
 
     virtual void onRule(Rule *rule);
@@ -77,9 +77,11 @@ private:
 
     const unsigned SIZE_COMPACT_FACTS;
     stringstream streamCompactFacts_NumericTable;
+    stringstream streamCompactFacts_NumericTableTmp;
     stringstream streamCompactFacts;
     unsigned idCompactFacts;
 
+	void handleCompactFactsPrinting(Atom* atom);
 };
 
 } /* namespace grounder */

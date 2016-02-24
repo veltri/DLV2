@@ -28,6 +28,9 @@ void NumericOutputBuilder::onRule(Rule* rule) {
 			weakLevelConstraints.push_back(pair);
 			levelWeak[level]=prev(weakLevelConstraints.end());
 		}
+	}
+	else if(Options::globalOptions()->isCompactFacts() && rule->getSizeHead()==1 && rule->getAtomInBody(0)->isFact()){
+		onFact(rule->getAtomInHead(0));
 	}else{
 		onHead(rule->getHead());
 		onBody(rule);
@@ -158,20 +161,26 @@ void NumericOutputBuilder::onDisjunctionAtom(const vector<Atom*>& head) {
 void NumericOutputBuilder::onAggregateElement(Atom* atom) {
 }
 
+void NumericOutputBuilder::handleCompactFactsPrinting(Atom* atom) {
+	stringstream tmp;
+	ClassicalLiteral::print(atom->getPredicate(), atom->getTerms(), false,
+			false, tmp);
+	if (streamCompactFacts_NumericTableTmp.str().size() + tmp.str().size() > SIZE_COMPACT_FACTS) {
+		streamCompactFacts << "1 " << idCompactFacts << " 0 0" << endl;
+		idCompactFacts = IdGenerator::getInstance()->getNewId(1);
+		streamCompactFacts_NumericTable << streamCompactFacts_NumericTableTmp.str() << endl;
+		streamCompactFacts_NumericTableTmp.str("");
+		streamCompactFacts_NumericTableTmp << idCompactFacts;
+	}
+}
+
 void NumericOutputBuilder::onFact(Atom* atom) {
 	if(!Options::globalOptions()->isCompactFacts()){
-		onHeadAtom(atom);cout<<"0 0"<<endl;
+		onHeadAtom(atom);
+		cout<<"0 0"<<endl;
 		return;
 	}
-	stringstream tmp;
-	ClassicalLiteral::print(atom->getPredicate(),atom->getTerms(),false,false,tmp);
-	if(streamCompactFacts_NumericTable.str().size()+tmp.str().size()+to_string(idCompactFacts).size()>SIZE_COMPACT_FACTS){
-		streamCompactFacts<<"1 "<<idCompactFacts<<" 0 0"<<endl;
-		idCompactFacts=IdGenerator::getInstance()->getNewId(1);
-		streamAtomTable<<streamCompactFacts_NumericTable.str()<<endl;
-		streamCompactFacts_NumericTable.str("");
-		streamCompactFacts_NumericTable<<idCompactFacts;
-	}
+	handleCompactFactsPrinting(atom);
 }
 
 unsigned NumericOutputBuilder::onWeightRule(Atom* aggregateAtom, unsigned bound) {
@@ -479,13 +488,14 @@ void NumericOutputBuilder::onEnd() {
 	if(weakLevelConstraints.size()>0)
 		printWeak();
 
-	if(Options::globalOptions()->isCompactFacts())
+	if(Options::globalOptions()->isCompactFacts() && streamCompactFacts_NumericTableTmp.str().size()>to_string(idCompactFacts).size())
 		cout<<streamCompactFacts.str()<<"1 "<<idCompactFacts<<" 0 0"<<endl;
 
 	cout<<"0"<<endl;
 	cout<<streamAtomTable.str();
-	if(Options::globalOptions()->isCompactFacts())
-		cout<<streamCompactFacts_NumericTable.str()<<endl;
+	if(Options::globalOptions()->isCompactFacts() && streamCompactFacts_NumericTableTmp.str().size()>to_string(idCompactFacts).size()){
+		cout<<streamCompactFacts_NumericTable.str()<<streamCompactFacts_NumericTableTmp.str()<<endl;
+	}
 	cout<<"0"<<endl<<"B+"<<endl<<"0"<<endl<<"B-"<<endl<<"1"<<endl<<"0"<<endl<<"1"<<endl;
 }
 
@@ -493,7 +503,7 @@ void NumericOutputBuilder::appendToStreamAtomTable(Atom* atom, bool fact) {
 	if(Options::globalOptions()->isCompactFacts() && fact){
 		stringstream tmp;
 		ClassicalLiteral::print(atom->getPredicate(),atom->getTerms(),false,false,tmp);
-		streamCompactFacts_NumericTable<<" "<<tmp.str()<<".";
+		streamCompactFacts_NumericTableTmp<<" "<<tmp.str()<<".";
 		return;
 	}
 	if(!atom->getPredicate()->isHiddenForPrinting()){

@@ -350,7 +350,6 @@ bool BackTrackingGrounder::foundAssignment() {
 		if(isWeak)
 			ground_rule->setWeightLevelLabel(currentRule->groundWeightLevel(current_assignment));
 
-
 		outputBuilder->onRule(ground_rule);
 	}
 	if(strongConstraint && !undefinedAtomInBody){throw ConstrainException{};};

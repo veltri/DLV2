@@ -20,11 +20,6 @@ class IdGenerator {
 public:
 	virtual ~IdGenerator(){};
 
-	unsigned getPossibleNextId(unsigned id=0){
-		int a=idGenerators[id];
-		return ++a;
-	}
-
 	unsigned getNewId(unsigned id=0){
 		return ++(idGenerators[id]);
 	}
