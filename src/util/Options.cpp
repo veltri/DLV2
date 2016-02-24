@@ -73,6 +73,7 @@ namespace DLV2
 #define OPTIONID_rewriteArith ('z' + 47)
 #define OPTIONID_anonymousFilter ('z' + 48)
 #define OPTIONID_predicateToFilter ('z' + 49)
+#define OPTIONID_compactFacts ('z' + 50)
 
 
 
@@ -132,7 +133,8 @@ Options::Options():
 		ruleTime(false),
 		checkFactDuplicate(false),
 		rewriteArith(false),
-		disabledAnonymousFilter(false)
+		disabledAnonymousFilter(false),
+		compactFacts(false)
 {
 
 }
@@ -159,8 +161,8 @@ Options::Options(
 		ruleTime(false),
 		checkFactDuplicate(false),
 		rewriteArith(false),
-		disabledAnonymousFilter(false)
-
+		disabledAnonymousFilter(false),
+		compactFacts(true)
 {
 
 }
@@ -218,6 +220,7 @@ Options::init(
 		{"rewrite-arith",no_argument, NULL, OPTIONID_rewriteArith},
 		{"no-anonymous-filter",no_argument, NULL, OPTIONID_anonymousFilter},
 		{"filter",required_argument, NULL, OPTIONID_predicateToFilter},
+		{"compact-facts",required_argument, NULL, OPTIONID_compactFacts},
 
         // Required at end of array. 
         { NULL, 0, NULL, 0 }
@@ -367,6 +370,10 @@ Options::init(
 
             case OPTIONID_predicateToFilter:
             	predicateToFilter.append(optarg);
+				break;
+
+            case OPTIONID_compactFacts:
+            	compactFacts=true;
 				break;
 
             default:

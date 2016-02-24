@@ -140,6 +140,14 @@ namespace DLV2
 			this->disabledAnonymousFilter = disabledAnonymousFilter;
 		}
 
+	bool isCompactFacts() const {
+		return compactFacts;
+	}
+
+	void setCompactFacts(bool compactFacts) {
+		this->compactFacts = compactFacts;
+	}
+
     private:
 
         static Options* instance;
@@ -217,6 +225,8 @@ namespace DLV2
     	bool disabledAnonymousFilter;
 
     	string predicateToFilter;
+
+    	bool compactFacts;
     };
     
 };

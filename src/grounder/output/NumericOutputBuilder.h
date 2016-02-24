@@ -11,6 +11,7 @@
 #include <sstream>
 #include "OutputBuilder.h"
 #include "../ground/StatementDependency.h"
+#include "../table/IdGenerator.h"
 
 namespace DLV2 {
 namespace grounder {
@@ -22,7 +23,7 @@ public:
     using pair_level_tuple_list = pair<int,list<id_weight_label>>;
     using list_pair_it=list<pair_level_tuple_list>::iterator;
 
-	NumericOutputBuilder():printStream(false){};
+	NumericOutputBuilder():printStream(false),SIZE_COMPACT_FACTS(1024){idCompactFacts=IdGenerator::getInstance()->getNewId(1);streamAtomTable<<idCompactFacts;};
 	virtual ~NumericOutputBuilder(){};
 
     virtual void onRule(Rule *rule);
@@ -47,7 +48,7 @@ public:
     virtual unsigned printMaxMinAggregate(Atom *atom);
     virtual void printAuxRuleMinMax(Atom *aggregate,function<unsigned(Term*)>& function,unsigned& positivePredicate,unsigned& negativePredicate);
 
-    virtual void appendToStreamAtomTable(Atom* atom);
+    virtual void appendToStreamAtomTable(Atom* atom, bool fact=false);
 
     ///Print weak constraint
 	virtual void printWeak();
@@ -73,6 +74,11 @@ private:
     list<pair_level_tuple_list> weakLevelConstraints;
     /// Map for each level return the iterator of the list that group the weak with the level in the key
     unordered_map<unsigned,list_pair_it> levelWeak;
+
+    const unsigned SIZE_COMPACT_FACTS;
+    stringstream streamCompactFacts_NumericTable;
+    stringstream streamCompactFacts;
+    unsigned idCompactFacts;
 
 };
 

@@ -623,7 +623,9 @@ void InMemoryInputBuilder::createFact(Atom* fact) {
 	if(atomSearcher==nullptr || atomSearcher->find(fact)==nullptr){
 		instancesTable->getPredicateExt(predicate)->addAtom(fact,FACT);
 		if (!Options::globalOptions()->isNofacts()) {
-			OutputBuilder::getInstance()->onFact(fact);
+			if(Options::globalOptions()->isCompactFacts()){
+				OutputBuilder::getInstance()->onFact(fact);
+			}
 		}
 	}else
 		delete fact;
