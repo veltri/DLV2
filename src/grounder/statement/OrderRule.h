@@ -41,6 +41,10 @@ private:
 	void foundAnAssigment(Atom* atom, Term* bindVariable, unsigned pos);
 	bool checkHeadSafety();
 	bool checkWeakSafety();
+	vector<Atom*> rewriteArith(Atom* current_atom,
+			unordered_map<Term*, Term*, IndexForTable<Term>, IndexForTable<Term> >& arithRewrited);
+	bool unlockAtomWithArith(list<unsigned>& atoms);
+
 
 public:
 	OrderRule(Rule* r);

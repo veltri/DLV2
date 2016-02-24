@@ -15,6 +15,28 @@
 namespace DLV2 {
 namespace grounder {
 
+vector<Atom*> OrderRule::rewriteArith(Atom* current_atom,
+		unordered_map<Term*, Term*, IndexForTable<Term>, IndexForTable<Term> >& arithRewrited) {
+	vector<Atom*> newBuiltins;
+	for (unsigned i = 0; i < current_atom->getTermsSize(); i++) {
+		auto currentTerm = current_atom->getTerm(i);
+		if (currentTerm->getType() == ARITH) {
+			Term* newTerm = nullptr;
+			//Check if is already rewrite
+			if (arithRewrited.count(currentTerm)) {
+				newTerm = arithRewrited[currentTerm];
+			} else {
+				newTerm = TermTable::getInstance()->generateVariableAuxTerm();
+				arithRewrited.insert( { currentTerm, newTerm });
+				newBuiltins.push_back(new BuiltInAtom(Binop::EQUAL, false, newTerm,current_atom->getTerm(i)));
+			}
+			current_atom->setTerm(i, newTerm);
+			current_atom->print();
+		}
+	}
+	return newBuiltins;
+}
+
 OrderRule::OrderRule(Rule* r):rule(r){
 	bindAtomsDependency.reserve(r->getSizeBody());
 	computeAtomsVariables();
@@ -30,23 +52,8 @@ OrderRule::OrderRule(Rule* r):rule(r){
 				/// (for example variables appearing in arith terms)
 				bool mustBeBound=false;
 				if(Options::globalOptions()->getRewriteArith()){
-					for(unsigned i=0;i<current_atom->getTermsSize();i++){
-						auto currentTerm=current_atom->getTerm(i);
-						if(currentTerm->getType()==ARITH){
-							Term *newTerm=nullptr;
-
-							//Check if is already rewrite
-							if(arithRewrited.count(currentTerm)){
-								newTerm=arithRewrited[currentTerm];
-							}else{
-								newTerm=TermTable::getInstance()->generateVariableAuxTerm();
-								arithRewrited.insert({currentTerm,newTerm});
-								Atom * newBuiltin = new BuiltInAtom(Binop::EQUAL,false,newTerm,current_atom->getTerm(i));
-								rule->addInBody(newBuiltin);
-							}
-							current_atom->setTerm(i,newTerm);
-						}
-					}
+					for(auto newBuiltin:rewriteArith(current_atom, arithRewrited))
+						rule->addInBody(newBuiltin);
 				}else{
 					mapPositiveAtomsBoundVariables.insert({atom_counter,set_term()});
 					for(auto v:current_atom->getTerms()){
@@ -70,6 +77,7 @@ OrderRule::OrderRule(Rule* r):rule(r){
 }
 
 bool OrderRule::order() {
+
 	// A first attempt to order the body ignoring cyclic dependencies
 	// by iterating the atoms in the body and resolving their dependencies when are not cyclic
 	while(positiveAtoms.size()>0){
@@ -94,10 +102,12 @@ bool OrderRule::order() {
 		if(positiveAtomsToBeBound.size()==sizePositivesToBeBound && builtInAtoms.size()==sizeBuiltIns && sizeNegatives==negativeAtoms.size()){
 			unsigned sizeAggregates=aggregatesAtoms.size();
 			unlockAtoms(aggregatesAtoms);
-			if(aggregatesAtoms.size()==sizeAggregates)
+			if(aggregatesAtoms.size()==sizeAggregates && !unlockAtomWithArith(positiveAtomsToBeBound)){
 				return false;
+			}
 		}
 	}
+
 
 	// Finally, set the ordered body as the body of the rule
 	rule->setBody(orderedBody);
@@ -166,6 +176,28 @@ void OrderRule::foundAnAssigment(Atom* atom, Term* bindVariable, unsigned pos) {
 			bindAtomsDependency[orderedBody.size()-1].insert(mapVariablesAtoms.find(var)->second);
 		}
 	}
+}
+
+bool OrderRule::unlockAtomWithArith(list<unsigned>& atoms) {
+	list<unsigned>::iterator atomUnlocked=atoms.end();
+	unordered_map<Term*, Term*, IndexForTable<Term>, IndexForTable<Term> > arithRewrited;
+	for(auto it=atoms.begin();it!=atoms.end();++it){
+		Atom* atom=rule->getAtomInBody(*it);
+		set_term variables=mapAtomsVariables[*it];
+		if(atom->isClassicalLiteral() && !atom->isNegative()){
+			if(mapPositiveAtomsBoundVariables[*it].size()>0){
+				addSafeVariablesInAtom(atom,*it);
+				for(auto newBuiltin:rewriteArith(atom,arithRewrited))
+					orderedBody.push_back(newBuiltin);
+				atomUnlocked=it;
+				break;
+			}
+		}
+	}
+	if(atomUnlocked==atoms.end())
+		return false;
+	atoms.erase(atomUnlocked);
+	return true;
 }
 
 void OrderRule::unlockAtoms(list<unsigned>& atoms) {
