@@ -71,17 +71,19 @@ unordered_set<index_object> Rule::calculatePredicateIndex(vector<Atom*>& atoms,b
 void Rule::print(ostream& stream){
 
 	//Print for debug
-	if(!ground){printNonGround(stream);return;}
+//	if(!ground){
+		printNonGround(stream);return;
+//}
 	unsigned int i=0;
 	bool firstAtomPrinted=false;
 	for (auto atom:head) {
 		if(firstAtomPrinted && !simplifiedHead[i])
 			stream<<";";
-		if(!simplifiedHead[i]){
+//		if(!simplifiedHead[i]){
 			atom->print(stream);
 			if(!firstAtomPrinted)
 				firstAtomPrinted=true;
-		}
+//		}
 		i++;
 	}
 	firstAtomPrinted=false;
@@ -91,11 +93,11 @@ void Rule::print(ostream& stream){
 		for (auto atom:body) {
 			if(firstAtomPrinted && !simplifiedBody[i])
 				stream<<";";
-			if(!simplifiedBody[i]){
+//			if(!simplifiedBody[i]){
 				atom->print(stream);
 				if(!firstAtomPrinted)
 					firstAtomPrinted=true;
-			}
+//			}
 			i++;
 		}
 	}

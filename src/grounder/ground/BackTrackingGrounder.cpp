@@ -281,6 +281,8 @@ bool BackTrackingGrounder::foundAssignment() {
 	if(isAChoiceRule)
 		groundChoice(find_new_true_atom,ground_new_atom);
 
+	bool foundATrueAtomInDisjuction=false;
+
 	for(auto atom=currentRule->getBeginHead();atom!=currentRule->getEndHead()&&!isAChoiceRule;++atom,++atom_counter){
 
 		// When grounding head atoms, head template atoms are used in order to avoid the creation and deletion of atoms that are already present in the predicate extensions.
@@ -300,6 +302,7 @@ bool BackTrackingGrounder::foundAssignment() {
 			ground_new_atom = true;
 
 			headGroundAtom->setFact(head_true);
+			if(head_true) foundATrueAtomInDisjuction=true;
 			Atom* newAtom=headGroundAtom->clone();
 			PredicateExtension* predicateExt=predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
 			predicateExt->addAtom(newAtom,predicate_searchInsert_table[atom_counter][0].first,iterationToInsert);
@@ -309,18 +312,22 @@ bool BackTrackingGrounder::foundAssignment() {
 
 		}else{
 //			clock_t start=Timer::getInstance()->getClock();
-			//TODO If searchAtom is true ??? {a|b. a.} o {a :- b(X,Y).b(1).b(1,2)|d.}
+			//TODO If searchAtom is true ??? {a|b. a.} o {a :- b(X,Y).b(1,1).b(1,2)|d.}
 
 			//Previus atom is undef and now is true
 			if(head_true && !searchAtom->isFact()){
+				foundATrueAtomInDisjuction=true;
 				searchAtom->setFact(true);
 				find_new_true_atom=true;
 			}
+			else if(searchAtom->isFact())
+				foundATrueAtomInDisjuction=true;
 			//Check if previus is false now is true ground_new atom i have put true
 			ground_rule->setAtomInHead(atom_counter,searchAtom);
 //			clock_t end=Timer::getInstance()->getClock();
 //			Timer::getInstance()->sumTime(end-start);
 		}
+
 	}
 
 	trace_action_tag(grounding,1,cerr<<"Ground Rule Produced: ";ground_rule->print(cerr);cerr<<endl;);
@@ -350,7 +357,8 @@ bool BackTrackingGrounder::foundAssignment() {
 		if(isWeak)
 			ground_rule->setWeightLevelLabel(currentRule->groundWeightLevel(current_assignment));
 
-		outputBuilder->onRule(ground_rule);
+		if(!foundATrueAtomInDisjuction || head_true)
+			outputBuilder->onRule(ground_rule);
 	}
 	if(strongConstraint && !undefinedAtomInBody){throw ConstrainException{};};
 

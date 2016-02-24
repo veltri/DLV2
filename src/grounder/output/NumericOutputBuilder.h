@@ -23,7 +23,7 @@ public:
     using pair_level_tuple_list = pair<int,list<id_weight_label>>;
     using list_pair_it=list<pair_level_tuple_list>::iterator;
 
-	NumericOutputBuilder():printStream(false),SIZE_COMPACT_FACTS(1024){idCompactFacts=IdGenerator::getInstance()->getNewId(1);streamCompactFacts_NumericTable<<idCompactFacts;};
+	NumericOutputBuilder():printStream(false),SIZE_COMPACT_FACTS(1024){idCompactFacts=IdGenerator::getInstance()->getNewId(1);streamCompactFactsNumericTable<<idCompactFacts;};
 	virtual ~NumericOutputBuilder(){};
 
     virtual void onRule(Rule *rule);
@@ -76,8 +76,8 @@ private:
     unordered_map<unsigned,list_pair_it> levelWeak;
 
     const unsigned SIZE_COMPACT_FACTS;
-    stringstream streamCompactFacts_NumericTable;
-    stringstream streamCompactFacts_NumericTableTmp;
+    stringstream streamCompactFactsNumericTable;
+    stringstream streamCompactFactsNumericTableTmp;
     stringstream streamCompactFacts;
     unsigned idCompactFacts;
 

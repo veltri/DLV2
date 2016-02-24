@@ -112,15 +112,12 @@ public:
 	void setIndexOfAtom(Atom* atom){
 		if(atom->getPredicate()->isEdb() && Options::globalOptions()->isNofacts())
 			return;
-		if(Options::globalOptions()->isCompactFacts() && atom->isFact()){
-			if(!atom->getPredicate()->isHiddenForPrinting())
-				OutputBuilder::getInstance()->appendToStreamAtomTable(atom,true);
-		}
-		else{
+		if(Options::globalOptions()->isCompactFacts() && !atom->isFact())
 			atom->setIndex(IdGenerator::getInstance()->getNewId(1));
-			if(!atom->getPredicate()->isHiddenForPrinting())
-				OutputBuilder::getInstance()->appendToStreamAtomTable(atom);
-		}
+		else
+			atom->setIndex(IdGenerator::getInstance()->getNewId(1));
+		if(!atom->getPredicate()->isHiddenForPrinting())
+			OutputBuilder::getInstance()->appendToStreamAtomTable(atom,atom->isFact());
 	}
 
 	///Search the given ground atom in all tables
