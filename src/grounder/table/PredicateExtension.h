@@ -1,5 +1,5 @@
 /*
- * Instance.h
+ * Instance.hMULTIPLE_TERMS
  *
  *  Created on: 24/mar/2014
  *      Author: Jessica

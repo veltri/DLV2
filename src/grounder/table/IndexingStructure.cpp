@@ -674,6 +674,136 @@ GeneralIterator* UnorderedMapOfUnorderedMultimap::computeMatchIterator(Atom* tem
 	return new UnorderedMultiMapIterator(start,end);
 }
 
+/******************************************************** Unordered Map of Pair **************************************************/
+
+void UnorderedMapOfPair::add(Atom* atom) {
+	unsigned i=indexingTerms[0];
+	unsigned next=indexingTerms[1];
+	if(lastUpdate<table->size()){
+		index_object termIndex=atom->getTerm(i)->getIndex();
+		index_object nextTermIndex=atom->getTerm(next)->getIndex();
+		pair<index_object,index_object> p={termIndex,nextTermIndex};
+		if(indexingStructure.count(p)){
+			indexingStructure[p].insert(atom);
+		}
+		else{
+			AtomTable values;
+			values.insert(atom);
+			indexingStructure.insert({p,values});
+		}
+	}
+}
+
+Atom* UnorderedMapOfPair::find(Atom* atom) {
+	if(lastUpdate<table->size())
+		update();
+	unsigned i=indexingTerms[0];
+	unsigned next=indexingTerms[1];
+	index_object termIndex=atom->getTerm(i)->getIndex();
+	index_object nextTermIndex=atom->getTerm(next)->getIndex();
+	pair<index_object,index_object> p={termIndex,nextTermIndex};
+	auto it=indexingStructure[p].find(atom);
+	if(it==indexingStructure[p].end())
+		return nullptr;
+	return *it;
+}
+
+void UnorderedMapOfPair::update() {
+	if(table->empty()) return;
+	unsigned indexingTerm=indexingTerms[0];
+	unsigned next=indexingTerms[1];
+	for (;lastUpdate<table->size();++lastUpdate) {
+		Atom* atom=(*table)[lastUpdate];
+		index_object termIndex=atom->getTerm(indexingTerm)->getIndex();
+		index_object nextTermIndex=atom->getTerm(next)->getIndex();
+		pair<index_object,index_object> p={termIndex,nextTermIndex};
+		if(indexingStructure.count(p)){
+			indexingStructure[p].insert(atom);
+		}
+		else{
+			AtomTable values;
+			values.insert(atom);
+			indexingStructure.insert({p,values});
+		}
+	}
+}
+
+GeneralIterator* UnorderedMapOfPair::computeMatchIterator(Atom* templateAtom,
+		const RuleInformation& ruleInformation,
+		const pair<SearchType, unsigned>& searchSpecification, unsigned arg) {
+	if(lastUpdate<table->size())
+		update();
+	unsigned i=indexingTerms[0];
+	unsigned next=indexingTerms[1];
+	index_object termIndex=templateAtom->getTerm(i)->getIndex();
+	index_object nextTermIndex=templateAtom->getTerm(next)->getIndex();
+	pair<index_object,index_object> p={termIndex,nextTermIndex};
+	return new UnorderedSetIterator(indexingStructure[p].begin(),indexingStructure[p].end());
+}
+
+/*************************************************************** Unordered Map of Vectors *************************************************************************/
+
+void MulplipleTermsMap::add(Atom* atom) {
+	vector<index_object> indices;
+	indices.reserve(indexingTerms.size());
+	for(auto e:indexingTerms)
+		indices.push_back(atom->getTerm(e)->getIndex());
+	if(lastUpdate<table->size()){
+		if(indexingStructure.count(indices)){
+			indexingStructure[indices].insert(atom);
+		}
+		else{
+			AtomTable values;
+			values.insert(atom);
+			indexingStructure.insert({indices,values});
+		}
+	}
+}
+
+Atom* MulplipleTermsMap::find(Atom* atom) {
+	if(lastUpdate<table->size())
+		update();
+	vector<index_object> indices;
+	indices.reserve(indexingTerms.size());
+	for(auto e:indexingTerms)
+		indices.push_back(atom->getTerm(e)->getIndex());
+	auto it=indexingStructure[indices].find(atom);
+	if(it==indexingStructure[indices].end())
+		return nullptr;
+	return *it;
+}
+
+void MulplipleTermsMap::update() {
+	if(table->empty()) return;
+	for (;lastUpdate<table->size();++lastUpdate) {
+		Atom* atom=(*table)[lastUpdate];
+		vector<index_object> indices;
+		indices.reserve(indexingTerms.size());
+		for(auto e:indexingTerms)
+			indices.push_back(atom->getTerm(e)->getIndex());
+		if(indexingStructure.count(indices)){
+			indexingStructure[indices].insert(atom);
+		}
+		else{
+			AtomTable values;
+			values.insert(atom);
+			indexingStructure.insert({indices,values});
+		}
+	}
+}
+
+GeneralIterator* MulplipleTermsMap::computeMatchIterator(Atom* templateAtom,
+		const RuleInformation& ruleInformation,
+		const pair<SearchType, unsigned>& searchSpecification, unsigned arg) {
+	if(lastUpdate<table->size())
+		update();
+	vector<index_object> indices;
+	indices.reserve(indexingTerms.size());
+	for(auto e:indexingTerms)
+		indices.push_back(templateAtom->getTerm(e)->getIndex());
+	return new UnorderedSetIterator(indexingStructure[indices].begin(),indexingStructure[indices].end());
+}
+
 /*************************************************************** Full Index on Single Argument *****************************************************************/
 
 FullIndexingStructure::FullIndexingStructure(AtomHistoryVector* table, Predicate* predicate, AtomSearcher* atomSearcher, bool recursive, unsigned indexType): IndexingStructure(table), predicate(predicate){
@@ -724,3 +854,5 @@ GeneralIterator* FullIndexingStructure::computeMatchIterator(Atom* templateAtom,
 
 } /* namespace grounder */
 } /* namespace DLV2 */
+
+

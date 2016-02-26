@@ -35,6 +35,12 @@ IndexingStructure* PredicateExtension::createAtomSearcher(unsigned table, unsign
 	case (DOUBLEMAP):
 		indexingStructure = new UnorderedMapOfUnorderedMultimap(tables[table],*indexingTerms);
 		break;
+	case (DOUBLEMAP_PAIR):
+		indexingStructure = new UnorderedMapOfPair(tables[table],*indexingTerms);
+		break;
+	case (MULTIPLE_TERMS):
+		indexingStructure = new MulplipleTermsMap(tables[table],*indexingTerms);
+		break;
 	case (MAP_VECTOR):
 		indexingStructure = new UnorderedMapOfVector(tables[table],*indexingTerms);
 		break;

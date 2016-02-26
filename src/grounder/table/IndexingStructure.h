@@ -92,6 +92,20 @@ private:
 	unsigned currentIterator;
 };
 
+struct HashVectorOfTerms{
+	inline size_t operator()(const vector<index_object>& obj) const {
+		return HashVecInt::getHashVecInt()->computeHash(obj);
+	}
+
+	inline bool operator()(const vector<index_object>& obj1, const vector<index_object>& obj2) const {
+		for(unsigned i=0;i<obj1.size();++i)
+			if(obj1[i]!=obj2[i])
+				return false;
+		return true;
+	}
+};
+
+
 
 class AtomSearcher;
 
@@ -323,6 +337,69 @@ private:
 	unordered_map<index_object,unordered_multimap<index_object,Atom*>> indexingStructure;
 };
 
+
+/**
+ * This class implements IndexingStructure and provides a double term indexing data structure
+ * implemented by means of an unordered map of pair of terms as indexing data structure (@see Atom.h)
+ **/
+class UnorderedMapOfPair : public IndexingStructure {
+public:
+	UnorderedMapOfPair(AtomHistoryVector* table, vector<unsigned>& indexingTerm): IndexingStructure(table,indexingTerm){};
+	void add(Atom* atom);
+	Atom* find(Atom* atom);
+	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
+	virtual void update();
+	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg=0);
+	virtual unsigned getType(){return DOUBLEMAP_PAIR;};
+	virtual bool isEqual(unsigned type, vector<unsigned>* indexingTerms){
+		if(indexingTerms!=nullptr){
+//			if(type==MAP || type==MULTIMAP || type==MAP_VECTOR){
+//				if(this->indexingTerms[0]==(*indexingTerms)[0])
+//					return true;
+//			}
+//			else
+			if(type==DOUBLEMAP_PAIR){
+				if(this->indexingTerms[0]==(*indexingTerms)[0] && this->indexingTerms[1]==(*indexingTerms)[1])
+					return true;
+			}
+		}
+		return false;
+	}
+private:
+	unordered_map<pair<index_object,index_object>,AtomTable,HashPair<index_object>,HashPair<index_object>> indexingStructure;
+};
+
+/**
+ * This class implements IndexingStructure and provides a general multiple terms indexing data structure
+ * implemented by means of an unordered map of vectors of terms as indexing data structure (@see Atom.h)
+ **/
+class MulplipleTermsMap : public IndexingStructure {
+public:
+	MulplipleTermsMap(AtomHistoryVector* table, vector<unsigned>& indexingTerm): IndexingStructure(table,indexingTerm){};
+	void add(Atom* atom);
+	Atom* find(Atom* atom);
+	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
+	virtual void update();
+	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg=0);
+	virtual unsigned getType(){return MULTIPLE_TERMS;};
+	virtual bool isEqual(unsigned type, vector<unsigned>* indexingTerms){
+		if(indexingTerms!=nullptr){
+			if(type==MULTIPLE_TERMS){
+				if(indexingTerms->size()!=this->indexingTerms.size())
+					return false;
+				for(unsigned i=0;i<this->indexingTerms.size() ;++i)
+					if(this->indexingTerms[i]!=(*indexingTerms)[i])
+						return false;
+				return true;
+			}
+		}
+		return false;
+	}
+private:
+	unordered_map<vector<index_object>,AtomTable,HashVectorOfTerms,HashVectorOfTerms> indexingStructure;
+};
+
+
 /**
  **/
 class FullIndexingStructure : public IndexingStructure {
@@ -340,23 +417,6 @@ private:
     Predicate* predicate;
     vector<IndexingStructure*> indexingStructures;
 };
-
-
-struct HashVectorOfTerms{
-	inline size_t operator()(const vector<index_object>& obj) const {
-		return HashVecInt::getHashVecInt()->computeHash(obj);
-	}
-
-	inline bool operator()(const vector<index_object>& obj1, const vector<index_object>& obj2) const {
-		for(unsigned i=0;i<obj1.size();++i)
-			if(obj1[i]!=obj2[i])
-				return false;
-		return true;
-	}
-};
-
-
-
 
 
 /**
