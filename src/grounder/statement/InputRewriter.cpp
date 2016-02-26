@@ -142,7 +142,6 @@ void BaseInputRewriter::translateChoice(Rule*& rule,vector<Rule*>& ruleRewrited)
 	// the term of the auxiliary atom in the head of the auxiliary rule
 
 	Atom* choice =rule->getAtomInHead(0);
-
 	Atom *auxiliaryAtomBody=nullptr;
 	bool isRewriteBody=rule->getSizeBody()>1 || ( rule->getSizeBody()==1 && rule->getAtomInBody(0)->isAggregateAtom());
 	if(isRewriteBody){
@@ -184,7 +183,6 @@ void BaseInputRewriter::translateChoice(Rule*& rule,vector<Rule*>& ruleRewrited)
 		if(rule->getSizeBody()==1)
 			auxiliaryAtomBody=rule->getAtomInBody(0);
 	}
-
 	// For each choice element a new disjunctive auxiliary rule is created.
 	// Each rule has in the head a disjunction with a the first atom of the choice element and a new auxiliary atom
 	// having the same terms of the first atom, while in the body it contains the remaining atoms of the choice element
@@ -398,6 +396,8 @@ vector<AggregateElement*> ChoiceBaseInputRewriter::rewriteChoiceElements(unsigne
 }
 
 
+
+
 Rule* ChoiceBaseInputRewriter::createAuxChoiceRule(const vector<Atom*>& head,const vector<Atom*>& body){
 	Rule* aux_rule = new Rule;
 	Atom *choice_atom=new Choice;
@@ -428,6 +428,115 @@ void ChoiceBaseInputRewriter::rewriteChoiceConstraint(const vector<AggregateElem
 }
 
 
+vector<AggregateElement*> AdvancedChoiceBaseInputRewriter::rewriteChoiceElements(unsigned & id, unsigned & counter, Atom* choice,
+		Atom* auxiliaryAtomBody, vector<Rule*>& ruleRewrited) {
+	vector<AggregateElement*> elements;
+	vector<ChoiceElement*> atoms_single_choice;
+	//All variable in the body of the rule that appear in the choice except the variable in the guard
+	set_term terms_in_bodychoice;
+	if(auxiliaryAtomBody!=nullptr){
+		set_term terms_in_body(auxiliaryAtomBody->getTerms().begin(),auxiliaryAtomBody->getTerms().end());
+		const set_term& variable_in_choice=choice->getVariable(false);
+		Utils::intersectionSet(terms_in_body,variable_in_choice,terms_in_bodychoice);
+	}
+
+	for (unsigned i = 0; i < choice->getChoiceElementsSize(); ++i) {
+		ChoiceElement* choiceElement = choice->getChoiceElement(i);
+		Atom* first_atom = choiceElement->getFirstAtom();
+		AggregateElement* element=nullptr;
+
+
+		//Put the choice element with one atom or have the body of choice element solved, in one new choice
+		if(choiceElement->isBodyChoiceIsSolved()){
+			//We have to copy the pointer of atoms because after the rewriting the choiceAtom is deleted
+			ChoiceElement * newChoiceElement=new ChoiceElement;
+			for(unsigned i=0;i<choiceElement->getSize();i++)
+				newChoiceElement->add(choiceElement->getAtom(i));
+			atoms_single_choice.push_back(newChoiceElement);
+			element = new AggregateElement(first_atom->clone(),	first_atom->getTerms());
+		}else{
+
+			//Naf element to add in the choice rule
+			vector<Atom*> naf_elements;
+
+			createBodyRuleChoice(id,counter,choiceElement,auxiliaryAtomBody,terms_in_bodychoice,ruleRewrited,naf_elements,element,choice->isDefaultGuard());
+
+			Rule *aux_rule=createAuxChoiceRule(first_atom,naf_elements);
+
+
+			ruleRewrited.push_back(aux_rule);
+			counter++;
+
+		}
+		if(element!=nullptr)
+			// Create a new aggregate element
+			elements.push_back(element);
+	}
+
+	if(atoms_single_choice.size()>0){
+
+		for(auto choiceEle:atoms_single_choice)
+			rewriteBodyInChoice(choiceEle,ruleRewrited,auxiliaryAtomBody,id,counter);
+
+		Rule* aux_rule;
+		if(auxiliaryAtomBody!=nullptr)
+			aux_rule= createAuxChoiceRuleChoiceElement(atoms_single_choice,auxiliaryAtomBody->clone());
+		else
+			aux_rule= createAuxChoiceRuleChoiceElement(atoms_single_choice);
+		ruleRewrited.push_back(aux_rule);
+		counter++;
+	}
+
+
+	return elements;
+
+}
+
+Rule* AdvancedChoiceBaseInputRewriter::createAuxChoiceRuleChoiceElement(const vector<ChoiceElement*>& head,Atom* body){
+	Rule* aux_rule = new Rule;
+	Atom *choice_atom=new Choice;
+	choice_atom->setSecondBinop(GREATER_OR_EQ);
+	choice_atom->setSecondGuard(TermTable::getInstance()->term_zero);
+
+	for(auto choiceElement:head)
+		choice_atom->addChoiceElement(choiceElement);
+
+	aux_rule->addInHead(choice_atom);
+
+	if(body!=nullptr)
+		aux_rule->addInBody(body);
+
+	return aux_rule;
+}
+
+void  AdvancedChoiceBaseInputRewriter::rewriteBodyInChoice(ChoiceElement* choiceEle,vector<Rule*>& ruleRewrited,Atom* auxiliaryAtomBody,unsigned & id, unsigned & counter){
+	if(choiceEle->getSize()<=2) return;
+	Rule* aux_rule = new Rule;
+	set_term variableUnsafe;
+	set_term variableSafe;
+	for(unsigned i=1;i<choiceEle->getSize();i++){
+		Atom * atom=choiceEle->getAtom(i);
+		if(atom->isNegative() || atom->isBuiltIn()){
+			atom->getVariables(atom,variableUnsafe);
+		}else
+			atom->getVariables(atom,variableSafe);
+		aux_rule->addInBody(atom);
+	}
+	if(!Utils::isContained(variableUnsafe,variableSafe)){
+		//The aux rule is unsafe
+		aux_rule->addInBody(auxiliaryAtomBody);
+	}
+
+	string predicate_name=AUXILIARY+SEPARATOR+to_string(id)+SEPARATOR+to_string(++counter);
+	vector<Term*> terms(variableSafe.begin(),variableSafe.end());
+	Atom *atomHead=generateNewAuxiliaryAtom(predicate_name,terms);
+	aux_rule->addInHead(atomHead);
+
+	ruleRewrited.push_back(aux_rule);
+	vector<Atom*> atoms={choiceEle->getAtom(0),atomHead};
+	choiceEle->setChoiceElement(atoms);
+}
+
 
 void FirstSaviorChoosingPolicy::getRecursiveDependencies(const OrderRule& orderRule, unsigned savior_pos, vector<Atom*>& atomToAdd) {
 	vector<pair<unsigned int, Atom*>> atomDependencies = orderRule.getAtomsFromWhichDepends(savior_pos);
@@ -447,6 +556,9 @@ bool FirstSaviorChoosingPolicy::choose(Atom* atom,unsigned savior_pos,list<Atom*
 
 }
 
+
+
 } /* namespace grounder */
 } /* namespace DLV2 */
+
 

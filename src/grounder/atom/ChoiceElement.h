@@ -59,6 +59,13 @@ public:
 	///Return the variable in naf literal
 	set_term getVariableInNaf();
 
+	bool isBodyChoiceIsSolved(){
+//		for(unsigned i=1;i<choiceElement.size();i++)
+//			if(!choiceElement[i]->getPredicate()->isSolved())
+//				return false;
+		return true;
+	}
+
 	bool operator==(const ChoiceElement& choiceElement)const;
 
 	void deleteAtoms();

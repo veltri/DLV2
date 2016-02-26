@@ -122,15 +122,17 @@ bool OrderRule::order() {
 
 bool OrderRule::checkHeadSafety(){
 	set_term variableToCheck;
-	for(auto atom=rule->getBeginHead();atom!=rule->getEndHead();++atom){
-		const set_term& tempVariables=(*atom)->getVariable();
-		variableToCheck.insert(tempVariables.begin(),tempVariables.end());
-	}
-	if(rule->isChoiceRule()){
+	if(!rule->isChoiceRule()){
+		for(auto atom=rule->getBeginHead();atom!=rule->getEndHead();++atom){
+			const set_term& tempVariables=(*atom)->getVariable();
+			variableToCheck.insert(tempVariables.begin(),tempVariables.end());
+		}
+	}else{
 		Choice* choice=dynamic_cast<Choice*> (*rule->getBeginHead());
-		set_term variables=choice->getVariableToSave();
-		variableToCheck.insert(variables.begin(),variables.end());
+		variableToCheck=choice->getVariableToSave();
+
 	}
+
 	if(safeVariables.size()<variableToCheck.size())
 		return false;
 	for(auto variable:variableToCheck)

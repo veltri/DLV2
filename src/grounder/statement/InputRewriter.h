@@ -118,6 +118,15 @@ protected:
 
 };
 
+class AdvancedChoiceBaseInputRewriter : public ChoiceBaseInputRewriter{
+public:
+	virtual vector<AggregateElement*> rewriteChoiceElements(unsigned& id,unsigned& counter, Atom* choice, Atom* auxiliaryAtomBody,	vector<Rule*>& ruleRewrited);
+protected:
+	virtual Rule* createAuxChoiceRuleChoiceElement(const vector<ChoiceElement*>& head,Atom* body);
+	virtual Rule* createAuxChoiceRuleChoiceElement(const vector<ChoiceElement*>& head){return createAuxChoiceRuleChoiceElement(head,nullptr);}
+	virtual void  rewriteBodyInChoice(ChoiceElement* choiceEle,vector<Rule*>& ruleRewrited,Atom* auxiliaryAtomBody,unsigned & id, unsigned & counter);
+};
+
 
 } /* namespace grounder */
 } /* namespace DLV2 */
