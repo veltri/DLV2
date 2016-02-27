@@ -31,7 +31,6 @@ vector<Atom*> OrderRule::rewriteArith(Atom* current_atom,
 				newBuiltins.push_back(new BuiltInAtom(Binop::EQUAL, false, newTerm,current_atom->getTerm(i)));
 			}
 			current_atom->setTerm(i, newTerm);
-			current_atom->print();
 		}
 	}
 	return newBuiltins;
