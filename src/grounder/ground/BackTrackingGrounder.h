@@ -53,6 +53,9 @@ protected:
 	///Ground a choice in the head of the rule
 	virtual void groundChoice(bool& find_new_true_atom,bool& ground_new_atom);
 
+	///Ground a choice in the head of the rule
+	virtual void groundChoiceNatively(bool& find_new_true_atom, bool& ground_new_atom);
+
 	///Find the bind variable on rule
 	void findBindVariablesRule();
 
@@ -145,7 +148,7 @@ protected:
 
 private:
 	void findBoundTerms(unsigned int index_current_atom, unsigned position, Atom* current_atom);
-	void setIndexingStructureInHeadAndBody(unsigned position, unsigned atomPos, PredicateExtension* predicateExtension, Predicate* predicate, unordered_set<index_object>* componentPredicateInHead);
+	void setIndexingStructureInHeadAndBody(unsigned position, unsigned atomPos, PredicateExtension* predicateExtension, Predicate* predicate, unordered_set<index_object>* componentPredicateInHead, unsigned table);
 };
 
 } /* namespace grounder */

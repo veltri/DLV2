@@ -12,6 +12,7 @@
 #include <vector>
 #include "Atom.h"
 #include "Predicate.h"
+#include "algorithm"
 
 using namespace std;
 
@@ -49,6 +50,7 @@ public:
 	}
 	//Add an atom to the choice element
 	void add(Atom* atom){choiceElement.push_back(atom);}
+	void addAsAtoms(const vector<Atom*>& atoms) {choiceElement.insert(choiceElement.end(),atoms.begin(),atoms.end());}
 
 	///Return the predicates of naf literal in choice element
 	set_predicate getPredicateInNaf();
