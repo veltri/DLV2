@@ -460,12 +460,13 @@ void BackTrackingGrounder::findBoundTerms(unsigned int index_current_atom, unsig
 		for(auto v:vars){
 			unsigned localIdx=v->getLocalVariableIndex();
 			if(variablesBinder[localIdx]==-1 || (variablesBinder[localIdx]>=0 && unsigned(variablesBinder[localIdx])>=index_current_atom)){
-			bound=false;
+				bound=false;
 				break;
 			}
 		}
-		if (bound)
+		if (bound){
 			boundTermsInAtoms[index_current_atom][position].push_back(j);
+		}
 	}
 }
 
@@ -477,7 +478,8 @@ void BackTrackingGrounder::findBindVariablesRule() {
 	atoms_bind_variables.resize(currentRule->getSizeBody());
 	variablesBinder.setSize(currentRule->getVariablesSize(),-1);
 	boundTermsInAtoms.clear();
-	boundTermsInAtoms.resize(currentRule->getSizeBody());
+	unsigned sizeHead=currentRule->getSizeHead();
+	boundTermsInAtoms.resize(currentRule->getSizeBody()+sizeHead);
 
 	//For each atom determines the bound and the bind variables
 	for (auto current_atom_it = currentRule->getBeginBody(); current_atom_it != currentRule->getEndBody(); ++current_atom_it,++index_current_atom) {
@@ -505,20 +507,36 @@ void BackTrackingGrounder::findBindVariablesRule() {
 
 		if(current_atom->isClassicalLiteral()){
 			indexingArguments[index_current_atom].resize(1);
-			boundTermsInAtoms[index_current_atom].push_back(vector<unsigned>());
-			boundTermsInAtoms[index_current_atom][0].reserve(current_atom->getTermsSize());
+			boundTermsInAtoms[index_current_atom+sizeHead].push_back(vector<unsigned>());
+			boundTermsInAtoms[index_current_atom+sizeHead][0].reserve(current_atom->getTermsSize());
 			findBoundTerms(index_current_atom, 0, current_atom);
 		}
 		else if(current_atom->isAggregateAtom()){
 			indexingArguments[index_current_atom].resize(current_atom->getAggregateElementsSize());
 			for(unsigned ag=0;ag<current_atom->getAggregateElementsSize();++ag){
-				boundTermsInAtoms[index_current_atom].push_back(vector<unsigned>());
-				boundTermsInAtoms[index_current_atom][ag].reserve(current_atom->getTermsSize());
+				boundTermsInAtoms[index_current_atom+sizeHead].push_back(vector<unsigned>());
+				boundTermsInAtoms[index_current_atom+sizeHead][ag].reserve(current_atom->getTermsSize());
 				findBoundTerms(index_current_atom, ag, current_atom->getAggregateElement(ag)->getNafLiteral(0));
 			}
 		}
-
 	}
+
+//	if(Options::globalOptions()->getRewritingType()==COMPACT_NATIVE_CHOICE){
+//		index_current_atom=0;
+//		for (auto current_atom_it = currentRule->getBeginHead(); current_atom_it != currentRule->getEndHead(); ++current_atom_it) {
+//			Atom *current_atom = *current_atom_it;
+//			if(current_atom->isChoice()){
+//				for(unsigned i=0;i<current_atom->getChoiceElementsSize();++i){
+//					Atom* atomInChoice=current_atom->getChoiceElement(i)->getAtom(1);
+//					if(atomInChoice!=nullptr){
+//						boundTermsInAtoms[index_current_atom].push_back(vector<unsigned>());
+//						boundTermsInAtoms[index_current_atom][i].reserve(atomInChoice->getTermsSize());
+//						findBoundTerms(index_current_atom, i, atomInChoice);
+//					}
+//				}
+//			}
+//		}
+//	}
 
 	current_assignment.setSize(currentRule->getVariablesSize(),nullptr);
 
@@ -531,9 +549,10 @@ void BackTrackingGrounder::findBindVariablesRule() {
 
 
 	trace_action_tag(backtracking,1,
-		cerr<<"BINDER OF ATOMS: ";int i=0;
+		cerr<<"BINDER OF ATOMS: ";
+		int i=0;
 		for(auto v:atoms_bind_variables){
-			cerr<<"ATOM"<<i<<"[ ";
+			cerr<<"ATOM "<<i<<" [ ";
 			for(auto binder:v){
 				cerr<<binder<<" ";
 			}
@@ -542,6 +561,18 @@ void BackTrackingGrounder::findBindVariablesRule() {
 		}
 		cerr<<endl;
 	);
+
+	for(unsigned i=0;i<boundTermsInAtoms.size();++i){
+		if(i<sizeHead)
+			currentRule->getAtomInHead(i)->print();
+		else
+			currentRule->getAtomInBody(i-sizeHead)->print();
+		cout<<"\t";
+		for(auto j:boundTermsInAtoms[i])
+			for(auto a:j)
+				cout<<a<<" ";
+		cout<<endl;
+	}
 }
 
 void BackTrackingGrounder::findSearchTables() {
@@ -937,7 +968,7 @@ void BackTrackingGrounder::createAtomSearchersForPredicateBody(unsigned position
 		unsigned table=tablePair.first;
 		predicateExtension->getAtomSearcher(table)->setSizeResultVector(sizeRule);
 		IndexingStructure* atomSearcher;
-		if(boundTermsInAtoms[position-currentRule->getSizeHead()][atomPos].size()==predicate->getArity()){
+		if(boundTermsInAtoms[position][atomPos].size()==predicate->getArity()){
 			auto atomSearcherMAP=predicateExtension->getIndexingStructure(table,MAP);
 			auto atomSearcherHASH=predicateExtension->getIndexingStructure(table,HASHSET);
 			if(atomSearcherMAP!=nullptr)
@@ -949,14 +980,14 @@ void BackTrackingGrounder::createAtomSearchersForPredicateBody(unsigned position
 				atomSearcher=predicateExtension->addAtomSearcher(table,MAP,&terms);
 			}
 		}
-		else if(!boundTermsInAtoms[position-currentRule->getSizeHead()][atomPos].empty()){
+		else if(!boundTermsInAtoms[position][atomPos].empty()){
 			int indexingTermSetByUser=Options::globalOptions()->getPredicateIndexTerm(predicate->getName());
 			unsigned bestArg=0;
 			unsigned bestSelectivityArg=0;
 			unsigned nextBestArg=0;
 			unsigned nextBestSelectivityArg=0;
 			PredicateInformation* predicateInfo=predicateExtTable->getPredicateExt(predicate)->getPredicateInformation();
-			for(auto boundArg:boundTermsInAtoms[position-currentRule->getSizeHead()][atomPos]){
+			for(auto boundArg:boundTermsInAtoms[position][atomPos]){
 				if(indexingTermSetByUser>=0 && boundArg==unsigned(indexingTermSetByUser)){
 					bestArg=indexingTermSetByUser;
 					break;

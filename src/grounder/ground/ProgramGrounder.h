@@ -168,7 +168,7 @@ private:
 	void orderPositiveAtomsBody(Rule* rule);
 
 	///Utility method for setDefaultAtomSearchers
-	void createAtomSearchersForPredicateHead(unsigned position, Predicate* predicate, Rule* rule);
+	void createAtomSearchersForPredicateHead(unsigned position, unsigned choiceElementPos, Predicate* predicate, Rule* rule);
 };
 
 };

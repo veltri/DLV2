@@ -82,7 +82,7 @@ void ProgramGrounder::orderPositiveAtomsBody(vector<unsigned>& originalOrderBody
 	rule->computeVariablesLocalIndices();
 	unsigned sizeRule=rule->getSizeBody();
 	predicate_searchInsert_atomSearcher.clear();
-	predicate_searchInsert_atomSearcher.resize(rule->getSizeHead()+rule->getSizeBody());
+	predicate_searchInsert_atomSearcher.resize(rule->getSizeHead()+sizeRule);
 	OrderRuleGroundable* orderRuleGroundable = OrderRuleGroundableFactory::getInstance(rule);
 	if (orderRuleGroundable != nullptr) {
 		orderRuleGroundable->order(predicate_searchInsert_table,predicate_searchInsert_atomSearcher,originalOrderBody,componentPredicateInHead);
@@ -189,6 +189,7 @@ void ProgramGrounder::ground() {
 			++iterationToInsert;
 			++iteration;
 
+
 			//Further Iterations
 			while (found_something) {
 //				trace_msg(grounding,1,"Further Iterations");
@@ -211,8 +212,9 @@ void ProgramGrounder::ground() {
 //						trace_action_tag(grounding,2,printTableInRule(rule,predicate_searchInsert_table););
 
 						orderPositiveAtomsBody(originalOrderBody[i],rule,&componentPredicateInHead[component]);
-						if (groundRule(rule,&componentPredicateInHead[component]))
+                                                                                              						if (groundRule(rule,&componentPredicateInHead[component])){
 							found_something = true;
+						}
 
 						trace_action_tag(grounding,1,cerr<<"Found New Knowledge: "<<found_something;);
 						trace_msg(grounding,1,"After the first iteration the tables to insert in  are: ");
@@ -533,7 +535,7 @@ ProgramGrounder::~ProgramGrounder() {
 //	}
 //}
 
-void ProgramGrounder::createAtomSearchersForPredicateHead(unsigned position, Predicate* predicate, Rule* rule) {
+void ProgramGrounder::createAtomSearchersForPredicateHead(unsigned position, unsigned choiceElementPos, Predicate* predicate, Rule* rule) {
 	unsigned sizeRule=rule->getSizeBody();
 	PredicateExtension* predicateExtension = predicateExtTable->getPredicateExt(predicate);
 
@@ -569,13 +571,13 @@ void ProgramGrounder::setDefaultAtomSearchers(Rule* rule, unordered_set<index_ob
 	for(auto atom=rule->getBeginHead();atom!=rule->getEndHead();++atom,++atomIndex){
 		if((*atom)->isClassicalLiteral()){
 			Predicate *predicate=(*atom)->getPredicate();
-			createAtomSearchersForPredicateHead(atomIndex, predicate,rule);
+			createAtomSearchersForPredicateHead(atomIndex, 0,  predicate, rule);
 		}
 		else if((*atom)->isChoice()){
 			for(unsigned i=0;i<(*atom)->getChoiceElementsSize();++i){
 				Predicate *predicate=(*atom)->getChoiceElement(i)->getFirstAtom()->getPredicate();
 				if(predicate!=nullptr)
-					createAtomSearchersForPredicateHead(atomIndex, predicate,rule);
+					createAtomSearchersForPredicateHead(atomIndex, i, predicate, rule);
 			}
 		}
 	}
