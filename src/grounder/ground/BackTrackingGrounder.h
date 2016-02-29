@@ -135,7 +135,8 @@ protected:
 	/// (if either the predicate is solved or all the terms are of output the corresponding vector is empty)
 	vector<vector<unsigned>> outputVariablesInAtoms;
 
-	virtual void createAtomSearchersForPredicateBody(unsigned position, unsigned atomPos, Predicate* predicate, unsigned sizeRule, unordered_set<index_object>* componentPredicateInHead);
+	virtual void createAtomSearchersForPredicateBody(unsigned position, unsigned atomPos, Predicate* predicate, unordered_set<index_object>* componentPredicateInHead);
+	virtual void createAtomSearchersForPredicateHead(unsigned position, unsigned choiceElementPos, Predicate* predicate, unordered_set<index_object>* componentPredicateInHead,bool firstAtom);
 
 #ifdef TRACE_ON
 	/// Print the current assignment
@@ -144,6 +145,7 @@ protected:
 
 private:
 	void findBoundTerms(unsigned int index_current_atom, unsigned position, Atom* current_atom);
+	void setIndexingStructureInHeadAndBody(unsigned position, unsigned atomPos, PredicateExtension* predicateExtension, Predicate* predicate, unordered_set<index_object>* componentPredicateInHead);
 };
 
 } /* namespace grounder */

@@ -151,7 +151,9 @@ protected:
 	void setDefaultAtomSearchers(Rule* r, unordered_set<index_object>* componentPredicateInHead);
 
 	///Utility method for setDefaultAtomSearchers
-	virtual void createAtomSearchersForPredicateBody(unsigned position, unsigned atomPos, Predicate* predicate, unsigned sizeRule, unordered_set<index_object>* componentPredicateInHead){};
+	virtual void createAtomSearchersForPredicateBody(unsigned position, unsigned atomPos, Predicate* predicate, unordered_set<index_object>* componentPredicateInHead){};
+	///Utility method for setDefaultAtomSearchers
+	virtual void createAtomSearchersForPredicateHead(unsigned position, unsigned choiceElementPos, Predicate* predicate, unordered_set<index_object>* componentPredicateInHead, bool firstAtom){};
 
 	//Iteration of the current instantiation
 	unsigned iteration;
@@ -167,8 +169,6 @@ private:
 	void orderPositiveAtomsBody(vector<unsigned>& originalOrderBody,Rule* rule, unordered_set<index_object>* componentPredicateInHead);
 	void orderPositiveAtomsBody(Rule* rule);
 
-	///Utility method for setDefaultAtomSearchers
-	void createAtomSearchersForPredicateHead(unsigned position, unsigned choiceElementPos, Predicate* predicate, Rule* rule);
 };
 
 };
