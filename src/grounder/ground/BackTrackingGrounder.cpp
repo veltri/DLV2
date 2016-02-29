@@ -459,7 +459,7 @@ void BackTrackingGrounder::findBoundTerms(unsigned int index_current_atom, unsig
 		bool bound = true;
 		for(auto v:vars){
 			unsigned localIdx=v->getLocalVariableIndex();
-			if(variablesBinder[localIdx]==-1 || (variablesBinder[localIdx]>=0 && unsigned(variablesBinder[localIdx])>=index_current_atom)){
+			if(variablesBinder[localIdx]==-1 || (index_current_atom>=currentRule->getSizeHead() && variablesBinder[localIdx]>=0 && unsigned(variablesBinder[localIdx])>=index_current_atom-currentRule->getSizeHead())){
 				bound=false;
 				break;
 			}
@@ -509,14 +509,14 @@ void BackTrackingGrounder::findBindVariablesRule() {
 			indexingArguments[index_current_atom].resize(1);
 			boundTermsInAtoms[index_current_atom+sizeHead].push_back(vector<unsigned>());
 			boundTermsInAtoms[index_current_atom+sizeHead][0].reserve(current_atom->getTermsSize());
-			findBoundTerms(index_current_atom, 0, current_atom);
+			findBoundTerms(index_current_atom+sizeHead, 0, current_atom);
 		}
 		else if(current_atom->isAggregateAtom()){
 			indexingArguments[index_current_atom].resize(current_atom->getAggregateElementsSize());
 			for(unsigned ag=0;ag<current_atom->getAggregateElementsSize();++ag){
 				boundTermsInAtoms[index_current_atom+sizeHead].push_back(vector<unsigned>());
 				boundTermsInAtoms[index_current_atom+sizeHead][ag].reserve(current_atom->getTermsSize());
-				findBoundTerms(index_current_atom, ag, current_atom->getAggregateElement(ag)->getNafLiteral(0));
+				findBoundTerms(index_current_atom+sizeHead, ag, current_atom->getAggregateElement(ag)->getNafLiteral(0));
 			}
 		}
 	}
