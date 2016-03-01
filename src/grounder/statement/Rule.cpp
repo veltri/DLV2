@@ -293,7 +293,7 @@ void Rule::computeVariablesLocalIndices() {
 			}
 		}
 	}
-	if(head[0]->isChoice()){
+	if(head.size()==1 && head[0]->isChoice()){
 		for(unsigned i=0;i<head[0]->getChoiceElementsSize();++i){
 			ChoiceElement* choiceEl=head[0]->getChoiceElement(i);
 			if(choiceEl->getSize()>1){
@@ -304,7 +304,7 @@ void Rule::computeVariablesLocalIndices() {
 							term->setLocalVariableIndex(variableLocalIndex.size()+1);
 							variableLocalIndex.insert(term);
 							trace_action_tag(grounding,1,
-								cerr<<"VARIABLE-INDEX : ";term->print(cerr);cerr<<" = "<<term->getLocalVariableIndex()<<endl;
+								cerr<<"VARIABLE-INDEX: ";term->print(cerr);cerr<<" = "<<term->getLocalVariableIndex()<<endl;
 							);
 						}
 					}

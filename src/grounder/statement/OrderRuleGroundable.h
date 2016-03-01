@@ -42,9 +42,9 @@ public:
 	OrderRuleGroundable(Rule* rule, Priority p):predicateExtTable(PredicateExtTable::getInstance()),rule(rule),priorities(p),componentPredicateInHead(0){}
 	virtual ~OrderRuleGroundable(){}
 	///This method orders the body of a given exit rule
-	vector<unsigned> order(vector<vector<pair<unsigned,SearchType>>>& predicate_searchInsert_table, vector<vector<IndexingStructure*>>& predicate_searchInsert_atomSearcher, unordered_set<index_object>* componentPredicateInHead=0);
+	vector<unsigned> order(vector<vector<pair<unsigned,SearchType>>>& predicate_searchInsert_table, vector<vector<vector<IndexingStructure*>>>& predicate_searchInsert_atomSearcher, unordered_set<index_object>* componentPredicateInHead=0);
 	///This method orders the body of a given recursive rule
-	void order(vector<vector<pair<unsigned,SearchType>>>& predicate_searchInsert_table,vector<vector<IndexingStructure*>>& predicate_searchInsert_atomSearcher, vector<unsigned>& originalOrderBody, unordered_set<index_object>* componentPredicateInHead=0);
+	void order(vector<vector<pair<unsigned,SearchType>>>& predicate_searchInsert_table,vector<vector<vector<IndexingStructure*>>>& predicate_searchInsert_atomSearcher, vector<unsigned>& originalOrderBody, unordered_set<index_object>* componentPredicateInHead=0);
 
 	/// This method assigns to each remained atom (to be added in the sorted body) a weight,
 	/// and returns the iterator to the atom with the best weight.
@@ -68,7 +68,7 @@ protected:
 
 	/// For each predicate in the current rule this vector stores the atom searchers of insertion and look-up for head atoms and
 	/// the atom searchers of look-up for body atoms
-	vector<vector<IndexingStructure*>> orderdedPredicateSearchInsertAtomSearcher;
+	vector<vector<vector<IndexingStructure*>>> orderdedPredicateSearchInsertAtomSearcher;
 
 	//Set of recursive predicates
 	unordered_set<index_object>* componentPredicateInHead;

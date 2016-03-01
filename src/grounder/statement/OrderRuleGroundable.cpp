@@ -53,7 +53,7 @@ void OrderRuleGroundable::applyBinderSplittingRewriting() {
 
 /****************************************** OrderRuleGroundable ***********************************************/
 
-vector<unsigned> OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchType>>>& predicate_searchInsert_table, vector<vector<IndexingStructure*>>& predicate_searchInsert_atomSearcher, unordered_set<index_object>* componentPredicateInHead) {
+vector<unsigned> OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchType>>>& predicate_searchInsert_table, vector<vector<vector<IndexingStructure*>>>& predicate_searchInsert_atomSearcher, unordered_set<index_object>* componentPredicateInHead) {
 	this->predicate_searchInsert_table=predicate_searchInsert_table;
 	unsigned sizeBody=rule->getSizeBody();
 	atomsVariables.resize(sizeBody);
@@ -139,12 +139,10 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchTy
 	if(!Options::globalOptions()->isDisabledAnonymousFilter())
 		applyBinderSplittingRewriting();
 
-	rule->getRuleInformation().print();
-
 	return orderedPositions;
 }
 
-void OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchType>> >& predicate_searchInsert_table, vector<vector<IndexingStructure*>>& predicate_searchInsert_atomSearcher, vector<unsigned>& originalOrderBody, unordered_set<index_object>* componentPredicateInHead) {
+void OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchType>> >& predicate_searchInsert_table, vector<vector<vector<IndexingStructure*>>>& predicate_searchInsert_atomSearcher, vector<unsigned>& originalOrderBody, unordered_set<index_object>* componentPredicateInHead) {
 	vector<unsigned> orderedPositions=order(predicate_searchInsert_table,predicate_searchInsert_atomSearcher,componentPredicateInHead);
 	vector<unsigned> newOriginalOrderBody;
 	newOriginalOrderBody.resize(originalOrderBody.size());
@@ -1010,7 +1008,8 @@ bool CombinedCriterion::setAtomSearcher(Atom* atom, unsigned orginalPosition,uns
 				else
 					atomSearcher=predicateExtension->addAtomSearcher(table, &indexingTerm);
 			}
-			orderdedPredicateSearchInsertAtomSearcher[newPosition+rule->getSizeHead()].push_back(atomSearcher);
+			orderdedPredicateSearchInsertAtomSearcher[newPosition+rule->getSizeHead()].push_back(vector<IndexingStructure*>());
+			orderdedPredicateSearchInsertAtomSearcher[newPosition+rule->getSizeHead()][0].push_back(atomSearcher);
 		//	indexingArguments[position-currentRule->getSizeHead()][atomPos]=bestArg;
 		}
 		return true;

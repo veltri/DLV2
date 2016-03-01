@@ -151,7 +151,6 @@ void DependencyGraph::addInDependency(Rule* r) {
 		if( head_atom->isChoice()){
 			for(unsigned i=0;i<head_atom->getChoiceElementsSize();i++){
 				for(auto pred_body:head_atom->getChoiceElement(i)->getPredicatePositiveInNaf()){
-					cout<<"add "<<pred_body->getName()<<" "<<head_atom->getChoiceElement(i)->getFirstAtom()->getPredicate()->getName()<<endl;
 					addEdge(pred_body->getIndex(), head_atom->getChoiceElement(i)->getFirstAtom()->getPredicate()->getIndex(),1);
 				}
 			}

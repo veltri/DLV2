@@ -533,7 +533,7 @@ void  AdvancedChoiceBaseInputRewriter::rewriteBodyInChoice(ChoiceElement* choice
 	aux_rule->addInHead(atomHead);
 
 	ruleRewrited.push_back(aux_rule);
-	vector<Atom*> atoms={choiceEle->getAtom(0),atomHead};
+	vector<Atom*> atoms={choiceEle->getAtom(0),atomHead->clone()};
 	choiceEle->setChoiceElement(atoms);
 }
 

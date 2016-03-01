@@ -95,10 +95,10 @@ void ProgramGrounder::orderPositiveAtomsBody(Rule* rule) {
 	predicate_searchInsert_atomSearcher.clear();
 	predicate_searchInsert_atomSearcher.resize(rule->getSizeHead()+rule->getSizeBody());
 	OrderRuleGroundable* orderRuleGroundable = OrderRuleGroundableFactory::getInstance(rule);
-//	if (orderRuleGroundable != nullptr) {
-//		orderRuleGroundable->order(predicate_searchInsert_table,predicate_searchInsert_atomSearcher);
-//		delete orderRuleGroundable;
-//	}
+	if (orderRuleGroundable != nullptr) {
+		orderRuleGroundable->order(predicate_searchInsert_table,predicate_searchInsert_atomSearcher);
+		delete orderRuleGroundable;
+	}
 }
 
 void ProgramGrounder::ground() {
