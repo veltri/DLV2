@@ -973,67 +973,81 @@ void BackTrackingGrounder::groundChoiceNatively(bool& find_new_true_atom,bool& g
 	for(unsigned i=0;i<numChoiceElements;i++){
 		Atom* innerAtom=choice->getChoiceElement(i)->getAtom(1);
 		//TODO Se il primo atomo è un built in
-		if(innerAtom!=nullptr && innerAtom->isClassicalLiteral()){
-			Atom* atomFound=nullptr;
-			vector<unsigned> bind_variables;
-			for(unsigned a=0;a<innerAtom->getPredicate()->getArity();++a){
-				bool bind=true;
-				for(auto b: boundTermsInAtoms[0][i]){
-					if(a==b){
-						bind=false;
-						break;
-					}
+		if(innerAtom!=nullptr){
+			if(innerAtom->isBuiltIn()){
+//				vector<unsigned> bindVariables;
+//				for(auto v:innerAtom->getVariable()){
+//					if(variablesBinder[v->getLocalVariableIndex()]==-1)
+//						bindVariables.push_back(v->getLocalVariableIndex());
+//				}
+				bool evaluation = innerAtom->groundAndEvaluate(current_assignment);
+				if(evaluation){
+					groundChoiceFirstAtom(choice->getChoiceElement(i)->getFirstAtom(),i,ground_new_atom,ground_choice);
+//					removeBindValueFromAssignment(bindVariables);
 				}
-				if(bind)
-					bind_variables.push_back(innerAtom->getTerm(a)->getLocalVariableIndex());
 			}
-			if(templateAtomsInChoice[i]==nullptr)
-				innerAtom->ground(current_assignment,templateAtomsInChoice[i]);
-
-			PredicateExtension* predicateExt=predicateExtTable->getPredicateExt(innerAtom->getPredicate());
-			bool firstMatch=true;
-			unsigned table=0;
-			IndexingStructure* indexingStructure=0;
-
-			while(table<=1){
-				AtomSearcher* atomSearcher=predicateExt->getAtomSearcher(table);
-				unsigned indexStruct=predicate_searchInsert_atomSearcher[0][i].size()-(1+table);
-				indexingStructure=predicate_searchInsert_atomSearcher[0][i][indexStruct];
-
-				if(indexingStructure==nullptr){
-					table++;
-					firstMatch=true;
-					continue;
-				}
-
-				if(bind_variables.empty()){
-					atomFound=atomSearcher->findGroundAtom(templateAtomsInChoice[i],indexingStructure);
-					table++;
-					if(atomFound==nullptr)
-						continue;
-				}
-				else{
-					if(firstMatch){
-						atomSearcher->firstMatch(i,templateAtomsInChoice[i],current_assignment,atomFound,currentRule->getRuleInformation(),indexingStructure,0,vector<unsigned>(),{ALL,0});
-						if(atomFound==nullptr){
-							table++;
-							continue;
+			else if(innerAtom->isClassicalLiteral()){
+				Atom* atomFound=nullptr;
+				vector<unsigned> bind_variables;
+				for(unsigned a=0;a<innerAtom->getPredicate()->getArity();++a){
+					bool bind=true;
+					for(auto b: boundTermsInAtoms[0][i]){
+						if(a==b){
+							bind=false;
+							break;
 						}
-						else
-							firstMatch=false;
+					}
+					if(bind)
+						bind_variables.push_back(innerAtom->getTerm(a)->getLocalVariableIndex());
+				}
+				if(templateAtomsInChoice[i]==nullptr)
+					innerAtom->ground(current_assignment,templateAtomsInChoice[i]);
+
+				PredicateExtension* predicateExt=predicateExtTable->getPredicateExt(innerAtom->getPredicate());
+				bool firstMatch=true;
+				unsigned table=0;
+				IndexingStructure* indexingStructure=0;
+
+				while(table<=1){
+					AtomSearcher* atomSearcher=predicateExt->getAtomSearcher(table);
+					unsigned indexStruct=predicate_searchInsert_atomSearcher[0][i].size()-(1+table);
+					indexingStructure=predicate_searchInsert_atomSearcher[0][i][indexStruct];
+
+					if(indexingStructure==nullptr){
+						table++;
+						firstMatch=true;
+						continue;
+					}
+
+					if(bind_variables.empty()){
+						atomFound=atomSearcher->findGroundAtom(templateAtomsInChoice[i],indexingStructure);
+						table++;
+						if((atomFound==nullptr && !innerAtom->isNegative()) || (atomFound!=nullptr && innerAtom->isNegative()))
+							continue;
 					}
 					else{
-						atomSearcher->nextMatch(i,templateAtomsInChoice[i],current_assignment,atomFound,currentRule->getRuleInformation(),vector<unsigned>());
-						if(atomFound==nullptr){
-							table++;
-							firstMatch=true;
-							continue;
+						if(firstMatch){
+							atomSearcher->firstMatch(i,templateAtomsInChoice[i],current_assignment,atomFound,currentRule->getRuleInformation(),indexingStructure,0,vector<unsigned>(),{ALL,0});
+							if(atomFound==nullptr){
+								table++;
+								continue;
+							}
+							else
+								firstMatch=false;
+						}
+						else{
+							atomSearcher->nextMatch(i,templateAtomsInChoice[i],current_assignment,atomFound,currentRule->getRuleInformation(),vector<unsigned>());
+							if(atomFound==nullptr){
+								table++;
+								firstMatch=true;
+								continue;
+							}
 						}
 					}
-				}
 
-				groundChoiceFirstAtom(choice->getChoiceElement(i)->getFirstAtom(),i,ground_new_atom,ground_choice);
-				removeBindValueFromAssignment(bind_variables);
+					groundChoiceFirstAtom(choice->getChoiceElement(i)->getFirstAtom(),i,ground_new_atom,ground_choice);
+					removeBindValueFromAssignment(bind_variables);
+				}
 			}
 		}
 		else
