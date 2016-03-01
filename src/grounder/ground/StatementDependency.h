@@ -206,6 +206,12 @@ public:
 		return (!statementAtomMapping.isInHead(predicate));
 	}
 
+	void addChoiceToRewrite(Rule* rule){
+		choices.push_back(rule);
+	}
+
+	void rewriteChoice();
+
 	///Printer method
 	void print();
 
@@ -253,6 +259,8 @@ private:
 	vector<Rule*> constraints;
 	/// The vector of weak contraints composing the program
 	vector<Rule*> weak;
+	///Choice to rewrite at the end
+	vector<Rule*> choices;
 	/// This method checks if a rule is a recursive rule or an exit rule
 	/// An rule occurring in a component is recursive if there is a predicate belonging
 	/// to the component in its positive body, otherwise it is said to be an exit rule.

@@ -102,6 +102,7 @@ void ProgramGrounder::orderPositiveAtomsBody(Rule* rule) {
 }
 
 void ProgramGrounder::ground() {
+	statementDependency->rewriteChoice();
 
 	//Create the dependency graph
 	statementDependency->createDependencyGraph(predicateTable);
@@ -117,6 +118,7 @@ void ProgramGrounder::ground() {
 	vector<Rule*> remainedConstraint;
 	vector<unordered_set<index_object>> componentPredicateInHead;
 	statementDependency->createComponentGraphAndComputeAnOrdering(exitRules, recursiveRules, componentPredicateInHead,constraintRules,remainedConstraint);
+
 
 	trace_msg(grounding,1,"Grounding Starts Now.");
 

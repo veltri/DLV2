@@ -17,7 +17,8 @@
 #include "../../util/Utils.h"
 
 #include "../table/PredicateExtension.h"
-
+#include "../statement/InputRewriter.h"
+#include "../../input/InMemoryInputBuilder.h"
 namespace DLV2{
 
 
@@ -779,6 +780,34 @@ StatementDependency* StatementDependency::getInstance(){
 	return statementDependency;
 }
 
+void StatementDependency::rewriteChoice(){
+	if(choices.empty())return;
+	InputRewriter* inputRewriter;
+	switch (Options::globalOptions()->getRewritingType()) {
+		case DISJUNCTION:
+			inputRewriter=new BaseInputRewriter();
+			break;
+		case COMPACT_NATIVE_CHOICE:
+			inputRewriter=new AdvancedChoiceBaseInputRewriter();
+			break;
+		default:
+			inputRewriter=new ChoiceBaseInputRewriter();
+			break;
+	}
+
+	for(auto rule:choices){
+
+		vector<Rule*> rules;
+		inputRewriter->translateChoice(rule, rules);
+		for (auto r : rules){
+			if(r->isMustBeRewritedForAggregates()){
+				InMemoryInputBuilder::rewriteAggregate(r,inputRewriter,this);
+			}else
+				InMemoryInputBuilder::manageSimpleRule(r,this);
+		}
+
+	}
+}
 
 
 };

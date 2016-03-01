@@ -445,9 +445,8 @@ vector<AggregateElement*> AdvancedChoiceBaseInputRewriter::rewriteChoiceElements
 		Atom* first_atom = choiceElement->getFirstAtom();
 		AggregateElement* element=nullptr;
 
-
 		//Put the choice element with one atom or have the body of choice element solved, in one new choice
-		if(choiceElement->isBodyChoiceIsSolved()){
+		if(choiceElement->isBodyChoiceIsSolved() && choiceElement->haveOnlyEqualBuiltin()){
 			//We have to copy the pointer of atoms because after the rewriting the choiceAtom is deleted
 			ChoiceElement * newChoiceElement=new ChoiceElement;
 			for(unsigned i=0;i<choiceElement->getSize();i++)

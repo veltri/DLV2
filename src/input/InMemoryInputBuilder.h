@@ -82,6 +82,11 @@ public:
 
     void newTerm(char*);
 
+	static void safetyError(bool condition,string message);
+
+	static void rewriteAggregate(Rule* rule,InputRewriter* inputRewriter,StatementDependency* statementDependency);
+	static void manageSimpleRule(Rule* rule,StatementDependency * statementDependency);
+
 private:
 
     TermTable *termTable;
@@ -117,6 +122,10 @@ private:
 
 	Term* level;
 
+	vector<Rule*> choiceRule;
+
+	bool rewriteChoiceAtEnd;
+
 	bool hiddenNewPredicate;
 
  	void addRule(Rule* rule);
@@ -134,7 +143,8 @@ private:
 	void rewriteChoice(Rule* rule);
 	void manageSimpleRule(Rule* rule);
 
-	void safetyError(bool condition,string message);
+
+
 };
 
 } /* namespace grounder */

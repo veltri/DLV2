@@ -51,7 +51,8 @@ InMemoryInputBuilder::InMemoryInputBuilder() :
 	currentChoiceElement(new ChoiceElement),
 	weight(nullptr),
 	level(nullptr),
-	hiddenNewPredicate(false)
+	hiddenNewPredicate(false),
+	rewriteChoiceAtEnd(false)
 {
 
 	Options * opt=Options::globalOptions();
@@ -80,6 +81,9 @@ InMemoryInputBuilder::InMemoryInputBuilder() :
 			predicateTable->getInstance()->insertPredicate(predicate);
 		}
 	}
+
+	if(opt->getRewritingType()==COMPACT_NATIVE_CHOICE)
+		rewriteChoiceAtEnd=true;
 
 }
 
@@ -556,6 +560,10 @@ void InMemoryInputBuilder::onAggregate(bool naf) {
 }
 
 void InMemoryInputBuilder::rewriteAggregate(Rule* rule) {
+	rewriteAggregate(rule,inputRewriter,statementDependency);
+}
+
+void InMemoryInputBuilder::rewriteAggregate(Rule* rule,InputRewriter* inputRewriter,StatementDependency* statementDependency) {
 	//Sort the rule and check for safety
 	OrderRule orderRule(rule);
 	bool isSafe = orderRule.order();
@@ -586,7 +594,12 @@ void InMemoryInputBuilder::rewriteChoice(Rule* rule) {
 	}
 }
 
+
 void InMemoryInputBuilder::manageSimpleRule(Rule* rule) {
+	manageSimpleRule(rule,statementDependency);
+}
+
+void InMemoryInputBuilder::manageSimpleRule(Rule* rule,StatementDependency * statementDependency) {
 	OrderRule orderRule(rule);
 	bool isSafe = orderRule.order();
 	safetyError(isSafe,"RULE IS UNSAFE");
@@ -595,9 +608,12 @@ void InMemoryInputBuilder::manageSimpleRule(Rule* rule) {
 }
 
 void InMemoryInputBuilder::addRule(Rule* rule) {
-	if(rule->isChoiceRule())
-		rewriteChoice(rule);
-	else if(rule->isMustBeRewritedForAggregates())
+	if(rule->isChoiceRule()){
+		if(rewriteChoiceAtEnd)
+			statementDependency->addChoiceToRewrite(rule);
+		else
+			rewriteChoice(rule);
+	}else if(rule->isMustBeRewritedForAggregates())
 		rewriteAggregate(rule);
 	else
 		manageSimpleRule(rule);
