@@ -1032,45 +1032,12 @@ void BackTrackingGrounder::groundChoiceNatively(bool& find_new_true_atom,bool& g
 					}
 				}
 
-				Atom *atom_in_choice=choice->getChoiceElement(i)->getFirstAtom();
-				Atom *headGroundAtom=nullptr;
-				atom_in_choice->ground(current_assignment,headGroundAtom);
-				PredicateExtension* predicateExt1=predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
-
-				for(unsigned j=0;j<predicate_searchInsert_atomSearcher[0][i].size()-2;++j){
-					auto *searcher=predicate_searchInsert_atomSearcher[0][i][j];
-					if(searcher==nullptr) continue;
-					searchAtom=searcher->find(headGroundAtom);
-					if(searchAtom!=nullptr){
-						break;
-					}
-				}
-
-				if(searchAtom==nullptr){
-					ground_new_atom = true;
-
-					headGroundAtom->setFact(false);
-					predicateExt1->addAtom(headGroundAtom,predicate_searchInsert_table[0][0].first,iterationToInsert);
-
-//					if(atomFound!=nullptr){
-//						ChoiceElement* choiceElement=new ChoiceElement;
-//						choiceElement->add(headGroundAtom);
-//						choiceElement->add(atomFound);
-//						ground_choice->addChoiceElement(choiceElement);
-//					}
-//					else
-						ground_choice->addSingleChoiceElement(headGroundAtom);
-
-				}else{
-					searchAtom->print();
-					delete headGroundAtom;
-
-					//Check if previous is false now is true ground_new atom i have put true
-					ground_choice->addSingleChoiceElement(searchAtom);
-				}
+				groundChoiceFirstAtom(choice->getChoiceElement(i)->getFirstAtom(),i,ground_new_atom,ground_choice);
 				removeBindValueFromAssignment(bind_variables);
 			}
 		}
+		else
+			groundChoiceFirstAtom(choice->getChoiceElement(i)->getFirstAtom(),i,ground_new_atom,ground_choice);
 	}
 
 
@@ -1083,6 +1050,37 @@ void BackTrackingGrounder::groundChoiceNatively(bool& find_new_true_atom,bool& g
 		delete templateAtomsInChoice[i];
 	}
 
+}
+
+
+void BackTrackingGrounder::groundChoiceFirstAtom(Atom* firstAtom, unsigned i, bool& ground_new_atom, Atom* ground_choice){
+	Atom* searchAtom=nullptr;
+	Atom * headGroundAtom=nullptr;
+	firstAtom->ground(current_assignment,headGroundAtom);
+	PredicateExtension* predicateExt1=predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
+
+	for(unsigned j=0;j<predicate_searchInsert_atomSearcher[0][i].size()-2;++j){
+		auto *searcher=predicate_searchInsert_atomSearcher[0][i][j];
+		if(searcher==nullptr) continue;
+		searchAtom=searcher->find(headGroundAtom);
+		if(searchAtom!=nullptr){
+			break;
+		}
+	}
+
+	if(searchAtom==nullptr){
+		ground_new_atom = true;
+		headGroundAtom->setFact(false);
+		predicateExt1->addAtom(headGroundAtom,predicate_searchInsert_table[0][0].first,iterationToInsert);
+		ground_choice->addSingleChoiceElement(headGroundAtom);
+
+	}else{
+		searchAtom->print();
+		delete headGroundAtom;
+
+		//Check if previous is false now is true ground_new atom i have put true
+		ground_choice->addSingleChoiceElement(searchAtom);
+	}
 }
 
 void BackTrackingGrounder::setIndexingStructureInHeadAndBody(unsigned position, unsigned atomPos,

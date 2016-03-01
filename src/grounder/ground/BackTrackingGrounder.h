@@ -141,6 +141,8 @@ protected:
 	virtual void createAtomSearchersForPredicateBody(unsigned position, unsigned atomPos, Predicate* predicate, unordered_set<index_object>* componentPredicateInHead);
 	virtual void createAtomSearchersForPredicateHead(unsigned position, unsigned choiceElementPos, Predicate* predicate, unordered_set<index_object>* componentPredicateInHead,bool firstAtom);
 
+	void groundChoiceFirstAtom(Atom* firstAtom, unsigned i, bool& ground_new_atom, Atom* ground_choice);
+
 #ifdef TRACE_ON
 	/// Print the current assignment
 	void printAssignment();
