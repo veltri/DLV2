@@ -981,7 +981,8 @@ void BackTrackingGrounder::groundChoiceNatively(bool& find_new_true_atom,bool& g
 						break;
 					}
 				}
-				if(bind) bind_variables.push_back(a);
+				if(bind)
+					bind_variables.push_back(innerAtom->getTerm(a)->getLocalVariableIndex());
 			}
 			if(templateAtomsInChoice[i]==nullptr)
 				innerAtom->ground(current_assignment,templateAtomsInChoice[i]);
@@ -992,7 +993,7 @@ void BackTrackingGrounder::groundChoiceNatively(bool& find_new_true_atom,bool& g
 
 			while(table<2){
 				AtomSearcher* atomSearcher=predicateExt->getAtomSearcher(table);
-				unsigned indexStruct=predicate_searchInsert_atomSearcher[0][i].size()-1+table;
+				unsigned indexStruct=predicate_searchInsert_atomSearcher[0][i].size()-(1+table);
 				IndexingStructure* indexingStructure=predicate_searchInsert_atomSearcher[0][i][indexStruct];
 
 				if(indexingStructure==nullptr){
@@ -1016,6 +1017,7 @@ void BackTrackingGrounder::groundChoiceNatively(bool& find_new_true_atom,bool& g
 						}
 						else{
 							firstMatch=false;
+							atomFound->print();cout<<endl;
 						}
 					}
 					else{
@@ -1024,6 +1026,8 @@ void BackTrackingGrounder::groundChoiceNatively(bool& find_new_true_atom,bool& g
 							table++;
 							firstMatch=true;
 							continue;
+						}else{
+							atomFound->print();cout<<endl;
 						}
 					}
 				}
@@ -1057,7 +1061,6 @@ void BackTrackingGrounder::groundChoiceNatively(bool& find_new_true_atom,bool& g
 					else
 						ground_choice->addSingleChoiceElement(headGroundAtom);
 
-					ground_choice->print();
 				}else{
 					delete headGroundAtom;
 
