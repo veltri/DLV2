@@ -123,8 +123,9 @@ bool AtomSearcher::matchTermFunctional(Term *generic, Term *toMatch, var_assignm
 
 bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, var_assignment& varAssignment,vector<index_object>& addedVariables,const RuleInformation& ruleInformation){
 	TermType termToMatchType=termToMatch->getType();
-	if((termToMatchType==TermType::NUMERIC_CONSTANT || termToMatchType==TermType::STRING_CONSTANT || termToMatchType==TermType::SYMBOLIC_CONSTANT))
+	if((termToMatchType==TermType::NUMERIC_CONSTANT || termToMatchType==TermType::STRING_CONSTANT || termToMatchType==TermType::SYMBOLIC_CONSTANT)){
 		return false;
+	}
 	else if (termToMatchType==TermType::VARIABLE) {
 		index_object index=termToMatch->getLocalVariableIndex();
 		if(ruleInformation.isCreatedDictionaryIntersection(index) && !ruleInformation.countInDictionaryIntersection(index,genericTerm)){
@@ -134,6 +135,7 @@ bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, var_assignmen
 		if(term!=nullptr){
 			if( term->getIndex() == genericTerm->getIndex())
 				return true;
+			cout<<index<<" false3"<<endl;
 			return false;
 		}
 
@@ -160,7 +162,8 @@ bool AtomSearcher::matchTerm(Term *genericTerm, Term *termToMatch, var_assignmen
 
 void AtomSearcher::firstMatch(unsigned id, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation,IndexingStructure* indexingStructure,unsigned arg,const vector<unsigned>& outputVariables,const pair<SearchType,unsigned>& searchSpecification) {
 	GeneralIterator* currentMatch=indexingStructure->computeMatchIterator(templateAtom,ruleInformation,searchSpecification,arg);
-	outputVariablesValues[id].clear();
+	if(id<outputVariablesValues.size())
+		outputVariablesValues[id].clear();
 	if(computeMatch(id,currentMatch,templateAtom,currentAssignment,atomFound,ruleInformation,outputVariables)){
 		delete resultVector[id];
 		resultVector[id]=currentMatch;
@@ -172,6 +175,7 @@ void AtomSearcher::firstMatch(unsigned id, Atom *templateAtom, var_assignment& c
 bool AtomSearcher::computeMatch(unsigned int id,GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation,const vector<unsigned>& outputVariables){
 	for(;!currentMatch->isDone();currentMatch->next()){
 		Atom* atom=currentMatch->currentItem();
+		cout<<endl<<"--> ";atom->print();templateAtom->print();cout<<endl;
 		if (checkMatch(id,atom,templateAtom,currentAssignment,ruleInformation,outputVariables)){
 			atomFound=atom;
 			return true;

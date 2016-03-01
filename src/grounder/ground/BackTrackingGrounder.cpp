@@ -279,8 +279,10 @@ bool BackTrackingGrounder::foundAssignment() {
 	unsigned atom_counter=0;
 	Atom *searchAtom=nullptr;
 	if(isAChoiceRule){
-		groundChoiceNatively(find_new_true_atom,ground_new_atom);
-//		groundChoice(find_new_true_atom,ground_new_atom);
+		if(Options::globalOptions()->getRewritingType()==COMPACT_NATIVE_CHOICE)
+			groundChoiceNatively(find_new_true_atom,ground_new_atom);
+		else
+			groundChoice(find_new_true_atom,ground_new_atom);
 	}
 
 	bool foundATrueAtomInDisjuction=false;
@@ -964,17 +966,13 @@ void BackTrackingGrounder::groundChoiceNatively(bool& find_new_true_atom,bool& g
 	unsigned numChoiceElements=choice->getChoiceElementsSize();
 	vector<Atom*> templateAtomsInChoice;
 	templateAtomsInChoice.resize(numChoiceElements,nullptr);
-//	unsigned idFirstMatch=currentRule->getSizeBody();
 
 	for(unsigned i=0;i<numChoiceElements;i++){
 		Atom* innerAtom=choice->getChoiceElement(i)->getAtom(1);
 		//TODO Se il primo atomo è un built in
-		unsigned indexStruct=predicate_searchInsert_atomSearcher[0][i].size()-1;
-		unsigned table=1;
-		bool firstMatch=true;
-		vector<unsigned> bind_variables;
-		vector<Atom*> atoms;
 		if(innerAtom!=nullptr && innerAtom->isClassicalLiteral()){
+			Atom* atomFound=nullptr;
+			vector<unsigned> bind_variables;
 			for(unsigned a=0;a<innerAtom->getPredicate()->getArity();++a){
 				bool bind=true;
 				for(auto b: boundTermsInAtoms[0][i]){
@@ -983,179 +981,94 @@ void BackTrackingGrounder::groundChoiceNatively(bool& find_new_true_atom,bool& g
 						break;
 					}
 				}
-				if(bind)
-					bind_variables.push_back(a);
+				if(bind) bind_variables.push_back(a);
 			}
-			while(true){
-				if(templateAtomsInChoice[i]==nullptr){
-					innerAtom->ground(current_assignment,templateAtomsInChoice[i]);
-				}
-				PredicateExtension* predicateExt=predicateExtTable->getPredicateExt(innerAtom->getPredicate());
-				IndexingStructure* indexingStructure=predicate_searchInsert_atomSearcher[0][i][indexStruct];
+			if(templateAtomsInChoice[i]==nullptr)
+				innerAtom->ground(current_assignment,templateAtomsInChoice[i]);
+
+			PredicateExtension* predicateExt=predicateExtTable->getPredicateExt(innerAtom->getPredicate());
+			bool firstMatch=true;
+			unsigned table=0;
+
+			while(table<2){
 				AtomSearcher* atomSearcher=predicateExt->getAtomSearcher(table);
-				if(boundTermsInAtoms[0][i].size()==innerAtom->getPredicate()->getArity()){
-					auto atomFound=indexingStructure->find(templateAtomsInChoice[i]);
-					if(atomFound!=nullptr){
-						atoms.push_back(atomFound);
+				unsigned indexStruct=predicate_searchInsert_atomSearcher[0][i].size()-1+table;
+				IndexingStructure* indexingStructure=predicate_searchInsert_atomSearcher[0][i][indexStruct];
 
-						Atom *atom_in_choice=choice->getChoiceElement(i)->getFirstAtom();
-						Atom *headGroundAtom=nullptr;
-						atom_in_choice->ground(current_assignment,headGroundAtom);
-						PredicateExtension* predicateExt=predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
+				if(indexingStructure==nullptr){
+					table++;
+					firstMatch=true;
+					continue;
+				}
 
-						for(unsigned j=0;j<predicate_searchInsert_atomSearcher[0][i].size()-2;++j){
-							auto *searcher=predicate_searchInsert_atomSearcher[0][i][j];
-							if(searcher==nullptr) continue;
-							searchAtom=searcher->find(headGroundAtom);
-							if(searchAtom!=nullptr){
-								break;
-							}
-						}
-
-						if(searchAtom==nullptr){
-							ground_new_atom = true;
-
-							headGroundAtom->setFact(false);
-				//			for(unsigned i=0;i<predicate_searchInsert_table[0].size();++i)
-							predicateExt->addAtom(headGroundAtom,predicate_searchInsert_table[0][0].first,iterationToInsert);
-
-							if(!atoms.empty()){
-								ChoiceElement* choiceElement=new ChoiceElement;
-								choiceElement->add(headGroundAtom);
-								choiceElement->addAsAtoms(atoms);
-								ground_choice->addChoiceElement(choiceElement);
-							}
-							else
-								ground_choice->addSingleChoiceElement(headGroundAtom);
-
-						}else{
-							delete headGroundAtom;
-
-							//Check if previous is false now is true ground_new atom i have put true
-							ground_choice->addSingleChoiceElement(searchAtom);
-						}
-						removeBindValueFromAssignment(bind_variables);
-						atoms.clear();
-					}
+				if(bind_variables.empty()){
+					atomFound=atomSearcher->findGroundAtom(templateAtomsInChoice[i],indexingStructure);
+					table++;
+					if(atomFound==nullptr)
+						continue;
 				}
 				else{
 					if(firstMatch){
-						Atom* atomFound=nullptr;
 						atomSearcher->firstMatch(i,templateAtomsInChoice[i],current_assignment,atomFound,currentRule->getRuleInformation(),indexingStructure,0,vector<unsigned>(),{ALL,0});
 						if(atomFound==nullptr){
-							if(table==1){
-								table=0;
-								indexStruct=predicate_searchInsert_atomSearcher[0][i].size()-2;
-							}
-							else{
-								table=1;
-								break;
-							}
+							table++;
+							continue;
 						}
 						else{
-							atoms.push_back(atomFound);
 							firstMatch=false;
-
-							Atom *atom_in_choice=choice->getChoiceElement(i)->getFirstAtom();
-							Atom *headGroundAtom=nullptr;
-							atom_in_choice->ground(current_assignment,headGroundAtom);
-							PredicateExtension* predicateExt=predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
-
-							for(unsigned j=0;j<predicate_searchInsert_atomSearcher[0][i].size()-2;++j){
-								auto *searcher=predicate_searchInsert_atomSearcher[0][i][j];
-								if(searcher==nullptr) continue;
-								searchAtom=searcher->find(headGroundAtom);
-								if(searchAtom!=nullptr){
-									break;
-								}
-							}
-
-							if(searchAtom==nullptr){
-								ground_new_atom = true;
-
-								headGroundAtom->setFact(false);
-					//			for(unsigned i=0;i<predicate_searchInsert_table[0].size();++i)
-								predicateExt->addAtom(headGroundAtom,predicate_searchInsert_table[0][0].first,iterationToInsert);
-
-								if(!atoms.empty()){
-									ChoiceElement* choiceElement=new ChoiceElement;
-									choiceElement->add(headGroundAtom);
-									choiceElement->addAsAtoms(atoms);
-									ground_choice->addChoiceElement(choiceElement);
-								}
-								else
-									ground_choice->addSingleChoiceElement(headGroundAtom);
-
-							}else{
-								delete headGroundAtom;
-
-								//Check if previous is false now is true ground_new atom i have put true
-								ground_choice->addSingleChoiceElement(searchAtom);
-							}
-							removeBindValueFromAssignment(bind_variables);
-							atoms.clear();
 						}
 					}
 					else{
-						Atom* atomFound=nullptr;
 						atomSearcher->nextMatch(i,templateAtomsInChoice[i],current_assignment,atomFound,currentRule->getRuleInformation(),vector<unsigned>());
 						if(atomFound==nullptr){
-							if(table==1){
-								table=0;
-								indexStruct=predicate_searchInsert_atomSearcher[0][i].size()-2;
-							}
-							else{
-								table=1;
-								break;
-							}
-						}
-						else{
-							atoms.push_back(atomFound);
-
-							Atom *atom_in_choice=choice->getChoiceElement(i)->getFirstAtom();
-							Atom *headGroundAtom=nullptr;
-							atom_in_choice->ground(current_assignment,headGroundAtom);
-							PredicateExtension* predicateExt=predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
-
-							for(unsigned j=0;j<predicate_searchInsert_atomSearcher[0][i].size()-2;++j){
-								auto *searcher=predicate_searchInsert_atomSearcher[0][i][j];
-								if(searcher==nullptr) continue;
-								searchAtom=searcher->find(headGroundAtom);
-								if(searchAtom!=nullptr){
-									break;
-								}
-							}
-
-							if(searchAtom==nullptr){
-								ground_new_atom = true;
-
-								headGroundAtom->setFact(false);
-					//			for(unsigned i=0;i<predicate_searchInsert_table[0].size();++i)
-								predicateExt->addAtom(headGroundAtom,predicate_searchInsert_table[0][0].first,iterationToInsert);
-
-								if(!atoms.empty()){
-									ChoiceElement* choiceElement=new ChoiceElement;
-									choiceElement->add(headGroundAtom);
-									choiceElement->addAsAtoms(atoms);
-									ground_choice->addChoiceElement(choiceElement);
-								}
-								else
-									ground_choice->addSingleChoiceElement(headGroundAtom);
-
-							}else{
-								delete headGroundAtom;
-
-								//Check if previous is false now is true ground_new atom i have put true
-								ground_choice->addSingleChoiceElement(searchAtom);
-							}
-							removeBindValueFromAssignment(bind_variables);
-							atoms.clear();
+							table++;
+							firstMatch=true;
+							continue;
 						}
 					}
 				}
+
+				Atom *atom_in_choice=choice->getChoiceElement(i)->getFirstAtom();
+				Atom *headGroundAtom=nullptr;
+				atom_in_choice->ground(current_assignment,headGroundAtom);
+				PredicateExtension* predicateExt1=predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
+
+				for(unsigned j=0;j<predicate_searchInsert_atomSearcher[0][i].size()-2;++j){
+					auto *searcher=predicate_searchInsert_atomSearcher[0][i][j];
+					if(searcher==nullptr) continue;
+					searchAtom=searcher->find(headGroundAtom);
+					if(searchAtom!=nullptr){
+						break;
+					}
+				}
+
+				if(searchAtom==nullptr){
+					ground_new_atom = true;
+
+					headGroundAtom->setFact(false);
+					predicateExt1->addAtom(headGroundAtom,predicate_searchInsert_table[0][0].first,iterationToInsert);
+
+					if(atomFound!=nullptr){
+						ChoiceElement* choiceElement=new ChoiceElement;
+						choiceElement->add(headGroundAtom);
+						choiceElement->add(atomFound);
+						ground_choice->addChoiceElement(choiceElement);
+					}
+					else
+						ground_choice->addSingleChoiceElement(headGroundAtom);
+
+					ground_choice->print();
+				}else{
+					delete headGroundAtom;
+
+					//Check if previous is false now is true ground_new atom i have put true
+					ground_choice->addSingleChoiceElement(searchAtom);
+				}
+				removeBindValueFromAssignment(bind_variables);
 			}
 		}
 	}
+
 
 	Atom* currentGroundChoice=ground_rule->getAtomInHead(0);
 	if(currentGroundChoice!=0)
@@ -1278,8 +1191,14 @@ void BackTrackingGrounder::createAtomSearchersForPredicateHead(unsigned position
 	PredicateExtension* predicateExtension = predicateExtTable->getPredicateExt(predicate);
 
 	if(!firstAtom){
-		setIndexingStructureInHeadAndBody(position, choiceElementPos, predicateExtension, predicate, componentPredicateInHead, FACT);
-		setIndexingStructureInHeadAndBody(position, choiceElementPos, predicateExtension, predicate, componentPredicateInHead, NOFACT);
+		if(predicateExtension->getPredicateExtentionSize(NOFACT))
+			setIndexingStructureInHeadAndBody(position, choiceElementPos, predicateExtension, predicate, componentPredicateInHead, NOFACT);
+		else
+			predicate_searchInsert_atomSearcher[position][choiceElementPos].push_back(0);
+		if(predicateExtension->getPredicateExtentionSize(FACT))
+			setIndexingStructureInHeadAndBody(position, choiceElementPos, predicateExtension, predicate, componentPredicateInHead, FACT);
+		else
+			predicate_searchInsert_atomSearcher[position][choiceElementPos].push_back(0);
 	}
 	else{
 		for(unsigned i=0;i<=predicate_searchInsert_table[position][0].first;++i){

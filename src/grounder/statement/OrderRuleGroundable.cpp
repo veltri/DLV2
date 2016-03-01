@@ -111,11 +111,8 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchTy
 		list<unsigned>::iterator bestAtom=assignWeights(atomsToInsert);
 		Atom* atom=rule->getAtomInBody((*bestAtom));
 		orderdedPredicateSearchInsertTable.push_back(predicate_searchInsert_table[sizeHead+*bestAtom]);
-		if(atom->isClassicalLiteral() && setAtomSearcher(atom,*bestAtom,orderedBody.size())){
-//			cout<<"aaaaaaaaaaa ";
-//			atom->print();
-//			cout<<this->orderdedPredicateSearchInsertAtomSearcher[sizeHead+*bestAtom].size()<<endl;
-		}
+		if(atom->isClassicalLiteral())
+			setAtomSearcher(atom,*bestAtom,orderedBody.size());
 		orderedBody.push_back(atom);
 		orderedPositions.push_back(*bestAtom);
 		if(Options::globalOptions()->isEnabledDictionaryIntersection() && atom->isClassicalLiteral() && !atom->isNegative())
@@ -141,6 +138,8 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchTy
 
 	if(!Options::globalOptions()->isDisabledAnonymousFilter())
 		applyBinderSplittingRewriting();
+
+	rule->getRuleInformation().print();
 
 	return orderedPositions;
 }
