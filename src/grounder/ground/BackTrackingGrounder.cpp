@@ -279,8 +279,11 @@ bool BackTrackingGrounder::foundAssignment() {
 	unsigned atom_counter=0;
 	Atom *searchAtom=nullptr;
 	if(isAChoiceRule){
-		if(Options::globalOptions()->getRewritingType()==COMPACT_NATIVE_CHOICE)
+		if(Options::globalOptions()->getRewritingType()==COMPACT_NATIVE_CHOICE){
 			groundChoiceNatively(find_new_true_atom,ground_new_atom);
+			if(ground_rule!=0 && ground_rule->getSizeHead()==1 && ground_rule->isChoiceRule() && ground_rule->getAtomInHead(0)->getChoiceElementsSize()==0)
+				return false;
+		}
 		else
 			groundChoice(find_new_true_atom,ground_new_atom);
 	}
@@ -356,6 +359,7 @@ bool BackTrackingGrounder::foundAssignment() {
 			ground_rule->setAtomToSimplifyInBody(i,savedRule->isAtomToSimplifyInBody(i));
 		}
 	}
+
 	//Print if ground new atom, an atom changed from undef to true, the rule is a strong constraint, there are some undefined atom in body
 	else if( ground_new_atom || (!ground_new_atom && !head_true) || (find_new_true_atom && head_true) || strongConstraint || undefinedAtomInBody || isWeak){
 		if(isWeak)

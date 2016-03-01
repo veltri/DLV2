@@ -280,7 +280,7 @@ public:
 	void setMustBeRewritedForAggregates(bool mustBeRewritedForAggregates) {	this->mustBeRewritedForAggregates = mustBeRewritedForAggregates;}
 	
 	///Return true if is a choice rule
-	bool isChoiceRule() const{ return (head.size()>0 && head[0]->isChoice());}
+	bool isChoiceRule() const{ return (head.size()==1 && head[0]->isChoice());}
 
 	void deleteBody(function<int(Atom*)> f);
 
