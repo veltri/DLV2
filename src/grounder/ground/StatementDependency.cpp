@@ -151,6 +151,7 @@ void DependencyGraph::addInDependency(Rule* r) {
 		if( head_atom->isChoice()){
 			for(unsigned i=0;i<head_atom->getChoiceElementsSize();i++){
 				for(auto pred_body:head_atom->getChoiceElement(i)->getPredicatePositiveInNaf()){
+					cout<<"add "<<pred_body->getName()<<" "<<head_atom->getChoiceElement(i)->getFirstAtom()->getPredicate()->getName()<<endl;
 					addEdge(pred_body->getIndex(), head_atom->getChoiceElement(i)->getFirstAtom()->getPredicate()->getIndex(),1);
 				}
 			}
@@ -407,6 +408,28 @@ void ComponentGraph::createComponent(DependencyGraph &depGraph,
 				}
 
 
+			}
+
+			if(r->getSizeHead()>0){
+				auto head_atom=r->getAtomInHead(0);
+				if( head_atom->isChoice()){
+					for(unsigned i=0;i<head_atom->getChoiceElementsSize();i++){
+						for(auto pred_body:head_atom->getChoiceElement(i)->getPredicatePositiveInNaf()){
+							index_object index_pred_body = pred_body->getIndex();
+							if (statementAtomMapping.isInHead(index_pred_body)) {
+								addEdge(index_pred_body, pred_head, 1);
+
+							}
+						}
+						for(auto pred_body:head_atom->getChoiceElement(i)->getPredicateNegativeInNaf()){
+							index_object index_pred_body = pred_body->getIndex();
+							if (statementAtomMapping.isInHead(index_pred_body)) {
+								addEdge(index_pred_body, pred_head, -1);
+
+							}
+						}
+					}
+				}
 			}
 
 		}

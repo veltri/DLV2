@@ -58,6 +58,9 @@ public:
 	///Return the positive predicates of naf literal in choice element
 	set_predicate getPredicatePositiveInNaf();
 
+	///Return the negative predicates of naf literal in choice element
+	set_predicate getPredicateNegativeInNaf();
+
 	///Return the variable in naf literal
 	set_term getVariableInNaf();
 

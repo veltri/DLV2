@@ -33,6 +33,17 @@ set_predicate ChoiceElement::getPredicatePositiveInNaf() {
 	return predicates;
 }
 
+set_predicate ChoiceElement::getPredicateNegativeInNaf() {
+	set_predicate predicates;
+	for(unsigned i=1;i<choiceElement.size();i++)
+		if(choiceElement[i]->isNegative()){
+			Predicate* predicate=choiceElement[i]->getPredicate();
+			predicates.insert(predicate);
+		}
+
+	return predicates;
+}
+
 set_term ChoiceElement::getVariableInNaf() {
 	set_term terms;
 	for(unsigned i=1;i<choiceElement.size();i++){
