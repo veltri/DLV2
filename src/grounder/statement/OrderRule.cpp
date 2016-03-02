@@ -31,6 +31,7 @@ vector<Atom*> OrderRule::rewriteArith(Atom* current_atom,
 				newBuiltins.push_back(new BuiltInAtom(Binop::EQUAL, false, newTerm,current_atom->getTerm(i)));
 			}
 			current_atom->setTerm(i, newTerm);
+
 		}
 	}
 	return newBuiltins;
@@ -51,8 +52,12 @@ OrderRule::OrderRule(Rule* r):rule(r){
 				/// (for example variables appearing in arith terms)
 				bool mustBeBound=false;
 				if(Options::globalOptions()->getRewriteArith()){
-					for(auto newBuiltin:rewriteArith(current_atom, arithRewrited))
+					vector<Atom*> newBuiltins=rewriteArith(current_atom, arithRewrited);
+					for(auto newBuiltin:newBuiltins){
 						rule->addInBody(newBuiltin);
+					}
+					if(!newBuiltins.empty())
+						mapAtomsVariables[atom_counter]=current_atom->getVariable();
 				}else{
 					mapPositiveAtomsBoundVariables.insert({atom_counter,set_term()});
 					for(auto v:current_atom->getTerms()){
@@ -166,7 +171,6 @@ void OrderRule::addSafeVariablesInAtom(Atom* atom, unsigned pos) {
 }
 
 void OrderRule::foundAnAssigment(Atom* atom, Term* bindVariable, unsigned pos) {
-	atom->setAssignment(true);
 	safeVariables.insert(bindVariable);
 	if (!mapVariablesAtoms.count(bindVariable)){
 		mapVariablesAtoms.insert( { bindVariable, orderedBody.size()-1 });
