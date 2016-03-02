@@ -84,10 +84,10 @@ void ProgramGrounder::orderPositiveAtomsBody(vector<unsigned>& originalOrderBody
 	predicate_searchInsert_atomSearcher.clear();
 	predicate_searchInsert_atomSearcher.resize(rule->getSizeHead()+sizeRule);
 	OrderRuleGroundable* orderRuleGroundable = OrderRuleGroundableFactory::getInstance(rule);
-//	if (orderRuleGroundable != nullptr) {
-//		orderRuleGroundable->order(predicate_searchInsert_table,predicate_searchInsert_atomSearcher,originalOrderBody,componentPredicateInHead);
-//		delete orderRuleGroundable;
-//	}
+	if (orderRuleGroundable != nullptr) {
+		orderRuleGroundable->order(predicate_searchInsert_table,predicate_searchInsert_atomSearcher,originalOrderBody,componentPredicateInHead);
+		delete orderRuleGroundable;
+	}
 }
 
 void ProgramGrounder::orderPositiveAtomsBody(Rule* rule) {
@@ -213,7 +213,7 @@ void ProgramGrounder::ground() {
 //						trace_action_tag(grounding,2,printTableInRule(rule,predicate_searchInsert_table););
 
 						orderPositiveAtomsBody(originalOrderBody[i],rule,&componentPredicateInHead[component]);
-                                                                                              						if (groundRule(rule,&componentPredicateInHead[component])){
+                        if (groundRule(rule,&componentPredicateInHead[component])){
 							found_something = true;
 						}
 
