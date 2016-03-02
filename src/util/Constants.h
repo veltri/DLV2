@@ -120,6 +120,7 @@ namespace grounder{
 	#define DLV_BINDER_ORDERING 4
 	#define DLV_BINDER_INDEXING_BOUND_ATOMS_ORDERING 5
 	#define BINDER_ORDERING 6
+	#define DLV_ORDERING_FUNCTION 7
 
 	typedef unsigned index_object;
 

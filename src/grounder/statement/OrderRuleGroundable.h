@@ -252,6 +252,9 @@ public:
 			case BINDER_ORDERING:
 				return new BindersOrderRuleGroundable(rule);
 				break;
+			case DLV_ORDERING_FUNCTION:
+				return new CombinedCriterion3(rule);
+				break;
 			default:
 				return new CombinedCriterion(rule);
 				break;

@@ -803,7 +803,6 @@ void StatementDependency::rewriteChoice(){
 			if(r->isMustBeRewritedForAggregates()){
 				InMemoryInputBuilder::rewriteAggregate(r,inputRewriter,this);
 			}else{
-				r->print();
 				InMemoryInputBuilder::manageSimpleRule(r,this);
 			}
 		}
