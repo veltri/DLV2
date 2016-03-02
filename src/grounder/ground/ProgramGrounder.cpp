@@ -102,7 +102,6 @@ void ProgramGrounder::orderPositiveAtomsBody(Rule* rule) {
 }
 
 void ProgramGrounder::ground() {
-	statementDependency->rewriteChoice();
 
 	//Create the dependency graph
 	statementDependency->createDependencyGraph(predicateTable);

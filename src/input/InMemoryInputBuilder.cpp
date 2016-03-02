@@ -51,8 +51,7 @@ InMemoryInputBuilder::InMemoryInputBuilder() :
 	currentChoiceElement(new ChoiceElement),
 	weight(nullptr),
 	level(nullptr),
-	hiddenNewPredicate(false),
-	rewriteChoiceAtEnd(false)
+	hiddenNewPredicate(false)
 {
 
 	Options * opt=Options::globalOptions();
@@ -81,9 +80,6 @@ InMemoryInputBuilder::InMemoryInputBuilder() :
 			predicateTable->getInstance()->insertPredicate(predicate);
 		}
 	}
-
-	if(opt->getRewritingType()==COMPACT_NATIVE_CHOICE)
-		rewriteChoiceAtEnd=true;
 
 }
 
@@ -609,10 +605,7 @@ void InMemoryInputBuilder::manageSimpleRule(Rule* rule,StatementDependency * sta
 
 void InMemoryInputBuilder::addRule(Rule* rule) {
 	if(rule->isChoiceRule()){
-		if(rewriteChoiceAtEnd)
-			statementDependency->addChoiceToRewrite(rule);
-		else
-			rewriteChoice(rule);
+		rewriteChoice(rule);
 	}else if(rule->isMustBeRewritedForAggregates())
 		rewriteAggregate(rule);
 	else

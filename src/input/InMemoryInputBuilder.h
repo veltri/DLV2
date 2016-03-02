@@ -122,10 +122,6 @@ private:
 
 	Term* level;
 
-	vector<Rule*> choiceRule;
-
-	bool rewriteChoiceAtEnd;
-
 	bool hiddenNewPredicate;
 
  	void addRule(Rule* rule);
