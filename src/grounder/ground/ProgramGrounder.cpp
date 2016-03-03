@@ -166,12 +166,12 @@ void ProgramGrounder::ground() {
 			// First iteration
 			for (unsigned int i = 0; i < n_rules; ++i) {
 				Rule *rule=recursiveRules[component][i];
-
 				trace_action_tag(grounding,1,cerr<<"Grounding Recursive Rule: ";rule->print(cerr););
 
 				if(nonGroundSimplificator.simplifyRule(rule) || inizializeSearchInsertPredicate(rule)){
 					if(n_rules>1) findRecursivePredicatesInComponentRules(componentPredicateInHead[component], recursivePredicatesPositions[i], rule, originalOrderBody[i]);
 					trace_msg(grounding,1,"Rule simplified: no grounding is needed.");
+					rule->print();
 					continue;
 				}
 				trace_msg(grounding,1,"At first iteration the tables to search in  are: ");
@@ -314,7 +314,7 @@ void ProgramGrounder::ground() {
 				continue;
 			}
 			orderPositiveAtomsBody(weak);
-			trace_action_tag(grounding,1,cerr<<"Grounding Constraint Rule: ";rule->print(cerr););
+			trace_action_tag(grounding,1,cerr<<"Grounding Constraint Rule: ";weak->print(cerr););
 			groundRule(weak);
 		}
 	}

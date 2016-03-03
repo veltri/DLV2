@@ -234,10 +234,6 @@ public:
 	static OrderRuleGroundable* getInstance(Rule *rule){
 		switch (Options::globalOptions()->getPositiveOrderingProcedure()) {
 			case NO_ORDERING:
-				if(!Options::globalOptions()->isDisabledAnonymousFilter()){
-					AllOrderRuleGroundable order(rule);
-					order.applyBinderSplittingRewriting();
-				}
 				return	nullptr;
 				break;
 			case INDEXING_ORDERING:

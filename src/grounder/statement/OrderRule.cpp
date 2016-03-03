@@ -142,6 +142,7 @@ bool OrderRule::checkHeadSafety(){
 	for(auto variable:variableToCheck)
 		if(!safeVariables.count(variable))
 			return false;
+
 	return true;
 }
 
@@ -154,8 +155,6 @@ bool OrderRule::checkWeakSafety(){
 		rule->getWeight()->getVariable(variableToCheck);
 	for(auto term:rule->getLabel())
 		term->getVariable(variableToCheck);
-
-
 
 	return Utils::isContained(variableToCheck,safeVariables);
 }
@@ -171,6 +170,7 @@ void OrderRule::addSafeVariablesInAtom(Atom* atom, unsigned pos) {
 }
 
 void OrderRule::foundAnAssigment(Atom* atom, Term* bindVariable, unsigned pos) {
+	atom->setAssignment(true);
 	safeVariables.insert(bindVariable);
 	if (!mapVariablesAtoms.count(bindVariable)){
 		mapVariablesAtoms.insert( { bindVariable, orderedBody.size()-1 });

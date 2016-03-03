@@ -137,12 +137,12 @@ void BackJumpingGrounder::inizialize(Rule* rule, unordered_set<index_object>* co
 	}
 
 
-	trace_action_tag(backjumping,1,
-		cerr<<"OUTPUT VARIABLES: ";
-		for(auto var: outputVariables){
-			var->print(cerr);cerr<<" ";
-		}
-		cerr<<endl;);
+//	trace_action_tag(backjumping,1,
+//		cerr<<"OUTPUT VARIABLES: ";
+//		for(auto var: outputVariables){
+//			var->print(cerr);cerr<<" ";
+//		}
+//		cerr<<endl;);
 
 }
 
