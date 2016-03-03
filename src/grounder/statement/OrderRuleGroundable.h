@@ -53,6 +53,7 @@ public:
 
 	virtual bool isBound(Atom* atom, unsigned orginalPosition,const set_term& terms);
 
+	void applyBinderSplittingRewriting();
 
 protected:
 	vector<vector<pair<unsigned,SearchType>>> predicate_searchInsert_table;
@@ -76,8 +77,6 @@ protected:
 	void computeDictionaryIntersection(Atom* atom);
 	virtual bool setAtomSearcher(Atom* atom, unsigned orginalPosition,unsigned newPosition){return false;};
 
-private:
-	void applyBinderSplittingRewriting();
 };
 
 class AllOrderRuleGroundable : public OrderRuleGroundable{
@@ -235,6 +234,10 @@ public:
 	static OrderRuleGroundable* getInstance(Rule *rule){
 		switch (Options::globalOptions()->getPositiveOrderingProcedure()) {
 			case NO_ORDERING:
+				if(!Options::globalOptions()->isDisabledAnonymousFilter()){
+					AllOrderRuleGroundable order(rule);
+					order.applyBinderSplittingRewriting();
+				}
 				return	nullptr;
 				break;
 			case INDEXING_ORDERING:
