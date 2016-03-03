@@ -186,14 +186,21 @@ void OrderRule::foundAnAssigment(Atom* atom, Term* bindVariable, unsigned pos) {
 bool OrderRule::unlockAtomWithArith(list<unsigned>& atoms) {
 	list<unsigned>::iterator atomUnlocked=atoms.end();
 	unordered_map<Term*, Term*, IndexForTable<Term>, IndexForTable<Term> > arithRewrited;
-	for(auto it=atoms.begin();it!=atoms.end();++it){
+	unsigned atom_counter=0;
+	for(auto it=atoms.begin();it!=atoms.end();++it,atom_counter++){
 		Atom* atom=rule->getAtomInBody(*it);
 		set_term variables=mapAtomsVariables[*it];
 		if(atom->isClassicalLiteral() && !atom->isNegative()){
 			if(mapPositiveAtomsBoundVariables[*it].size()>0){
 				addSafeVariablesInAtom(atom,*it);
-				for(auto newBuiltin:rewriteArith(atom,arithRewrited))
+				auto newBuiltins=rewriteArith(atom,arithRewrited);
+				for(auto newBuiltin:newBuiltins){
+					newBuiltin->setAssignment(true);
 					orderedBody.push_back(newBuiltin);
+				}
+				if(!newBuiltins.empty()){
+					mapAtomsVariables[atom_counter]=atom->getVariable();
+				}
 				atomUnlocked=it;
 				break;
 			}
