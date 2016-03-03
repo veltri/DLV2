@@ -625,6 +625,7 @@ void InMemoryInputBuilder::rewriteAggregate(Rule* rule,InputRewriter* inputRewri
 	}
 	OrderRule orderRule(rule);
 	bool isSafe = orderRule.order();
+	safetyError(isSafe,rule);
 
 	//Translate the rule
 	vector<Rule*> rules;
