@@ -171,7 +171,6 @@ void ProgramGrounder::ground() {
 				if(nonGroundSimplificator.simplifyRule(rule) || inizializeSearchInsertPredicate(rule)){
 					if(n_rules>1) findRecursivePredicatesInComponentRules(componentPredicateInHead[component], recursivePredicatesPositions[i], rule, originalOrderBody[i]);
 					trace_msg(grounding,1,"Rule simplified: no grounding is needed.");
-					rule->print();
 					continue;
 				}
 				trace_msg(grounding,1,"At first iteration the tables to search in  are: ");
