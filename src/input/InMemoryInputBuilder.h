@@ -23,6 +23,7 @@
 #include "../grounder/table/PredicateTable.h"
 #include "../grounder/statement/InputRewriter.h"
 #include "../grounder/statement/Rule.h"
+#include "../grounder/exception/SafetyExceptionGrounder.h"
 
 using namespace std;
 
@@ -82,10 +83,11 @@ public:
 
     void newTerm(char*);
 
-	static void safetyError(bool condition,string message);
-
 	static void rewriteAggregate(Rule* rule,InputRewriter* inputRewriter,StatementDependency* statementDependency);
 	static void manageSimpleRule(Rule* rule,StatementDependency * statementDependency);
+
+	static bool isFoundASafetyError() { return foundASafetyError; }
+	static const string& getSafetyErrorMessage() { return safetyErrorMessage; }
 
 private:
 
@@ -139,7 +141,10 @@ private:
 	void rewriteChoice(Rule* rule);
 	void manageSimpleRule(Rule* rule);
 
-
+	static bool currentRuleIsUnsafe;
+	static bool foundASafetyError;
+	static void safetyError(bool condition, Rule* rule);
+	static string safetyErrorMessage;
 
 };
 
