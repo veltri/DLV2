@@ -69,7 +69,7 @@ namespace grounder{
 			if(term->isGround())continue;
 			bool ok=false;
 			for(auto atom:nafLiterals){
-				if(atom->getVariable().count(term)){
+				if(((atom->isClassicalLiteral() && !atom->isNegative()) || atom->isAssignment())  && atom->getVariable().count(term)){
 					ok=true;
 				}
 			}

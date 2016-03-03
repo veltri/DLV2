@@ -19,6 +19,10 @@
 namespace DLV2 {
 namespace grounder {
 
+bool InMemoryInputBuilder::foundASafetyError=false;
+bool InMemoryInputBuilder::currentRuleIsUnsafe=false;
+
+string InMemoryInputBuilder::safetyErrorMessage="";
 
 pair<string,unsigned> extractPredicateNameArity(string& predicateArity){
 	vector<string> splitString=Utils::split(predicateArity,'/');
@@ -93,7 +97,7 @@ InMemoryInputBuilder::~InMemoryInputBuilder() {
 
 void InMemoryInputBuilder::onDirective(char* directiveName,
 		char* directiveValue) {
-
+	if(foundASafetyError) return;
 	if(strcmp(directiveName,"#show")==0){
 		hiddenNewPredicate=true;
 		string value(directiveValue);
@@ -108,6 +112,7 @@ void InMemoryInputBuilder::onDirective(char* directiveName,
 }
 
 void InMemoryInputBuilder::onRule() {
+	if(foundASafetyError) return;
 	if(currentRule->isAFact()){
 		Atom *fact=*currentRule->getBeginHead();
 		if(fact->containsRangeTerms()){
@@ -142,6 +147,7 @@ void InMemoryInputBuilder::onRule() {
 }
 
 void InMemoryInputBuilder::onConstraint() {
+	if(foundASafetyError) return;
 	if(foundARangeAtomInCurrentRule){
 		vector<vector<Atom*>> bodyExpanded;
 		expandRulePart(currentRule->getBeginBody(),currentRule->getEndBody(), bodyExpanded);
@@ -157,11 +163,15 @@ void InMemoryInputBuilder::onConstraint() {
 }
 
 void InMemoryInputBuilder::onWeakConstraint() {
-
+	if(foundASafetyError) return;
 	Rule * weakRule=new WeakConstraint(currentRule->getBody(),weight,level,terms_parsered);
+	if(currentRuleIsUnsafe){
+		safetyError(false,weakRule);
+		return;
+	}
 	OrderRule orderRule(weakRule);
 	bool isSafe = orderRule.order();
-	safetyError(isSafe,"RULE IS UNSAFE");
+	safetyError(isSafe,weakRule);
 	statementDependency->addRuleMapping(weakRule);
 
 	delete currentRule;
@@ -172,37 +182,44 @@ void InMemoryInputBuilder::onWeakConstraint() {
 }
 
 void InMemoryInputBuilder::onQuery() {
+	if(foundASafetyError) return;
 }
 
 void InMemoryInputBuilder::onHeadAtom() {
+	if(foundASafetyError) return;
 	currentRule->addInHead(currentAtom);
 	if(currentAtom->containsAnonymous()){
-		currentAtom->print();cout<<" ";
-		safetyError(false, "ATOM IS UNSAFE");
+		currentRuleIsUnsafe=true;
 	}
 	currentAtom= nullptr;
 }
 
 void InMemoryInputBuilder::onHead() {
+	if(foundASafetyError) return;
 }
 
 void InMemoryInputBuilder::onBodyLiteral() {
+	if(foundASafetyError) return;
 	currentRule->addInBody(currentAtom);
 	currentAtom=nullptr;
 }
 
 void InMemoryInputBuilder::onBody() {
+	if(foundASafetyError) return;
 }
 
 void InMemoryInputBuilder::onNafLiteral(bool naf) {
+	if(foundASafetyError) return;
 	currentAtom->setNegative(naf);
 	if(naf && currentAtom->containsAnonymous()){
-		currentAtom->print();cout<<" ";
-		safetyError(false, "ATOM IS UNSAFE");
+		currentRuleIsUnsafe=true;
+//		currentAtom->print();cout<<" ";
+//		safetyError(false, "ATOM IS UNSAFE");
 	}
 }
 
 void InMemoryInputBuilder::onAtom(bool isStrongNeg) {
+	if(foundASafetyError) return;
 	if(isStrongNeg){
 		//Create a new predicate like the old predicate but with trueNegative = true
 		Predicate * oldPredicate=currentAtom->getPredicate();
@@ -217,9 +234,11 @@ void InMemoryInputBuilder::onAtom(bool isStrongNeg) {
 }
 
 void InMemoryInputBuilder::onExistentialAtom() {
+	if(foundASafetyError) return;
 }
 
 void InMemoryInputBuilder::onPredicateName(char* name) {
+	if(foundASafetyError) return;
 	string name_predicate(name);
 	Predicate *predicate = new Predicate(name_predicate,terms_parsered.size());
 	predicate->setHiddenForPrinting(hiddenNewPredicate);
@@ -230,29 +249,36 @@ void InMemoryInputBuilder::onPredicateName(char* name) {
 }
 
 void InMemoryInputBuilder::onExistentialVariable(char* var) {
+	if(foundASafetyError) return;
 }
 
 void InMemoryInputBuilder::onEqualOperator() {
+	if(foundASafetyError) return;
 	currentBinop = Binop::EQUAL;
 }
 
 void InMemoryInputBuilder::onUnequalOperator() {
+	if(foundASafetyError) return;
 	currentBinop = Binop::UNEQUAL;
 }
 
 void InMemoryInputBuilder::onLessOperator() {
+	if(foundASafetyError) return;
 	currentBinop = Binop::LESS;
 }
 
 void InMemoryInputBuilder::onLessOrEqualOperator() {
+	if(foundARangeAtomInCurrentRule) return;
 	currentBinop = Binop::LESS_OR_EQ;
 }
 
 void InMemoryInputBuilder::onGreaterOperator() {
+	if(foundASafetyError) return;
 	currentBinop = Binop::GREATER;
 }
 
 void InMemoryInputBuilder::onGreaterOrEqualOperator() {
+	if(foundASafetyError) return;
 	currentBinop = Binop::GREATER_OR_EQ;
 }
 
@@ -307,16 +333,19 @@ void InMemoryInputBuilder::newTerm(char* value)
 }
 
 void InMemoryInputBuilder::onTerm(char* value) {
+	if(foundASafetyError) return;
 	newTerm(value);
 }
 
 void InMemoryInputBuilder::onTerm(int value) {
+	if(foundASafetyError) return;
 	Term *term=new NumericConstantTerm(false,value);
 	termTable->addTerm(term);
 	terms_parsered.push_back(term);
 }
 
 void InMemoryInputBuilder::onUnknownVariable() {
+	if(foundASafetyError) return;
 	string name("_");
 	Term *term=new VariableTerm(false,name);
 	termTable->addTerm(term);
@@ -324,6 +353,7 @@ void InMemoryInputBuilder::onUnknownVariable() {
 }
 
 void InMemoryInputBuilder::onFunction(char* functionSymbol, int nTerms) {
+	if(foundASafetyError) return;
 	string name(functionSymbol);
 	vector<Term*> termsInFunction(nTerms);
 
@@ -338,6 +368,7 @@ void InMemoryInputBuilder::onFunction(char* functionSymbol, int nTerms) {
 }
 
 void InMemoryInputBuilder::onTermDash() {
+	if(foundASafetyError) return;
 	Term *oldTerm=terms_parsered.back();
 	if(oldTerm->isRange()){
 		oldTerm->setNegative(true);
@@ -360,10 +391,12 @@ void InMemoryInputBuilder::onTermDash() {
 }
 
 void InMemoryInputBuilder::onTermParams() {
+	if(foundASafetyError) return;
 
 }
 
 void InMemoryInputBuilder::onTermRange(char* lowerBound, char* upperBound) {
+	if(foundASafetyError) return;
 	foundARangeAtomInCurrentRule=true;
 	if(isNumeric(lowerBound,10) && isNumeric(upperBound,10)){
 		Term* rangeTerm=new RangeTerm(atoi(lowerBound),atoi(upperBound));
@@ -372,6 +405,7 @@ void InMemoryInputBuilder::onTermRange(char* lowerBound, char* upperBound) {
 }
 
 void InMemoryInputBuilder::onArithmeticOperation(char arithOperator) {
+	if(foundASafetyError) return;
 	auto second_last=--(--terms_parsered.end());
 	Term *arithTerm=nullptr;
 
@@ -398,6 +432,7 @@ void InMemoryInputBuilder::onArithmeticOperation(char arithOperator) {
 
 void InMemoryInputBuilder::onWeightAtLevels(int nWeight, int nLevel,
 		int nTerm) {
+	if(foundASafetyError) return;
 	//TODO ERROR IN PARSER
 	if(nWeight==0){
 		nTerm--;
@@ -412,32 +447,36 @@ void InMemoryInputBuilder::onWeightAtLevels(int nWeight, int nLevel,
 }
 
 void InMemoryInputBuilder::onChoiceLowerGuard() {
+	if(foundASafetyError) return;
 	if(currentChoice==nullptr)
 		currentChoice = new Choice;
 	Term* firstGuard=terms_parsered.back();
 	currentChoice->setFirstGuard(firstGuard);
 	currentChoice->setFirstBinop(currentBinop);
 	if(firstGuard->contain(TermType::ANONYMOUS)){
-		currentChoice->print();cout<<" ";
-		safetyError(false,"ATOM IS UNSAFE");
+		currentRuleIsUnsafe=true;
+//		currentChoice->print();cout<<" ";
 	}
 	terms_parsered.pop_back();
 }
 
 void InMemoryInputBuilder::onChoiceUpperGuard() {
+	if(foundASafetyError) return;
 	if(currentChoice==nullptr)
 		currentChoice = new Choice;
 	Term* secondGuard=terms_parsered.back();
 	currentChoice->setSecondGuard(secondGuard);
 	currentChoice->setSecondBinop(currentBinop);
 	if(secondGuard->contain(TermType::ANONYMOUS)){
-		currentChoice->print();cout<<" ";
-		safetyError(false,"ATOM IS UNSAFE");
+		currentRuleIsUnsafe=true;
+//		currentChoice->print();cout<<" ";
+//		safetyError(false,"ATOM IS UNSAFE");
 	}
 	terms_parsered.pop_back();
 }
 
 void InMemoryInputBuilder::onChoiceElementAtom() {
+	if(foundASafetyError) return;
 	if(currentChoice==nullptr)
 		currentChoice = new Choice;
 	currentChoiceElement->add(currentAtom);
@@ -445,16 +484,19 @@ void InMemoryInputBuilder::onChoiceElementAtom() {
 }
 
 void InMemoryInputBuilder::onChoiceElementLiteral() {
+	if(foundASafetyError) return;
 	currentChoiceElement->add(currentAtom);
 	currentAtom=nullptr;
 }
 
 void InMemoryInputBuilder::onChoiceElement() {
+	if(foundASafetyError) return;
 	currentChoice->addChoiceElement(currentChoiceElement);
 	currentChoiceElement=new ChoiceElement;
 }
 
 void InMemoryInputBuilder::onChoiceAtom() {
+	if(foundASafetyError) return;
 	if(currentChoice->getFirstBinop()==NONE_OP && currentChoice->getSecondBinop()==NONE_OP){
 		currentChoice->setSecondBinop(GREATER_OR_EQ);
 		currentChoice->setSecondGuard(termTable->term_zero);
@@ -466,40 +508,47 @@ void InMemoryInputBuilder::onChoiceAtom() {
 }
 
 void InMemoryInputBuilder::onBuiltinAtom() {
+	if(foundASafetyError) return;
 	currentAtom = new BuiltInAtom(currentBinop,false,terms_parsered);
 	if(currentAtom->containsAnonymous()){
-		currentAtom->print();cout<<" ";
-		safetyError(false,"ATOM IS UNSAFE");
+		currentRuleIsUnsafe=true;
+//		currentAtom->print();cout<<" ";
+//		safetyError(false,"ATOM IS UNSAFE");
 	}
 }
 
 void InMemoryInputBuilder::onAggregateLowerGuard() {
+	if(foundASafetyError) return;
 	if(currentAggregate==nullptr)
 		currentAggregate = new AggregateAtom;
 	Term* firstGuard=terms_parsered.back();
 	currentAggregate->setFirstGuard(firstGuard);
 	currentAggregate->setFirstBinop(currentBinop);
 	if(firstGuard->contain(TermType::ANONYMOUS)){
-		currentAggregate->print();cout<<" ";
-		safetyError(false,"ATOM IS UNSAFE");
+		currentRuleIsUnsafe=true;
+//		currentAggregate->print();cout<<" ";
+//		safetyError(false,"ATOM IS UNSAFE");
 	}
 	terms_parsered.pop_back();
 }
 
 void InMemoryInputBuilder::onAggregateUpperGuard() {
+	if(foundASafetyError) return;
 	if(currentAggregate==nullptr)
 		currentAggregate = new AggregateAtom;
 	Term* secondGuard=terms_parsered.back();
 	currentAggregate->setSecondGuard(secondGuard);
 	currentAggregate->setSecondBinop(currentBinop);
 	if(secondGuard->contain(TermType::ANONYMOUS)){
-		currentAggregate->print();cout<<" ";
-		safetyError(false,"ATOM IS UNSAFE");
+		currentRuleIsUnsafe=true;
+//		currentAggregate->print();cout<<" ";
+//		safetyError(false,"ATOM IS UNSAFE");
 	}
 	terms_parsered.pop_back();
 }
 
 void InMemoryInputBuilder::onAggregateFunction(char* functionSymbol) {
+	if(foundASafetyError) return;
 	currentRule->setMustBeRewritedForAggregates(true);
 	if(currentAggregate==nullptr)
 		currentAggregate = new AggregateAtom;
@@ -515,12 +564,14 @@ void InMemoryInputBuilder::onAggregateFunction(char* functionSymbol) {
 }
 
 void InMemoryInputBuilder::onAggregateGroundTerm(char* value, bool dash) {
+	if(foundASafetyError) return;
 	newTerm(value);
 	currentAggregateElement->addTerm(terms_parsered.back());
 	terms_parsered.pop_back();
 }
 
 void InMemoryInputBuilder::onAggregateVariableTerm(char* value) {
+	if(foundASafetyError) return;
 	string value_string(value);
 	Term *term=new VariableTerm(false,value_string);
 	termTable->addTerm(term);
@@ -529,26 +580,32 @@ void InMemoryInputBuilder::onAggregateVariableTerm(char* value) {
 }
 
 void InMemoryInputBuilder::onAggregateUnknownVariable() {
-	currentAggregate->print();cout<<" ";
-	safetyError(false,"ATOM IS UNSAFE");
+	if(foundASafetyError) return;
+	currentRuleIsUnsafe=true;
+//	currentAggregate->print();cout<<" ";
+//	safetyError(false,"ATOM IS UNSAFE");
 }
 
 void InMemoryInputBuilder::onAggregateNafLiteral() {
+	if(foundASafetyError) return;
 	currentAggregateElement->addNafLiterals(currentAtom);
 	currentAtom=nullptr;
 }
 
 void InMemoryInputBuilder::onAggregateElement() {
+	if(foundASafetyError) return;
 	currentAggregate->addAggregateElement(currentAggregateElement);
 	if(!currentAggregateElement->areAggregationTermsSafe())
 	{
-		currentAggregate->print();cout<<" ";
-		safetyError(false,"ATOM IS UNSAFE");
+		currentRuleIsUnsafe=true;
+//		currentAggregate->print();cout<<" ";
+//		safetyError(false,"ATOM IS UNSAFE");
 	}
 	currentAggregateElement=new AggregateElement;
 }
 
 void InMemoryInputBuilder::onAggregate(bool naf) {
+	if(foundASafetyError) return;
 	currentAggregate->setNegative(naf);
 	currentAtom = currentAggregate;
 	currentAtom->changeInStandardFormat();
@@ -561,9 +618,13 @@ void InMemoryInputBuilder::rewriteAggregate(Rule* rule) {
 
 void InMemoryInputBuilder::rewriteAggregate(Rule* rule,InputRewriter* inputRewriter,StatementDependency* statementDependency) {
 	//Sort the rule and check for safety
+	if(currentRuleIsUnsafe){
+		safetyError(false,rule);
+		statementDependency->addRuleMapping(rule);
+		return;
+	}
 	OrderRule orderRule(rule);
 	bool isSafe = orderRule.order();
-	safetyError(isSafe,"RULE IS UNSAFE");
 
 	//Translate the rule
 	vector<Rule*> rules;
@@ -572,7 +633,8 @@ void InMemoryInputBuilder::rewriteAggregate(Rule* rule,InputRewriter* inputRewri
 		OrderRule orderR(r);
 		isSafe = orderR.order();
 		if (!isSafe)
-			safetyError(isSafe,"RULE IS UNSAFE");
+			safetyError(isSafe,r);
+//			safetyError(isSafe,"RULE IS UNSAFE");
 		statementDependency->addRuleMapping(r);
 	}
 
@@ -596,9 +658,15 @@ void InMemoryInputBuilder::manageSimpleRule(Rule* rule) {
 }
 
 void InMemoryInputBuilder::manageSimpleRule(Rule* rule,StatementDependency * statementDependency) {
+	if(currentRuleIsUnsafe){
+		safetyError(false,rule);
+		statementDependency->addRuleMapping(rule);
+		return;
+	}
 	OrderRule orderRule(rule);
 	bool isSafe = orderRule.order();
-	safetyError(isSafe,"RULE IS UNSAFE");
+	safetyError(isSafe,rule);
+//	safetyError(isSafe,"RULE IS UNSAFE");
 	statementDependency->addRuleMapping(rule);
 	rule->setUnsolvedPredicates();
 }
@@ -712,8 +780,13 @@ void InMemoryInputBuilder::expandRulePart(vector<Atom*>::const_iterator start, v
 			delete atom;
 }
 
-void InMemoryInputBuilder::safetyError(bool condition, string message) {
-	assert_msg(condition, message);
+void InMemoryInputBuilder::safetyError(bool condition, Rule* rule) {
+	if(!condition){
+		stringstream tmp;
+		rule->print(tmp);
+		safetyErrorMessage="--> Safety Error: "+tmp.str();
+		foundASafetyError=true;
+	}
 }
 
 } /* namespace grounder */
