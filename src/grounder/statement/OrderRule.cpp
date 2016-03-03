@@ -258,7 +258,10 @@ void OrderRule::unlockAtoms(list<unsigned>& atoms) {
 				atomsUnlocked.push_back(it);
 				orderedBody.push_back(atom);
 				foundAnAssigment(atom, bindVariable,*it);
+				atom->setAssignment(true);
 			}
+			atom->print();
+			cout<<atom->isAssignment()<<endl;
 		}
 	}
 	for(auto iterator: atomsUnlocked)
