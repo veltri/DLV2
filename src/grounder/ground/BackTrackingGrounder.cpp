@@ -1223,18 +1223,8 @@ void BackTrackingGrounder::createAtomSearchersForPredicateHead(unsigned position
 	else{
 		for(unsigned i=0;i<=predicate_searchInsert_table[position][0].first;++i){
 			predicateExtension->getAtomSearcher(i)->setSizeResultVector(sizeRule);
-//			auto atomSearcher1 = predicateExtension->getIndexingStructure(i, DOUBLEMAP);
-//			auto atomSearcher2 = predicateExtension->getIndexingStructure(i, MAP);
-			IndexingStructure* atomSearcher=0;
-//			if(atomSearcher2!=nullptr)
-//				atomSearcher=atomSearcher2;
-//			else if(atomSearcher1!=nullptr)
-//				atomSearcher=atomSearcher1;
-//			else{
-				vector<unsigned> indexing(1,0);
-				atomSearcher=predicateExtension->addAtomSearcher(i,MAP,&indexing);
-//			}
-	// 		auto atomSearcher=predicateExtension->addAtomSearcher(i,HASHSET,nullptr);
+			vector<unsigned> indexing(1,0);
+			IndexingStructure* atomSearcher=predicateExtension->addAtomSearcher(i,MAP,&indexing);
 			if(i==predicate_searchInsert_table[position][0].first || predicateExtension->getPredicateExtentionSize(i))
 				predicate_searchInsert_atomSearcher[position][choiceElementPos].push_back(atomSearcher);
 			else
