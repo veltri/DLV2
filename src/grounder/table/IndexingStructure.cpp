@@ -189,8 +189,8 @@ void AtomSearcher::nextMatch(unsigned int id, Atom *templateAtom, var_assignment
 
 }
 
-Atom* AtomSearcher::findGroundAtom(Atom *atom,IndexingStructure* indexingStructure){
-	return indexingStructure->find(atom);
+Atom* AtomSearcher::findGroundAtom(Atom *atom,IndexingStructure* indexingStructure,const pair<SearchType,unsigned>& searchSpecification){
+	return indexingStructure->find(atom,searchSpecification);
 }
 
 IndexingStructure* AtomSearcher::getIndexingStructure(unsigned type, vector<unsigned>* indexingTerms) {
@@ -246,7 +246,7 @@ AtomSearcher::~AtomSearcher() {
 
 /******************************************************** Indexing Structure (Vector) **************************************************/
 
-Atom* IndexingStructure::find(Atom* atom) {
+Atom* IndexingStructure::find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification) {
 	for(auto atom1:(*table)){
 		if(*atom1==*atom){
 			return atom1;
@@ -257,7 +257,7 @@ Atom* IndexingStructure::find(Atom* atom) {
 
 /******************************************************** Unordered Set **************************************************/
 
-Atom* UnorderedSet::find(Atom* atom) {
+Atom* UnorderedSet::find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification) {
 	if(lastUpdate<table->size())
 		update();
 
@@ -270,6 +270,27 @@ Atom* UnorderedSet::find(Atom* atom) {
 void UnorderedSet::update() {
 	for (;lastUpdate<table->size();++lastUpdate)
 		indexingStructure.insert((*table)[lastUpdate]);
+}
+
+/******************************************************** History Unordered Set **************************************************/
+
+Atom* HistoryUnorderedSet::find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification) {
+	if(lastUpdate<table->size())
+		update();
+
+	auto atomFound_it=indexingStructure.find(atom,searchSpecification.first,searchSpecification.second);
+	return atomFound_it;
+}
+
+void HistoryUnorderedSet::update() {
+
+	unsigned currentIndexIteration=table->getIndexIteration();
+	unsigned currentIteration=table->getCurrentIteration();
+	for (;lastUpdate<table->size();++lastUpdate) {
+		Atom *a=(*table)[lastUpdate];
+		unsigned atomIteration=(lastUpdate<currentIndexIteration)?currentIteration-1:currentIteration;
+		indexingStructure.insert(a,atomIteration);
+	}
 }
 
 
@@ -287,7 +308,7 @@ void UnorderedMapOfUnorderedSet::add(Atom* atom) {
 	}
 }
 
-Atom* UnorderedMapOfUnorderedSet::find(Atom* atom) {
+Atom* UnorderedMapOfUnorderedSet::find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification) {
 	if(lastUpdate<table->size())
 		update();
 
@@ -345,7 +366,7 @@ void UnorderedMapOfVector::add(Atom* atom) {
 	}
 }
 
-Atom* UnorderedMapOfVector::find(Atom* atom) {
+Atom* UnorderedMapOfVector::find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification) {
 	if(lastUpdate<table->size())
 		update();
 
@@ -398,7 +419,7 @@ void UnorderedMapOfHistoryVector::add(Atom* atom) {
 
 }
 
-Atom* UnorderedMapOfHistoryVector::find(Atom* atom) {
+Atom* UnorderedMapOfHistoryVector::find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification) {
 	if(lastUpdate<table->size())
 		update();
 
@@ -456,7 +477,7 @@ void UnorderedMapOfPairHistoryVector::add(Atom* atom) {
 
 }
 
-Atom* UnorderedMapOfPairHistoryVector::find(Atom* atom) {
+Atom* UnorderedMapOfPairHistoryVector::find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification) {
 	if(lastUpdate<table->size())
 		update();
 
@@ -528,7 +549,7 @@ void UnorderedMultiMap::add(Atom* atom) {
 	}
 }
 
-Atom* UnorderedMultiMap::find(Atom* atom) {
+Atom* UnorderedMultiMap::find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification) {
 	if(lastUpdate<table->size())
 		update();
 
@@ -594,7 +615,7 @@ void UnorderedMapOfUnorderedMultimap::add(Atom* atom) {
 	}
 }
 
-Atom* UnorderedMapOfUnorderedMultimap::find(Atom* atom) {
+Atom* UnorderedMapOfUnorderedMultimap::find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification) {
 	if(lastUpdate<table->size())
 		update();
 
@@ -695,7 +716,7 @@ void UnorderedMapOfPair::add(Atom* atom) {
 	}
 }
 
-Atom* UnorderedMapOfPair::find(Atom* atom) {
+Atom* UnorderedMapOfPair::find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification) {
 	if(lastUpdate<table->size())
 		update();
 	unsigned i=indexingTerms[0];
@@ -761,7 +782,7 @@ void MulplipleTermsMap::add(Atom* atom) {
 	}
 }
 
-Atom* MulplipleTermsMap::find(Atom* atom) {
+Atom* MulplipleTermsMap::find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification) {
 	if(lastUpdate<table->size())
 		update();
 	vector<index_object> indices;
@@ -836,7 +857,7 @@ void FullIndexingStructure::add(Atom* atom) {
         indexingStructure->add(atom);
 }
 
-Atom* FullIndexingStructure::find(Atom* atom) {
+Atom* FullIndexingStructure::find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification) {
     return indexingStructures[0]->find(atom);
 }
 

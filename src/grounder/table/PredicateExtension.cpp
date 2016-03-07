@@ -53,6 +53,10 @@ IndexingStructure* PredicateExtension::createAtomSearcher(unsigned table, unsign
 	case (DEFAULT_RECURSIVE):
 		indexingStructure = new IndexingStructureRecursive(tables[table]);
 		break;
+	case (HISTORY_HASHSET):
+		indexingStructure = new HistoryUnorderedSet(tables[table]);
+		break;
+
 	default:
 			indexingStructure = new IndexingStructure(tables[table]);
 		break;
@@ -65,7 +69,7 @@ IndexingStructure* PredicateExtension::addAtomSearcher(unsigned table, vector<un
 	if(table<tables.size()){
 		int indexType=Options::globalOptions()->getPredicateIndexType(predicate->getName());
 		if(indexType==-1){
-			if(predicate->getArity()==1 && indexType!=DEFAULT_RECURSIVE) //StatementDependency::getInstance()->isOnlyInHead(predicate->getIndex()) ||
+			if(predicate->getArity()==1 && indexType!=DEFAULT_RECURSIVE ) //StatementDependency::getInstance()->isOnlyInHead(predicate->getIndex()) ||
 				indexType=HASHSET;
 //			else if(indexingTerms->size()>1)
 //				indexType=DOUBLEMAP;
@@ -119,9 +123,9 @@ IndexingStructure* PredicateExtension::addFullIndexAtomSearcher(unsigned table, 
 IndexingStructure* PredicateExtension::addAtomSearcher(unsigned table, unsigned type, vector<unsigned>* indexingTerms, bool recursive) {
 	if(table<tables.size()){
 		int indexType=type;
-		if(predicate->getArity()==0)
+		if(predicate->getArity()==0 && type!=DEFAULT_RECURSIVE && type!=HISTORY_HASHSET)
 			indexType=DEFAULT;
-		if(predicate->getArity()==1 && type!=DEFAULT_RECURSIVE)
+		if(predicate->getArity()==1 && type!=DEFAULT_RECURSIVE && type!=HISTORY_HASHSET)
 			indexType=HASHSET;
 
 		IndexingStructure* indexingStruct=atomSearchers[table]->getIndexingStructure(indexType,indexingTerms);

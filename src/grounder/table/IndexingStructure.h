@@ -13,6 +13,7 @@
 #include "../../util/Constants.h"
 #include "../statement/Rule.h"
 #include "AdvancedArray.h"
+
 using namespace std;
 
 namespace DLV2 {
@@ -120,7 +121,7 @@ public:
 	///Add an atom the the indexing data structure
 	virtual void add(Atom* atom){};
 	///Search a (ground) atom in the indexing data structure
-	virtual Atom* find(Atom* atom);
+	virtual Atom* find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification={ALL,0});
 	///Erase the content of the indexing data structure
 	virtual void clear(){lastUpdate=0;};
 	///Update the indexing data structure by adding the atoms in the table starting from lastUpdate
@@ -192,12 +193,27 @@ class UnorderedSet : public IndexingStructure {
 public:
 	UnorderedSet(AtomHistoryVector* table):IndexingStructure(table){};
 	void add(Atom* atom){indexingStructure.insert(atom);};
-	Atom* find(Atom* atom);
+	Atom* find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification={ALL,0});
 	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
 	virtual void update();
 	virtual unsigned getType(){return HASHSET;};
 private:
 	AtomTable indexingStructure;
+};
+
+/**
+ * This class implements IndexingStructure and provides an unordered set of atoms as indexing data structure (@see Atom.h)
+ **/
+class HistoryUnorderedSet : public IndexingStructure {
+public:
+	HistoryUnorderedSet(AtomHistoryVector* table):IndexingStructure(table){};
+	void add(Atom* atom){};
+	Atom* find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification);
+	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
+	virtual void update();
+	virtual unsigned getType(){return HISTORY_HASHSET;};
+private:
+	HistorySet<Atom> indexingStructure;
 };
 
 /**
@@ -208,7 +224,7 @@ class UnorderedMapOfUnorderedSet : public IndexingStructure {
 public:
 	UnorderedMapOfUnorderedSet(AtomHistoryVector* table, vector<unsigned>& indexingTerm): IndexingStructure(table,indexingTerm){};
 	void add(Atom* atom);
-	Atom* find(Atom* atom);
+	Atom* find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification={ALL,0});
 	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
 	virtual void update();
 	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg=0);
@@ -232,7 +248,7 @@ class UnorderedMapOfVector : public IndexingStructure {
 public:
 	UnorderedMapOfVector(AtomHistoryVector* table, vector<unsigned>& indexingTerm): IndexingStructure(table,indexingTerm){};
 	void add(Atom* atom);
-	Atom* find(Atom* atom);
+	Atom* find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification={ALL,0});
 	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
 	virtual void update();
 	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg=0);
@@ -256,7 +272,7 @@ class UnorderedMapOfHistoryVector : public IndexingStructure {
 public:
 	UnorderedMapOfHistoryVector(AtomHistoryVector* table, vector<unsigned>& indexingTerm): IndexingStructure(table,indexingTerm){};
 	void add(Atom* atom);
-	Atom* find(Atom* atom);
+	Atom* find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification={ALL,0});
 	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
 	virtual void update();
 	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg=0);
@@ -273,7 +289,7 @@ class UnorderedMapOfPairHistoryVector : public IndexingStructure {
 public:
 	UnorderedMapOfPairHistoryVector(AtomHistoryVector* table, vector<unsigned>& indexingTerm): IndexingStructure(table,indexingTerm){};
 	void add(Atom* atom);
-	Atom* find(Atom* atom);
+	Atom* find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification={ALL,0});
 	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
 	virtual void update();
 	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg=0);
@@ -290,7 +306,7 @@ class UnorderedMultiMap : public IndexingStructure {
 public:
 	UnorderedMultiMap(AtomHistoryVector* table, vector<unsigned>& indexingTerm): IndexingStructure(table,indexingTerm){};
 	void add(Atom* atom);
-	Atom* find(Atom* atom);
+	Atom* find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification={ALL,0});
 	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
 	virtual void update();
 	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg=0);
@@ -314,7 +330,7 @@ class UnorderedMapOfUnorderedMultimap : public IndexingStructure {
 public:
 	UnorderedMapOfUnorderedMultimap(AtomHistoryVector* table, vector<unsigned>& indexingTerm): IndexingStructure(table,indexingTerm){};
 	void add(Atom* atom);
-	Atom* find(Atom* atom);
+	Atom* find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification={ALL,0});
 	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
 	virtual void update();
 	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg=0);
@@ -346,7 +362,7 @@ class UnorderedMapOfPair : public IndexingStructure {
 public:
 	UnorderedMapOfPair(AtomHistoryVector* table, vector<unsigned>& indexingTerm): IndexingStructure(table,indexingTerm){};
 	void add(Atom* atom);
-	Atom* find(Atom* atom);
+	Atom* find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification={ALL,0});
 	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
 	virtual void update();
 	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg=0);
@@ -377,7 +393,7 @@ class MulplipleTermsMap : public IndexingStructure {
 public:
 	MulplipleTermsMap(AtomHistoryVector* table, vector<unsigned>& indexingTerm): IndexingStructure(table,indexingTerm){};
 	void add(Atom* atom);
-	Atom* find(Atom* atom);
+	Atom* find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification={ALL,0});
 	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
 	virtual void update();
 	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg=0);
@@ -406,7 +422,7 @@ class FullIndexingStructure : public IndexingStructure {
 public:
     FullIndexingStructure(AtomHistoryVector* table, Predicate* predicate, AtomSearcher* atomSearcher, bool recursive, unsigned indexType);
     void add(Atom* atom);
-    Atom* find(Atom* atom);
+    Atom* find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification={ALL,0});
     void clear(){IndexingStructure::clear(); for(auto indexingStructure: indexingStructures) indexingStructure->clear();};
     virtual void update();
     virtual GeneralIterator* computeMatchIterator(Atom* templateAtom, const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg=0);
@@ -430,7 +446,7 @@ public:
 	/// Invoked after a first match iterate trough the matching atoms found one by one.
 	virtual void nextMatch(unsigned id, Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation,const vector<unsigned>& outputVariables,const MatchInformation& mi);
 	/// Search a given ground atom by means of the given indexing structure
-	virtual Atom* findGroundAtom(Atom *atom, IndexingStructure* indexingStructure);
+	virtual Atom* findGroundAtom(Atom *atom, IndexingStructure* indexingStructure,const pair<SearchType,unsigned>& searchSpecification={ALL,0});
 	/// This method checks if the two given atoms match according to the current assignment.
 	/// If they match the current assignment is update accordingly.
 	bool checkMatch(unsigned int id,Atom *genericAtom, Atom *templateAtom, var_assignment& currentAssignment,const RuleInformation& ruleInformation,const vector<unsigned>& outputVariables,const MatchInformation& mi);

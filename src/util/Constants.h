@@ -97,6 +97,7 @@ namespace grounder{
 	#define MAP_PAIR_HISTORY_VECTOR 10
 	#define DOUBLEMAP_PAIR 11
 	#define MULTIPLE_TERMS 12
+	#define HISTORY_HASHSET 13
 
 
 	#define NATIVE_CHOICE 0

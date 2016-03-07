@@ -5,11 +5,13 @@
  *      Author: davide
  */
 
-#ifndef SRC_GROUNDER_TABLE_HISTORYVECTOR_H_
-#define SRC_GROUNDER_TABLE_HISTORYVECTOR_H_
+#ifndef SRC_GROUNDER_TABLE_HISTORYSTRUCTURE_H_
+#define SRC_GROUNDER_TABLE_HISTORYSTRUCTURE_H_
 
 #include<vector>
+#include <unordered_map>
 #include "../../util/Assert.h"
+#include "../hash/Hashable.h"
 
 using namespace std;
 
@@ -17,6 +19,41 @@ namespace DLV2 {
 namespace grounder {
 
 enum SearchType{ALL,OLD,NEW};
+
+template<typename T>
+class HistorySet{
+public:
+	bool insert(T* obj,unsigned iteration){
+		return set.insert({obj,iteration}).second;
+	}
+	T* find(T* obj,const SearchType type,const unsigned iteration){
+		auto findIt=set.find(obj);
+		if(findIt==set.end())return nullptr;
+		switch (type) {
+			case ALL:
+				return findIt->first;
+				break;
+			case OLD:
+				if(findIt->second<iteration)
+					return findIt->first;
+				return nullptr;
+				break;
+			case NEW:
+				if(findIt->second==iteration)
+					return findIt->first;
+				return nullptr;
+				break;
+			default:
+				return nullptr;
+		}
+	}
+
+	void clear(){
+		set.clear();
+	}
+private:
+	unordered_map<T*,unsigned,HashForTable<T>,HashForTable<T>> set;
+};
 
 
 template<typename T>
@@ -111,4 +148,4 @@ private:
 } /* namespace grounder */
 } /* namespace DLV2 */
 
-#endif /* SRC_GROUNDER_TABLE_HISTORYVECTOR_H_ */
+#endif /* SRC_GROUNDER_TABLE_HISTORYSTRUCTURE_H_ */
