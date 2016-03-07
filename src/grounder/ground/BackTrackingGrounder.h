@@ -84,6 +84,9 @@ protected:
 	///Find the builtin that can be evaluated while match an atom
 	virtual void findBuiltinFastEvaluated();
 
+	///Find all match information for each atom in the body of the rule
+	void setAtomsMatch();
+
 	/// Current rule to be grounded
 	Rule* currentRule;
 	/// Position of the atom currently under evaluation
@@ -151,6 +154,8 @@ protected:
 private:
 	void findBoundTerms(unsigned int index_current_atom, unsigned position, Atom* current_atom);
 	void setIndexingStructureInHeadAndBody(unsigned position, unsigned atomPos, PredicateExtension* predicateExtension, Predicate* predicate, unordered_set<index_object>* componentPredicateInHead, unsigned table);
+	///Utility function for creating atoms Match information of atoms
+	void createMatchInfoClassicalLiteral(unsigned int index_current_atom, Atom* current_atom);
 };
 
 } /* namespace grounder */

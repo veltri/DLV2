@@ -426,14 +426,14 @@ class AtomSearcher {
 public:
 	AtomSearcher(AtomHistoryVector* table) : table(table) {resultVector.resize(ATOMS_IN_RULE,nullptr);};
 	/// Given a partially ground atom, this method is meant to find all the matching atoms satisfying the variables assignment in the given atom.
-	virtual void firstMatch(unsigned id,Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation, IndexingStructure* indexingStructure,unsigned arg,const vector<unsigned>& outputVariables,const pair<SearchType,unsigned>& searchSpecification={ALL,0});
+	virtual void firstMatch(unsigned id,Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation, IndexingStructure* indexingStructure,unsigned arg,const vector<unsigned>& outputVariables,const pair<SearchType,unsigned>& searchSpecification,const MatchInformation& mi);
 	/// Invoked after a first match iterate trough the matching atoms found one by one.
-	virtual void nextMatch(unsigned id, Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation,const vector<unsigned>& outputVariables);
+	virtual void nextMatch(unsigned id, Atom* templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation,const vector<unsigned>& outputVariables,const MatchInformation& mi);
 	/// Search a given ground atom by means of the given indexing structure
 	virtual Atom* findGroundAtom(Atom *atom, IndexingStructure* indexingStructure);
 	/// This method checks if the two given atoms match according to the current assignment.
 	/// If they match the current assignment is update accordingly.
-	bool checkMatch(unsigned int id,Atom *genericAtom, Atom *templateAtom, var_assignment& currentAssignment,const RuleInformation& ruleInformation,const vector<unsigned>& outputVariables);
+	bool checkMatch(unsigned int id,Atom *genericAtom, Atom *templateAtom, var_assignment& currentAssignment,const RuleInformation& ruleInformation,const vector<unsigned>& outputVariables,const MatchInformation& mi);
 	/// Match a function with given id of term, compare the constant term and put in binds
 	/// a value of the variable term present in termToMatch
 	/// Return true if constant term are equal, else false
@@ -442,7 +442,7 @@ public:
 
 	/// This method given an iterator increases it in order to find matching atoms with the given atom
 	/// according to the current assignment.
-	bool computeMatch(unsigned int id,GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation,const vector<unsigned>& outputVariables);
+	bool computeMatch(unsigned int id,GeneralIterator* currentMatch, Atom *templateAtom, var_assignment& currentAssignment, Atom*& atomFound,const RuleInformation& ruleInformation,const vector<unsigned>& outputVariables,const MatchInformation& mi);
 
 	/// Erase the indexing structures
 	inline virtual void clear(){indexingStructures.clear();}
@@ -452,6 +452,9 @@ public:
 
 	///Function for evaluation of builtin related with the current matching atom
 	static bool evaluateFastBuiltin(const RuleInformation& ruleInformation, index_object index,	var_assignment& varAssignment, Term* genericTerm);
+
+	///Check if the output variable is already evaluated
+	bool checkOutputVariables(const vector<unsigned>& outputVariables,unsigned int id, Atom* genericAtom);
 
 	///Add a specific indexing structure for the table
 	void addIndexingStructure(IndexingStructure* indexingStructure){indexingStructures.push_back(indexingStructure);};

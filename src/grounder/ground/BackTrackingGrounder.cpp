@@ -178,7 +178,7 @@ bool BackTrackingGrounder::firstMatch(){
 		bool undef=false;
 
 		Atom* atomFound=nullptr;
-		atomSearcher->firstMatch(index_current_atom,templateAtom,current_assignment,atomFound,currentRule->getRuleInformation(),searcher,indexingArguments[index_current_atom][0],outputVariablesInAtoms[index_current_atom],{predicate_searchInsert_table[predSearch][current_table].second,iteration});
+		atomSearcher->firstMatch(index_current_atom,templateAtom,current_assignment,atomFound,currentRule->getRuleInformation(),searcher,indexingArguments[index_current_atom][0],outputVariablesInAtoms[index_current_atom],{predicate_searchInsert_table[predSearch][current_table].second,iteration},currentRule->getRuleInformation().getMatchInformation(index_current_atom));
 		find=(atomFound!=nullptr);
 		if(atomFound!=nullptr)
 			undef=!atomFound->isFact();
@@ -227,11 +227,11 @@ bool BackTrackingGrounder::nextMatch(){
 		Atom* atomFound=nullptr;
 		if(match != NO_MATCH){
 			trace_action_tag(grounding,2,cerr<<"Invoked Next Match on table: "<<tableToSearch<<endl;);
-			atomSearcher->nextMatch(index_current_atom,templateAtom,current_assignment,atomFound,currentRule->getRuleInformation(),outputVariablesInAtoms[index_current_atom]);
+			atomSearcher->nextMatch(index_current_atom,templateAtom,current_assignment,atomFound,currentRule->getRuleInformation(),outputVariablesInAtoms[index_current_atom],currentRule->getRuleInformation().getMatchInformation(index_current_atom));
 		}
 		else{
 			trace_action_tag(grounding,2,cerr<<"Invoked First Match on table: "<<tableToSearch<<endl;);
-			atomSearcher->firstMatch(index_current_atom,templateAtom,current_assignment,atomFound,currentRule->getRuleInformation(),searcher,indexingArguments[index_current_atom][0],outputVariablesInAtoms[index_current_atom],{predicate_searchInsert_table[predSearch][current_table].second,iteration});
+			atomSearcher->firstMatch(index_current_atom,templateAtom,current_assignment,atomFound,currentRule->getRuleInformation(),searcher,indexingArguments[index_current_atom][0],outputVariablesInAtoms[index_current_atom],{predicate_searchInsert_table[predSearch][current_table].second,iteration},currentRule->getRuleInformation().getMatchInformation(index_current_atom));
 		}
 
 		find=(atomFound!=nullptr);
@@ -423,6 +423,7 @@ void BackTrackingGrounder::inizialize(Rule* rule, unordered_set<index_object>* c
 	if(rule->getSizeBody()>0)
 		generateTemplateAtom();
 	findBuiltinFastEvaluated();
+	setAtomsMatch();
 
 	outputVariablesInAtoms.clear();
 	outputVariablesInAtoms.resize(currentRule->getSizeBody());
@@ -450,6 +451,142 @@ void BackTrackingGrounder::inizialize(Rule* rule, unordered_set<index_object>* c
 		}
 	}
 	setDefaultAtomSearchers(rule,componentPredicateInHead);
+}
+
+
+void BackTrackingGrounder::createMatchInfoClassicalLiteral(unsigned int index_current_atom, Atom* current_atom) {
+	/* For each term in the atom:
+	 * 	If is a variable, check if is binded from this atom. If yes and is the first time that this variable compare then add
+	 * 	in the bind terms. If is the second times that this variable compare than is a selection and put in other (Ex: a(X,X), 0 is bind 1 in other).
+	 * 	If the bind variable is a bounder builtin(with the evaluation of this variable we can evaluate a builtin) add all the builtin evaluable in builtin.
+	 *  If the variable is bounded of another atom then the term is bound else (the atom that bind the varaible is -1) is a temp variable (variable in the aggregate element)
+	 *
+	 *  If the term is total ground add the term in bound
+	 *
+	 *  If the term isn't anonymous then check if the variable in the term is bound, then the term have all variable bound and therefore the term is bound, else  put in other
+	 *
+	 *  At the end for each builtin we have to verify that the bind variable in the atom that compare in functional term not compare in one builtin. If compare we have
+	 *  to evaluate the builtin with the old match function and then put the bounder builtin variable in other
+	 */
+	MatchInformation atomMatchInfo;
+	set_term variablesInAtom;
+	for (unsigned i = 0; i < current_atom->getTermsSize(); i++) {
+		Term* term = current_atom->getTerm(i);
+		TermType type = term->getType();
+		if (type == VARIABLE) {
+			if (variablesBinder[term->getLocalVariableIndex()]== (int) (index_current_atom)) {
+				if (variablesInAtom.count(term)) {
+					//Variable binded in this atom and compare more than 2 times
+					atomMatchInfo.other.push_back({ i });
+				} else {
+					variablesInAtom.insert(term);
+					if (currentRule->getRuleInformation().isBounderBuiltin(term->getLocalVariableIndex())){
+						for(auto builtin:currentRule->getRuleInformation().getBounderBuiltin(term->getLocalVariableIndex())){
+								atomMatchInfo.builtin.push_back(builtin);
+						}
+					}
+						atomMatchInfo.bind.push_back({ i,term->getLocalVariableIndex() });
+				}
+				if(currentRule->getRuleInformation().isCreatedDictionaryIntersection(term->getLocalVariableIndex()))
+					atomMatchInfo.dictionaryIntersection.push_back({i});
+			}else if(variablesBinder[term->getLocalVariableIndex()]!=-1)
+				atomMatchInfo.bound.push_back({ i });
+			else
+				atomMatchInfo.bind.push_back({ i,term->getLocalVariableIndex() });
+
+		} else if (term->isGround())
+			atomMatchInfo.bound.push_back( { i });
+		else if(type!=ANONYMOUS){
+			//if the term contain bound variable is bound else go in others
+			set_term variablesInTerm;
+			term->getVariable(variablesInTerm);
+			bool isBound = !term->contain(ANONYMOUS);
+			for (Term* var : variablesInTerm)
+				if ( variablesBinder[var->getLocalVariableIndex()]==-1 || variablesBinder[var->getLocalVariableIndex()]== (int) (index_current_atom)) {
+					isBound = false;
+					break;
+				}
+			if (isBound)
+				atomMatchInfo.bound.push_back({ i });
+			else
+				atomMatchInfo.other.push_back({ i });
+
+		}
+	}
+	if(atomMatchInfo.builtin.size()>0){
+		set_term variablesInBuiltin;
+		for(auto builtin:atomMatchInfo.builtin)
+			builtin->getVariables(builtin,variablesInBuiltin);
+		unordered_map<unsigned,unsigned> normalBind;
+		for(auto bind:atomMatchInfo.bind)normalBind.insert({bind.second,bind.first});
+		bool moveBinderBuiltinInOther=false;
+		for(auto var:variablesInBuiltin){
+			unsigned index=var->getLocalVariableIndex();
+			if(variablesBinder[index]== (int) (index_current_atom)){
+				if(!normalBind.count(var->getLocalVariableIndex())){
+					moveBinderBuiltinInOther=true;
+				}else
+					atomMatchInfo.varUsedInBuiltin.push_back({normalBind[index],index});
+			}
+		}
+		if(moveBinderBuiltinInOther){
+			atomMatchInfo.varUsedInBuiltin.clear();
+			atomMatchInfo.builtin.clear();
+			auto& bind=atomMatchInfo.bind;
+			bind.erase(std::remove_if(bind.begin(),bind.end(),[&](pair<unsigned,unsigned>& b){
+				if(currentRule->getRuleInformation().isBounderBuiltin(b.second)){
+					atomMatchInfo.other.push_back(b.first);
+					return true;
+				}
+				return false;
+			}));
+		}
+	}
+	currentRule->addMatchInformation(atomMatchInfo,index_current_atom);
+}
+
+void BackTrackingGrounder::setAtomsMatch(){
+	currentRule->clearAndResizeMatchInfo(currentRule->getSizeBody());
+	unsigned int index_current_atom = 0;
+	for (auto current_atom_it = currentRule->getBeginBody(); current_atom_it != currentRule->getEndBody(); ++current_atom_it,++index_current_atom) {
+		//For each atom calculate the match information. If is an aggregate atom calculate the match info for each single element in aggregate element.
+		Atom *current_atom = *current_atom_it;
+		if(current_atom->isClassicalLiteral() && !current_atom->isNegative()){
+			createMatchInfoClassicalLiteral(index_current_atom, current_atom);
+		}else if(current_atom->isAggregateAtom()){
+			for(unsigned i=0;i<current_atom->getAggregateElementsSize();i++){
+				Atom * atomInAgg=current_atom->getAggregateElement(i)->getNafLiteral(0);
+				createMatchInfoClassicalLiteral(index_current_atom, atomInAgg);
+			}
+		}
+	}
+//	currentRule->print();
+//	for(unsigned i=0;i<atomMatchInformation.size();i++){
+//		for(unsigned j=0;j<atomMatchInformation[i].size();j++){
+//			cout<<"ATOM "<<i<<" "<<j<<endl;
+//			cout<<"\t"<<"BOUND ";
+//			for(auto bounds:atomMatchInformation[i][j].bound){
+//				cout<<bounds<<",";
+//			}
+//			cout<<endl<<"\t"<<"BIND ";
+//			for(auto bounds:atomMatchInformation[i][j].bind){
+//				cout<<bounds.first<<",";
+//			}
+//			cout<<endl<<"\t"<<"BUILTIN ATOM ";
+//			for(auto bounds:atomMatchInformation[i][j].builtin){
+//				bounds->print();cout<<",";
+//			}
+//			cout<<endl<<"\t"<<"BUILTIN VARIABLE ";
+//			for(auto bounds:atomMatchInformation[i][j].varUsedInBuiltin){
+//				cout<<bounds.first<<",";
+//			}
+//			cout<<endl<<"\t"<<"OTHER ";
+//			for(auto bounds:atomMatchInformation[i][j].other){
+//				cout<<bounds<<",";
+//			}
+//			cout<<endl;
+//		}
+//	}
 }
 
 void BackTrackingGrounder::findBoundTerms(unsigned int index_current_atom, unsigned position, Atom* current_atom) {
@@ -797,6 +934,7 @@ bool BackTrackingGrounder::groundAggregate() {
 	}
 
 	Atom *ground_aggregate;
+	vector<unsigned> emptyVector;
 	if(aggregateAtom->isAnAssigment() && ground_rule->getAtomInBody(index_current_atom)!=nullptr){
 		//An assignment is in the lower guard
 		//The atom is already grounded, just change the guard
@@ -845,7 +983,8 @@ bool BackTrackingGrounder::groundAggregate() {
 
 			//Each aggregate element have one atom with no relation with the other atoms in the aggregate elements, then we can
 			//overwrite the general iterator in the Atom Searcher with index_current_atom
-			atomSearcher->firstMatch(index_current_atom,atom,current_assignment,atomFound,currentRule->getRuleInformation(),searcher,indexingArguments[index_current_atom][i],vector<unsigned>());
+			const MatchInformation& mi=currentRule->getRuleInformation().getMatchInformation(index_current_atom,i);
+			atomSearcher->firstMatch(index_current_atom,atom,current_assignment,atomFound,currentRule->getRuleInformation(),searcher,indexingArguments[index_current_atom][i],emptyVector,{ALL,0},mi);
 			find=(atomFound!=nullptr);
 			while(find){
 				counter++;
@@ -876,7 +1015,7 @@ bool BackTrackingGrounder::groundAggregate() {
 
 				if(result!=UNDEF || atom->isGround())break;
 
-				atomSearcher->nextMatch(index_current_atom,atom,current_assignment,atomFound,currentRule->getRuleInformation(),vector<unsigned>());
+				atomSearcher->nextMatch(index_current_atom,atom,current_assignment,atomFound,currentRule->getRuleInformation(),emptyVector,mi);
 				find=(atomFound!=nullptr);
 			}
 		}
@@ -1025,8 +1164,11 @@ void BackTrackingGrounder::groundChoiceNatively(bool& find_new_true_atom,bool& g
 							continue;
 					}
 					else{
+						//FIXME If we want to maintain this function calculate, like atom in the body, the match information for the inner atom in the choice
+						MatchInformation mi;
+						for(unsigned i=0;i<templateAtomsInChoice[i]->getTermsSize();i++)mi.other.push_back(i);
 						if(firstMatch){
-							atomSearcher->firstMatch(i,templateAtomsInChoice[i],current_assignment,atomFound,currentRule->getRuleInformation(),indexingStructure,0,vector<unsigned>(),{ALL,0});
+							atomSearcher->firstMatch(i,templateAtomsInChoice[i],current_assignment,atomFound,currentRule->getRuleInformation(),indexingStructure,0,vector<unsigned>(),{ALL,0},mi);
 							if(atomFound==nullptr){
 								table++;
 								continue;
@@ -1035,7 +1177,7 @@ void BackTrackingGrounder::groundChoiceNatively(bool& find_new_true_atom,bool& g
 								firstMatch=false;
 						}
 						else{
-							atomSearcher->nextMatch(i,templateAtomsInChoice[i],current_assignment,atomFound,currentRule->getRuleInformation(),vector<unsigned>());
+							atomSearcher->nextMatch(i,templateAtomsInChoice[i],current_assignment,atomFound,currentRule->getRuleInformation(),vector<unsigned>(),mi);
 							if(atomFound==nullptr){
 								table++;
 								firstMatch=true;

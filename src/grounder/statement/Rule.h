@@ -24,6 +24,22 @@ using tupleWeak = tuple<Term*,Term*,vector<Term*>>;
 
 class Rule;
 
+
+/**
+ * This struct contain the information used for the match of atoms. Bound contain the index of term total bound. Bind the index of term
+ * bind. Builtin the builtin atom that can be evaluated while we check the match of the atom. VarUsedInBuiltin the variable binded of the atom that we
+ * match shared with one builtin in vector builtin. Other the functional atoms, arith term and variable binded in the atom that compare two times.
+ **/
+struct MatchInformation{
+	vector<unsigned> bound;
+	//CAN BE OPTIMIZED with vector<unisnged>
+	vector<pair<unsigned,unsigned>> bind;
+	vector<pair<unsigned,unsigned>> varUsedInBuiltin;
+	vector<Atom*> builtin;
+	vector<unsigned> other;
+	vector<unsigned> dictionaryIntersection;
+};
+
 ///RuleInformation contain the information of rule relative:
 ///		- The number of the variable in the body of the rule
 ///		- The intersection of the dictionary for each positive classical literal
@@ -141,6 +157,19 @@ public:
 		return outputVariables;
 	}
 
+	const MatchInformation& getMatchInformation(unsigned indexAtom,unsigned subAtom=0)const{
+		return atomMatchInformation[indexAtom][subAtom];
+	}
+
+	void addMatchInformation(MatchInformation& matchInfo,unsigned indexAtom){
+		atomMatchInformation[indexAtom].push_back(matchInfo);
+	}
+
+	void clearAndResizeMatchInfo(unsigned size){
+		atomMatchInformation.clear();
+		atomMatchInformation.resize(size);
+	}
+
 private:
 	vector<set_term> dictionaryIntersection;
 	vector<bool> dictionaryIntersectionCreation;
@@ -148,6 +177,9 @@ private:
 	vector<vector<Atom*>> bounderBuiltins;
 	/// The set of variables appearing in the head of the current rule
 	set_term outputVariables;
+	/// For each atom a vector of match information. If is classical literal the vector contain exactly one matchInformation, if is
+	/// an aggregate atom contain a matchInformation for each aggregate element
+	vector<vector<MatchInformation>> atomMatchInformation;
 };
 
 
@@ -363,6 +395,14 @@ public:
 
 	set_term& getOutputVariables() {
 		return ruleInformation.getOutputVariables(this);
+	}
+
+	void addMatchInformation(MatchInformation& matchInfo,unsigned indexAtom){
+		ruleInformation.addMatchInformation(matchInfo,indexAtom);
+	}
+
+	void clearAndResizeMatchInfo(unsigned size){
+		ruleInformation.clearAndResizeMatchInfo(size);
 	}
 
 protected:
