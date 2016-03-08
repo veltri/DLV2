@@ -14,11 +14,12 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+
+#include "../table/HistoryStructure.h"
 #include "AggregateElement.h"
 #include "ChoiceElement.h"
 #include "../table/TermTable.h"
 #include "Predicate.h"
-#include "../table/HistoryVector.h"
 
 using namespace std;
 

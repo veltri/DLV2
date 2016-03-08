@@ -49,7 +49,7 @@ bool BackTrackingGrounder::findGroundMatch(){
 		Atom* atomFound=nullptr;
 		if(current_table<predicate_searchInsert_atomSearcher[index_current_atom+currentRule->getSizeHead()][0].size()){
 			searcher=predicate_searchInsert_atomSearcher[index_current_atom+currentRule->getSizeHead()][0][current_table];
-			atomFound=searcher->find(templateAtom);
+			atomFound=searcher->find(templateAtom,{predicate_searchInsert_table[index_current_atom+currentRule->getSizeHead()][current_table].second,iteration});
 		}
 
 		//Initialize false for negative atom
@@ -1245,20 +1245,33 @@ void BackTrackingGrounder::setIndexingStructureInHeadAndBody(unsigned position, 
 		predicateExtension->getAtomSearcher(table)->setSizeResultVector(
 				currentRule->getSizeBody());
 		IndexingStructure* atomSearcher=nullptr;
-		if (boundTermsInAtoms[position][atomPos].size()
-				== predicate->getArity()) {
-			auto atomSearcherMAP = predicateExtension->getIndexingStructure(
-					table, MAP);
-			auto atomSearcherHASH = predicateExtension->getIndexingStructure(
-					table, HASHSET);
-			if (atomSearcherMAP != nullptr)
-				atomSearcher = atomSearcherMAP;
-			else if (atomSearcherHASH != nullptr)
-				atomSearcher = atomSearcherHASH;
-			else {
-				vector<unsigned> terms(1, 0);
-				atomSearcher = predicateExtension->addAtomSearcher(table, MAP,
-						&terms);
+		if (boundTermsInAtoms[position][atomPos].size()	== predicate->getArity()) {
+
+			if(componentPredicateInHead==nullptr || !componentPredicateInHead->count(predicate->getIndex())){
+				auto atomSearcherMAP = predicateExtension->getIndexingStructure(
+						table, MAP);
+				auto atomSearcherHASH = predicateExtension->getIndexingStructure(
+						table, HASHSET);
+				if (atomSearcherMAP != nullptr)
+					atomSearcher = atomSearcherMAP;
+				else if (atomSearcherHASH != nullptr)
+					atomSearcher = atomSearcherHASH;
+				else {
+					vector<unsigned> terms(1, 0);
+					atomSearcher = predicateExtension->addAtomSearcher(table, MAP,
+							&terms);
+				}
+
+			}else{
+
+				auto atomSearcherHISTORYHASH = predicateExtension->getIndexingStructure(table, HISTORY_HASHSET);
+				if (atomSearcherHISTORYHASH != nullptr)
+					atomSearcher=atomSearcherHISTORYHASH;
+				else {
+					vector<unsigned> terms(1, 0);
+					atomSearcher = predicateExtension->addAtomSearcher(table, HISTORY_HASHSET,&terms);
+				}
+
 			}
 		} else if (!boundTermsInAtoms[position][atomPos].empty()) {
 			int indexingTermSetByUser =
