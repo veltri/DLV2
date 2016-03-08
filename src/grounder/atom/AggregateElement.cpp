@@ -60,7 +60,8 @@ namespace grounder{
 
 	void AggregateElement::getPredicates(set_predicate& predicates)const{
 		for(auto atom:nafLiterals){
-			predicates.insert(atom->getPredicate());
+			if(atom->isClassicalLiteral())
+				predicates.insert(atom->getPredicate());
 		}
 	}
 
@@ -69,7 +70,7 @@ namespace grounder{
 			if(term->isGround())continue;
 			bool ok=false;
 			for(auto atom:nafLiterals){
-				if(((atom->isClassicalLiteral() && !atom->isNegative()) || atom->isAssignment())  && atom->getVariable().count(term)){
+				if(((atom->isClassicalLiteral() && !atom->isNegative()) || atom->getBinop()==Binop::EQUAL)  && atom->getVariable().count(term)){
 					ok=true;
 				}
 			}
