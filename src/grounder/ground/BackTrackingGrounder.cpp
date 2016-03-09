@@ -795,7 +795,8 @@ void BackTrackingGrounder::findBuiltinFastEvaluated(){
 
 
 /*
- * Check if the rule contains only classical positive atoms and all the variable is bind
+ * Check if the rule contains only classical positive atoms,classical negative atoms, builtin (not assignment builtin) and all the variable is bind or total bound
+ * If we have negation with no stratification is not cartesian
  */
 bool BackTrackingGrounder::isCartesianProductRule(Rule *currentRule){
 	unsigned index_current_atom=0;
@@ -803,9 +804,15 @@ bool BackTrackingGrounder::isCartesianProductRule(Rule *currentRule){
 		Atom *current_atom = *current_atom_it;
 		if(current_atom->isBuiltIn() && builtAlreadyEvaluated[index_current_atom])
 			continue;
-		if(! (current_atom->isClassicalLiteral() && !current_atom->isNegative())){
-			return false;
+		if(current_atom->isClassicalLiteral() && current_atom->isNegative()){
+			if(StatementDependency::getInstance()->isPredicateNotStratified(current_atom->getPredicate()->getIndex()))
+				return false;
+			continue;
 		}
+		if(atoms_bind_variables[index_current_atom].size()==0 && !current_atom->containsAnonymous())
+			continue;
+		if(! current_atom->isClassicalLiteral())
+			return false;
 		unsigned sizeVar=0;
 		for(unsigned i=0;i<current_atom->getTermsSize();i++){
 			Term *term=current_atom->getTerm(i);
@@ -829,8 +836,10 @@ bool BackTrackingGrounder::isCartesianProductRule(Rule *currentRule){
  *
  */
 bool BackTrackingGrounder::groundCartesian(Rule* rule){
+	for(auto& atom:templateSetAtom) atom=nullptr;
 	unsigned size=rule->getSizeBody();
 	vector<AtomCartesianInfo> tables(rule->getSizeBody());
+	vector<bool> isBound(rule->getSizeBody(),false);
 
 	int i=0;
 	for(i=0;(unsigned)i<rule->getSizeBody();i++){
@@ -839,7 +848,10 @@ bool BackTrackingGrounder::groundCartesian(Rule* rule){
 			ground_rule->setAtomToSimplifyInBody(i,true);
 			continue;
 		}
-
+		if(rule->getAtomInBody(i)->isNegative() || atoms_bind_variables[i].size()==0 ){
+			isBound[i]=true;
+			continue;
+		}
 		for(auto table:predicate_searchInsert_table[i+rule->getSizeHead()]){
 			auto t=predicateExtTable->getPredicateExt(predicate)->getTable(table.first);
 			if(table.second==ALL)
@@ -854,13 +866,12 @@ bool BackTrackingGrounder::groundCartesian(Rule* rule){
 	}
 
 	bool ground_new_atom=false;
-
+	unsigned sizeHead=currentRule->getSizeHead();
 	i=0;
 	direction=true;
 	while(true){
 		if(i==-1)
 			break;
-
 		if((unsigned)i==size){
 			if(foundAssignment())
 				ground_new_atom=true;
@@ -874,6 +885,37 @@ bool BackTrackingGrounder::groundCartesian(Rule* rule){
 				++i;
 			else
 				--i;
+			continue;
+		}
+
+		if(isBound[i]){
+			if(!direction){
+				i--;
+				continue;
+			}
+			Atom* find=nullptr;
+			currentRule->getAtomInBody(i)->ground(current_assignment,templateSetAtom[i]);
+			Atom *tmpAtom=templateSetAtom[i];
+			for(auto& searcher:predicate_searchInsert_atomSearcher[i+sizeHead][0]){
+				find=searcher->find(tmpAtom,{ALL,0});
+				if(find!=nullptr)break;
+			}
+			bool isNegative=currentRule->getAtomInBody(i)->isNegative();
+			if((isNegative && (find==nullptr || !find->isFact()) ) || (!isNegative && find!=nullptr)){
+				bool simplify=(find!=nullptr)?find->isFact():true;
+				if(find!=nullptr){
+					if(isNegative){
+						tmpAtom->setIndex(find->getIndex());
+						ground_rule->setAtomInBody(i,tmpAtom->clone());
+					}else
+						ground_rule->setAtomInBody(i,find);
+				}
+				ground_rule->setAtomToSimplifyInBody(i,simplify);
+				i++;
+			}else{
+				direction=false;
+				i--;
+			}
 			continue;
 		}
 

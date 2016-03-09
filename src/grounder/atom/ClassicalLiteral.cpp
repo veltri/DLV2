@@ -69,7 +69,6 @@ void ClassicalLiteral::substitute(var_assignment& substitutionTerm,Atom*& templa
 	else
 		for(unsigned int i=0;i<terms.size();++i)
 			templateAtom->setTerm(i,terms[i]->substitute(substitutionTerm));
-
 }
 
 
