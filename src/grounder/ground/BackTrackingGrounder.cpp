@@ -809,10 +809,10 @@ bool BackTrackingGrounder::isCartesianProductRule(Rule *currentRule){
 				return false;
 			continue;
 		}
-		if(atoms_bind_variables[index_current_atom].size()==0 && !current_atom->containsAnonymous())
-			continue;
 		if(! current_atom->isClassicalLiteral())
 			return false;
+		if(atoms_bind_variables[index_current_atom].size()==0 && !current_atom->containsAnonymous())
+			continue;
 		unsigned sizeVar=0;
 		for(unsigned i=0;i<current_atom->getTermsSize();i++){
 			Term *term=current_atom->getTerm(i);
