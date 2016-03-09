@@ -18,6 +18,30 @@ namespace grounder {
 #define NO_MATCH 0
 #define MATCH 1
 
+///Information used in the function ground cartesian product. For each atom
+struct AtomCartesianInfo{
+
+	struct TableInfo{
+		TableInfo(AtomHistoryVector* table,	unsigned start,	unsigned end):table(table),start(start),end(end){}
+		AtomHistoryVector* table;
+		unsigned start;
+		unsigned end;
+	};
+
+	AtomCartesianInfo():table(0),indexTable(0){}
+
+	void addTable(AtomHistoryVector* vec,unsigned start,unsigned end){
+		tables.emplace_back(vec,start,end);
+	}
+
+	//vector of iterators  search
+	vector<TableInfo> tables;
+	// Index of tables that specifies the current table
+	unsigned table;
+	// Index in tables[table] that specifies the current atom in the table
+	unsigned indexTable;
+};
+
 /*
  *  Simple backtrack algorithm to ground a rule
 */

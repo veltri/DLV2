@@ -830,7 +830,7 @@ bool BackTrackingGrounder::isCartesianProductRule(Rule *currentRule){
  */
 bool BackTrackingGrounder::groundCartesian(Rule* rule){
 	unsigned size=rule->getSizeBody();
-	vector<tuple<vector<AtomHistoryVector*>,unsigned,unsigned>> tables(rule->getSizeBody());
+	vector<AtomCartesianInfo> tables(rule->getSizeBody());
 
 	int i=0;
 	for(i=0;(unsigned)i<rule->getSizeBody();i++){
@@ -839,12 +839,18 @@ bool BackTrackingGrounder::groundCartesian(Rule* rule){
 			ground_rule->setAtomToSimplifyInBody(i,true);
 			continue;
 		}
-		vector<AtomHistoryVector*> tableToSearch;
-		for(auto table:predicate_searchInsert_table[i+rule->getSizeHead()]){
-			tableToSearch.push_back(predicateExtTable->getPredicateExt(predicate)->getTable(table.first));
-		}
 
-		tables[i]=(make_tuple(tableToSearch,0,0));
+		for(auto table:predicate_searchInsert_table[i+rule->getSizeHead()]){
+			auto t=predicateExtTable->getPredicateExt(predicate)->getTable(table.first);
+			if(table.second==ALL)
+				tables[i].addTable(t,0,t->size());
+			if(table.second==OLD)
+				tables[i].addTable(t,0,t->getIndexIteration());
+			if(table.second==NEW){
+				tables[i].addTable(t,t->getIndexIteration(),t->size());
+				tables[i].indexTable=t->getIndexIteration();
+			}
+		}
 	}
 
 	bool ground_new_atom=false;
@@ -871,23 +877,27 @@ bool BackTrackingGrounder::groundCartesian(Rule* rule){
 			continue;
 		}
 
-		if(get<1>(tables[i])>=get<0>(tables[i]).size()){
-			get<1>(tables[i])=0;
-			get<2>(tables[i])=0;
+		auto& table = tables[i].table;
+		auto& indexTable=tables[i].indexTable;
+
+		if(table>=tables[i].tables.size()){
+			table=0;
+			indexTable = tables[i].tables[0].start;
 			--i;
 			direction=false;
 			continue;
 		}
 
-		AtomHistoryVector *vec=get<0>(tables[i])[get<1>(tables[i])];
-		if(get<2>(tables[i])>=vec->size()){
-			get<2>(tables[i])=0;
-			get<1>(tables[i])=get<1>(tables[i])+1;
+		AtomHistoryVector *vec=tables[i].tables[table].table;
+		unsigned end=tables[i].tables[table].end;
+		if(indexTable>=end){
+			table++;
+			indexTable=tables[i].tables[table].start;
 			continue;
 		}
 
 		bool match=true;
-		Atom * atom=(*vec)[get<2>(tables[i])];
+		Atom * atom=(*vec)[indexTable];
 		Atom *nonGroundAtom=rule->getAtomInBody(i);
 		for(unsigned j=0;j<atom->getTermsSize();j++){
 			if(atom->getTerm(j)->getType()==ANONYMOUS)continue;
@@ -898,25 +908,16 @@ bool BackTrackingGrounder::groundCartesian(Rule* rule){
 			}
 		}
 
+		indexTable++;
+
 		if(match){
 			ground_rule->setAtomInBody(i,atom);
 			ground_rule->setAtomToSimplifyInBody(i,atom->isFact());
-			get<2>(tables[i])=get<2>(tables[i])+1;
 			++i;
 			direction=true;
-		}else
-			get<2>(tables[i])=get<2>(tables[i])+1;
-
+		}
 	}
 
-
-//	for(auto atom1:*predicateExtTable->getPredicateExt(rule->getAtomInBody(0)->getPredicate())->getAtomVector(NOFACT)){
-//		ground_rule->setAtomInBody(0,atom1);
-//		for(auto atom2:*predicateExtTable->getPredicateExt(rule->getAtomInBody(1)->getPredicate())->getAtomVector(NOFACT)){
-//			ground_rule->setAtomInBody(1,atom2);
-//			foundAssignment();
-//		}
-//	}
 
 	return ground_new_atom;
 }
@@ -1263,7 +1264,6 @@ void BackTrackingGrounder::setIndexingStructureInHeadAndBody(unsigned position, 
 				}
 
 			}else{
-
 				auto atomSearcherHISTORYHASH = predicateExtension->getIndexingStructure(table, HISTORY_HASHSET);
 				if (atomSearcherHISTORYHASH != nullptr)
 					atomSearcher=atomSearcherHISTORYHASH;

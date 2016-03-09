@@ -303,6 +303,7 @@ using AtomTable = hashSet<Atom> ;
 ///Vector used for the recursion
 using AtomHistoryVector = HistoryVector<Atom*>;
 
+
 ///An unordered multimap of Atom
 using Multimap_Atom = unordered_multimap<index_object, Atom*>;
 

@@ -332,6 +332,10 @@ bool ProgramGrounder::isNotEmptyPredExt(Predicate* pred,unsigned table) {
 			table) > 0;
 }
 
+bool ProgramGrounder::isNotEmptyPredExt(Predicate* pred,unsigned table,SearchType type) {
+	return PredicateExtTable::getInstance()->getPredicateExt(pred)->getPredicateExtentionSize(table,type) > 0;
+}
+
 bool ProgramGrounder::inizializeSearchInsertPredicateBody(Rule* rule) {
 	for (auto atom = rule->getBeginBody(); atom != rule->getEndBody(); atom++) {
 		vector<pair<unsigned,SearchType>> tableToInsert;
