@@ -55,37 +55,48 @@ extern int yydebug;
     AGGR_MAX = 265,
     AGGR_MIN = 266,
     AGGR_SUM = 267,
-    ERROR = 268,
-    NEWLINE = 269,
-    DOT = 270,
-    DDOT = 271,
-    SEMICOLON = 272,
-    COLON = 273,
-    CONS = 274,
-    QUERY_MARK = 275,
-    PLUS = 276,
-    TIMES = 277,
-    SLASH = 278,
-    ANON_VAR = 279,
-    PARAM_OPEN = 280,
-    PARAM_CLOSE = 281,
-    SQUARE_OPEN = 282,
-    SQUARE_CLOSE = 283,
-    CURLY_OPEN = 284,
-    CURLY_CLOSE = 285,
-    EQUAL = 286,
-    UNEQUAL = 287,
-    LESS = 288,
-    GREATER = 289,
-    LESS_OR_EQ = 290,
-    GREATER_OR_EQ = 291,
-    DASH = 292,
-    COMMA = 293,
-    NAF = 294,
-    AT = 295,
-    WCONS = 296,
-    VEL = 297,
-    EXISTS = 298
+    ANNOTATION_RULE_ORDERING = 268,
+    ANNOTATION_ORDERING_VALUE = 269,
+    NUMBER_ANNOTATION = 270,
+    ANNOTATION_RULE_ATOM_INDEXED = 271,
+    ANNOTATION_ATOM_INDEXED = 272,
+    ANNOTATION_ATOM_INDEXED_ARGUMENTS = 273,
+    PARAM_OPEN_ANNOTATION = 274,
+    PARAM_CLOSE_ANNOTATION = 275,
+    DOT_ANNOTATION = 276,
+    EQUAL_ANNOTATION = 277,
+    COMMA_ANNOTATION = 278,
+    ERROR = 279,
+    NEWLINE = 280,
+    DOT = 281,
+    DDOT = 282,
+    SEMICOLON = 283,
+    COLON = 284,
+    CONS = 285,
+    QUERY_MARK = 286,
+    PLUS = 287,
+    TIMES = 288,
+    SLASH = 289,
+    ANON_VAR = 290,
+    PARAM_OPEN = 291,
+    PARAM_CLOSE = 292,
+    SQUARE_OPEN = 293,
+    SQUARE_CLOSE = 294,
+    CURLY_OPEN = 295,
+    CURLY_CLOSE = 296,
+    EQUAL = 297,
+    UNEQUAL = 298,
+    LESS = 299,
+    GREATER = 300,
+    LESS_OR_EQ = 301,
+    GREATER_OR_EQ = 302,
+    DASH = 303,
+    COMMA = 304,
+    NAF = 305,
+    AT = 306,
+    WCONS = 307,
+    VEL = 308,
+    EXISTS = 309
   };
 #endif
 /* Tokens.  */
@@ -99,37 +110,48 @@ extern int yydebug;
 #define AGGR_MAX 265
 #define AGGR_MIN 266
 #define AGGR_SUM 267
-#define ERROR 268
-#define NEWLINE 269
-#define DOT 270
-#define DDOT 271
-#define SEMICOLON 272
-#define COLON 273
-#define CONS 274
-#define QUERY_MARK 275
-#define PLUS 276
-#define TIMES 277
-#define SLASH 278
-#define ANON_VAR 279
-#define PARAM_OPEN 280
-#define PARAM_CLOSE 281
-#define SQUARE_OPEN 282
-#define SQUARE_CLOSE 283
-#define CURLY_OPEN 284
-#define CURLY_CLOSE 285
-#define EQUAL 286
-#define UNEQUAL 287
-#define LESS 288
-#define GREATER 289
-#define LESS_OR_EQ 290
-#define GREATER_OR_EQ 291
-#define DASH 292
-#define COMMA 293
-#define NAF 294
-#define AT 295
-#define WCONS 296
-#define VEL 297
-#define EXISTS 298
+#define ANNOTATION_RULE_ORDERING 268
+#define ANNOTATION_ORDERING_VALUE 269
+#define NUMBER_ANNOTATION 270
+#define ANNOTATION_RULE_ATOM_INDEXED 271
+#define ANNOTATION_ATOM_INDEXED 272
+#define ANNOTATION_ATOM_INDEXED_ARGUMENTS 273
+#define PARAM_OPEN_ANNOTATION 274
+#define PARAM_CLOSE_ANNOTATION 275
+#define DOT_ANNOTATION 276
+#define EQUAL_ANNOTATION 277
+#define COMMA_ANNOTATION 278
+#define ERROR 279
+#define NEWLINE 280
+#define DOT 281
+#define DDOT 282
+#define SEMICOLON 283
+#define COLON 284
+#define CONS 285
+#define QUERY_MARK 286
+#define PLUS 287
+#define TIMES 288
+#define SLASH 289
+#define ANON_VAR 290
+#define PARAM_OPEN 291
+#define PARAM_CLOSE 292
+#define SQUARE_OPEN 293
+#define SQUARE_CLOSE 294
+#define CURLY_OPEN 295
+#define CURLY_CLOSE 296
+#define EQUAL 297
+#define UNEQUAL 298
+#define LESS 299
+#define GREATER 300
+#define LESS_OR_EQ 301
+#define GREATER_OR_EQ 302
+#define DASH 303
+#define COMMA 304
+#define NAF 305
+#define AT 306
+#define WCONS 307
+#define VEL 308
+#define EXISTS 309
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -142,7 +164,7 @@ union YYSTYPE
     char single_char;
     int integer;
 
-#line 146 "src/input/aspcore2_parser.h" /* yacc.c:1909  */
+#line 168 "src/input/aspcore2_parser.h" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1

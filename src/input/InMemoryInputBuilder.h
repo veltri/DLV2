@@ -80,6 +80,10 @@ public:
     virtual void onAggregateNafLiteral() ;
     virtual void onAggregateElement() ;
     virtual void onAggregate( bool naf = false ) ;
+    virtual void onAnnotationRuleOrdering(char* annotation){cerr<<annotation<<endl;};
+    virtual void onAnnotationGlobalOrdering(char* annotation){cerr<<annotation<<endl;};
+    virtual void onAnnotationRuleAtomIndexedArgument(char* annotation){cerr<<annotation<<endl;};
+    virtual void onAnnotationRuleAtomIndexedAtom(char* annotation){cerr<<annotation<<endl;};
 
     void newTerm(char*);
 

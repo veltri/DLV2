@@ -30,7 +30,14 @@ This file is part of the ASPCOMP2013 ASP-Core-2 validator (validator in the foll
 
 BLANK               ([ \t]+)
 NEWLINE             \15?\n
-COMMENT             \%.*
+COMMENT             \%[^@].*
+DOT 				\.
+
+ANNOTATION_RULE_ORDERING			\%@rule_ordering
+ANNOTATION_ORDERING_VALUE			value
+ANNOTATION_RULE_ATOM_INDEXED		\%@rule_atom_indexed
+ANNOTATION_ATOM_INDEXED				atom
+ANNOTATION_ATOM_INDEXED_ARGUMENTS	arguments
 
 AGGR_COUNT          #count
 AGGR_MAX            #max
@@ -43,6 +50,8 @@ SYMBOLIC_CONSTANT   ([a-z][A-Za-z_0-9]*)
 VARIABLE            ([A-Z][A-Za-z_0-9]*)
 STRING              (\"[^\"]*\")
 NUMBER              ([0-9]+)
+
+%x ANNOTATION
 
 %x DIRECTIVE_NAME_READ    
                       // Only in state DIRECTIVE_NAME_READ a directive value 
@@ -59,11 +68,11 @@ NUMBER              ([0-9]+)
         // requested with WANT_NEWLINE. (e.g. by a construct that is
         // terminated by a newline.)
 
-<WANT_NEWLINE,DIRECTIVE_NAME_READ>{NEWLINE} { 
+<WANT_NEWLINE,DIRECTIVE_NAME_READ>{NEWLINE} {
                             director.onNewLine();
                             BEGIN(INITIAL);
                             return NEWLINE;
-			}
+}
 
 {NEWLINE}               { director.onNewLine(); }
 "."                     { return DOT; }
@@ -168,8 +177,46 @@ NUMBER              ([0-9]+)
                             return NUMBER; 
                         }
 
-\%.*			{ /* Skip comments */ }
-{BLANK}			{ /* Skip blanks */ }
+{ANNOTATION_RULE_ORDERING}	{
+								BEGIN(ANNOTATION);
+								return ANNOTATION_RULE_ORDERING;
+							}
+<ANNOTATION>"("				{
+								return PARAM_OPEN_ANNOTATION;
+							}
+<ANNOTATION>")"				{
+								return PARAM_CLOSE_ANNOTATION;
+							}
+<ANNOTATION>"="				{
+								return EQUAL_ANNOTATION;
+							}
+<ANNOTATION>","				{
+								return COMMA_ANNOTATION;
+							}							
+<ANNOTATION>"."				{
+								BEGIN(INITIAL);
+								return DOT_ANNOTATION;
+							}
+<ANNOTATION>{ANNOTATION_ORDERING_VALUE}	{
+											return ANNOTATION_ORDERING_VALUE;
+										}
+<ANNOTATION>{NUMBER}        { 
+                            	yylval.string=new char[strlen(yytext)+1];
+                            	strcpy(yylval.string,yytext);
+                            	return NUMBER_ANNOTATION; 
+                        	}
+{ANNOTATION_RULE_ATOM_INDEXED}		{
+										BEGIN(ANNOTATION);
+										return ANNOTATION_RULE_ATOM_INDEXED;
+									}
+<ANNOTATION>{ANNOTATION_ATOM_INDEXED}			{
+										return ANNOTATION_ATOM_INDEXED;
+									}
+<ANNOTATION>{ANNOTATION_ATOM_INDEXED_ARGUMENTS} {
+										return ANNOTATION_ATOM_INDEXED_ARGUMENTS;
+									}
+{COMMENT}				{ /* Skip comments */ }
+{BLANK}					{ /* Skip blanks */ }
 
 .                       {   
                             // Anything not matching one of the patterns

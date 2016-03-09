@@ -792,3 +792,4 @@ void InMemoryInputBuilder::safetyError(bool condition, Rule* rule) {
 
 } /* namespace grounder */
 } /* namespace DLV2 */
+

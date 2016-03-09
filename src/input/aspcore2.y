@@ -39,6 +39,10 @@ This file is part of the ASPCOMP2013 ASP-Core-2 validator (validator in the foll
 %token <string> SYMBOLIC_CONSTANT NUMBER VARIABLE STRING DIRECTIVE_NAME DIRECTIVE_VALUE
 %token <string> AGGR_COUNT AGGR_MAX AGGR_MIN AGGR_SUM
 
+%token <string> ANNOTATION_RULE_ORDERING ANNOTATION_ORDERING_VALUE NUMBER_ANNOTATION
+%token <string> ANNOTATION_RULE_ATOM_INDEXED ANNOTATION_ATOM_INDEXED ANNOTATION_ATOM_INDEXED_ARGUMENTS
+%token PARAM_OPEN_ANNOTATION PARAM_CLOSE_ANNOTATION DOT_ANNOTATION EQUAL_ANNOTATION COMMA_ANNOTATION
+
 %token ERROR NEWLINE   
 
 %token DOT DDOT SEMICOLON COLON CONS QUERY_MARK
@@ -80,6 +84,7 @@ real_program
 rules
     : rules rule
     | rule
+    | annotation rule
     ;
 
 rule
@@ -610,3 +615,25 @@ aggregate_function
             delete[] $1;
         }
     ;   
+    
+annotation
+	: annotation_rule_ordering 
+	| annotation_rule_atom_indexed
+	;
+	
+annotation_rule_ordering
+	: ANNOTATION_RULE_ORDERING PARAM_OPEN_ANNOTATION ANNOTATION_ORDERING_VALUE EQUAL_ANNOTATION ordering_type PARAM_CLOSE_ANNOTATION DOT_ANNOTATION
+	;
+
+ordering_type 
+	:  NUMBER_ANNOTATION {
+		director.getBuilder()->onAnnotationRuleOrdering($1);
+        delete[] $1;
+	}
+	;
+
+annotation_rule_atom_indexed
+	: ANNOTATION_RULE_ATOM_INDEXED PARAM_OPEN_ANNOTATION ANNOTATION_ATOM_INDEXED EQUAL_ANNOTATION ordering_type COMMA_ANNOTATION ANNOTATION_ATOM_INDEXED_ARGUMENTS EQUAL_ANNOTATION ordering_type PARAM_CLOSE_ANNOTATION DOT_ANNOTATION 
+	;
+	
+	

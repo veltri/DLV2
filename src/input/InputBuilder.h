@@ -27,6 +27,9 @@
 #ifndef INPUTBUILDER_H
 #define	INPUTBUILDER_H
 
+#include <iostream>
+using namespace std;
+
 namespace DLV2
 {
 
@@ -80,6 +83,10 @@ namespace DLV2
         virtual void onAggregateNafLiteral() = 0;
         virtual void onAggregateElement() = 0;
         virtual void onAggregate( bool naf = false ) = 0;
+        virtual void onAnnotationRuleOrdering(char* annotation){};
+        virtual void onAnnotationGlobalOrdering(char* annotation){};
+        virtual void onAnnotationRuleAtomIndexedArgument(char* annotation){};
+        virtual void onAnnotationRuleAtomIndexedAtom(char* annotation){};
     };
     
 };
