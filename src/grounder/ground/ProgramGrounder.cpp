@@ -458,7 +458,7 @@ bool ProgramGrounder::groundRule(Rule* rule, unordered_set<index_object>* compon
 	bool find_assignment=false;
 
 	if(isCartesianProductRule(rule)){
-		find_assignment=groundCartesian(rule);
+		find_assignment=groundCartesian(rule,componentPredicateInHead);
 		if(printTime){
 			clock_t end=Timer::getInstance()->getClock();
 			Timer::printTimeElapsed(end-start,cerr);

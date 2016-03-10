@@ -63,12 +63,13 @@ public:
 	typedef typename std::vector<T>::iterator iterator;
 
 
-	HistoryVector():current_iteration(0),index_iteration(0),index_previous_iteration(0){}
+	HistoryVector():current_iteration(0),index_iteration(0),index_previous_iteration(0),previus_iteration(0){}
 
 	HistoryVector(T& element,unsigned iteration):HistoryVector(){push_back(element,iteration);}
 
 	inline void push_back_iteration(const T& element,unsigned iteration){
 		if(current_iteration<iteration){
+			previus_iteration=current_iteration;
 			current_iteration=iteration;
 			index_previous_iteration=index_iteration;
 			index_iteration=vector<T>::size();
@@ -86,9 +87,13 @@ public:
 				return {0,0};
 
 		}
-		if(iteration<current_iteration && type==ALL){
-			type=OLD;
-			iteration=current_iteration;
+		if(iteration<current_iteration){
+			if(type==ALL){
+				type=OLD;
+				iteration=current_iteration;
+			}else if(type==NEW && iteration!=previus_iteration)
+				return {0,0};
+
 		}
 
 
@@ -138,10 +143,12 @@ public:
 
 
 
+
 private:
 	unsigned current_iteration;
 	unsigned index_iteration;
 	unsigned index_previous_iteration;
+	unsigned previus_iteration;
 
 };
 

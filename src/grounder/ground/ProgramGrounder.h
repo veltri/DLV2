@@ -145,7 +145,7 @@ protected:
 	void substituteIndicesInRulesWithPossibleUndefAtoms();
 
 	virtual bool isCartesianProductRule(Rule *r){return false;}
-	virtual bool groundCartesian(Rule *r)=0;
+	virtual bool groundCartesian(Rule *r,unordered_set<index_object>* componentPredicateInHead)=0;
 
 	///This method creates a default atom searcher for each predicate occurring in the head and the body of the current rule.
 	///In particular it creates an atom searcher on FACT and NOFACT tables for every predicate,

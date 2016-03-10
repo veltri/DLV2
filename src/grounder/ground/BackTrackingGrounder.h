@@ -22,12 +22,12 @@ namespace grounder {
 struct AtomCartesianInfo{
 
 	struct TableInfo{
-		TableInfo(AtomHistoryVector* table,	unsigned start,	unsigned end):table(table),start(start),end(end){}
+		TableInfo(AtomHistoryVector* table,	unsigned start,unsigned end):table(table),start(start),end(end){}
 		AtomHistoryVector* table;
 		unsigned start;
 		unsigned end;
+		~TableInfo(){}
 	};
-
 	AtomCartesianInfo():table(0),indexTable(0){}
 
 	void addTable(AtomHistoryVector* vec,unsigned start,unsigned end){
@@ -40,6 +40,8 @@ struct AtomCartesianInfo{
 	unsigned table;
 	// Index in tables[table] that specifies the current atom in the table
 	unsigned indexTable;
+
+	~AtomCartesianInfo(){}
 };
 
 /*
@@ -103,7 +105,7 @@ protected:
 	}
 
 	virtual bool isCartesianProductRule(Rule *r);
-	virtual bool groundCartesian(Rule *r);
+	virtual bool groundCartesian(Rule *r,unordered_set<index_object>* componentPredicateInHead);
 
 	///Find the builtin that can be evaluated while match an atom
 	virtual void findBuiltinFastEvaluated();
