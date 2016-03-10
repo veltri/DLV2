@@ -80,11 +80,16 @@ public:
     virtual void onAggregateNafLiteral() ;
     virtual void onAggregateElement() ;
     virtual void onAggregate( bool naf = false ) ;
+
     virtual void onAnnotationRuleOrdering(char* annotation){cerr<<annotation<<endl;};
-    virtual void onAnnotationGlobalOrdering(char* annotation){cerr<<annotation<<endl;};
     virtual void onAnnotationRuleAtomIndexedArgument(char* annotation){cerr<<annotation<<endl;};
     virtual void onAnnotationRuleAtomIndexedLiteral(bool naf = false){cerr<<"Atom Indexed ";currentAtom->setNegative(naf);currentAtom->print(cerr);cerr<<endl;};
     virtual void onAnnotationRuleAtomIndexedAggregate(bool naf = false){cerr<<"Atom Indexed ";currentAggregate->setNegative(naf);currentAggregate->print(cerr);cerr<<endl;};
+
+    virtual void onAnnotationGlobalOrdering(char* annotation){cerr<<"G "<<annotation<<endl;};
+    virtual void onAnnotationGlobalAtomIndexedArgument(char* annotation){cerr<<"G "<<annotation<<endl;};
+    virtual void onAnnotationGlobalAtomIndexedLiteral(bool naf = false){cerr<<"G "<<"Atom Indexed ";currentAtom->setNegative(naf);currentAtom->print(cerr);cerr<<endl;};
+    virtual void onAnnotationGlobalAtomIndexedAggregate(bool naf = false){cerr<<"G "<<"Atom Indexed ";currentAggregate->setNegative(naf);currentAggregate->print(cerr);cerr<<endl;};
 
     void newTerm(char*);
 

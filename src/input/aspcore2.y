@@ -640,41 +640,43 @@ annotation_rule
 	| annotation_rule_partial_order
 	;
 
-annotation_ordering
-	: PARAM_OPEN ANNOTATION_ORDERING_VALUE EQUAL ordering_type PARAM_CLOSE DOT
-	;
-	
 annotation_rule_ordering
-	: ANNOTATION_RULE_ORDERING annotation_ordering
+	: ANNOTATION_RULE_ORDERING PARAM_OPEN ANNOTATION_ORDERING_VALUE EQUAL rule_ordering_type PARAM_CLOSE DOT
 	;
 
 annotation_global_ordering
-	: ANNOTATION_GLOBAL_ORDERING annotation_ordering
+	: ANNOTATION_GLOBAL_ORDERING PARAM_OPEN ANNOTATION_ORDERING_VALUE EQUAL global_ordering_type PARAM_CLOSE DOT
 	;
 
-ordering_type 
+rule_ordering_type 
 	:  NUMBER {
 		director.getBuilder()->onAnnotationRuleOrdering($1);
         delete[] $1;
 	}
 	;
 
-annotation_atom_indexed
-	: PARAM_OPEN ANNOTATION_ATOM_INDEXED_ATOM EQUAL naf_literal_annotation
-	  COMMA ANNOTATION_ATOM_INDEXED_ARGUMENTS EQUAL CURLY_OPEN indexing_arguments CURLY_CLOSE PARAM_CLOSE DOT 
-	| PARAM_OPEN ANNOTATION_ATOM_INDEXED_ARGUMENTS EQUAL CURLY_OPEN indexing_arguments CURLY_CLOSE
-	  COMMA ANNOTATION_ATOM_INDEXED_ATOM EQUAL naf_literal_annotation PARAM_CLOSE DOT 
+global_ordering_type 
+	:  NUMBER {
+		director.getBuilder()->onAnnotationGlobalOrdering($1);
+        delete[] $1;
+	}
 	;
 
 annotation_rule_atom_indexed
-	: ANNOTATION_RULE_ATOM_INDEXED annotation_atom_indexed
+	: ANNOTATION_RULE_ATOM_INDEXED PARAM_OPEN ANNOTATION_ATOM_INDEXED_ATOM EQUAL rule_naf_literal_annotation
+	  COMMA ANNOTATION_ATOM_INDEXED_ARGUMENTS EQUAL CURLY_OPEN rule_indexing_arguments CURLY_CLOSE PARAM_CLOSE DOT 
+	| ANNOTATION_RULE_ATOM_INDEXED PARAM_OPEN ANNOTATION_ATOM_INDEXED_ARGUMENTS EQUAL CURLY_OPEN rule_indexing_arguments CURLY_CLOSE
+	  COMMA ANNOTATION_ATOM_INDEXED_ATOM EQUAL rule_naf_literal_annotation PARAM_CLOSE DOT 
 	;
 
 annotation_global_atom_indexed
-	: ANNOTATION_GLOBAL_ATOM_INDEXED annotation_atom_indexed
+	: ANNOTATION_GLOBAL_ATOM_INDEXED PARAM_OPEN ANNOTATION_ATOM_INDEXED_ATOM EQUAL global_naf_literal_annotation
+	  COMMA ANNOTATION_ATOM_INDEXED_ARGUMENTS EQUAL CURLY_OPEN global_indexing_arguments CURLY_CLOSE PARAM_CLOSE DOT 
+	| ANNOTATION_GLOBAL_ATOM_INDEXED PARAM_OPEN ANNOTATION_ATOM_INDEXED_ARGUMENTS EQUAL CURLY_OPEN global_indexing_arguments CURLY_CLOSE
+	  COMMA ANNOTATION_ATOM_INDEXED_ATOM EQUAL global_naf_literal_annotation PARAM_CLOSE DOT 
 	;
 	
-indexing_arguments 
+rule_indexing_arguments 
 	:  NUMBER {
 		director.getBuilder()->onAnnotationRuleAtomIndexedArgument($1);
         delete[] $1;
@@ -687,7 +689,7 @@ indexing_arguments
 	}
 	;
 
-naf_literal_annotation 
+rule_naf_literal_annotation 
 	 : classic_literal 
         { 
             director.getBuilder()->onAnnotationRuleAtomIndexedLiteral();
@@ -697,9 +699,33 @@ naf_literal_annotation
             director.getBuilder()->onAnnotationRuleAtomIndexedLiteral(true);
         }
 	;
+	
+global_indexing_arguments 
+	:  NUMBER {
+		director.getBuilder()->onAnnotationGlobalAtomIndexedArgument($1);
+        delete[] $1;
+	}
+	| NUMBER COMMA NUMBER {
+		director.getBuilder()->onAnnotationGlobalAtomIndexedArgument($1);
+		director.getBuilder()->onAnnotationGlobalAtomIndexedArgument($3);
+        delete[] $1;
+        delete[] $3;
+	}
+	;
 
-atom_annotation
-    : naf_literal_annotation 
+global_naf_literal_annotation 
+	 : classic_literal 
+        { 
+            director.getBuilder()->onAnnotationGlobalAtomIndexedLiteral();
+        }
+    | NAF classic_literal 
+        { 
+            director.getBuilder()->onAnnotationGlobalAtomIndexedLiteral(true);
+        }
+	;
+
+rule_atom_annotation
+    : rule_naf_literal_annotation 
     | builtin_atom 
         {
             director.getBuilder()->onAnnotationRuleAtomIndexedLiteral();
@@ -714,24 +740,44 @@ atom_annotation
         }
     ;   
 
-atoms_annotation
-	: atom_annotation
-	| atom_annotation COMMA atoms_annotation
+global_atom_annotation
+    : global_naf_literal_annotation 
+    | builtin_atom 
+        {
+            director.getBuilder()->onAnnotationGlobalAtomIndexedLiteral();
+        }
+    | aggregate_atom
+        {
+           director.getBuilder()->onAnnotationGlobalAtomIndexedAggregate();
+        }
+    | NAF aggregate_atom
+        {
+            director.getBuilder()->onAnnotationGlobalAtomIndexedAggregate(true);
+        }
+    ;   
+
+rule_atoms_annotation
+	: rule_atom_annotation
+	| rule_atom_annotation COMMA rule_atoms_annotation
 	;
 
-annotation_partial_order
-	: PARAM_OPEN ANNOTATION_PARTIAL_ORDER_BEFORE EQUAL CURLY_OPEN atoms_annotation CURLY_CLOSE
-		COMMA ANNOTATION_PARTIAL_ORDER_AFTER EQUAL CURLY_OPEN atoms_annotation CURLY_CLOSE PARAM_CLOSE DOT
-	| PARAM_OPEN ANNOTATION_PARTIAL_ORDER_AFTER EQUAL CURLY_OPEN atoms_annotation CURLY_CLOSE
-		COMMA ANNOTATION_PARTIAL_ORDER_BEFORE EQUAL CURLY_OPEN atoms_annotation CURLY_CLOSE PARAM_CLOSE DOT
+global_atoms_annotation
+	: global_atom_annotation
+	| global_atom_annotation COMMA global_atoms_annotation
 	;
 
 annotation_rule_partial_order
-	: ANNOTATION_RULE_PARTIAL_ORDER annotation_partial_order
+	: ANNOTATION_RULE_PARTIAL_ORDER PARAM_OPEN ANNOTATION_PARTIAL_ORDER_BEFORE EQUAL CURLY_OPEN rule_atoms_annotation CURLY_CLOSE
+		COMMA ANNOTATION_PARTIAL_ORDER_AFTER EQUAL CURLY_OPEN rule_atoms_annotation CURLY_CLOSE PARAM_CLOSE DOT
+	| ANNOTATION_RULE_PARTIAL_ORDER PARAM_OPEN ANNOTATION_PARTIAL_ORDER_AFTER EQUAL CURLY_OPEN rule_atoms_annotation CURLY_CLOSE
+		COMMA ANNOTATION_PARTIAL_ORDER_BEFORE EQUAL CURLY_OPEN rule_atoms_annotation CURLY_CLOSE PARAM_CLOSE DOT
 	;
 	
 annotation_global_partial_order
-	: ANNOTATION_GLOBAL_PARTIAL_ORDER annotation_partial_order
+	: ANNOTATION_GLOBAL_PARTIAL_ORDER PARAM_OPEN ANNOTATION_PARTIAL_ORDER_BEFORE EQUAL CURLY_OPEN global_atoms_annotation CURLY_CLOSE
+		COMMA ANNOTATION_PARTIAL_ORDER_AFTER EQUAL CURLY_OPEN global_atoms_annotation CURLY_CLOSE PARAM_CLOSE DOT
+	| ANNOTATION_GLOBAL_PARTIAL_ORDER ANNOTATION_PARTIAL_ORDER_AFTER EQUAL CURLY_OPEN global_atoms_annotation CURLY_CLOSE
+		COMMA ANNOTATION_PARTIAL_ORDER_BEFORE EQUAL CURLY_OPEN global_atoms_annotation CURLY_CLOSE PARAM_CLOSE DOT
 	;
 
 	 
