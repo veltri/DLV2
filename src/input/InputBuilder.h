@@ -86,7 +86,8 @@ namespace DLV2
         virtual void onAnnotationRuleOrdering(char* annotation){};
         virtual void onAnnotationGlobalOrdering(char* annotation){};
         virtual void onAnnotationRuleAtomIndexedArgument(char* annotation){};
-        virtual void onAnnotationRuleAtomIndexedAtom(char* annotation){};
+        virtual void onAnnotationRuleAtomIndexedLiteral(bool naf = false){};
+        virtual void onAnnotationRuleAtomIndexedAggregate(bool naf = false){};
     };
     
 };

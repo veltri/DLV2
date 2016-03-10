@@ -83,7 +83,8 @@ public:
     virtual void onAnnotationRuleOrdering(char* annotation){cerr<<annotation<<endl;};
     virtual void onAnnotationGlobalOrdering(char* annotation){cerr<<annotation<<endl;};
     virtual void onAnnotationRuleAtomIndexedArgument(char* annotation){cerr<<annotation<<endl;};
-    virtual void onAnnotationRuleAtomIndexedAtom(char* annotation){cerr<<annotation<<endl;};
+    virtual void onAnnotationRuleAtomIndexedLiteral(bool naf = false){cerr<<"Atom Indexed ";currentAtom->setNegative(naf);currentAtom->print(cerr);cerr<<endl;};
+    virtual void onAnnotationRuleAtomIndexedAggregate(bool naf = false){cerr<<"Atom Indexed ";currentAggregate->setNegative(naf);currentAggregate->print(cerr);cerr<<endl;};
 
     void newTerm(char*);
 
