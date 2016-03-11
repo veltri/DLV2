@@ -963,15 +963,35 @@ bool BackTrackingGrounder::groundCartesian(Rule* rule,unordered_set<index_object
 
 		bool match=true;
 		Atom * atom=(*vec)[indexTable];
-		Atom *nonGroundAtom=rule->getAtomInBody(i);
-		for(unsigned j=0;j<atom->getTermsSize();j++){
-			if(atom->getTerm(j)->getType()==ANONYMOUS)continue;
-			current_assignment[nonGroundAtom->getTerm(j)->getLocalVariableIndex()]=atom->getTerm(j);
-			if(currentRule->getRuleInformation().isBounderBuiltin(nonGroundAtom->getTerm(j)->getLocalVariableIndex())){
-				match=AtomSearcher::evaluateFastBuiltin(currentRule->getRuleInformation(),nonGroundAtom->getTerm(j)->getLocalVariableIndex(),current_assignment,atom->getTerm(j));
-				if(!match)break;
+//		Atom *nonGroundAtom=rule->getAtomInBody(i);
+		auto& mi=currentRule->getRuleInformation().getMatchInformation(i,0);
+
+		auto& terms=atom->getTerms();
+
+		if(!mi.builtin.empty()){
+			for(auto var:mi.varUsedInBuiltin)
+				current_assignment[var.second]=terms[var.first];
+
+			for(auto builtin:mi.builtin){
+				match = builtin->groundAndEvaluate(current_assignment);
+				if (!match)break;
 			}
+
+			for(auto var:mi.varUsedInBuiltin)
+				current_assignment[var.second]=nullptr;
 		}
+
+		for(auto bind:mi.bind)
+			current_assignment[bind.second]=terms[bind.first];
+
+//		for(unsigned j=0;j<atom->getTermsSize();j++){
+//			if(atom->getTerm(j)->getType()==ANONYMOUS)continue;
+//			current_assignment[nonGroundAtom->getTerm(j)->getLocalVariableIndex()]=atom->getTerm(j);
+//			if(currentRule->getRuleInformation().isBounderBuiltin(nonGroundAtom->getTerm(j)->getLocalVariableIndex())){
+//				match=AtomSearcher::evaluateFastBuiltin(currentRule->getRuleInformation(),nonGroundAtom->getTerm(j)->getLocalVariableIndex(),current_assignment,atom->getTerm(j));
+//				if(!match)break;
+//			}
+//		}
 
 		indexTable++;
 

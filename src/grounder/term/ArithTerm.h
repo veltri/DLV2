@@ -64,6 +64,7 @@ public:
 	virtual Term* calculate();
 	virtual void popTerm(){terms.pop_back();};
 	virtual Term* substitute(var_assignment& substritutionTerm);
+	virtual int substituteAndCalculate(var_assignment& substritutionTerm);
 
 	virtual TermType getType()const{return TermType::ARITH;};
 	virtual bool contain(TermType type){

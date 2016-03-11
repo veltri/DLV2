@@ -71,34 +71,52 @@ bool BuiltInAtom::evaluate(var_assignment& substitutionTerm){
 }
 
 bool BuiltInAtom::groundAndEvaluate(var_assignment& substitutionTerm){
-	Term* firstTerm=terms[0]->substitute(substitutionTerm);
-
-	Term* secondTerm=terms[1]->substitute(substitutionTerm);
-
 
 	// If there is equal and variable assign that value
 	if(assignment){
+		Term* firstTerm=terms[0]->substitute(substitutionTerm);
+		Term* secondTerm=terms[1]->substitute(substitutionTerm);
 		return calculateVariableInAssignment(firstTerm,	secondTerm, substitutionTerm) ;
 	}
 
-	firstTerm=firstTerm->calculate();
-	secondTerm=secondTerm->calculate();
+	Term* firstTerm=nullptr;
+	Term* secondTerm=nullptr;
+	bool deleteFirst=false;
+	bool deleteSecond=false;
+	if(terms[0]->getType()!=ARITH){
+		firstTerm=terms[0]->substitute(substitutionTerm);
+		firstTerm=firstTerm->calculate();
+	}else{
+		firstTerm=new NumericConstantTerm(false,terms[0]->substituteAndCalculate(substitutionTerm));
+		deleteFirst=true;
+	}
+	if(terms[1]->getType()!=ARITH){
+		secondTerm=terms[1]->substitute(substitutionTerm);
+		secondTerm=secondTerm->calculate();
+	}else{
+		secondTerm=new NumericConstantTerm(false,terms[1]->substituteAndCalculate(substitutionTerm));
+		deleteSecond=true;
+	}
 
 
+	bool eval=false;
 	if(binop==Binop::EQUAL)
-		return firstTerm->getIndex()==secondTerm->getIndex();
-	if(binop==Binop::UNEQUAL)
-		return firstTerm->getIndex()!=secondTerm->getIndex();
-	if(binop==Binop::LESS)
-		return *firstTerm<*secondTerm;
-	if(binop==Binop::LESS_OR_EQ)
-		return *firstTerm<=*secondTerm;
-	if(binop==Binop::GREATER)
-		return *firstTerm>*secondTerm;
-	if(binop==Binop::GREATER_OR_EQ)
-		return *firstTerm>=*secondTerm;
+		eval= firstTerm->getIndex()==secondTerm->getIndex();
+	else if(binop==Binop::UNEQUAL)
+		eval= firstTerm->getIndex()!=secondTerm->getIndex();
+	else if(binop==Binop::LESS)
+		eval= *firstTerm<*secondTerm;
+	else if(binop==Binop::LESS_OR_EQ)
+		eval= *firstTerm<=*secondTerm;
+	else if(binop==Binop::GREATER)
+		eval= *firstTerm>*secondTerm;
+	else if(binop==Binop::GREATER_OR_EQ)
+		eval= *firstTerm>=*secondTerm;
 
-	return false;
+	if(deleteFirst)delete firstTerm;
+	if(deleteSecond)delete secondTerm;
+
+	return eval;
 }
 
 size_t BuiltInAtom::hash(){

@@ -128,6 +128,37 @@ Term* ArithTerm::substitute(var_assignment& substritutionTerm) {
 	return  newTerm;
 }
 
+int ArithTerm::substituteAndCalculate(var_assignment& substritutionTerm){
+	//Substitute the variable in the Arith term and calculate the value
+	//The term returned is not added in the table Term
+
+	vector<Term*> subTerms(terms.size());
+	for(unsigned int i=0;i<terms.size();i++){
+		subTerms[i]=terms[i]->substitute(substritutionTerm);
+	}
+
+	int result = subTerms[0]->getConstantValue();
+	for (unsigned int i = 1; i < subTerms.size(); i++) {
+		if(subTerms[i]->getType()==NUMERIC_CONSTANT){
+			unsigned int value=subTerms[i]->getConstantValue();
+			if (operators[i-1] == Operator::PLUS)
+				result += value;
+			else if (operators[i-1] == Operator::MINUS)
+				result -= value;
+			else if (operators[i-1] == Operator::DIV){
+				//FIXME For not stop the program division by 0 is 0
+				if(value != 0)
+					result /= value;
+				else
+					result = 0;
+			}else if (operators[i-1] == Operator::TIMES)
+				result *= value;
+		}
+	}
+	return result;
+}
+
+
 };
 
 };

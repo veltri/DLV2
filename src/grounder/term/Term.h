@@ -135,6 +135,8 @@ public:
 		return 2;
 	}
 
+	virtual int substituteAndCalculate(var_assignment& substritutionTerm){return 0;}
+
 	///Add the index of a composite term
 	virtual void addTerm(Term* termIndex){};
 	///Remove last index of a term
