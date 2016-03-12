@@ -18,7 +18,6 @@
 #include "../statement/OrderRuleGroundable.h"
 
 
-
 namespace DLV2{
 
 namespace grounder{
@@ -319,6 +318,7 @@ void ProgramGrounder::ground() {
 	}
 
 	outputBuilder->onEnd();
+	rstats->rawPrint();
 
 //	Timer::getInstance()->printSumTime(cerr);
 
@@ -434,9 +434,11 @@ void ProgramGrounder::swapInDelta(Rule *rule,set_predicate &predicateEvaluated){
 
 bool ProgramGrounder::groundRule(Rule* rule, unordered_set<index_object>* componentPredicateInHead) {
 
+	rstats->prepareStats(rule);
+
 	if (Options::globalOptions()->isPrintRewrittenProgram())
 		{cerr<<"RULE: ";rule->print(cerr);}
-	bool printTime=Options::globalOptions()->getRuleTime();
+	bool printTime=true;
 	clock_t start=0;
 
 	if(printTime){
@@ -451,6 +453,7 @@ bool ProgramGrounder::groundRule(Rule* rule, unordered_set<index_object>* compon
 		if(printTime){
 			clock_t end=Timer::getInstance()->getClock();
 			Timer::printTimeElapsed(end-start,cerr);
+			rstats->setTime(rule->getIndex(),((end-start)/(double) CLOCKS_PER_SEC));
 		}
 		return true;
 	}
@@ -462,6 +465,7 @@ bool ProgramGrounder::groundRule(Rule* rule, unordered_set<index_object>* compon
 		if(printTime){
 			clock_t end=Timer::getInstance()->getClock();
 			Timer::printTimeElapsed(end-start,cerr);
+			rstats->setTime(rule->getIndex(),((end-start)/(double) CLOCKS_PER_SEC));
 		}
 		return find_assignment;
 	}
@@ -489,6 +493,7 @@ bool ProgramGrounder::groundRule(Rule* rule, unordered_set<index_object>* compon
 	if(printTime){
 		clock_t end=Timer::getInstance()->getClock();
 		Timer::printTimeElapsed(end-start,cerr);
+		rstats->setTime(rule->getIndex(),((end-start)/(double) CLOCKS_PER_SEC));
 	}
 
 	return find_assignment;
@@ -523,6 +528,7 @@ ProgramGrounder::~ProgramGrounder() {
 	HashString::freeInstance();
 	HashVecInt::freeInstance();
 	OutputBuilder::freeInstance();
+	RuleStatistics::freeInstance();
 	delete statementDependency;
 	delete predicateExtTable;
 	delete termsMap;

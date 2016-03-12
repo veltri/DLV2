@@ -617,17 +617,20 @@ void ComponentGraph::computeAllPossibleOrdering(vector<vector<unsigned int>>& co
  */
 
 void StatementDependency::addRuleMapping(Rule* r) {
+	unsigned size=constraints.size()+weak.size()+rules.size();
 	if(r->isAStrongConstraint()){
 		constraints.push_back(r);
 		statementAtomMapping.addRule(r);
+		r->setIndex(size);
 	}else if(r->isWeakConstraint()){
 		weak.push_back(r);
+		r->setIndex(size);
 	}else{
 		set_predicate pred_head=r->getPredicateInHead();
 		for(auto p:pred_head)p->setIdb();
 		statementAtomMapping.addRule(r);
 		rules.push_back(r);
-		r->setIndex(rules.size()-1);
+		r->setIndex(size);
 		depGraph.addInDependency(r);
 	}
 }

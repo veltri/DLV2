@@ -19,6 +19,8 @@
 #include "NonGroundSimplifier.h"
 #include "../output/NumericOutputBuilder.h"
 #include "../exception/ConstrainException.h"
+#include "../statement/RuleStatistics.h"
+
 
 
 using namespace std;
@@ -43,7 +45,8 @@ public:
 	 */
 	ProgramGrounder() :
 		predicateTable(PredicateTable::getInstance()), predicateExtTable(PredicateExtTable::getInstance()),
-		statementDependency(StatementDependency::getInstance()), termsMap(TermTable::getInstance()),outputBuilder(OutputBuilder::getInstance()),iteration(0),iterationToInsert(0){
+		statementDependency(StatementDependency::getInstance()), termsMap(TermTable::getInstance()),outputBuilder(OutputBuilder::getInstance()),iteration(0),iterationToInsert(0),
+		rstats(RuleStatistics::getInstance()){
 	};
 
 	/// This method executes the overall grounding process
@@ -89,6 +92,8 @@ protected:
 	TermTable* termsMap;
 	///Output builder
 	OutputBuilder *outputBuilder;
+	///Statistic for each rule grounded
+	RuleStatistics* rstats;
 
 //	///The set of grounder rules
 //	GroundedRules groundedRule;
