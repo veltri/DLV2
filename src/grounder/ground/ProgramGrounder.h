@@ -46,7 +46,7 @@ public:
 	ProgramGrounder() :
 		predicateTable(PredicateTable::getInstance()), predicateExtTable(PredicateExtTable::getInstance()),
 		statementDependency(StatementDependency::getInstance()), termsMap(TermTable::getInstance()),outputBuilder(OutputBuilder::getInstance()),iteration(0),iterationToInsert(0),
-		rstats(RuleStatistics::getInstance()){
+		rstats(RuleStatistics::getInstance()),printRuleTime(Options::globalOptions()->getRuleTime()),printStats(Options::globalOptions()->getPrintGroundStats()!=0){
 	};
 
 	/// This method executes the overall grounding process
@@ -92,8 +92,7 @@ protected:
 	TermTable* termsMap;
 	///Output builder
 	OutputBuilder *outputBuilder;
-	///Statistic for each rule grounded
-	RuleStatistics* rstats;
+
 
 //	///The set of grounder rules
 //	GroundedRules groundedRule;
@@ -167,6 +166,16 @@ protected:
 
 	//Iteration of the derived atom
 	unsigned iterationToInsert;
+
+	///Statistic for each rule grounded
+	RuleStatistics* rstats;
+
+	///Print the time spent to ground each single rule
+	bool printRuleTime;
+	///Print the statistics of each rule grounded
+	bool printStats;
+
+
 
 private:
 	///Print the program rule

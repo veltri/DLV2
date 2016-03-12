@@ -318,7 +318,8 @@ void ProgramGrounder::ground() {
 	}
 
 	outputBuilder->onEnd();
-	rstats->rawPrint();
+	if(printStats)
+		rstats->printStats();
 
 //	Timer::getInstance()->printSumTime(cerr);
 
@@ -432,29 +433,36 @@ void ProgramGrounder::swapInDelta(Rule *rule,set_predicate &predicateEvaluated){
 	}
 }
 
+inline void statsGroundRule(bool printStats,bool printRuleTime,Rule *rule,clock_t start,RuleStatistics* rstats){
+	if(printStats || printRuleTime){
+		clock_t end=Timer::getInstance()->getClock();
+		if(printRuleTime)
+			Timer::printTimeElapsed(end-start,cerr);
+		if(printStats)
+			rstats->setTime(rule->getIndex(),((end-start)/(double) CLOCKS_PER_SEC));
+	}
+}
+
 bool ProgramGrounder::groundRule(Rule* rule, unordered_set<index_object>* componentPredicateInHead) {
 
-	rstats->prepareStats(rule);
+	if(printStats)
+		rstats->prepareStats(rule);
 
-	if (Options::globalOptions()->isPrintRewrittenProgram())
+	if (printRuleTime)
 		{cerr<<"RULE: ";rule->print(cerr);}
-	bool printTime=true;
 	clock_t start=0;
 
-	if(printTime){
-		cerr<<endl<<"RULE ORDERED: \t";rule->print(cerr);
+	if(printStats || printRuleTime)
 		start=Timer::getInstance()->getClock();
-	}
+
+	if(printRuleTime)
+		{cerr<<endl<<"RULE ORDERED: \t";rule->print(cerr);}
 
 	inizialize(rule,componentPredicateInHead);
 
 	if(rule->getSizeBody()==0){
 		foundAssignment();
-		if(printTime){
-			clock_t end=Timer::getInstance()->getClock();
-			Timer::printTimeElapsed(end-start,cerr);
-			rstats->setTime(rule->getIndex(),((end-start)/(double) CLOCKS_PER_SEC));
-		}
+		statsGroundRule(printStats,printRuleTime,rule,start,rstats);
 		return true;
 	}
 
@@ -462,11 +470,7 @@ bool ProgramGrounder::groundRule(Rule* rule, unordered_set<index_object>* compon
 
 	if(isCartesianProductRule(rule)){
 		find_assignment=groundCartesian(rule,componentPredicateInHead);
-		if(printTime){
-			clock_t end=Timer::getInstance()->getClock();
-			Timer::printTimeElapsed(end-start,cerr);
-			rstats->setTime(rule->getIndex(),((end-start)/(double) CLOCKS_PER_SEC));
-		}
+		statsGroundRule(printStats,printRuleTime,rule,start,rstats);
 		return find_assignment;
 	}
 
@@ -490,11 +494,8 @@ bool ProgramGrounder::groundRule(Rule* rule, unordered_set<index_object>* compon
 
 	}
 
-	if(printTime){
-		clock_t end=Timer::getInstance()->getClock();
-		Timer::printTimeElapsed(end-start,cerr);
-		rstats->setTime(rule->getIndex(),((end-start)/(double) CLOCKS_PER_SEC));
-	}
+	statsGroundRule(printStats,printRuleTime,rule,start,rstats);
+
 
 	return find_assignment;
 }

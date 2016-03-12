@@ -123,6 +123,10 @@ namespace grounder{
 	#define BINDER_ORDERING 6
 	#define DLV_ORDERING_FUNCTION 7
 
+	#define STATS_RAW 1
+	#define STATS_INTERACTIVE 1
+
+
 	typedef unsigned index_object;
 
 };

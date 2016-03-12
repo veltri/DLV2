@@ -364,8 +364,11 @@ bool BackTrackingGrounder::foundAssignment() {
 		if(isWeak)
 			ground_rule->setWeightLevelLabel(currentRule->groundWeightLevel(current_assignment));
 
-		if(!foundATrueAtomInDisjuction || head_true)
+		if(!foundATrueAtomInDisjuction || head_true){
 			outputBuilder->onRule(ground_rule);
+			if(printStats)
+				rstats->groundNewRule(currentRule->getIndex());
+		}
 	}
 	if(strongConstraint && !undefinedAtomInBody){throw ConstrainException{};};
 

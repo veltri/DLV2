@@ -11,6 +11,8 @@
 #include <vector>
 #include <string>
 #include "Rule.h"
+#include "../../util/Options.h"
+#include "../../util/InteractiveStats.h"
 
 namespace DLV2 {
 namespace grounder {
@@ -46,6 +48,18 @@ public:
 	}
 
 	void prepareStats(Rule* rule);
+
+	vector<TableInfo> generateVecTableInfo();
+
+	void printStats(){
+		if(Options::globalOptions()->getPrintGroundStats()==STATS_RAW)
+			rawPrint(cerr);
+		if(Options::globalOptions()->getPrintGroundStats()==STATS_INTERACTIVE){
+			vector<TableInfo> vec=generateVecTableInfo();
+			InteractiveStats::displayStats(vec);
+		}
+
+	}
 
 	void rawPrint(ostream& ss=cout);
 

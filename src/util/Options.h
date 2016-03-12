@@ -140,6 +140,10 @@ namespace DLV2
 			this->disabledAnonymousFilter = disabledAnonymousFilter;
 		}
 
+		unsigned getPrintGroundStats(){
+			return printGroundStats;
+		}
+
 	bool isCompactFacts() const {
 		return compactFacts;
 	}
@@ -227,6 +231,8 @@ namespace DLV2
     	string predicateToFilter;
 
     	bool compactFacts;
+
+    	unsigned printGroundStats;
     };
     
 };

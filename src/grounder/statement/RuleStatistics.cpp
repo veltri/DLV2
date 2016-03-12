@@ -23,6 +23,10 @@ string appendSpace(string text,unsigned space){
 
 RuleStatistics* RuleStatistics::rstats=nullptr;
 
+vector<TableInfo> RuleStatistics::generateVecTableInfo() {
+	vector<TableInfo> vec;
+	return vec;
+}
 
 RuleStatistics* RuleStatistics::getInstance() {
 	if(rstats==nullptr)
