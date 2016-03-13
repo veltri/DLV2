@@ -724,61 +724,128 @@ global_naf_literal_annotation
         }
 	;
 
-rule_atom_annotation
-    : rule_naf_literal_annotation 
+rule_atom_annotation_before
+    : classic_literal 
+        { 
+            director.getBuilder()->onAnnotationRulePartialOrderingBefore();
+        }
+    | NAF classic_literal 
+        { 
+            director.getBuilder()->onAnnotationRulePartialOrderingBefore(true);
+        }
     | builtin_atom 
         {
-            director.getBuilder()->onAnnotationRuleAtomIndexedLiteral();
+            director.getBuilder()->onAnnotationRulePartialOrderingBefore();
         }
     | aggregate_atom
         {
-           director.getBuilder()->onAnnotationRuleAtomIndexedAggregate();
+           director.getBuilder()->onAnnotationAggregateRulePartialOrderingBefore();
         }
     | NAF aggregate_atom
         {
-            director.getBuilder()->onAnnotationRuleAtomIndexedAggregate(true);
+            director.getBuilder()->onAnnotationAggregateRulePartialOrderingBefore(true);
         }
     ;   
 
-global_atom_annotation
-    : global_naf_literal_annotation 
+global_atom_annotation_before
+    : classic_literal 
+        { 
+            director.getBuilder()->onAnnotationGlobalPartialOrderingBefore();
+        }
+    | NAF classic_literal 
+        { 
+            director.getBuilder()->onAnnotationGlobalPartialOrderingBefore(true);
+        }
     | builtin_atom 
         {
-            director.getBuilder()->onAnnotationGlobalAtomIndexedLiteral();
+            director.getBuilder()->onAnnotationGlobalPartialOrderingBefore();
         }
     | aggregate_atom
         {
-           director.getBuilder()->onAnnotationGlobalAtomIndexedAggregate();
+           director.getBuilder()->onAnnotationAggregateGlobalPartialOrderingBefore();
         }
     | NAF aggregate_atom
         {
-            director.getBuilder()->onAnnotationGlobalAtomIndexedAggregate(true);
+            director.getBuilder()->onAnnotationAggregateGlobalPartialOrderingBefore(true);
+        }
+    ;   
+    
+rule_atom_annotation_after
+    : classic_literal 
+        { 
+            director.getBuilder()->onAnnotationRulePartialOrderingAfter();
+        }
+    | NAF classic_literal 
+        { 
+            director.getBuilder()->onAnnotationRulePartialOrderingAfter(true);
+        }
+    | builtin_atom 
+        {
+            director.getBuilder()->onAnnotationRulePartialOrderingAfter();
+        }
+    | aggregate_atom
+        {
+           director.getBuilder()->onAnnotationAggregateRulePartialOrderingAfter();
+        }
+    | NAF aggregate_atom
+        {
+            director.getBuilder()->onAnnotationAggregateRulePartialOrderingAfter(true);
         }
     ;   
 
-rule_atoms_annotation
-	: rule_atom_annotation
-	| rule_atom_annotation COMMA rule_atoms_annotation
+global_atom_annotation_after
+    : classic_literal 
+        { 
+            director.getBuilder()->onAnnotationGlobalPartialOrderingAfter();
+        }
+    | NAF classic_literal 
+        { 
+            director.getBuilder()->onAnnotationGlobalPartialOrderingAfter(true);
+        }
+    | builtin_atom 
+        {
+            director.getBuilder()->onAnnotationGlobalPartialOrderingAfter();
+        }
+    | aggregate_atom
+        {
+           director.getBuilder()->onAnnotationAggregateGlobalPartialOrderingAfter();
+        }
+    | NAF aggregate_atom
+        {
+            director.getBuilder()->onAnnotationAggregateGlobalPartialOrderingAfter(true);
+        }
+    ;  
+
+rule_atoms_annotation_before
+	: rule_atom_annotation_before
+	| rule_atom_annotation_before COMMA rule_atoms_annotation_before
 	;
 
-global_atoms_annotation
-	: global_atom_annotation
-	| global_atom_annotation COMMA global_atoms_annotation
+global_atoms_annotation_before
+	: global_atom_annotation_before
+	| global_atom_annotation_before COMMA global_atoms_annotation_before
+	;
+
+rule_atoms_annotation_after
+	: rule_atom_annotation_after
+	| rule_atom_annotation_after COMMA rule_atoms_annotation_after
+	;
+
+global_atoms_annotation_after
+	: global_atom_annotation_after
+	| global_atom_annotation_after COMMA global_atoms_annotation_after
 	;
 
 annotation_rule_partial_order
-	: ANNOTATION_RULE_PARTIAL_ORDER PARAM_OPEN ANNOTATION_PARTIAL_ORDER_BEFORE EQUAL CURLY_OPEN rule_atoms_annotation CURLY_CLOSE
-		COMMA ANNOTATION_PARTIAL_ORDER_AFTER EQUAL CURLY_OPEN rule_atoms_annotation CURLY_CLOSE PARAM_CLOSE DOT
-	| ANNOTATION_RULE_PARTIAL_ORDER PARAM_OPEN ANNOTATION_PARTIAL_ORDER_AFTER EQUAL CURLY_OPEN rule_atoms_annotation CURLY_CLOSE
-		COMMA ANNOTATION_PARTIAL_ORDER_BEFORE EQUAL CURLY_OPEN rule_atoms_annotation CURLY_CLOSE PARAM_CLOSE DOT
+	: ANNOTATION_RULE_PARTIAL_ORDER PARAM_OPEN ANNOTATION_PARTIAL_ORDER_BEFORE EQUAL CURLY_OPEN rule_atoms_annotation_before CURLY_CLOSE
+		COMMA ANNOTATION_PARTIAL_ORDER_AFTER EQUAL CURLY_OPEN rule_atoms_annotation_after CURLY_CLOSE PARAM_CLOSE DOT
+	| ANNOTATION_RULE_PARTIAL_ORDER PARAM_OPEN ANNOTATION_PARTIAL_ORDER_AFTER EQUAL CURLY_OPEN rule_atoms_annotation_after CURLY_CLOSE
+		COMMA ANNOTATION_PARTIAL_ORDER_BEFORE EQUAL CURLY_OPEN rule_atoms_annotation_before CURLY_CLOSE PARAM_CLOSE DOT
 	;
 	
 annotation_global_partial_order
-	: ANNOTATION_GLOBAL_PARTIAL_ORDER PARAM_OPEN ANNOTATION_PARTIAL_ORDER_BEFORE EQUAL CURLY_OPEN global_atoms_annotation CURLY_CLOSE
-		COMMA ANNOTATION_PARTIAL_ORDER_AFTER EQUAL CURLY_OPEN global_atoms_annotation CURLY_CLOSE PARAM_CLOSE DOT
-	| ANNOTATION_GLOBAL_PARTIAL_ORDER ANNOTATION_PARTIAL_ORDER_AFTER EQUAL CURLY_OPEN global_atoms_annotation CURLY_CLOSE
-		COMMA ANNOTATION_PARTIAL_ORDER_BEFORE EQUAL CURLY_OPEN global_atoms_annotation CURLY_CLOSE PARAM_CLOSE DOT
+	: ANNOTATION_GLOBAL_PARTIAL_ORDER PARAM_OPEN ANNOTATION_PARTIAL_ORDER_BEFORE EQUAL CURLY_OPEN global_atoms_annotation_before CURLY_CLOSE
+		COMMA ANNOTATION_PARTIAL_ORDER_AFTER EQUAL CURLY_OPEN global_atoms_annotation_after CURLY_CLOSE PARAM_CLOSE DOT
+	| ANNOTATION_GLOBAL_PARTIAL_ORDER ANNOTATION_PARTIAL_ORDER_AFTER EQUAL CURLY_OPEN global_atoms_annotation_after CURLY_CLOSE
+		COMMA ANNOTATION_PARTIAL_ORDER_BEFORE EQUAL CURLY_OPEN global_atoms_annotation_before CURLY_CLOSE PARAM_CLOSE DOT
 	;
-
-	 
-	 
