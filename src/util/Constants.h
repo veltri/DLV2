@@ -124,7 +124,7 @@ namespace grounder{
 	#define DLV_ORDERING_FUNCTION 7
 
 	#define STATS_RAW 1
-	#define STATS_INTERACTIVE 1
+	#define STATS_INTERACTIVE 2
 
 
 	typedef unsigned index_object;

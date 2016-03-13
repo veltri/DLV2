@@ -17,6 +17,7 @@
 namespace DLV2 {
 namespace grounder {
 
+string appendSpace(string text,unsigned space);
 
 class RuleStatistics {
 
@@ -52,11 +53,15 @@ public:
 	vector<TableInfo> generateVecTableInfo();
 
 	void printStats(){
-		if(Options::globalOptions()->getPrintGroundStats()==STATS_RAW)
+		unsigned print=Options::globalOptions()->getPrintGroundStats();
+		if(print==STATS_RAW)
 			rawPrint(cerr);
-		if(Options::globalOptions()->getPrintGroundStats()==STATS_INTERACTIVE){
+		else if(print==STATS_INTERACTIVE){
 			vector<TableInfo> vec=generateVecTableInfo();
-			InteractiveStats::displayStats(vec);
+//			for(auto& ti:vec){
+//				cerr<<ti.label<<" "<<ti.show<<" "<<ti.father<<endl;
+//			}
+			InteractiveStats::displayStats(vec,"Total time: "+to_string(getTotalTime()),"   Time%%  "+appendSpace("Rule",RULESPACE)+appendSpace("Time(s)",TIMESPACE)+"N.GroundRule ");
 		}
 
 	}

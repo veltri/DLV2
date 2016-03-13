@@ -25,6 +25,32 @@ RuleStatistics* RuleStatistics::rstats=nullptr;
 
 vector<TableInfo> RuleStatistics::generateVecTableInfo() {
 	vector<TableInfo> vec;
+	for(unsigned index=0;index<ruleStats.size();index++){
+		auto& rs=ruleStats[index][0];
+		string ss;
+		unsigned time=rs.time/getTotalTime()*100;
+		ss=appendSpace(to_string(time)+"%%",5)+appendSpace(rs.rule,RULESPACE)+appendSpace(to_string(rs.time),TIMESPACE)+to_string(rs.groundedRule);
+		vec.emplace_back(ss,true,0);
+		unsigned fatherRule=vec.size();
+		if(rs.rule.size()>=RULESPACE){
+			for (unsigned i = 0; i < rs.rule.size(); i += RULESPACE*2)
+				vec.emplace_back(rs.rule.substr(i, RULESPACE*2),false,fatherRule);
+
+		}
+		for(unsigned i=0;i<rs.bodyPES.size();i++){
+			if(rs.bodyPES[i].first.size()==0)continue;
+			double size=rs.bodyPES[i].second;
+			string ss=appendSpace(rs.bodyPES[i].first,ATOMSPACE)+"P.E.S. = "+to_string(rs.bodyPES[i].second);
+			vec.emplace_back(ss,false,fatherRule);
+			unsigned fatherAtom=vec.size();
+			for(auto& sel:rs.varSelectivity[i]){
+				unsigned select=sel.second/size*100;
+				string ss=sel.first+"  Selectivity = "+to_string(select)+"%%";
+				vec.emplace_back(ss,false,fatherAtom);
+			}
+		}
+
+	}
 	return vec;
 }
 

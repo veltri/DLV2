@@ -436,9 +436,11 @@ void ProgramGrounder::swapInDelta(Rule *rule,set_predicate &predicateEvaluated){
 inline void statsGroundRule(bool printStats,bool printRuleTime,Rule *rule,clock_t start,RuleStatistics* rstats){
 	if(printStats || printRuleTime){
 		clock_t end=Timer::getInstance()->getClock();
-		if(printRuleTime)
+		if(printRuleTime){
+			{cerr<<"RULE: ";rule->print(cerr);}
+			{cerr<<endl<<"RULE ORDERED: \t";rule->print(cerr);}
 			Timer::printTimeElapsed(end-start,cerr);
-		if(printStats)
+		}if(printStats)
 			rstats->setTime(rule->getIndex(),((end-start)/(double) CLOCKS_PER_SEC));
 	}
 }
@@ -448,15 +450,12 @@ bool ProgramGrounder::groundRule(Rule* rule, unordered_set<index_object>* compon
 	if(printStats)
 		rstats->prepareStats(rule);
 
-	if (printRuleTime)
-		{cerr<<"RULE: ";rule->print(cerr);}
+
 	clock_t start=0;
 
 	if(printStats || printRuleTime)
 		start=Timer::getInstance()->getClock();
 
-	if(printRuleTime)
-		{cerr<<endl<<"RULE ORDERED: \t";rule->print(cerr);}
 
 	inizialize(rule,componentPredicateInHead);
 
@@ -495,8 +494,6 @@ bool ProgramGrounder::groundRule(Rule* rule, unordered_set<index_object>* compon
 	}
 
 	statsGroundRule(printStats,printRuleTime,rule,start,rstats);
-
-
 	return find_assignment;
 }
 
