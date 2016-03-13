@@ -55,7 +55,9 @@ InMemoryInputBuilder::InMemoryInputBuilder() :
 	currentChoiceElement(new ChoiceElement),
 	weight(nullptr),
 	level(nullptr),
-	hiddenNewPredicate(false)
+	hiddenNewPredicate(false),
+	currentRuleOrdering(-1),
+	globalOrdering(-1)
 {
 
 	Options * opt=Options::globalOptions();
@@ -143,6 +145,12 @@ void InMemoryInputBuilder::onRule() {
 		}
 	}
 
+
+	currentRuleOrdering=-1;
+	currentRuleAtomsIndexed.clear();
+	currentRuleAtomsIndexedArguments.clear();
+	currentRuleAtomsBefore.clear();
+	currentRuleAtomsAfter.clear();
 	foundARangeAtomInCurrentRule=false;
 }
 
@@ -779,6 +787,94 @@ void InMemoryInputBuilder::expandRulePart(vector<Atom*>::const_iterator start, v
 	for(auto vectorAtom:atoms)
 		for(auto atom: vectorAtom)
 			delete atom;
+}
+
+void InMemoryInputBuilder::onAnnotationRuleOrdering(char* annotation) {
+	if(isNumeric(annotation,10))
+		currentRuleOrdering = atoi(annotation);
+	//FIXME check that the number is a val ordering type
+}
+
+void InMemoryInputBuilder::onAnnotationRuleAtomIndexedArgument(char* annotation) {
+	int argument=0;
+	if(!isNumeric(annotation,10)){
+		//FIXME warning
+		return;
+	}
+	argument=atoi(annotation);
+	if(argument>=0 && argument<currentRuleAtomsIndexed.back()->getPredicate()->getArity())
+		currentRuleAtomsIndexedArguments.back().push_back(argument);
+	//else	FIXME WARNING
+}
+
+void InMemoryInputBuilder::onAnnotationRuleAtomIndexedLiteral(bool naf) {
+	currentAtom->setNegative(naf);
+	currentRuleAtomsIndexed.push_back(currentAtom);
+	currentRuleAtomsIndexedArguments.push_back(vector<unsigned>());
+}
+
+void InMemoryInputBuilder::onAnnotationRulePartialOrderingBefore(bool naf) {
+	currentAtom->setNegative(naf);
+	currentRuleAtomsBefore.push_back(currentAtom);
+}
+
+void InMemoryInputBuilder::onAnnotationRulePartialOrderingAfter(bool naf) {
+	currentAtom->setNegative(naf);
+	currentRuleAtomsAfter.push_back(currentAtom);
+}
+
+void InMemoryInputBuilder::onAnnotationAggregateRulePartialOrderingAfter(bool naf) {
+	currentAggregate->setNegative(naf);
+	currentRuleAtomsAfter.push_back(currentAggregate);
+}
+
+void InMemoryInputBuilder::onAnnotationAggregateRulePartialOrderingBefore(bool naf) {
+	currentAggregate->setNegative(naf);
+	currentRuleAtomsBefore.push_back(currentAggregate);
+}
+
+void InMemoryInputBuilder::onAnnotationGlobalOrdering(char* annotation) {
+	if(isNumeric(annotation,10) && globalOrdering>-1)
+		globalOrdering = atoi(annotation);
+	//FIXME check that the number is a val ordering type and has not yet been set
+}
+
+void InMemoryInputBuilder::onAnnotationGlobalAtomIndexedArgument(char* annotation) {
+	int argument=0;
+	if(!isNumeric(annotation,10)){
+		//FIXME warning
+		return;
+	}
+	argument=atoi(annotation);
+	if(argument>=0 && argument<globalAtomsIndexed.back()->getPredicate()->getArity())
+		globalAtomsIndexedArguments.back().push_back(argument);
+	//else	FIXME WARNING
+}
+
+void InMemoryInputBuilder::onAnnotationGlobalAtomIndexedLiteral(bool naf) {
+	currentAtom->setNegative(naf);
+	globalAtomsIndexed.push_back(currentAtom);
+	globalAtomsIndexedArguments.push_back(vector<unsigned>());
+}
+
+void InMemoryInputBuilder::onAnnotationGlobalPartialOrderingBefore(bool naf) {
+	currentAtom->setNegative(naf);
+	globalAtomsBefore.push_back(currentAtom);
+}
+
+void InMemoryInputBuilder::onAnnotationGlobalPartialOrderingAfter(bool naf) {
+	currentAtom->setNegative(naf);
+	globalAtomsAfter.push_back(currentAtom);
+}
+
+void InMemoryInputBuilder::onAnnotationAggregateGlobalPartialOrderingAfter(bool naf) {
+	currentAggregate->setNegative(naf);
+	globalAtomsAfter.push_back(currentAggregate);
+}
+
+void InMemoryInputBuilder::onAnnotationAggregateGlobalPartialOrderingBefore(bool naf) {
+	currentAggregate->setNegative(naf);
+	globalAtomsBefore.push_back(currentAggregate);
 }
 
 void InMemoryInputBuilder::safetyError(bool condition, Rule* rule) {

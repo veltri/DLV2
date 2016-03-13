@@ -81,25 +81,21 @@ public:
     virtual void onAggregateElement() ;
     virtual void onAggregate( bool naf = false ) ;
 
-    virtual void onAnnotationRuleOrdering(char* annotation){cerr<<annotation<<endl;};
-    virtual void onAnnotationRuleAtomIndexedArgument(char* annotation){cerr<<annotation<<endl;};
-    virtual void onAnnotationRuleAtomIndexedLiteral(bool naf = false){cerr<<"Atom Indexed ";currentAtom->setNegative(naf);currentAtom->print(cerr);cerr<<endl;};
-    virtual void onAnnotationRuleAtomIndexedAggregate(bool naf = false){cerr<<"Atom Indexed ";currentAggregate->setNegative(naf);currentAggregate->print(cerr);cerr<<endl;};
-    virtual void onAnnotationRulePartialOrderingBefore(bool naf = false){};
-    virtual void onAnnotationRulePartialOrderingAfter(bool naf = false){};
-    virtual void onAnnotationAggregateRulePartialOrderingAfter(bool naf = false){};
-    virtual void onAnnotationAggregateRulePartialOrderingBefore(bool naf = false){};
+    virtual void onAnnotationRuleOrdering(char* annotation);
+    virtual void onAnnotationRuleAtomIndexedArgument(char* annotation);
+    virtual void onAnnotationRuleAtomIndexedLiteral(bool naf = false);
+    virtual void onAnnotationRulePartialOrderingBefore(bool naf = false);
+    virtual void onAnnotationRulePartialOrderingAfter(bool naf = false);
+    virtual void onAnnotationAggregateRulePartialOrderingAfter(bool naf = false);
+    virtual void onAnnotationAggregateRulePartialOrderingBefore(bool naf = false);
 
-
-    virtual void onAnnotationGlobalOrdering(char* annotation){cerr<<"G "<<annotation<<endl;};
-    virtual void onAnnotationGlobalAtomIndexedArgument(char* annotation){cerr<<"G "<<annotation<<endl;};
-    virtual void onAnnotationGlobalAtomIndexedLiteral(bool naf = false){cerr<<"G "<<"Atom Indexed ";currentAtom->setNegative(naf);currentAtom->print(cerr);cerr<<endl;};
-    virtual void onAnnotationGlobalAtomIndexedAggregate(bool naf = false){cerr<<"G "<<"Atom Indexed ";currentAggregate->setNegative(naf);currentAggregate->print(cerr);cerr<<endl;};
-    virtual void onAnnotationGlobalPartialOrderingBefore(bool naf = false){};
-    virtual void onAnnotationGlobalPartialOrderingAfter(bool naf = false){};
-    virtual void onAnnotationAggregateGlobalPartialOrderingAfter(bool naf = false){};
-    virtual void onAnnotationAggregateGlobalPartialOrderingBefore(bool naf = false){};
-
+    virtual void onAnnotationGlobalOrdering(char* annotation);
+    virtual void onAnnotationGlobalAtomIndexedArgument(char* annotation);
+    virtual void onAnnotationGlobalAtomIndexedLiteral(bool naf = false);
+    virtual void onAnnotationGlobalPartialOrderingBefore(bool naf = false);
+    virtual void onAnnotationGlobalPartialOrderingAfter(bool naf = false);
+    virtual void onAnnotationAggregateGlobalPartialOrderingAfter(bool naf = false);
+    virtual void onAnnotationAggregateGlobalPartialOrderingBefore(bool naf = false);
 
     void newTerm(char*);
 
@@ -112,9 +108,16 @@ public:
 private:
 
 	int globalOrdering;
-	vector<pair<Atom*,vector<unsigned>>> globalAtomsIndexed;
+	vector<Atom*> globalAtomsIndexed;
+	vector<vector<unsigned>> globalAtomsIndexedArguments;
+	vector<Atom*> globalAtomsBefore;
+	vector<Atom*> globalAtomsAfter;
 
 	int currentRuleOrdering;
+	vector<Atom*> currentRuleAtomsIndexed;
+	vector<vector<unsigned>> currentRuleAtomsIndexedArguments;
+	vector<Atom*> currentRuleAtomsBefore;
+	vector<Atom*> currentRuleAtomsAfter;
 
     TermTable *termTable;
 
