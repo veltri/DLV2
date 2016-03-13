@@ -61,14 +61,14 @@ public:
 //			for(auto& ti:vec){
 //				cerr<<ti.label<<" "<<ti.show<<" "<<ti.father<<endl;
 //			}
-			InteractiveStats::displayStats(vec,"Total time: "+to_string(getTotalTime()),"   Time%%  "+appendSpace("Rule",RULESPACE)+appendSpace("Time(s)",TIMESPACE)+"N.GroundRule ");
+			InteractiveStats::displayStats(vec,"Total time: "+to_string(getTotalTime()),"   Time%%  "+appendSpace("Rule",RULESPACE)+appendSpace("Time(s)",TIMESPACE)+appendSpace("N.GroundRule",GROUNDSPACE)+"Iteration");
 		}
 
 	}
 
 	void rawPrint(ostream& ss=cout);
 
-	string rawRuleStat(RuleStat& rs);
+	string rawRuleStat(unsigned );
 
 	static RuleStatistics* getInstance();
 
@@ -82,6 +82,7 @@ private:
 	const unsigned RULESPACE=60;
 	const unsigned TIMESPACE=20;
 	const unsigned ATOMSPACE=30;
+	const unsigned GROUNDSPACE=14;
 };
 
 } /* namespace grounder */

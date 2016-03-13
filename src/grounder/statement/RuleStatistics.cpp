@@ -26,16 +26,22 @@ RuleStatistics* RuleStatistics::rstats=nullptr;
 vector<TableInfo> RuleStatistics::generateVecTableInfo() {
 	vector<TableInfo> vec;
 	for(unsigned index=0;index<ruleStats.size();index++){
-		auto& rs=ruleStats[index][0];
-		string ss;
-		unsigned time=rs.time/getTotalTime()*100;
-		ss=appendSpace(to_string(time)+"%%",5)+appendSpace(rs.rule,RULESPACE)+appendSpace(to_string(rs.time),TIMESPACE)+to_string(rs.groundedRule);
+
+		auto& rs=ruleStats[index].back();
+		double recTime=0;
+		unsigned groundRule=0;
+		for(auto& rs:ruleStats[index]){
+			recTime+=rs.time;
+			groundRule+=rs.groundedRule;
+		}
+		unsigned time=recTime/getTotalTime()*100;
+ 		string ss=appendSpace(to_string(time)+"%%",8)+appendSpace(ruleStats[index][0].rule,RULESPACE)+appendSpace(to_string(recTime),TIMESPACE)+appendSpace(to_string(groundRule),GROUNDSPACE)+to_string(ruleStats[index].size());
+
 		vec.emplace_back(ss,true,0);
 		unsigned fatherRule=vec.size();
 		if(rs.rule.size()>=RULESPACE){
 			for (unsigned i = 0; i < rs.rule.size(); i += RULESPACE*2)
 				vec.emplace_back(rs.rule.substr(i, RULESPACE*2),false,fatherRule);
-
 		}
 		for(unsigned i=0;i<rs.bodyPES.size();i++){
 			if(rs.bodyPES[i].first.size()==0)continue;
@@ -62,17 +68,24 @@ RuleStatistics* RuleStatistics::getInstance() {
 
 void RuleStatistics::rawPrint(ostream& ss){
 	string heading1="Total time: "+to_string(getTotalTime());
-	string heading2="Time%  "+appendSpace("Rule",RULESPACE)+appendSpace("Time(s)",TIMESPACE)+"N.GroundRule ";
+	string heading2="Time%   "+appendSpace("Rule",RULESPACE)+appendSpace("Time(s)",TIMESPACE)+appendSpace("N.GroundRule ",GROUNDSPACE)+"Iteration";
 	ss<<heading1<<endl;
 	ss<<heading2<<endl;
-	for(auto&v :ruleStats)
-		ss<<rawRuleStat(v[0]);
+	for(unsigned i=0;i<ruleStats.size();i++)
+		ss<<rawRuleStat(i);
 }
 
-string RuleStatistics::rawRuleStat(RuleStat& rs){
+string RuleStatistics::rawRuleStat(unsigned index){
 	string ss="";
-	unsigned time=rs.time/getTotalTime()*100;
-	ss=to_string(time)+"%    "+appendSpace(rs.rule,RULESPACE)+appendSpace(to_string(rs.time),TIMESPACE)+to_string(rs.groundedRule)+'\n';
+	auto& rs=ruleStats[index].back();
+	double recTime=0;
+	unsigned groundRule=0;
+	for(auto& rs:ruleStats[index]){
+		recTime+=rs.time;
+		groundRule+=rs.groundedRule;
+	}
+	unsigned time=recTime/getTotalTime()*100;
+	ss=appendSpace(to_string(time)+"%",8)+appendSpace(ruleStats[index][0].rule,RULESPACE)+appendSpace(to_string(recTime),TIMESPACE)+appendSpace(to_string(groundRule),GROUNDSPACE)+to_string(ruleStats[index].size())+'\n';
 	for(unsigned i=0;i<rs.bodyPES.size();i++){
 		if(rs.bodyPES[i].first.size()==0)continue;
 		double size=rs.bodyPES[i].second;
@@ -89,8 +102,9 @@ string RuleStatistics::rawRuleStat(RuleStat& rs){
 
 void RuleStatistics::prepareStats(Rule* rule){
 	unsigned index=rule->getIndex();
-	if(ruleStats.size()>=index)
+	if(ruleStats.size()<=index){
 		ruleStats.resize(index+1);
+	}
 
 	vector<pair<string,unsigned>> bodyPES;
 	vector<vector<pair<string,unsigned>>> varSelectivity;

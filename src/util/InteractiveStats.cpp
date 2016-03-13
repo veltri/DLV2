@@ -57,20 +57,8 @@ void retractChild (vector<TableInfo>& table,unsigned father){
 }
 
 void expandRetractCursor (vector<TableInfo>& table,unsigned cursor){
-	int display=-1;
-	unsigned expand=0;
 	for(unsigned i=0;i<table.size();i++){
-		auto& t=table[i];
-		if(t.show)
-			display++;
-		if(display==(int)cursor){
-			expand=i+1;
-			break;
-		}
-	}
-	if(expand==0)return;
-	for(unsigned i=0;i<table.size();i++){
-		if(table[i].father==expand){
+		if(table[i].father==cursor+1){
 			table[i].show=!table[i].show;
 			if(!table[i].show)
 				retractChild(table,i+1);
@@ -80,6 +68,33 @@ void expandRetractCursor (vector<TableInfo>& table,unsigned cursor){
 //	if(!show)
 //		expandRetractChild(table,expand);
 
+}
+
+unsigned getNextShow(vector<TableInfo>&table,unsigned index){
+	for(unsigned i=index+1;i<table.size();i++){
+		auto& t=table[i];
+		if(t.show)
+			return i;
+	}
+	return index;
+}
+unsigned getPreviousShow(vector<TableInfo>&table,unsigned index){
+	if(index==0)return index;
+	for(unsigned i=index-1;i>=0;i--){
+		auto& t=table[i];
+		if(t.show)
+			return i;
+	}
+	return index;
+}
+
+bool isNotDisplayed(vector<TableInfo>&table,unsigned cursor,unsigned start,unsigned lineDisplay){
+	for(unsigned i=start;i<start+lineDisplay;i++){
+		auto& t=table[i];
+		if(i==cursor)
+			return false;
+	}
+	return true;
 }
 void InteractiveStats::displayStats(vector<TableInfo>&table,string heading1,string heading2){
 
@@ -104,6 +119,7 @@ void InteractiveStats::displayStats(vector<TableInfo>&table,string heading1,stri
 	unsigned cursor=0;
 	bool finish=false;
 	int key=0;
+	unsigned start=0;
 	while(!finish){
 
 		unsigned lineDisplay=0;
@@ -111,10 +127,15 @@ void InteractiveStats::displayStats(vector<TableInfo>&table,string heading1,stri
 		mvprintw(0,0,getTextSpace(heading1,0).c_str());
 		mvprintw(1,0,getTextSpace(heading2,0).c_str());
 		unsigned line=2;
-		for(unsigned i=0;i<table.size();i++){
+		int first=-1;
+		int last=-1;
+		for(unsigned i=start;i<table.size();i++){
+			if((int)line>=LINES-1)break;
 			TableInfo& t=table[i];
 			if(!t.show)continue;
-			if(line-2==cursor)
+			if(first==-1)first=i;
+			last=i;
+			if(i==cursor)
 				attron(COLOR_PAIR(2));
 			else
 				attron(COLOR_PAIR(1));
@@ -126,18 +147,21 @@ void InteractiveStats::displayStats(vector<TableInfo>&table,string heading1,stri
 			line++;
 			lineDisplay++;
 		}
-
-		string info=to_string(cursor)+" "+to_string(key);
+		string info=to_string(cursor)+" "+to_string(key)+" "+to_string(lineDisplay)+" "+to_string(start)+" "+to_string(first)+" "+to_string(last);
 		mvprintw(LINES-1,0,info.c_str());
 		key=getch();
 		switch (key) {
 			case KEY_UP:
-				if(cursor>0)
-					cursor--;
+				cursor=getPreviousShow(table,cursor);
+				if(cursor>0 && (int)cursor<first)
+					start=getPreviousShow(table,start);
+
 				break;
 			case KEY_DOWN:
-				if(cursor<lineDisplay-1)
-					cursor++;
+				cursor=getNextShow(table,cursor);
+				if((int)cursor>last)
+					start=getNextShow(table,start);
+
 				break;
 			case 'q':
 				finish=true;
