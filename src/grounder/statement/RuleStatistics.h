@@ -53,6 +53,7 @@ public:
 	vector<TableInfo> generateVecTableInfo();
 
 	void printStats(){
+		sortVectorByTime();
 		unsigned print=Options::globalOptions()->getPrintGroundStats();
 		if(print==STATS_RAW)
 			rawPrint(cerr);
@@ -69,6 +70,8 @@ public:
 	void rawPrint(ostream& ss=cout);
 
 	string rawRuleStat(unsigned );
+
+	void sortVectorByTime();
 
 	static RuleStatistics* getInstance();
 

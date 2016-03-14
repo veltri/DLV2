@@ -21,7 +21,20 @@ string appendSpace(string text,unsigned space){
 	  return text+spacePost;
 }
 
+
 RuleStatistics* RuleStatistics::rstats=nullptr;
+
+void RuleStatistics::sortVectorByTime(){
+	sort(ruleStats.begin(),ruleStats.end(),[](const vector<RuleStat>& v1,const vector<RuleStat>& v2){
+		double t1=0,t2=0;
+		for(auto& rs:v1)
+			t1+=rs.time;
+		for(auto& rs:v2)
+			t2+=rs.time;
+		return t1>t2;
+	});
+
+}
 
 vector<TableInfo> RuleStatistics::generateVecTableInfo() {
 	vector<TableInfo> vec;
