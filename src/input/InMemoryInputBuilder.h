@@ -84,6 +84,7 @@ public:
     virtual void onAnnotationRuleOrdering(char* annotation);
     virtual void onAnnotationRuleAtomIndexedArgument(char* annotation);
     virtual void onAnnotationRuleAtomIndexedLiteral(bool naf = false);
+    virtual void onAnnotationRulePartialOrdering(){currentRuleAtomsAfter.push_back(vector<Atom*>());currentRuleAtomsBefore.push_back(vector<Atom*>());};
     virtual void onAnnotationRulePartialOrderingBefore(bool naf = false);
     virtual void onAnnotationRulePartialOrderingAfter(bool naf = false);
     virtual void onAnnotationAggregateRulePartialOrderingAfter(bool naf = false);
@@ -106,18 +107,6 @@ public:
 	static const string& getSafetyErrorMessage() { return safetyErrorMessage; }
 
 private:
-
-	int globalOrdering;
-	vector<Atom*> globalAtomsIndexed;
-	vector<vector<unsigned>> globalAtomsIndexedArguments;
-	vector<Atom*> globalAtomsBefore;
-	vector<Atom*> globalAtomsAfter;
-
-	int currentRuleOrdering;
-	vector<Atom*> currentRuleAtomsIndexed;
-	vector<vector<unsigned>> currentRuleAtomsIndexedArguments;
-	vector<Atom*> currentRuleAtomsBefore;
-	vector<Atom*> currentRuleAtomsAfter;
 
     TermTable *termTable;
 
@@ -154,7 +143,20 @@ private:
 
 	bool hiddenNewPredicate;
 
- 	void addRule(Rule* rule);
+
+	int currentRuleOrdering;
+	vector<Atom*> currentRuleAtomsIndexed;
+	vector<vector<unsigned>> currentRuleAtomsIndexedArguments;
+	vector<vector<Atom*>> currentRuleAtomsBefore;
+	vector<vector<Atom*>> currentRuleAtomsAfter;
+
+	int globalOrdering;
+	vector<Atom*> globalAtomsIndexed;
+	vector<vector<unsigned>> globalAtomsIndexedArguments;
+	vector<vector<Atom*>> globalAtomsBefore;
+	vector<vector<Atom*>> globalAtomsAfter;
+
+	void addRule(Rule* rule);
  	void createRule(vector<Atom*>* head, vector<Atom*>* body=0);
 	void createFact(Atom* fact);
 
@@ -172,6 +174,8 @@ private:
 	static bool currentRuleIsUnsafe;
 	static bool foundASafetyError;
 	static void safetyError(bool condition, Rule* rule);
+	void manageRuleAnnotations();
+
 	static string safetyErrorMessage;
 
 };

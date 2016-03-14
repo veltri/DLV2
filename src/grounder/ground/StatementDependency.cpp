@@ -630,6 +630,8 @@ void StatementDependency::addRuleMapping(Rule* r) {
 		r->setIndex(rules.size()-1);
 		depGraph.addInDependency(r);
 	}
+	unsigned index=constraints.size()+weak.size()+rules.size();
+	r->setIndex(index);
 }
 
 void StatementDependency::createDependencyGraph(PredicateTable* pt) {

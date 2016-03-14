@@ -16,7 +16,7 @@
 #include "../../util/Options.h"
 #include "../../util/Trace.h"
 #include "../statement/OrderRuleGroundable.h"
-
+#include "../statement/GroundingPreferences.h"
 
 
 namespace DLV2{
@@ -523,6 +523,7 @@ ProgramGrounder::~ProgramGrounder() {
 	HashString::freeInstance();
 	HashVecInt::freeInstance();
 	OutputBuilder::freeInstance();
+	GroundingPreferences::freeInstance();
 	delete statementDependency;
 	delete predicateExtTable;
 	delete termsMap;

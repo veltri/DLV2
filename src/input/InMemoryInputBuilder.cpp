@@ -12,6 +12,7 @@
 #include "../grounder/atom/AggregateAtom.h"
 #include "../grounder/atom/Choice.h"
 #include "../util/Utils.h"
+#include "../grounder/statement/GroundingPreferences.h"
 
 #include <string>
 #include "algorithm"
@@ -113,6 +114,54 @@ void InMemoryInputBuilder::onDirective(char* directiveName,
 
 }
 
+void InMemoryInputBuilder::manageRuleAnnotations() {
+	if (currentRuleOrdering != -1)
+		if(!GroundingPreferences::getGroundingPreferences()->addRuleOrderingType(
+				currentRule, currentRuleOrdering))
+			cout<<"--> Warning : The ordering type "<<currentRuleOrdering<<" is not valid."<<endl;
+	currentRuleOrdering = -1;
+
+	for (unsigned i = 0; i < currentRuleAtomsIndexed.size(); ++i) {
+		AnnotationsError error=GroundingPreferences::getGroundingPreferences()->addRuleAtomIndexingSetting(
+				currentRule, currentRuleAtomsIndexed[i],
+				currentRuleAtomsIndexedArguments[i]);
+		if(error==ATOM_NOT_PRESENT){
+			cout<<"--> Warning : The atom ";currentRuleAtomsIndexed[i]->print();cout<<" is not present in the specified rule."<<endl;
+			currentRule->print();
+		}
+	}
+	for(auto atom:currentRuleAtomsIndexed)
+		delete atom;
+	currentRuleAtomsIndexed.clear();
+	currentRuleAtomsIndexedArguments.clear();
+
+	for(unsigned i=0;i<currentRuleAtomsBefore.size();++i){
+		for(auto atom:currentRuleAtomsBefore[i]){
+			AnnotationsError error=GroundingPreferences::getGroundingPreferences()->addRulePartialOrderBefore(currentRule, atom);
+			if(error==ATOM_NOT_PRESENT){
+
+				cout<<"--> Warning : The atom ";atom->print();cout<<" is not present in the specified rule."<<endl;
+			}
+		}
+		for(auto atom:currentRuleAtomsAfter[i]){
+			AnnotationsError error=GroundingPreferences::getGroundingPreferences()->addRulePartialOrderAfter(currentRule, atom);
+			if(error==ATOM_NOT_PRESENT){
+				cout<<"--> Warning : The atom ";atom->print();cout<<" is not present in the specified rule."<<endl;
+			}
+		}
+		if(GroundingPreferences::getGroundingPreferences()->checkRulePartialOrderConflicts(currentRule)==CONFLICT_FOUND){
+			cout<<"--> Warning : In the rule ";currentRule->print();cout<<"The partial ordering specified cannot be applied."<<endl;
+		}
+		for(auto atom:currentRuleAtomsBefore[i])
+			delete atom;
+		for(auto atom:currentRuleAtomsAfter[i])
+			delete atom;
+	}
+	currentRuleAtomsBefore.clear();
+	currentRuleAtomsAfter.clear();
+//	GroundingPreferences::getGroundingPreferences()->print(currentRule);
+}
+
 void InMemoryInputBuilder::onRule() {
 	if(foundASafetyError) return;
 	if(currentRule->isAFact()){
@@ -145,12 +194,6 @@ void InMemoryInputBuilder::onRule() {
 		}
 	}
 
-
-	currentRuleOrdering=-1;
-	currentRuleAtomsIndexed.clear();
-	currentRuleAtomsIndexedArguments.clear();
-	currentRuleAtomsBefore.clear();
-	currentRuleAtomsAfter.clear();
 	foundARangeAtomInCurrentRule=false;
 }
 
@@ -664,6 +707,7 @@ void InMemoryInputBuilder::rewriteChoice(Rule* rule) {
 
 void InMemoryInputBuilder::manageSimpleRule(Rule* rule) {
 	manageSimpleRule(rule,statementDependency);
+	manageRuleAnnotations();
 }
 
 void InMemoryInputBuilder::manageSimpleRule(Rule* rule,StatementDependency * statementDependency) {
@@ -804,7 +848,9 @@ void InMemoryInputBuilder::onAnnotationRuleAtomIndexedArgument(char* annotation)
 	argument=atoi(annotation);
 	if(argument>=0 && argument<currentRuleAtomsIndexed.back()->getPredicate()->getArity())
 		currentRuleAtomsIndexedArguments.back().push_back(argument);
-	//else	FIXME WARNING
+	else{
+		cout<<"--> Warning : The arguments specified for the atom ";currentRuleAtomsIndexed.back()->print();cout<<" are not valid."<<endl;
+	}
 }
 
 void InMemoryInputBuilder::onAnnotationRuleAtomIndexedLiteral(bool naf) {
@@ -815,22 +861,22 @@ void InMemoryInputBuilder::onAnnotationRuleAtomIndexedLiteral(bool naf) {
 
 void InMemoryInputBuilder::onAnnotationRulePartialOrderingBefore(bool naf) {
 	currentAtom->setNegative(naf);
-	currentRuleAtomsBefore.push_back(currentAtom);
+	currentRuleAtomsBefore.back().push_back(currentAtom);
 }
 
 void InMemoryInputBuilder::onAnnotationRulePartialOrderingAfter(bool naf) {
 	currentAtom->setNegative(naf);
-	currentRuleAtomsAfter.push_back(currentAtom);
+	currentRuleAtomsAfter.back().push_back(currentAtom);
 }
 
 void InMemoryInputBuilder::onAnnotationAggregateRulePartialOrderingAfter(bool naf) {
 	currentAggregate->setNegative(naf);
-	currentRuleAtomsAfter.push_back(currentAggregate);
+	currentRuleAtomsAfter.back().push_back(currentAggregate);
 }
 
 void InMemoryInputBuilder::onAnnotationAggregateRulePartialOrderingBefore(bool naf) {
 	currentAggregate->setNegative(naf);
-	currentRuleAtomsBefore.push_back(currentAggregate);
+	currentRuleAtomsBefore.back().push_back(currentAggregate);
 }
 
 void InMemoryInputBuilder::onAnnotationGlobalOrdering(char* annotation) {
@@ -859,22 +905,22 @@ void InMemoryInputBuilder::onAnnotationGlobalAtomIndexedLiteral(bool naf) {
 
 void InMemoryInputBuilder::onAnnotationGlobalPartialOrderingBefore(bool naf) {
 	currentAtom->setNegative(naf);
-	globalAtomsBefore.push_back(currentAtom);
+	globalAtomsBefore.back().push_back(currentAtom);
 }
 
 void InMemoryInputBuilder::onAnnotationGlobalPartialOrderingAfter(bool naf) {
 	currentAtom->setNegative(naf);
-	globalAtomsAfter.push_back(currentAtom);
+	globalAtomsAfter.back().push_back(currentAtom);
 }
 
 void InMemoryInputBuilder::onAnnotationAggregateGlobalPartialOrderingAfter(bool naf) {
 	currentAggregate->setNegative(naf);
-	globalAtomsAfter.push_back(currentAggregate);
+	globalAtomsAfter.back().push_back(currentAggregate);
 }
 
 void InMemoryInputBuilder::onAnnotationAggregateGlobalPartialOrderingBefore(bool naf) {
 	currentAggregate->setNegative(naf);
-	globalAtomsBefore.push_back(currentAggregate);
+	globalAtomsBefore.back().push_back(currentAggregate);
 }
 
 void InMemoryInputBuilder::safetyError(bool condition, Rule* rule) {
