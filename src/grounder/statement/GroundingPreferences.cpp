@@ -6,6 +6,7 @@
  */
 
 #include "GroundingPreferences.h"
+#include "../ground/StatementDependency.h"
 
 namespace DLV2 {
 namespace grounder {
@@ -49,12 +50,31 @@ AnnotationsError GroundingPreferences::addRulePartialOrderAfter(Rule* rule, Atom
 }
 
 bool GroundingPreferences::addGlobalOrderingType(unsigned orderingType) {
+//	if(OrderRuleGroundable::isAValidOrderingType(orderingType)){
+		globalOrderingType=orderingType;
+		return true;
+//	}
+	return false;
 }
 
 bool GroundingPreferences::addGlobalAtomIndexingSetting(Atom* atom, vector<unsigned>& arguments) {
+	for(unsigned i=0;i<StatementDependency::getInstance()->getRulesSize();++i){
+		Rule* rule=StatementDependency::getInstance()->getRule(i);
+		addRuleAtomIndexingSetting(rule,atom,arguments);
+	}
+	return true;
 }
 
 bool GroundingPreferences::addGlobalPartialOrder(const vector<Atom*>& beforeAtoms, const vector<Atom*>& afterAtoms) {
+	for(unsigned i=0;i<StatementDependency::getInstance()->getRulesSize();++i){
+		Rule* rule=StatementDependency::getInstance()->getRule(i);
+		for(auto atom:beforeAtoms)
+			addRulePartialOrderBefore(rule,atom);
+		for(auto atom:afterAtoms)
+			addRulePartialOrderBefore(rule,atom);
+		checkRulePartialOrderConflicts(rule);
+	}
+	return true;
 }
 
 AnnotationsError GroundingPreferences::checkRulePartialOrderConflicts(Rule* rule) {
