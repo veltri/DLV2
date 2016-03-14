@@ -153,7 +153,7 @@ void InteractiveStats::displayStats(vector<TableInfo>&table,string heading1,stri
 		switch (key) {
 			case KEY_UP:
 				cursor=getPreviousShow(table,cursor);
-				if(cursor>0 && (int)cursor<first)
+				if((int)cursor<first)
 					start=getPreviousShow(table,start);
 
 				break;

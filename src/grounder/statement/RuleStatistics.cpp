@@ -51,7 +51,7 @@ vector<TableInfo> RuleStatistics::generateVecTableInfo() {
 			unsigned fatherAtom=vec.size();
 			for(auto& sel:rs.varSelectivity[i]){
 				unsigned select=sel.second/size*100;
-				string ss=sel.first+"  Selectivity = "+to_string(select)+"%%";
+				string ss=sel.first+"  Selectivity = "+to_string(sel.second)+"("+to_string(select)+"%)";
 				vec.emplace_back(ss,false,fatherAtom);
 			}
 		}
@@ -94,7 +94,7 @@ string RuleStatistics::rawRuleStat(unsigned index){
 		ss+=appendSpace(rs.bodyPES[i].first,ATOMSPACE)+"P.E.S. = "+to_string(rs.bodyPES[i].second)+'\n';
 		for(auto& sel:rs.varSelectivity[i]){
 			unsigned select=sel.second/size*100;
-			ss+=sel.first+"  Selectivity = "+to_string(select)+"%"+'\n';
+			ss+=sel.first+"  Selectivity = "+to_string(sel.second)+"("+to_string(select)+"%)"+'\n';
 		}
 	}
 	return ss;
