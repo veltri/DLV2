@@ -47,7 +47,7 @@ public:
 class InteractiveStats {
 public:
 	InteractiveStats(){};
-	static void displayStats(vector<TableInfo>&table){cerr<<"ERROR: NCURSES NOT SUPPORTED"<<endl;};
+	static void displayStats(vector<TableInfo>&table,string heading1,string heading2){};
 };
 #endif
 

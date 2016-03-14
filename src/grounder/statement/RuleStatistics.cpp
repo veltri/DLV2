@@ -86,6 +86,8 @@ string RuleStatistics::rawRuleStat(unsigned index){
 	}
 	unsigned time=recTime/getTotalTime()*100;
 	ss=appendSpace(to_string(time)+"%",8)+appendSpace(ruleStats[index][0].rule,RULESPACE)+appendSpace(to_string(recTime),TIMESPACE)+appendSpace(to_string(groundRule),GROUNDSPACE)+to_string(ruleStats[index].size())+'\n';
+	if(ruleStats[index][0].rule.size()>=RULESPACE)
+		ss+=ruleStats[index][0].rule+'\n';
 	for(unsigned i=0;i<rs.bodyPES.size();i++){
 		if(rs.bodyPES[i].first.size()==0)continue;
 		double size=rs.bodyPES[i].second;
