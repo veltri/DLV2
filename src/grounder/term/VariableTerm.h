@@ -49,6 +49,7 @@ public:
 
 	virtual size_t hash(){	return HashString::getHashString()->computeHash(name);};
 	virtual Term* substitute(var_assignment& substitutionTerm){
+		if(isAnonymous)return this;
 		Term *findTerm=substitutionTerm[localIndex];
 		if(findTerm!=nullptr)
 			return findTerm;

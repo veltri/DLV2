@@ -313,7 +313,7 @@ void Rule::computeVariablesLocalIndices() {
 		}
 	}
 
-	this->variablesSize=variableLocalIndex.size();
+	this->variablesSize=variableLocalIndex.size()+1;
 }
 
 // ******************************* WeakConstraint *****************************************
