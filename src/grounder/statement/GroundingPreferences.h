@@ -41,14 +41,21 @@ public:
 		return groundingPreferences;
 	}
 
-	static void freeInstance(){ delete groundingPreferences;}
+	static void freeInstance(){
+		delete groundingPreferences;
+	}
+
+	~GroundingPreferences(){}
+
 	void print(Rule* rule) const;
 private:
 	unordered_map<unsigned,unsigned> rulesOrderingTypes;
 	unordered_map<unsigned,vector<pair<unsigned,vector<unsigned>>>> rulesAtomsIndexingArguments;
 	unordered_map<unsigned,vector<vector<bool>>> rulesPartialOrders;
 	vector<vector<unsigned>> rulePartialOrderAtoms;
+
 	int globalOrderingType;
+	vector<pair<Atom*,vector<unsigned>>> globalAtomsIndexingArguments;
 
 	void checkIfAtomIsPresentInRule(Rule* rule, Atom* atom, vector<unsigned>& positions);
 

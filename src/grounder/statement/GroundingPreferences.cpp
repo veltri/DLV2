@@ -7,6 +7,7 @@
 
 #include "GroundingPreferences.h"
 #include "../ground/StatementDependency.h"
+#include "OrderRuleGroundable.h"
 
 namespace DLV2 {
 namespace grounder {
@@ -14,10 +15,11 @@ namespace grounder {
 GroundingPreferences* GroundingPreferences::groundingPreferences=0;
 
 bool GroundingPreferences::addRuleOrderingType(Rule* rule,unsigned orderingType) {
-//	if(OrderRuleGroundable::isAValidOrderingType(orderingType)){
+	if(OrderRuleGroundableFactory::isAValidOrderingType(orderingType)
+		&& !rulesOrderingTypes.count(rule->getIndex())){
 		rulesOrderingTypes.insert({rule->getIndex(),orderingType});
 		return true;
-//	}
+	}
 	return false;
 }
 
@@ -41,10 +43,10 @@ AnnotationsError GroundingPreferences::addRulePartialOrderAtom(Rule* rule, Atom*
 }
 
 bool GroundingPreferences::addGlobalOrderingType(unsigned orderingType) {
-//	if(OrderRuleGroundable::isAValidOrderingType(orderingType)){
+	if(OrderRuleGroundableFactory::isAValidOrderingType(orderingType) && globalOrderingType!=-1){
 		globalOrderingType=orderingType;
 		return true;
-//	}
+	}
 	return false;
 }
 
@@ -123,9 +125,6 @@ bool GroundingPreferences::checkPartialOrder(unsigned ruleIndex, unsigned atomPo
 		}
 		return true;
 	}
-//	else if(){
-// 	TODO global partial order
-//	}
 	return true;
 }
 
