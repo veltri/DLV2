@@ -39,7 +39,7 @@ void RuleStatistics::sortVectorByTime(){
 vector<TableInfo> RuleStatistics::generateVecTableInfo() {
 	vector<TableInfo> vec;
 	for(unsigned index=0;index<ruleStats.size();index++){
-
+		if(ruleStats[index].size()==0)continue;
 		auto& rs=ruleStats[index].back();
 		double recTime=0;
 		unsigned groundRule=0;
@@ -90,6 +90,7 @@ void RuleStatistics::rawPrint(ostream& ss){
 
 string RuleStatistics::rawRuleStat(unsigned index){
 	string ss="";
+	if(ruleStats[index].size()==0)return "";
 	auto& rs=ruleStats[index].back();
 	double recTime=0;
 	unsigned groundRule=0;
