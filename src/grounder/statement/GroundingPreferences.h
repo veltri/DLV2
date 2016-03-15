@@ -25,32 +25,34 @@ class GroundingPreferences {
 public:
 	bool addRuleOrderingType(Rule* rule, unsigned orderingType);
 	AnnotationsError addRuleAtomIndexingSetting(Rule* rule, Atom* atom, vector<unsigned>& arguments);
-	AnnotationsError addRulePartialOrderBefore(Rule* rule, Atom* beforeAtom);
-	AnnotationsError addRulePartialOrderAfter(Rule* rule, Atom* afterAtom);
+	AnnotationsError addRulePartialOrderAtom(Rule* rule, Atom* beforeAtom);
 	AnnotationsError checkRulePartialOrderConflicts(Rule* rule);
 
 	bool addGlobalOrderingType(unsigned orderingType);
 	bool addGlobalAtomIndexingSetting(Atom* atom, vector<unsigned>& arguments);
 	bool addGlobalPartialOrder(const vector<Atom*>& beforeAtoms, const vector<Atom*>& afterAtoms);
 
-	static void freeInstance(){ delete groundingPreferences;}
+	int getOrderingType(Rule* r) const;
+	bool checkPartialOrder(unsigned ruleIndex,unsigned atomPosition,const list<unsigned>& atoms) const;
 
 	static GroundingPreferences* getGroundingPreferences() {
 		if(groundingPreferences==0)
 			groundingPreferences=new GroundingPreferences();
 		return groundingPreferences;
 	}
+
+	static void freeInstance(){ delete groundingPreferences;}
 	void print(Rule* rule) const;
 private:
 	unordered_map<unsigned,unsigned> rulesOrderingTypes;
 	unordered_map<unsigned,vector<pair<unsigned,vector<unsigned>>>> rulesAtomsIndexingArguments;
 	unordered_map<unsigned,vector<vector<bool>>> rulesPartialOrders;
-	vector<vector<unsigned>> ruleBeforeAtoms,ruleAfterAtoms;
-	unsigned globalOrderingType;
+	vector<vector<unsigned>> rulePartialOrderAtoms;
+	int globalOrderingType;
 
 	void checkIfAtomIsPresentInRule(Rule* rule, Atom* atom, vector<unsigned>& positions);
 
-	GroundingPreferences():globalOrderingType(0){};
+	GroundingPreferences():globalOrderingType(-1){};
 	static GroundingPreferences* groundingPreferences;
 };
 

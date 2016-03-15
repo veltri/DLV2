@@ -137,14 +137,13 @@ void InMemoryInputBuilder::manageRuleAnnotations() {
 
 	for(unsigned i=0;i<currentRuleAtomsBefore.size();++i){
 		for(auto atom:currentRuleAtomsBefore[i]){
-			AnnotationsError error=GroundingPreferences::getGroundingPreferences()->addRulePartialOrderBefore(currentRule, atom);
+			AnnotationsError error=GroundingPreferences::getGroundingPreferences()->addRulePartialOrderAtom(currentRule, atom);
 			if(error==ATOM_NOT_PRESENT){
-
 				cout<<"--> Warning : The atom ";atom->print();cout<<" is not present in the specified rule."<<endl;
 			}
 		}
 		for(auto atom:currentRuleAtomsAfter[i]){
-			AnnotationsError error=GroundingPreferences::getGroundingPreferences()->addRulePartialOrderAfter(currentRule, atom);
+			AnnotationsError error=GroundingPreferences::getGroundingPreferences()->addRulePartialOrderAtom(currentRule, atom);
 			if(error==ATOM_NOT_PRESENT){
 				cout<<"--> Warning : The atom ";atom->print();cout<<" is not present in the specified rule."<<endl;
 			}
@@ -156,6 +155,8 @@ void InMemoryInputBuilder::manageRuleAnnotations() {
 			delete atom;
 		for(auto atom:currentRuleAtomsAfter[i])
 			delete atom;
+		currentRuleAtomsBefore[i].clear();
+		currentRuleAtomsAfter[i].clear();
 	}
 	currentRuleAtomsBefore.clear();
 	currentRuleAtomsAfter.clear();

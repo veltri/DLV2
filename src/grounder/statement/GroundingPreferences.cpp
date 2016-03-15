@@ -31,21 +31,12 @@ AnnotationsError GroundingPreferences::addRuleAtomIndexingSetting(Rule* rule, At
 	return OK;
 }
 
-AnnotationsError GroundingPreferences::addRulePartialOrderBefore(Rule* rule, Atom* atom) {
+AnnotationsError GroundingPreferences::addRulePartialOrderAtom(Rule* rule, Atom* atom) {
 	vector<unsigned> positions;
 	checkIfAtomIsPresentInRule(rule,atom,positions);
 	if(positions.empty())
 		return ATOM_NOT_PRESENT;
-	ruleBeforeAtoms.push_back(positions);
-	return OK;
-}
-
-AnnotationsError GroundingPreferences::addRulePartialOrderAfter(Rule* rule, Atom* atom) {
-	vector<unsigned> positions;
-	checkIfAtomIsPresentInRule(rule,atom,positions);
-	if(positions.empty())
-		return ATOM_NOT_PRESENT;
-	ruleAfterAtoms.push_back(positions);
+	rulePartialOrderAtoms.push_back(positions);
 	return OK;
 }
 
@@ -69,9 +60,9 @@ bool GroundingPreferences::addGlobalPartialOrder(const vector<Atom*>& beforeAtom
 	for(unsigned i=0;i<StatementDependency::getInstance()->getRulesSize();++i){
 		Rule* rule=StatementDependency::getInstance()->getRule(i);
 		for(auto atom:beforeAtoms)
-			addRulePartialOrderBefore(rule,atom);
+			addRulePartialOrderAtom(rule,atom);
 		for(auto atom:afterAtoms)
-			addRulePartialOrderBefore(rule,atom);
+			addRulePartialOrderAtom(rule,atom);
 		checkRulePartialOrderConflicts(rule);
 	}
 	return true;
@@ -83,20 +74,53 @@ AnnotationsError GroundingPreferences::checkRulePartialOrderConflicts(Rule* rule
 	for(unsigned i=0;i<rule->getSizeBody();++i)
 		rulesPartialOrders[rule->getIndex()][i].resize(rule->getSizeBody(),false);
 
-	for(auto positionsAfter:ruleAfterAtoms)
-		for(auto pA:positionsAfter)
-			for(auto positionsBefore:ruleBeforeAtoms)
-					for(auto pB:positionsBefore){
-						if(rulesPartialOrders[rule->getIndex()][pB][pA]){
-							ruleAfterAtoms.clear();
-							ruleBeforeAtoms.clear();
-							return CONFLICT_FOUND;
-						}
-						rulesPartialOrders[rule->getIndex()][pA][pB]=1;
+	for(unsigned i=0;i<rulePartialOrderAtoms.size();++i){
+		for(auto pB:rulePartialOrderAtoms[i])
+			for(unsigned j=i+1;j<rulePartialOrderAtoms.size();++j){
+				for(auto pA:rulePartialOrderAtoms[j]){
+					if(rulesPartialOrders[rule->getIndex()][pB][pA]){
+						rulePartialOrderAtoms.clear();
+						return CONFLICT_FOUND;
 					}
-	ruleAfterAtoms.clear();
-	ruleBeforeAtoms.clear();
+					rulesPartialOrders[rule->getIndex()][pA][pB]=true;
+				}
+			}
+	}
+	rulePartialOrderAtoms.clear();
 	return OK;
+}
+
+int GroundingPreferences::getOrderingType(Rule* r) const {
+	int ruleIndex=r->getIndex();
+	if(rulesOrderingTypes.count(ruleIndex))
+		return rulesOrderingTypes.at(ruleIndex);
+	if(globalOrderingType!=-1)
+		return globalOrderingType;
+	return -1;
+}
+
+bool GroundingPreferences::checkPartialOrder(unsigned ruleIndex, unsigned atomPosition, const list<unsigned>& atoms) const {
+	if(rulesPartialOrders.count(ruleIndex)){
+		const vector<bool>& partialOrder=rulesPartialOrders.at(ruleIndex).at(atomPosition);
+		for(unsigned i=0;i<partialOrder.size();++i){
+			if(partialOrder[i]){
+				bool found=false;
+				for(auto j:atoms){
+					if(j==i){
+						found=true;
+						break;
+					}
+				}
+				if(found)
+					return false;
+			}
+		}
+		return true;
+	}
+//	else if(){
+// 	TODO global partial order
+//	}
+	return true;
 }
 
 void GroundingPreferences::checkIfAtomIsPresentInRule(Rule* rule, Atom* atom, vector<unsigned>& positions) {

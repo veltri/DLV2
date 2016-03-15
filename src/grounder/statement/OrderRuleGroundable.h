@@ -11,7 +11,7 @@
 #include <list>
 #include "Rule.h"
 #include "../table/PredicateExtension.h"
-
+#include "GroundingPreferences.h"
 
 namespace DLV2 {
 namespace grounder {
@@ -49,7 +49,7 @@ public:
 	/// This method assigns to each remained atom (to be added in the sorted body) a weight,
 	/// and returns the iterator to the atom with the best weight.
 	/// It is virtual pure, because it has to be defined in each concrete class.
-	virtual list<unsigned>::iterator assignWeights(list<unsigned>& atomsToInsert) = 0;
+	virtual list<unsigned>::iterator assignWeights() = 0;
 
 	virtual bool isBound(Atom* atom, unsigned orginalPosition,const set_term& terms);
 
@@ -84,7 +84,7 @@ public:
 	AllOrderRuleGroundable(Rule* rule):OrderRuleGroundable(rule){}
 	AllOrderRuleGroundable(Rule* rule, Priority p):OrderRuleGroundable(rule,p){}
 	virtual ~AllOrderRuleGroundable(){}
-	virtual list<unsigned>::iterator assignWeights(list<unsigned>& atomsToInsert);
+	virtual list<unsigned>::iterator assignWeights();
 
 	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition){return 0;};
 	virtual double assignWeightBoundPositiveClassicalLit(Atom* atom, unsigned originalPosition){return priorities.BOUND_POSITIVE_CLASSICAL_LIT;};
@@ -228,13 +228,16 @@ public:
 /**
  * Return the instance of OrderRuleGroundable based on the Option parameter
  */
-
 class OrderRuleGroundableFactory{
 public:
 	static OrderRuleGroundable* getInstance(Rule *rule){
-		switch (Options::globalOptions()->getPositiveOrderingProcedure()) {
+		int orderingType=Options::globalOptions()->getPositiveOrderingProcedure();
+		int orderingSet=GroundingPreferences::getGroundingPreferences()->getOrderingType(rule);
+		if(orderingSet!=-1)
+			orderingType=orderingSet;
+		switch (orderingType) {
 			case NO_ORDERING:
-				return	nullptr;
+				return nullptr;
 				break;
 			case INDEXING_ORDERING:
 				return new SemiJoinIndexingArgumentsOrderRuleGroundable(rule);
