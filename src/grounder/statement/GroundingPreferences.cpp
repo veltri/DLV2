@@ -28,8 +28,7 @@ AnnotationsError GroundingPreferences::addRuleAtomIndexingSetting(Rule* rule, At
 	checkIfAtomIsPresentInRule(rule,atom,positions);
 	if(positions.empty())
 		return ATOM_NOT_PRESENT;
-	for(auto p:positions)
-		rulesAtomsIndexingArguments[rule->getIndex()].push_back({p,arguments});
+	rulesAtomsIndexingArguments[rule->getIndex()].push_back({rule->getAtomInBody(positions.front()),arguments});
 	return OK;
 }
 
@@ -38,7 +37,7 @@ AnnotationsError GroundingPreferences::addRulePartialOrderAtom(Rule* rule, Atom*
 	checkIfAtomIsPresentInRule(rule,atom,positions);
 	if(positions.empty())
 		return ATOM_NOT_PRESENT;
-	rulePartialOrderAtoms.push_back(positions);
+	rulePartialOrdersAtoms[rule->getIndex()].back().push_back(rule->getAtomInBody(positions.front()));
 	return OK;
 }
 
@@ -71,30 +70,38 @@ bool GroundingPreferences::addGlobalPartialOrder(const vector<Atom*>& beforeAtom
 }
 
 AnnotationsError GroundingPreferences::checkRulePartialOrderConflicts(Rule* rule) {
-	rulesPartialOrders.insert({rule->getIndex(),vector<vector<bool>>()});
 	rulesPartialOrders[rule->getIndex()].resize(rule->getSizeBody());
 	for(unsigned i=0;i<rule->getSizeBody();++i)
 		rulesPartialOrders[rule->getIndex()][i].resize(rule->getSizeBody(),false);
 
-	for(unsigned i=0;i<rulePartialOrderAtoms.size();++i){
-		for(auto pB:rulePartialOrderAtoms[i])
-			for(unsigned j=i+1;j<rulePartialOrderAtoms.size();++j){
-				for(auto pA:rulePartialOrderAtoms[j]){
-					if(rulesPartialOrders[rule->getIndex()][pB][pA]){
-						rulePartialOrderAtoms.clear();
-						return CONFLICT_FOUND;
+	for(unsigned k=0;k<rulePartialOrdersAtoms[rule->getIndex()].size();++k){
+		vector<vector<unsigned>> atomsPositions;
+		for(unsigned j=0;j<rulePartialOrdersAtoms[rule->getIndex()][k].size();++j){
+			atomsPositions.emplace_back();
+			atomsPositions.back().reserve(rule->getIndex());
+			checkIfAtomIsPresentInRule(rule,rulePartialOrdersAtoms[rule->getIndex()][k][j],atomsPositions.back());
+		}
+
+		for(unsigned i=0;i<atomsPositions.size();++i){
+			for(auto pB:atomsPositions[i])
+				for(unsigned j=i+1;j<atomsPositions.size();++j){
+					for(auto pA:atomsPositions[j]){
+						if(rulesPartialOrders[rule->getIndex()][pB][pA]){
+							rulesPartialOrders[rule->getIndex()].erase(rulesPartialOrders[rule->getIndex()].begin()+j);
+							return CONFLICT_FOUND;
+						}
 					}
 				}
-			}
-	}
+		}
 
-	for(unsigned i=0;i<rulePartialOrderAtoms.size();++i){
-		for(auto pB:rulePartialOrderAtoms[i])
-			for(unsigned j=i+1;j<rulePartialOrderAtoms.size();++j)
-				for(auto pA:rulePartialOrderAtoms[j])
-					rulesPartialOrders[rule->getIndex()][pA][pB]=true;
+		for(unsigned i=0;i<atomsPositions.size();++i){
+			for(auto pB:atomsPositions[i])
+				for(unsigned j=i+1;j<atomsPositions.size();++j)
+					for(auto pA:atomsPositions[j]){
+						rulesPartialOrders[rule->getIndex()][pA][pB]=true;
+					}
+		}
 	}
-	rulePartialOrderAtoms.clear();
 	return OK;
 }
 
@@ -128,6 +135,10 @@ bool GroundingPreferences::checkPartialOrder(unsigned ruleIndex, unsigned atomPo
 	return true;
 }
 
+bool GroundingPreferences::checkAtomIndexed(unsigned ruleIndex, unsigned atomPosition, const vector<unsigned>& possibileArgs) const {
+
+}
+
 void GroundingPreferences::checkIfAtomIsPresentInRule(Rule* rule, Atom* atom, vector<unsigned>& positions) {
 	unsigned i=0;
 	for(auto atomIt=rule->getBeginBody();atomIt!=rule->getEndBody();++atomIt,++i){
@@ -137,22 +148,26 @@ void GroundingPreferences::checkIfAtomIsPresentInRule(Rule* rule, Atom* atom, ve
 }
 
 void GroundingPreferences::print(Rule* rule) const {
-	cout<<"Ordering: "<<rulesOrderingTypes.at(rule->getIndex())<<endl;
-	vector<pair<unsigned,vector<unsigned>>> v=rulesAtomsIndexingArguments.at(rule->getIndex());
-	for(auto p:v){
-		cout<<"Atom: "<<p.first<<" Indexing Arguments: ";
-		for(auto a:p.second){
-			cout<<a<<" ";
+	if(rulesOrderingTypes.count(rule->getIndex()))
+		cout<<"Ordering: "<<rulesOrderingTypes.at(rule->getIndex())<<endl;
+	if(rulesAtomsIndexingArguments.count(rule->getIndex())){
+		vector<pair<Atom*,vector<unsigned>>> v=rulesAtomsIndexingArguments.at(rule->getIndex());
+		for(auto p:v){
+			cout<<"Atom: ";p.first->print();cout<<" Indexing Arguments: ";
+			for(auto a:p.second){
+				cout<<a<<" ";
+			}
+			cout<<endl;
 		}
-		cout<<endl;
 	}
-	vector<vector<bool>> b=rulesPartialOrders.at(rule->getIndex());
-	for(auto a:b){
-		for(auto c:a)
-			cout<<c<<" ";
-		cout<<endl;
+	if(rulesPartialOrders.count(rule->getIndex())){
+		vector<vector<bool>> b=rulesPartialOrders.at(rule->getIndex());
+		for(auto a:b){
+			for(auto c:a)
+				cout<<c<<" ";
+			cout<<endl;
+		}
 	}
-	cout<<endl;
 }
 
 } /* namespace grounder */

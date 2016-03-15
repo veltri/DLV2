@@ -136,6 +136,7 @@ void InMemoryInputBuilder::manageRuleAnnotations() {
 	currentRuleAtomsIndexedArguments.clear();
 
 	for(unsigned i=0;i<currentRuleAtomsBefore.size();++i){
+		GroundingPreferences::getGroundingPreferences()->addRulePartialOrder(currentRule);
 		for(auto atom:currentRuleAtomsBefore[i]){
 			AnnotationsError error=GroundingPreferences::getGroundingPreferences()->addRulePartialOrderAtom(currentRule, atom);
 			if(error==ATOM_NOT_PRESENT){

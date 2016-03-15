@@ -26,6 +26,14 @@ public:
 	bool addRuleOrderingType(Rule* rule, unsigned orderingType);
 	AnnotationsError addRuleAtomIndexingSetting(Rule* rule, Atom* atom, vector<unsigned>& arguments);
 	AnnotationsError addRulePartialOrderAtom(Rule* rule, Atom* atom);
+	void addRulePartialOrder(Rule* rule){
+//		if(!rulesPartialOrders.count(rule->getIndex())){
+//			rulesPartialOrders.emplace(rule->getIndex());
+//			rulePartialOrdersAtoms.emplace(rule->getIndex());
+//		}
+		rulesPartialOrders[rule->getIndex()].emplace_back();
+		rulePartialOrdersAtoms[rule->getIndex()].emplace_back();
+	};
 	AnnotationsError checkRulePartialOrderConflicts(Rule* rule);
 
 	bool addGlobalOrderingType(unsigned orderingType);
@@ -34,6 +42,7 @@ public:
 
 	int getOrderingType(Rule* r) const;
 	bool checkPartialOrder(unsigned ruleIndex,unsigned atomPosition,const list<unsigned>& atoms) const;
+	bool checkAtomIndexed(unsigned ruleIndex,unsigned atomPosition,const vector<unsigned>& possibileArgs) const;
 
 	static GroundingPreferences* getGroundingPreferences() {
 		if(groundingPreferences==0)
@@ -50,12 +59,11 @@ public:
 	void print(Rule* rule) const;
 private:
 	unordered_map<unsigned,unsigned> rulesOrderingTypes;
-	unordered_map<unsigned,vector<pair<unsigned,vector<unsigned>>>> rulesAtomsIndexingArguments;
+	unordered_map<unsigned,vector<pair<Atom*,vector<unsigned>>>> rulesAtomsIndexingArguments;
 	unordered_map<unsigned,vector<vector<bool>>> rulesPartialOrders;
-	vector<vector<unsigned>> rulePartialOrderAtoms;
+	unordered_map<unsigned,vector<vector<Atom*>>> rulePartialOrdersAtoms;
 
 	int globalOrderingType;
-	vector<pair<Atom*,vector<unsigned>>> globalAtomsIndexingArguments;
 
 	void checkIfAtomIsPresentInRule(Rule* rule, Atom* atom, vector<unsigned>& positions);
 

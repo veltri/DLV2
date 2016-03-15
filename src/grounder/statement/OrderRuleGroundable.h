@@ -263,7 +263,7 @@ public:
 		}
 	}
 	static bool isAValidOrderingType(unsigned orderingType){
-		if(orderingType==NO_ORDERING || orderingType==INDEXING_ORDERING || orderingType==DLV_INDEXING_ORDERING
+		if(orderingType==NO_ORDERING || orderingType==DLV_ORDERING || orderingType==INDEXING_ORDERING || orderingType==DLV_INDEXING_ORDERING
 			|| orderingType==DLV_BINDER_ORDERING || orderingType==DLV_BINDER_INDEXING_BOUND_ATOMS_ORDERING
 			|| orderingType==BINDER_ORDERING || orderingType==DLV_ORDERING_FUNCTION)
 			return true;
