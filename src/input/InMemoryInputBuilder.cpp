@@ -160,7 +160,7 @@ void InMemoryInputBuilder::manageRuleAnnotations() {
 	}
 	currentRuleAtomsBefore.clear();
 	currentRuleAtomsAfter.clear();
-//	GroundingPreferences::getGroundingPreferences()->print(currentRule);
+	GroundingPreferences::getGroundingPreferences()->print(currentRule);
 }
 
 void InMemoryInputBuilder::onRule() {

@@ -82,9 +82,15 @@ AnnotationsError GroundingPreferences::checkRulePartialOrderConflicts(Rule* rule
 						rulePartialOrderAtoms.clear();
 						return CONFLICT_FOUND;
 					}
-					rulesPartialOrders[rule->getIndex()][pA][pB]=true;
 				}
 			}
+	}
+
+	for(unsigned i=0;i<rulePartialOrderAtoms.size();++i){
+		for(auto pB:rulePartialOrderAtoms[i])
+			for(unsigned j=i+1;j<rulePartialOrderAtoms.size();++j)
+				for(auto pA:rulePartialOrderAtoms[j])
+					rulesPartialOrders[rule->getIndex()][pA][pB]=true;
 	}
 	rulePartialOrderAtoms.clear();
 	return OK;

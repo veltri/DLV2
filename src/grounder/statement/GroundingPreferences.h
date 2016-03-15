@@ -25,7 +25,7 @@ class GroundingPreferences {
 public:
 	bool addRuleOrderingType(Rule* rule, unsigned orderingType);
 	AnnotationsError addRuleAtomIndexingSetting(Rule* rule, Atom* atom, vector<unsigned>& arguments);
-	AnnotationsError addRulePartialOrderAtom(Rule* rule, Atom* beforeAtom);
+	AnnotationsError addRulePartialOrderAtom(Rule* rule, Atom* atom);
 	AnnotationsError checkRulePartialOrderConflicts(Rule* rule);
 
 	bool addGlobalOrderingType(unsigned orderingType);
