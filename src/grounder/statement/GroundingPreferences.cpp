@@ -93,6 +93,22 @@ AnnotationsError GroundingPreferences::checkRulePartialOrderConflicts(Rule* rule
 					}
 				}
 		}
+	}
+	return OK;
+}
+
+AnnotationsError DLV2::grounder::GroundingPreferences::applyRulePartialOrder(Rule* rule) {
+	rulesPartialOrders[rule->getIndex()].resize(rule->getSizeBody());
+	for(unsigned i=0;i<rule->getSizeBody();++i)
+		rulesPartialOrders[rule->getIndex()][i].resize(rule->getSizeBody(),false);
+
+	for(unsigned k=0;k<rulePartialOrdersAtoms[rule->getIndex()].size();++k){
+		vector<vector<unsigned>> atomsPositions;
+		for(unsigned j=0;j<rulePartialOrdersAtoms[rule->getIndex()][k].size();++j){
+			atomsPositions.emplace_back();
+			atomsPositions.back().reserve(rule->getIndex());
+			checkIfAtomIsPresentInRule(rule,rulePartialOrdersAtoms[rule->getIndex()][k][j],atomsPositions.back());
+		}
 
 		for(unsigned i=0;i<atomsPositions.size();++i){
 			for(auto pB:atomsPositions[i])

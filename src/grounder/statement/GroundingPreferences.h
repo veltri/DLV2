@@ -35,6 +35,7 @@ public:
 		rulePartialOrdersAtoms[rule->getIndex()].emplace_back();
 	};
 	AnnotationsError checkRulePartialOrderConflicts(Rule* rule);
+	AnnotationsError applyRulePartialOrder(Rule* rule);
 
 	bool addGlobalOrderingType(unsigned orderingType);
 	bool addGlobalAtomIndexingSetting(Atom* atom, vector<unsigned>& arguments);

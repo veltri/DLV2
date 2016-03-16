@@ -107,6 +107,9 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchTy
 	rule->clearDictionaryIntersection();
 	rule->setDictionaryIntersectionSize(rule->getVariablesSize()+2);
 
+	GroundingPreferences::getGroundingPreferences()->applyRulePartialOrder(rule);
+//	GroundingPreferences::getGroundingPreferences()->print(rule);
+
 	while(!atomsToInsert.empty()){
 		list<unsigned>::iterator bestAtom=assignWeights();
 		Atom* atom=rule->getAtomInBody((*bestAtom));
