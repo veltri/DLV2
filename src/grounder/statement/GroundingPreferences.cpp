@@ -151,7 +151,7 @@ bool GroundingPreferences::checkPartialOrder(unsigned ruleIndex, unsigned atomPo
 		}
 		return true;
 	}
-	return true;
+	return false;;
 }
 
 bool GroundingPreferences::checkAtomIndexed(unsigned ruleIndex, Atom* atom, const vector<unsigned>& possibileArgs) const {
@@ -173,7 +173,7 @@ bool GroundingPreferences::checkAtomIndexed(unsigned ruleIndex, Atom* atom, cons
 		}
 		return true;
 	}
-	return true;
+	return false;
 }
 
 void GroundingPreferences::checkIfAtomIsPresentInRule(Rule* rule, Atom* atom, vector<unsigned>& positions) {
