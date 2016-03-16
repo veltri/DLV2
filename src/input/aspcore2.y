@@ -87,6 +87,7 @@ rules
     : rules rule
     | rule
     | annotations_rule rule
+    | rules annotations_rule rule
     ;
 
 rule
