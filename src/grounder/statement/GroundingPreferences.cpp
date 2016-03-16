@@ -28,7 +28,9 @@ AnnotationsError GroundingPreferences::addRuleAtomIndexingSetting(Rule* rule, At
 	checkIfAtomIsPresentInRule(rule,atom,positions);
 	if(positions.empty())
 		return ATOM_NOT_PRESENT;
-	rulesAtomsIndexingArguments[rule->getIndex()].push_back({rule->getAtomInBody(positions.front()),arguments});
+	for(auto atomPos:positions){
+		rulesAtomsIndexed[rule->getIndex()].insert({rule->getAtomInBody(atomPos),arguments});
+	}
 	return OK;
 }
 
@@ -37,7 +39,7 @@ AnnotationsError GroundingPreferences::addRulePartialOrderAtom(Rule* rule, Atom*
 	checkIfAtomIsPresentInRule(rule,atom,positions);
 	if(positions.empty())
 		return ATOM_NOT_PRESENT;
-	rulePartialOrdersAtoms[rule->getIndex()].back().push_back(rule->getAtomInBody(positions.front()));
+	rulesPartialOrdersAtoms[rule->getIndex()].back().push_back(rule->getAtomInBody(positions.front()));
 	return OK;
 }
 
@@ -74,12 +76,12 @@ AnnotationsError GroundingPreferences::checkRulePartialOrderConflicts(Rule* rule
 	for(unsigned i=0;i<rule->getSizeBody();++i)
 		rulesPartialOrders[rule->getIndex()][i].resize(rule->getSizeBody(),false);
 
-	for(unsigned k=0;k<rulePartialOrdersAtoms[rule->getIndex()].size();++k){
+	for(unsigned k=0;k<rulesPartialOrdersAtoms[rule->getIndex()].size();++k){
 		vector<vector<unsigned>> atomsPositions;
-		for(unsigned j=0;j<rulePartialOrdersAtoms[rule->getIndex()][k].size();++j){
+		for(unsigned j=0;j<rulesPartialOrdersAtoms[rule->getIndex()][k].size();++j){
 			atomsPositions.emplace_back();
 			atomsPositions.back().reserve(rule->getIndex());
-			checkIfAtomIsPresentInRule(rule,rulePartialOrdersAtoms[rule->getIndex()][k][j],atomsPositions.back());
+			checkIfAtomIsPresentInRule(rule,rulesPartialOrdersAtoms[rule->getIndex()][k][j],atomsPositions.back());
 		}
 
 		for(unsigned i=0;i<atomsPositions.size();++i){
@@ -102,12 +104,12 @@ AnnotationsError DLV2::grounder::GroundingPreferences::applyRulePartialOrder(Rul
 	for(unsigned i=0;i<rule->getSizeBody();++i)
 		rulesPartialOrders[rule->getIndex()][i].resize(rule->getSizeBody(),false);
 
-	for(unsigned k=0;k<rulePartialOrdersAtoms[rule->getIndex()].size();++k){
+	for(unsigned k=0;k<rulesPartialOrdersAtoms[rule->getIndex()].size();++k){
 		vector<vector<unsigned>> atomsPositions;
-		for(unsigned j=0;j<rulePartialOrdersAtoms[rule->getIndex()][k].size();++j){
+		for(unsigned j=0;j<rulesPartialOrdersAtoms[rule->getIndex()][k].size();++j){
 			atomsPositions.emplace_back();
 			atomsPositions.back().reserve(rule->getIndex());
-			checkIfAtomIsPresentInRule(rule,rulePartialOrdersAtoms[rule->getIndex()][k][j],atomsPositions.back());
+			checkIfAtomIsPresentInRule(rule,rulesPartialOrdersAtoms[rule->getIndex()][k][j],atomsPositions.back());
 		}
 
 		for(unsigned i=0;i<atomsPositions.size();++i){
@@ -151,8 +153,26 @@ bool GroundingPreferences::checkPartialOrder(unsigned ruleIndex, unsigned atomPo
 	return true;
 }
 
-bool GroundingPreferences::checkAtomIndexed(unsigned ruleIndex, unsigned atomPosition, const vector<unsigned>& possibileArgs) const {
-
+bool GroundingPreferences::checkAtomIndexed(unsigned ruleIndex, Atom* atom, const vector<unsigned>& possibileArgs) const {
+	if(rulesAtomsIndexed.count(ruleIndex)){
+		auto it=rulesAtomsIndexed.at(ruleIndex).find(atom);
+		if(it==rulesAtomsIndexed.at(ruleIndex).end())
+			return false;
+		auto arguments=it->second;
+		for(unsigned i=0;i<arguments.size();++i){
+			bool found=false;
+			for(unsigned j=0;j<possibileArgs.size();++j){
+				if(possibileArgs[j]==arguments[i]){
+					found=true;
+					break;
+				}
+			}
+			if(!found)
+				return false;
+		}
+		return true;
+	}
+	return true;
 }
 
 void GroundingPreferences::checkIfAtomIsPresentInRule(Rule* rule, Atom* atom, vector<unsigned>& positions) {
@@ -166,8 +186,8 @@ void GroundingPreferences::checkIfAtomIsPresentInRule(Rule* rule, Atom* atom, ve
 void GroundingPreferences::print(Rule* rule) const {
 	if(rulesOrderingTypes.count(rule->getIndex()))
 		cout<<"Ordering: "<<rulesOrderingTypes.at(rule->getIndex())<<endl;
-	if(rulesAtomsIndexingArguments.count(rule->getIndex())){
-		vector<pair<Atom*,vector<unsigned>>> v=rulesAtomsIndexingArguments.at(rule->getIndex());
+	if(rulesAtomsIndexed.count(rule->getIndex())){
+		auto v=rulesAtomsIndexed.at(rule->getIndex());
 		for(auto p:v){
 			cout<<"Atom: ";p.first->print();cout<<" Indexing Arguments: ";
 			for(auto a:p.second){

@@ -20,6 +20,7 @@ namespace grounder {
 // Remember to delete the atoms
 
 enum AnnotationsError {OK, ATOM_NOT_PRESENT, ARITY_ERROR, CONFLICT_FOUND};
+typedef unordered_map<Atom*,vector<unsigned>,HashForTable<Atom>,HashForTable<Atom>> unordered_map_atom_arguments;
 
 class GroundingPreferences {
 public:
@@ -32,7 +33,7 @@ public:
 //			rulePartialOrdersAtoms.emplace(rule->getIndex());
 //		}
 		rulesPartialOrders[rule->getIndex()].emplace_back();
-		rulePartialOrdersAtoms[rule->getIndex()].emplace_back();
+		rulesPartialOrdersAtoms[rule->getIndex()].emplace_back();
 	};
 	AnnotationsError checkRulePartialOrderConflicts(Rule* rule);
 	AnnotationsError applyRulePartialOrder(Rule* rule);
@@ -43,7 +44,7 @@ public:
 
 	int getOrderingType(Rule* r) const;
 	bool checkPartialOrder(unsigned ruleIndex,unsigned atomPosition,const list<unsigned>& atoms) const;
-	bool checkAtomIndexed(unsigned ruleIndex,unsigned atomPosition,const vector<unsigned>& possibileArgs) const;
+	bool checkAtomIndexed(unsigned ruleIndex,Atom* atom,const vector<unsigned>& possibileArgs) const;
 
 	static GroundingPreferences* getGroundingPreferences() {
 		if(groundingPreferences==0)
@@ -60,9 +61,9 @@ public:
 	void print(Rule* rule) const;
 private:
 	unordered_map<unsigned,unsigned> rulesOrderingTypes;
-	unordered_map<unsigned,vector<pair<Atom*,vector<unsigned>>>> rulesAtomsIndexingArguments;
+	unordered_map<unsigned,unordered_map_atom_arguments> rulesAtomsIndexed;
 	unordered_map<unsigned,vector<vector<bool>>> rulesPartialOrders;
-	unordered_map<unsigned,vector<vector<Atom*>>> rulePartialOrdersAtoms;
+	unordered_map<unsigned,vector<vector<Atom*>>> rulesPartialOrdersAtoms;
 
 	int globalOrderingType;
 

@@ -11,7 +11,7 @@
 #include "../atom/AggregateAtom.h"
 #include "../term/ConstantTerm.h"
 #include "../atom/Choice.h"
-
+#include "../statement/GroundingPreferences.h"
 
 namespace DLV2 {
 namespace grounder {
@@ -1316,9 +1316,46 @@ void BackTrackingGrounder::setIndexingStructureInHeadAndBody(unsigned position, 
 
 			}
 		} else if (!boundTermsInAtoms[position][atomPos].empty()) {
-			int indexingTermSetByUser =
-					Options::globalOptions()->getPredicateIndexTerm(
-							predicate->getName());
+			Atom* atom=0;
+			if(atomPos==0)
+				atom=currentRule->getAtomInBody(position-currentRule->getSizeHead());
+			else
+				atom=currentRule->getAtomInBody(position-currentRule->getSizeHead())->getAggregateElement(atomPos)->getNafLiteral(0);
+			if(GroundingPreferences::getGroundingPreferences()->checkAtomIndexed(currentRule->getIndex(),atom,boundTermsInAtoms[position][atomPos])){
+				if (componentPredicateInHead != nullptr && componentPredicateInHead->count(predicate->getIndex())) {
+					if (boundTermsInAtoms[position][atomPos].size()>=2) {
+						vector<unsigned> indexingTerm(2);
+						indexingTerm.push_back(boundTermsInAtoms[position][atomPos][0]);
+						indexingTerm.push_back(boundTermsInAtoms[position][atomPos][1]);
+						atomSearcher = predicateExtension->addAtomSearcher(table,
+								MAP_PAIR_HISTORY_VECTOR, &indexingTerm, true);
+					} else {
+						vector<unsigned> indexingTerm(2);
+						indexingTerm.push_back(boundTermsInAtoms[position][atomPos][0]);
+						atomSearcher = predicateExtension->addAtomSearcher(table,
+								MAP_HISTORY_VECTOR, &indexingTerm, true);
+					}
+				} else {
+					if (boundTermsInAtoms[position][atomPos].size()>2) {
+						atomSearcher = predicateExtension->addAtomSearcher(table,
+								MULTIPLE_TERMS, &boundTermsInAtoms[position][atomPos]);
+					} else if (boundTermsInAtoms[position][atomPos].size()==2) {
+						vector<unsigned> indexingTerm(2);
+						indexingTerm.push_back(boundTermsInAtoms[position][atomPos][0]);
+						indexingTerm.push_back(boundTermsInAtoms[position][atomPos][1]);
+						atomSearcher = predicateExtension->addAtomSearcher(table, DOUBLEMAP, &indexingTerm);
+					} else {
+						vector<unsigned> indexingTerm(1);
+						indexingTerm.push_back(boundTermsInAtoms[position][atomPos][0]);
+						atomSearcher = predicateExtension->addAtomSearcher(table, MAP, &indexingTerm);
+					}
+				}
+				predicate_searchInsert_atomSearcher[position][atomPos].push_back(atomSearcher);
+				return;
+			}
+//			int indexingTermSetByUser =
+//					Options::globalOptions()->getPredicateIndexTerm(
+//							predicate->getName());
 			unsigned bestArg = 0;
 			unsigned bestSelectivityArg = 0;
 			unsigned nextBestArg = 0;
@@ -1326,11 +1363,11 @@ void BackTrackingGrounder::setIndexingStructureInHeadAndBody(unsigned position, 
 			PredicateInformation* predicateInfo =
 					predicateExtTable->getPredicateExt(predicate)->getPredicateInformation();
 			for (auto boundArg : boundTermsInAtoms[position][atomPos]) {
-				if (indexingTermSetByUser >= 0
-						&& boundArg == unsigned(indexingTermSetByUser)) {
-					bestArg = indexingTermSetByUser;
-					break;
-				}
+//				if (indexingTermSetByUser >= 0
+//						&& boundArg == unsigned(indexingTermSetByUser)) {
+//					bestArg = indexingTermSetByUser;
+//					break;
+//				}
 				if (predicateInfo->getSelectivity(boundArg)
 						> bestSelectivityArg) {
 					nextBestSelectivityArg = bestSelectivityArg;
