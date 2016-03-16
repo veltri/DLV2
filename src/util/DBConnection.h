@@ -42,7 +42,8 @@ namespace DLV2{ namespace DB{
 #ifdef STATIC
 class DBConnection {
  public:
-
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreturn-type"
      static DBConnection* globalDBConnection(){};
 
      ~DBConnection(){};
@@ -93,6 +94,7 @@ class DBConnection {
       */
      Timestamp retrieveNextTableTimestamp(
              const std::string& tableName ) const{};
+#pragma GCC diagnostic pop
 
  private:
  };

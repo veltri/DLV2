@@ -1190,7 +1190,6 @@ void BackTrackingGrounder::groundChoice(bool& find_new_true_atom,bool& ground_ne
 
 
 void BackTrackingGrounder::groundChoiceNatively(bool& find_new_true_atom,bool& ground_new_atom){
-	Atom* searchAtom=nullptr;
 	Atom* ground_choice=new Choice;
 	Atom *choice=currentRule->getAtomInHead(0);
 	unsigned numChoiceElements=choice->getChoiceElementsSize();

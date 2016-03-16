@@ -334,7 +334,10 @@ public:
 		return false;
 	}
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreturn-type"
 	virtual const vector<Term*>& getLabel() const {}
+#pragma GCC diagnostic pop
 	virtual unsigned getLevelInt(){return 0;}
 	virtual Term* getLevel() const {	return nullptr;}
 	virtual Term* getWeight() const {return nullptr;}
