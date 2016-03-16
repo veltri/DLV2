@@ -103,14 +103,15 @@ AnnotationsError DLV2::grounder::GroundingPreferences::applyRulePartialOrder(Rul
 	rulesPartialOrders[rule->getIndex()].resize(rule->getSizeBody());
 	for(unsigned i=0;i<rule->getSizeBody();++i)
 		rulesPartialOrders[rule->getIndex()][i].resize(rule->getSizeBody(),false);
-
 	for(unsigned k=0;k<rulesPartialOrdersAtoms[rule->getIndex()].size();++k){
+
 		vector<vector<unsigned>> atomsPositions;
 		for(unsigned j=0;j<rulesPartialOrdersAtoms[rule->getIndex()][k].size();++j){
 			atomsPositions.emplace_back();
 			atomsPositions.back().reserve(rule->getIndex());
 			checkIfAtomIsPresentInRule(rule,rulesPartialOrdersAtoms[rule->getIndex()][k][j],atomsPositions.back());
 		}
+
 
 		for(unsigned i=0;i<atomsPositions.size();++i){
 			for(auto pB:atomsPositions[i])

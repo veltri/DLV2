@@ -14,6 +14,16 @@
 namespace DLV2 {
 namespace grounder {
 
+class PartialOrders {
+public:
+	PartialOrders(Rule* rule): rule(rule){};
+	void checkIfPresentPartialOrders();
+private:
+	Rule* rule;
+	void containsFunctionalTerms(Atom* atom1,Atom* atom2);
+	void containsABuiltIAssignmentVariable(Atom* atom1,Atom* atom2);
+};
+
 class OrderRule {
 private:
 	Rule* rule;

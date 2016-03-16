@@ -28,10 +28,6 @@ public:
 	AnnotationsError addRuleAtomIndexingSetting(Rule* rule, Atom* atom, vector<unsigned>& arguments);
 	AnnotationsError addRulePartialOrderAtom(Rule* rule, Atom* atom);
 	void addRulePartialOrder(Rule* rule){
-//		if(!rulesPartialOrders.count(rule->getIndex())){
-//			rulesPartialOrders.emplace(rule->getIndex());
-//			rulePartialOrdersAtoms.emplace(rule->getIndex());
-//		}
 		rulesPartialOrders[rule->getIndex()].emplace_back();
 		rulesPartialOrdersAtoms[rule->getIndex()].emplace_back();
 	};
@@ -52,10 +48,7 @@ public:
 		return groundingPreferences;
 	}
 
-	static void freeInstance(){
-		delete groundingPreferences;
-	}
-
+	static void freeInstance(){	delete groundingPreferences;}
 	~GroundingPreferences(){}
 
 	void print(Rule* rule) const;

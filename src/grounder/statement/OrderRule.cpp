@@ -11,9 +11,50 @@
 #include "../atom/Choice.h"
 #include "../../util/Utils.h"
 #include "../atom/BuiltInAtom.h"
+#include "GroundingPreferences.h"
 
 namespace DLV2 {
 namespace grounder {
+
+/***************************************************** PartialOrders *******************************************************************/
+
+void PartialOrders::checkIfPresentPartialOrders() {
+	for(auto it=rule->getBeginBody();it!=rule->getEndBody();++it){
+		for(auto it2=it+1;it2!=rule->getEndBody();++it2){
+
+			containsFunctionalTerms(*it,*it2);
+
+			if((*it)->isBuiltIn())
+				containsABuiltIAssignmentVariable(*it,*it2);
+
+		}
+	}
+}
+
+void PartialOrders::containsFunctionalTerms(Atom* atom1, Atom* atom2) {
+	for(unsigned i=0;i<atom1->getTermsSize();++i){
+		Term* term1=atom1->getTerm(i);
+		if(term1->contain(TermType::FUNCTION)){
+			for(unsigned j=0;j<atom2->getTermsSize();++j){
+				Term* term2=atom2->getTerm(j);
+				if(term2->getType()==VARIABLE)
+				{
+					if(term1->containsVariable(term2)){
+						GroundingPreferences::getGroundingPreferences()->addRulePartialOrder(rule);
+						GroundingPreferences::getGroundingPreferences()->addRulePartialOrderAtom(rule,atom2);
+						GroundingPreferences::getGroundingPreferences()->addRulePartialOrderAtom(rule,atom1);
+						return;
+					}
+				}
+			}
+		}
+	}
+}
+
+void PartialOrders::containsABuiltIAssignmentVariable(Atom* atom1, Atom* atom2) {
+}
+
+/***************************************************** OrderRule *******************************************************************/
 
 vector<Atom*> OrderRule::rewriteArith(Atom* current_atom,
 		unordered_map<Term*, Term*, IndexForTable<Term>, IndexForTable<Term> >& arithRewrited) {
@@ -82,6 +123,9 @@ OrderRule::OrderRule(Rule* r):rule(r){
 
 bool OrderRule::order() {
 
+	PartialOrders p(rule);
+	p.checkIfPresentPartialOrders();
+
 	// A first attempt to order the body ignoring cyclic dependencies
 	// by iterating the atoms in the body and resolving their dependencies when are not cyclic
 	while(positiveAtoms.size()>0){
@@ -120,6 +164,7 @@ bool OrderRule::order() {
 	if(rule->isWeakConstraint() && !checkWeakSafety())
 		return false;
 	// Check head safety once that the safe variables are known
+
 	return checkHeadSafety();
 
 }
@@ -328,3 +373,4 @@ vector<pair<unsigned int, Atom*>> OrderRule::getAtomsFromWhichDepends(unsigned a
 
 } /* namespace grounder */
 } /* namespace DLV2 */
+
