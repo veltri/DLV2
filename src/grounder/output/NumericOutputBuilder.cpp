@@ -35,10 +35,10 @@ void NumericOutputBuilder::onRule(Rule* rule) {
 	else{
 		onHead(rule->getHead());
 		onBody(rule);
-		cout<<endl;
+		printf("\n");
 	}
 	if(printStream){
-		cout<<stream.str();
+		printf("%s",stream.str().c_str());
 		stream.str("");
 		printStream=false;
 	}
@@ -51,7 +51,8 @@ void NumericOutputBuilder::onQuery() {
 }
 
 void NumericOutputBuilder::onHeadAtom(Atom* atom) {
-	cout<<"1 ";onClassicalLiteral(atom);
+	printf("1 ");
+	onClassicalLiteral(atom);
 }
 
 void NumericOutputBuilder::onHead(const vector<Atom*>& head) {
@@ -65,9 +66,9 @@ void NumericOutputBuilder::onHead(const vector<Atom*>& head) {
 }
 
 void NumericOutputBuilder::onConstraint(Rule* rule){
-	cout<<"1 1 ";
+	printf("1 1 ");
 	onBody(rule);
-	cout<<endl;
+	printf("\n");
 }
 
 
@@ -86,27 +87,27 @@ void NumericOutputBuilder::onBody(Rule *rule) {
 			negative.push_back(atom);
 	}
 
-	cout<<negative.size()+positive.size()<<" "<<negative.size()<<" ";
+	printf("%d %d ",negative.size()+positive.size(),negative.size());
 	for(auto& atom:negative)
 		if(atom->isAggregateAtom()){
 			unsigned agg_pred=onAggregate(atom);
-			cout<<agg_pred<<" ";
+			printf("%d ",agg_pred);
 		}else
 			onClassicalLiteral(atom);
 	for(auto& atom:positive)
 		if(atom->isAggregateAtom()){
 			unsigned agg_pred=onAggregate(atom);
-			cout<<agg_pred<<" ";
+			printf("%d ",agg_pred);
 		}else
 			onClassicalLiteral(atom);
 }
 
 void NumericOutputBuilder::onClassicalLiteral(Atom* atom) {
-	cout<<atom->getIndex()<<" ";
+	printf("%d ",atom->getIndex());
 }
 
 void NumericOutputBuilder::onChoiceAtom(Atom* atom) {
-	cout<<"3 "<<atom->getChoiceElementsSize()<<" ";
+	printf("3 %d ",atom->getChoiceElementsSize());
 	for(unsigned i=0;i<atom->getChoiceElementsSize();i++)
 		onClassicalLiteral(atom->getChoiceElement(i)->getFirstAtom());
 }
@@ -154,7 +155,7 @@ unsigned NumericOutputBuilder::printCountSumAggregate(Atom* atom) {
 }
 
 void NumericOutputBuilder::onDisjunctionAtom(const vector<Atom*>& head) {
-	cout<<"8 "<<head.size()<<" ";
+	printf("8 %d ",head.size());
 	for(auto& atom:head)
 		onClassicalLiteral(atom);
 }
@@ -178,7 +179,7 @@ void NumericOutputBuilder::handleCompactFactsPrinting(Atom* atom) {
 void NumericOutputBuilder::onFact(Atom* atom) {
 	if(!Options::globalOptions()->isCompactFacts()){
 		onHeadAtom(atom);
-		cout<<"0 0"<<endl;
+		printf("0 0\n");
 		return;
 	}
 	handleCompactFactsPrinting(atom);
@@ -432,7 +433,7 @@ void NumericOutputBuilder::printWeakAtLevel(list<id_weight_label>& listOfWeak){
 		}
 		weightAtomsId<<" "<<get<1>(weaks[i][0]);
 	}
-	cout<<"6 0 "<<weaks.size()<<" 0 "<<atomsId.str()<<weightAtomsId.str()<<endl;
+	printf("6 0 %d 0 %s%s\n",weaks.size(),atomsId.str().c_str(),weightAtomsId.str().c_str());
 }
 
 unsigned NumericOutputBuilder::rewriteBodyInAux(Rule* rule) {
@@ -460,28 +461,27 @@ unsigned NumericOutputBuilder::rewriteBodyInAux(Rule* rule) {
 	}
 
 	unsigned index_head=IdGenerator::getInstance()->getNewId(1);
-	cout<<"1 "<<index_head<<" ";
-	cout<<negative.size()+positive.size()<<" "<<negative.size()<<" ";
+	printf("1 %d %d %d ",index_head,negative.size()+positive.size(),negative.size());
 	for(auto& atom:negative)
 		if(atom->isAggregateAtom()){
 			unsigned agg_pred=onAggregate(atom);
-			cout<<agg_pred<<" ";
+			printf("%d ",agg_pred);
 		}else
 			onClassicalLiteral(atom);
 	for(auto& atom:positive)
 		if(atom->isAggregateAtom()){
 			unsigned agg_pred=onAggregate(atom);
-			cout<<agg_pred<<" ";
+			printf("%d ",agg_pred);
 		}else
 			onClassicalLiteral(atom);
-	cout<<endl;
+	printf("\n");
 	return index_head;
 }
 
 unsigned NumericOutputBuilder::createMultipleRule(vector<unsigned>& idatoms){
 	unsigned index_head=IdGenerator::getInstance()->getNewId(1);
 	for(auto id:idatoms)
-		cout<<"1 "<<index_head<<" 1 0 "<<id<<endl;
+		printf("1 %d 1 0 %d\n",index_head,id);
 	return index_head;
 }
 
@@ -490,14 +490,12 @@ void NumericOutputBuilder::onEnd() {
 		printWeak();
 
 	if(Options::globalOptions()->isCompactFacts() && streamCompactFactsNumericTableTmp.str().size()>to_string(idCompactFacts).size())
-		cout<<streamCompactFacts.str()<<"1 "<<idCompactFacts<<" 0 0"<<endl;
-
-	cout<<"0"<<endl;
-	cout<<streamAtomTable.str();
+		printf("%s 1 %d 0 0\n",streamCompactFacts.str().c_str(),idCompactFacts);
+	printf("0\n%s",streamAtomTable.str().c_str());
 	if(Options::globalOptions()->isCompactFacts() && streamCompactFactsNumericTableTmp.str().size()>to_string(idCompactFacts).size()){
-		cout<<streamCompactFactsNumericTable.str()<<streamCompactFactsNumericTableTmp.str()<<endl;
+		printf("%s%s",streamCompactFactsNumericTable.str().c_str(),streamCompactFactsNumericTableTmp.str().c_str());
 	}
-	cout<<"0"<<endl<<"B+"<<endl<<"0"<<endl<<"B-"<<endl<<"1"<<endl<<"0"<<endl<<"1"<<endl;
+	printf("0\nB+\n0\nB-\n1\n0\n1\n");
 }
 
 void NumericOutputBuilder::appendToStreamAtomTable(Atom* atom, bool fact) {
