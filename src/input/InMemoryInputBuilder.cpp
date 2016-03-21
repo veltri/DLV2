@@ -127,7 +127,7 @@ void InMemoryInputBuilder::manageRuleAnnotations() {
 	if (currentRuleOrdering != -1)
 		if(!GroundingPreferences::getGroundingPreferences()->addRuleOrderingType(
 				currentRule, currentRuleOrdering))
-			cout<<"--> Warning : The ordering type "<<currentRuleOrdering<<" is not valid."<<endl;
+			cerr<<"--> Warning : The ordering type "<<currentRuleOrdering<<" is not valid."<<endl;
 	currentRuleOrdering = -1;
 
 	for (unsigned i = 0; i < currentRuleAtomsIndexed.size(); ++i) {
@@ -135,8 +135,8 @@ void InMemoryInputBuilder::manageRuleAnnotations() {
 				currentRule, currentRuleAtomsIndexed[i],
 				currentRuleAtomsIndexedArguments[i]);
 		if(error==ATOM_NOT_PRESENT){
-			cout<<"--> Warning : The atom ";currentRuleAtomsIndexed[i]->print();cout<<" is not present in the specified rule."<<endl;
-			currentRule->print();
+			cerr<<"--> Warning : The atom ";currentRuleAtomsIndexed[i]->print(cerr);cerr<<" is not present in the specified rule."<<endl;
+			currentRule->print(cerr);
 		}
 	}
 	for(auto atom:currentRuleAtomsIndexed)
@@ -149,17 +149,17 @@ void InMemoryInputBuilder::manageRuleAnnotations() {
 		for(auto atom:currentRuleAtomsBefore[i]){
 			AnnotationsError error=GroundingPreferences::getGroundingPreferences()->addRulePartialOrderAtom(currentRule, atom);
 			if(error==ATOM_NOT_PRESENT){
-				cout<<"--> Warning : The atom ";atom->print();cout<<" is not present in the specified rule."<<endl;
+				cerr<<"--> Warning : The atom ";atom->print(cerr);cerr<<" is not present in the specified rule."<<endl;
 			}
 		}
 		for(auto atom:currentRuleAtomsAfter[i]){
 			AnnotationsError error=GroundingPreferences::getGroundingPreferences()->addRulePartialOrderAtom(currentRule, atom);
 			if(error==ATOM_NOT_PRESENT){
-				cout<<"--> Warning : The atom ";atom->print();cout<<" is not present in the specified rule."<<endl;
+				cerr<<"--> Warning : The atom ";atom->print(cerr);cerr<<" is not present in the specified rule."<<endl;
 			}
 		}
 		if(GroundingPreferences::getGroundingPreferences()->checkRulePartialOrderConflicts(currentRule)==CONFLICT_FOUND){
-			cout<<"--> Warning : In the rule ";currentRule->print();cout<<"The partial ordering specified cannot be applied."<<endl;
+			cerr<<"--> Warning : In the rule ";currentRule->print(cerr);cerr<<"The partial ordering specified cannot be applied."<<endl;
 		}
 		for(auto atom:currentRuleAtomsBefore[i])
 			delete atom;
@@ -859,7 +859,7 @@ void InMemoryInputBuilder::onAnnotationRuleAtomIndexedArgument(char* annotation)
 	if(argument>=0 && argument<currentRuleAtomsIndexed.back()->getPredicate()->getArity())
 		currentRuleAtomsIndexedArguments.back().push_back(argument);
 	else{
-		cout<<"--> Warning : The arguments specified for the atom ";currentRuleAtomsIndexed.back()->print();cout<<" are not valid."<<endl;
+		cerr<<"--> Warning : The arguments specified for the atom ";currentRuleAtomsIndexed.back()->print(cerr);cerr<<" are not valid."<<endl;
 	}
 }
 
@@ -893,7 +893,7 @@ void InMemoryInputBuilder::onAnnotationGlobalOrdering(char* annotation) {
 	if(isNumeric(annotation,10)){
 		int globalOrdering = atoi(annotation);
 		if(!GroundingPreferences::getGroundingPreferences()->addGlobalOrderingType(globalOrdering))
-			cout<<"--> Warning : The ordering type "<<currentRuleOrdering<<" is not valid."<<endl;
+			cerr<<"--> Warning : The ordering type "<<currentRuleOrdering<<" is not valid."<<endl;
 	}
 	//FIXME check that the number is a val ordering type and has not yet been set
 }
