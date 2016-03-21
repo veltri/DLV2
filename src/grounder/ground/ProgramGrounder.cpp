@@ -101,7 +101,6 @@ void ProgramGrounder::orderPositiveAtomsBody(Rule* rule) {
 }
 
 void ProgramGrounder::ground() {
-
 	//Create the dependency graph
 	statementDependency->createDependencyGraph(predicateTable);
 	bool foundEmptyConstraint=false;

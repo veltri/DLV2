@@ -376,10 +376,18 @@ void InMemoryInputBuilder::onTermDash() {
 	else
 	{
 		Term *newTerm = nullptr;
-
 		if(oldTerm->getType()==NUMERIC_CONSTANT)
 			newTerm=new NumericConstantTerm(false,oldTerm->getConstantValue()*(-1));
-		else{
+		else if(oldTerm->getType()==ARITH){
+			vector<Operator> op;
+			for(unsigned i=0;i<oldTerm->getSizeOperator();i++)op.push_back(oldTerm->getOperator(i));
+			op.push_back(TIMES);
+
+			vector<Term*> terms;
+			for(unsigned i=0;i<oldTerm->getTermsSize();i++)terms.push_back(oldTerm->getTerm(i));
+			terms.push_back(termTable->term_minus_one);
+			newTerm = new ArithTerm(false,op,terms);
+		}else{
 			vector<Operator> op(1,TIMES);
 			vector<Term*> terms={oldTerm,termTable->term_minus_one};
 			newTerm = new ArithTerm(false,op,terms);
@@ -408,7 +416,6 @@ void InMemoryInputBuilder::onArithmeticOperation(char arithOperator) {
 	if(foundASafetyError) return;
 	auto second_last=--(--terms_parsered.end());
 	Term *arithTerm=nullptr;
-
 	if((*second_last)->getType()!=TermType::ARITH){
 		//First occurrence of arithmetic
 		arithTerm=new ArithTerm;

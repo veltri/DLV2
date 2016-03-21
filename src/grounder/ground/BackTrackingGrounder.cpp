@@ -903,7 +903,7 @@ bool BackTrackingGrounder::groundCartesian(Rule* rule,unordered_set<index_object
 			}
 			ground_rule->setAtomToSimplifyInBody(i);
 			currentRule->getAtomInBody(i)->ground(current_assignment,templateSetAtom[i]);
-			if(templateSetAtom[i]->evaluate(current_assignment)){
+			if(templateSetAtom[i]->groundAndEvaluate(current_assignment)){
 				++i;
 				continue;
 			}else{
