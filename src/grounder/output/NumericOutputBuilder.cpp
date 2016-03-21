@@ -87,7 +87,7 @@ void NumericOutputBuilder::onBody(Rule *rule) {
 			negative.push_back(atom);
 	}
 
-	printf("%d %d ",negative.size()+positive.size(),negative.size());
+	printf("%lu %lu ",negative.size()+positive.size(),negative.size());
 	for(auto& atom:negative)
 		if(atom->isAggregateAtom()){
 			unsigned agg_pred=onAggregate(atom);
@@ -155,7 +155,7 @@ unsigned NumericOutputBuilder::printCountSumAggregate(Atom* atom) {
 }
 
 void NumericOutputBuilder::onDisjunctionAtom(const vector<Atom*>& head) {
-	printf("8 %d ",head.size());
+	printf("8 %lu ",head.size());
 	for(auto& atom:head)
 		onClassicalLiteral(atom);
 }
@@ -433,7 +433,7 @@ void NumericOutputBuilder::printWeakAtLevel(list<id_weight_label>& listOfWeak){
 		}
 		weightAtomsId<<" "<<get<1>(weaks[i][0]);
 	}
-	printf("6 0 %d 0 %s%s\n",weaks.size(),atomsId.str().c_str(),weightAtomsId.str().c_str());
+	printf("6 0 %lu 0 %s%s\n",weaks.size(),atomsId.str().c_str(),weightAtomsId.str().c_str());
 }
 
 unsigned NumericOutputBuilder::rewriteBodyInAux(Rule* rule) {
@@ -461,7 +461,7 @@ unsigned NumericOutputBuilder::rewriteBodyInAux(Rule* rule) {
 	}
 
 	unsigned index_head=IdGenerator::getInstance()->getNewId(1);
-	printf("1 %d %d %d ",index_head,negative.size()+positive.size(),negative.size());
+	printf("1 %d %lu %lu ",index_head,negative.size()+positive.size(),negative.size());
 	for(auto& atom:negative)
 		if(atom->isAggregateAtom()){
 			unsigned agg_pred=onAggregate(atom);
