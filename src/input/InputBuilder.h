@@ -84,10 +84,11 @@ namespace DLV2
         virtual void onAggregateElement() = 0;
         virtual void onAggregate( bool naf = false ) = 0;
 
+        virtual void onAnnotationPartialOrdering(bool global=false){};
+
         virtual void onAnnotationRuleOrdering(char* annotation){};
         virtual void onAnnotationRuleAtomIndexedArgument(char* annotation){};
         virtual void onAnnotationRuleAtomIndexedLiteral(bool naf = false){};
-        virtual void onAnnotationRulePartialOrdering(){};
         virtual void onAnnotationRulePartialOrderingBefore(bool naf = false){};
         virtual void onAnnotationRulePartialOrderingAfter(bool naf = false){};
         virtual void onAnnotationAggregateRulePartialOrderingAfter(bool naf = false){};

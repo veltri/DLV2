@@ -57,8 +57,7 @@ InMemoryInputBuilder::InMemoryInputBuilder() :
 	weight(nullptr),
 	level(nullptr),
 	hiddenNewPredicate(false),
-	currentRuleOrdering(-1),
-	globalOrdering(-1)
+	currentRuleOrdering(-1)
 {
 
 	Options * opt=Options::globalOptions();
@@ -112,6 +111,16 @@ void InMemoryInputBuilder::onDirective(char* directiveName,
 		predicateTable->getInstance()->insertPredicate(predicate);
 	}
 
+}
+
+void InMemoryInputBuilder::onAnnotationPartialOrdering(bool global) {
+	if(!global){
+		currentRuleAtomsAfter.push_back(vector<Atom*>());
+		currentRuleAtomsBefore.push_back(vector<Atom*>());
+	}
+	else{
+		GroundingPreferences::getGroundingPreferences()->addGlobalPartialOrder();
+	}
 }
 
 void InMemoryInputBuilder::manageRuleAnnotations() {
@@ -881,8 +890,11 @@ void InMemoryInputBuilder::onAnnotationAggregateRulePartialOrderingBefore(bool n
 }
 
 void InMemoryInputBuilder::onAnnotationGlobalOrdering(char* annotation) {
-	if(isNumeric(annotation,10) && globalOrdering>-1)
-		globalOrdering = atoi(annotation);
+	if(isNumeric(annotation,10)){
+		int globalOrdering = atoi(annotation);
+		if(!GroundingPreferences::getGroundingPreferences()->addGlobalOrderingType(globalOrdering))
+			cout<<"--> Warning : The ordering type "<<currentRuleOrdering<<" is not valid."<<endl;
+	}
 	//FIXME check that the number is a val ordering type and has not yet been set
 }
 
@@ -893,8 +905,10 @@ void InMemoryInputBuilder::onAnnotationGlobalAtomIndexedArgument(char* annotatio
 		return;
 	}
 	argument=atoi(annotation);
-	if(argument>=0 && argument<globalAtomsIndexed.back()->getPredicate()->getArity())
+	if(argument>=0 && argument<globalAtomsIndexed.back()->getPredicate()->getArity()){
 		globalAtomsIndexedArguments.back().push_back(argument);
+		GroundingPreferences::getGroundingPreferences()->addGlobalAtomIndexingSetting(globalAtomsIndexed.back(),globalAtomsIndexedArguments.back());
+	}
 	//else	FIXME WARNING
 }
 
@@ -906,22 +920,22 @@ void InMemoryInputBuilder::onAnnotationGlobalAtomIndexedLiteral(bool naf) {
 
 void InMemoryInputBuilder::onAnnotationGlobalPartialOrderingBefore(bool naf) {
 	currentAtom->setNegative(naf);
-	globalAtomsBefore.back().push_back(currentAtom);
+	GroundingPreferences::getGroundingPreferences()->addGlobalPartialOrderAtomStart(currentAtom);
 }
 
 void InMemoryInputBuilder::onAnnotationGlobalPartialOrderingAfter(bool naf) {
 	currentAtom->setNegative(naf);
-	globalAtomsAfter.back().push_back(currentAtom);
+	GroundingPreferences::getGroundingPreferences()->addGlobalPartialOrderAtomEnd(currentAtom);
 }
 
 void InMemoryInputBuilder::onAnnotationAggregateGlobalPartialOrderingAfter(bool naf) {
 	currentAggregate->setNegative(naf);
-	globalAtomsAfter.back().push_back(currentAggregate);
+	GroundingPreferences::getGroundingPreferences()->addGlobalPartialOrderAtomEnd(currentAggregate);
 }
 
 void InMemoryInputBuilder::onAnnotationAggregateGlobalPartialOrderingBefore(bool naf) {
 	currentAggregate->setNegative(naf);
-	globalAtomsBefore.back().push_back(currentAggregate);
+	GroundingPreferences::getGroundingPreferences()->addGlobalPartialOrderAtomStart(currentAggregate);
 }
 
 void InMemoryInputBuilder::safetyError(bool condition, Rule* rule) {

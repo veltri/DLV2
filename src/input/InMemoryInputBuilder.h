@@ -84,7 +84,7 @@ public:
     virtual void onAnnotationRuleOrdering(char* annotation);
     virtual void onAnnotationRuleAtomIndexedArgument(char* annotation);
     virtual void onAnnotationRuleAtomIndexedLiteral(bool naf = false);
-    virtual void onAnnotationRulePartialOrdering(){currentRuleAtomsAfter.push_back(vector<Atom*>());currentRuleAtomsBefore.push_back(vector<Atom*>());};
+    virtual void onAnnotationPartialOrdering(bool global=false);
     virtual void onAnnotationRulePartialOrderingBefore(bool naf = false);
     virtual void onAnnotationRulePartialOrderingAfter(bool naf = false);
     virtual void onAnnotationAggregateRulePartialOrderingAfter(bool naf = false);
@@ -143,18 +143,14 @@ private:
 
 	bool hiddenNewPredicate;
 
-
 	int currentRuleOrdering;
 	vector<Atom*> currentRuleAtomsIndexed;
 	vector<vector<unsigned>> currentRuleAtomsIndexedArguments;
 	vector<vector<Atom*>> currentRuleAtomsBefore;
 	vector<vector<Atom*>> currentRuleAtomsAfter;
 
-	int globalOrdering;
 	vector<Atom*> globalAtomsIndexed;
 	vector<vector<unsigned>> globalAtomsIndexedArguments;
-	vector<vector<Atom*>> globalAtomsBefore;
-	vector<vector<Atom*>> globalAtomsAfter;
 
 	void addRule(Rule* rule);
  	void createRule(vector<Atom*>* head, vector<Atom*>* body=0);

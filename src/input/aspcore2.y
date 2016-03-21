@@ -836,7 +836,13 @@ global_atoms_annotation_after
 annotation_rule_partial_order_begin
 	: ANNOTATION_RULE_PARTIAL_ORDER
 	{
-		director.getBuilder()->onAnnotationRulePartialOrdering();
+		director.getBuilder()->onAnnotationPartialOrdering();
+	};
+	
+annotation_global_partial_order_begin
+	: ANNOTATION_GLOBAL_PARTIAL_ORDER
+	{
+		director.getBuilder()->onAnnotationPartialOrdering(true);
 	};
 
 annotation_rule_partial_order
@@ -847,8 +853,8 @@ annotation_rule_partial_order
 	;
 	
 annotation_global_partial_order
-	: ANNOTATION_GLOBAL_PARTIAL_ORDER PARAM_OPEN ANNOTATION_PARTIAL_ORDER_BEFORE EQUAL CURLY_OPEN global_atoms_annotation_before CURLY_CLOSE
+	: annotation_global_partial_order_begin PARAM_OPEN ANNOTATION_PARTIAL_ORDER_BEFORE EQUAL CURLY_OPEN global_atoms_annotation_before CURLY_CLOSE
 		COMMA ANNOTATION_PARTIAL_ORDER_AFTER EQUAL CURLY_OPEN global_atoms_annotation_after CURLY_CLOSE PARAM_CLOSE DOT
-	| ANNOTATION_GLOBAL_PARTIAL_ORDER ANNOTATION_PARTIAL_ORDER_AFTER EQUAL CURLY_OPEN global_atoms_annotation_after CURLY_CLOSE
+	| annotation_global_partial_order_begin PARAM_OPEN ANNOTATION_PARTIAL_ORDER_AFTER EQUAL CURLY_OPEN global_atoms_annotation_after CURLY_CLOSE
 		COMMA ANNOTATION_PARTIAL_ORDER_BEFORE EQUAL CURLY_OPEN global_atoms_annotation_before CURLY_CLOSE PARAM_CLOSE DOT
 	;
