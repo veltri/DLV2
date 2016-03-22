@@ -16,10 +16,17 @@ using namespace std;
 namespace DLV2 {
 namespace grounder {
 
-//TODO
-// Remember to delete the atoms
+struct HashAtomPointer{
+	inline size_t operator()(Atom* obj) const {
+		return size_t(obj);
+	}
+	inline bool operator()(Atom* obj1, Atom* obj2) const {
+		return obj1==obj2;
+	}
+};
 
 enum AnnotationsError {OK, ATOM_NOT_PRESENT, ARITY_ERROR, CONFLICT_FOUND};
+typedef unordered_map<Atom*,vector<unsigned>,HashAtomPointer,HashAtomPointer> unordered_map_pointers_atom_arguments;
 typedef unordered_map<Atom*,vector<unsigned>,HashForTable<Atom>,HashForTable<Atom>> unordered_map_atom_arguments;
 
 class GroundingPreferences {
@@ -53,7 +60,7 @@ public:
 	void print(Rule* rule) const;
 private:
 	unordered_map<unsigned,unsigned> rulesOrderingTypes;
-	unordered_map<unsigned,unordered_map_atom_arguments> rulesAtomsIndexed;
+	unordered_map<unsigned,unordered_map_pointers_atom_arguments> rulesAtomsIndexed;
 	unordered_map<unsigned,vector<vector<bool>>> rulesPartialOrders;
 	unordered_map<unsigned,vector<vector<Atom*>>> rulesPartialOrdersAtoms;
 

@@ -26,10 +26,9 @@ void OrderRuleGroundable::applyBinderSplittingRewriting() {
 
 					bool found = false;
 					for (unsigned i = 0; i < rule->getSizeBody(); ++i) {
-						if (j != i && atomsVariables[i].count(term)) {
+						if (j != i && atomsVariables[i].count(term))
 							found = true;
 							break;
-						}
 					}
 					if (found)
 						continue;
@@ -108,7 +107,6 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchTy
 	rule->setDictionaryIntersectionSize(rule->getVariablesSize()+2);
 
 	GroundingPreferences::getGroundingPreferences()->applyRulePartialOrder(rule);
-//	GroundingPreferences::getGroundingPreferences()->print(rule);
 
 	while(!atomsToInsert.empty()){
 		list<unsigned>::iterator bestAtom=assignWeights();
@@ -124,6 +122,9 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchTy
 		atomsToInsert.erase(bestAtom);
 	}
 
+	if(!Options::globalOptions()->isDisabledAnonymousFilter())
+		applyBinderSplittingRewriting();
+
 	rule->setBody(orderedBody);
 	predicate_searchInsert_table=orderdedPredicateSearchInsertTable;
 	predicate_searchInsert_atomSearcher=orderdedPredicateSearchInsertAtomSearcher;
@@ -138,9 +139,6 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchTy
 //		}
 //		cerr<<endl;
 //	);
-
-	if(!Options::globalOptions()->isDisabledAnonymousFilter())
-		applyBinderSplittingRewriting();
 
 	return orderedPositions;
 }

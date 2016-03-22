@@ -101,7 +101,6 @@ public:
     void newTerm(char*);
 
 	static void rewriteAggregate(Rule* rule,InputRewriter* inputRewriter,StatementDependency* statementDependency);
-	static void manageSimpleRule(Rule* rule,StatementDependency * statementDependency);
 
 	static bool isFoundASafetyError() { return foundASafetyError; }
 	static const string& getSafetyErrorMessage() { return safetyErrorMessage; }

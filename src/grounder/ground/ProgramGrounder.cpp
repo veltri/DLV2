@@ -99,6 +99,7 @@ void ProgramGrounder::orderPositiveAtomsBody(Rule* rule) {
 		orderRuleGroundable->order(predicate_searchInsert_table,predicate_searchInsert_atomSearcher);
 		delete orderRuleGroundable;
 	}
+	GroundingPreferences::getGroundingPreferences()->print(rule);
 }
 
 void ProgramGrounder::ground() {
@@ -308,7 +309,7 @@ void ProgramGrounder::ground() {
 
 
 		//Ground weak constraint
-		for(auto weak:statementDependency->getWeakContraint()){
+		for(auto weak:statementDependency->getWeakContraints()){
 			if(nonGroundSimplificator.simplifyRule(weak) || inizializeSearchInsertPredicate(weak)){
 				continue;
 			}

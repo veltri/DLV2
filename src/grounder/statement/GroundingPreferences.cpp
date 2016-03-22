@@ -56,6 +56,16 @@ bool GroundingPreferences::applyGlobalAtomIndexingSetting() {
 		for(auto pair:globalAtomsIndexed)
 			addRuleAtomIndexingSetting(rule,pair.first,pair.second);
 	}
+	for(unsigned i=0;i<StatementDependency::getInstance()->getConstraintSize();++i){
+		Rule* rule=StatementDependency::getInstance()->getConstraint(i);
+		for(auto pair:globalAtomsIndexed)
+			addRuleAtomIndexingSetting(rule,pair.first,pair.second);
+	}
+	for(unsigned i=0;i<StatementDependency::getInstance()->getWeakContraintsSize();++i){
+		Rule* rule=StatementDependency::getInstance()->getWeakContraint(i);
+		for(auto pair:globalAtomsIndexed)
+			addRuleAtomIndexingSetting(rule,pair.first,pair.second);
+	}
 	return true;
 }
 
@@ -75,6 +85,24 @@ void GroundingPreferences::addGlobalPartialOrderAtomEnd(Atom* atom) {
 bool GroundingPreferences::applyGlobalPartialOrder() {
 	for(unsigned i=0;i<StatementDependency::getInstance()->getRulesSize();++i){
 		Rule* rule=StatementDependency::getInstance()->getRule(i);
+		for(auto order:globalPartialOrdersAtoms){
+			addRulePartialOrder(rule);
+			for(auto atom:order)
+				addRulePartialOrderAtom(rule,atom);
+			checkRulePartialOrderConflicts(rule);
+		}
+	}
+	for(unsigned i=0;i<StatementDependency::getInstance()->getConstraintSize();++i){
+		Rule* rule=StatementDependency::getInstance()->getConstraint(i);
+		for(auto order:globalPartialOrdersAtoms){
+			addRulePartialOrder(rule);
+			for(auto atom:order)
+				addRulePartialOrderAtom(rule,atom);
+			checkRulePartialOrderConflicts(rule);
+		}
+	}
+	for(unsigned i=0;i<StatementDependency::getInstance()->getWeakContraintsSize();++i){
+		Rule* rule=StatementDependency::getInstance()->getWeakContraint(i);
 		for(auto order:globalPartialOrdersAtoms){
 			addRulePartialOrder(rule);
 			for(auto atom:order)
@@ -126,7 +154,6 @@ AnnotationsError DLV2::grounder::GroundingPreferences::applyRulePartialOrder(Rul
 			checkIfAtomIsPresentInRule(rule,rulesPartialOrdersAtoms[rule->getIndex()][k][j],atomsPositions.back());
 		}
 
-
 		for(unsigned i=0;i<atomsPositions.size();++i){
 			for(auto pB:atomsPositions[i])
 				for(unsigned j=i+1;j<atomsPositions.size();++j)
@@ -156,9 +183,7 @@ int GroundingPreferences::getOrderingType(Rule* r) {
 	int ruleIndex=r->getIndex();
 	if(rulesOrderingTypes.count(ruleIndex))
 		return rulesOrderingTypes.at(ruleIndex);
-	if(globalOrderingType!=-1)
-		return globalOrderingType;
-	return -1;
+	return globalOrderingType;
 }
 
 bool GroundingPreferences::checkPartialOrder(unsigned ruleIndex, unsigned atomPosition, const list<unsigned>& atoms) {
@@ -198,8 +223,9 @@ bool GroundingPreferences::checkAtomIndexed(unsigned ruleIndex, Atom* atom, cons
 					break;
 				}
 			}
-			if(!found)
+			if(!found){
 				return false;
+			}
 		}
 		return true;
 	}
@@ -229,9 +255,9 @@ void GroundingPreferences::print(Rule* rule) const {
 			cout<<endl;
 		}
 	}
+	cout<<"Partial Order: "<<endl;
 	if(rulesPartialOrders.count(rule->getIndex())){
 		vector<vector<bool>> b=rulesPartialOrders.at(rule->getIndex());
-		cout<<"Partial Order: ";
 		for(auto a:b){
 			for(auto c:a)
 				cout<<c<<" ";

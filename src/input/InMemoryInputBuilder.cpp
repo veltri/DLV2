@@ -714,13 +714,7 @@ void InMemoryInputBuilder::rewriteChoice(Rule* rule) {
 	}
 }
 
-
 void InMemoryInputBuilder::manageSimpleRule(Rule* rule) {
-	manageSimpleRule(rule,statementDependency);
-	manageRuleAnnotations();
-}
-
-void InMemoryInputBuilder::manageSimpleRule(Rule* rule,StatementDependency * statementDependency) {
 	if(currentRuleIsUnsafe){
 		safetyError(false,rule);
 		statementDependency->addRuleMapping(rule);
@@ -732,6 +726,7 @@ void InMemoryInputBuilder::manageSimpleRule(Rule* rule,StatementDependency * sta
 //	safetyError(isSafe,"RULE IS UNSAFE");
 	statementDependency->addRuleMapping(rule);
 	rule->setUnsolvedPredicates();
+	manageRuleAnnotations();
 }
 
 void InMemoryInputBuilder::addRule(Rule* rule) {
