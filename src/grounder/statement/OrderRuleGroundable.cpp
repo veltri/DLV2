@@ -26,9 +26,10 @@ void OrderRuleGroundable::applyBinderSplittingRewriting() {
 
 					bool found = false;
 					for (unsigned i = 0; i < rule->getSizeBody(); ++i) {
-						if (j != i && atomsVariables[i].count(term))
+						if (j != i && atomsVariables[i].count(term)) {
 							found = true;
 							break;
+						}
 					}
 					if (found)
 						continue;
