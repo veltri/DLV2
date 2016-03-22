@@ -81,10 +81,26 @@ public:
     virtual void onAggregateElement() ;
     virtual void onAggregate( bool naf = false ) ;
 
+    virtual void onAnnotationRuleOrdering(char* annotation);
+    virtual void onAnnotationRuleAtomIndexedArgument(char* annotation);
+    virtual void onAnnotationRuleAtomIndexedLiteral(bool naf = false);
+    virtual void onAnnotationPartialOrdering(bool global=false);
+    virtual void onAnnotationRulePartialOrderingBefore(bool naf = false);
+    virtual void onAnnotationRulePartialOrderingAfter(bool naf = false);
+    virtual void onAnnotationAggregateRulePartialOrderingAfter(bool naf = false);
+    virtual void onAnnotationAggregateRulePartialOrderingBefore(bool naf = false);
+
+    virtual void onAnnotationGlobalOrdering(char* annotation);
+    virtual void onAnnotationGlobalAtomIndexedArgument(char* annotation);
+    virtual void onAnnotationGlobalAtomIndexedLiteral(bool naf = false);
+    virtual void onAnnotationGlobalPartialOrderingBefore(bool naf = false);
+    virtual void onAnnotationGlobalPartialOrderingAfter(bool naf = false);
+    virtual void onAnnotationAggregateGlobalPartialOrderingAfter(bool naf = false);
+    virtual void onAnnotationAggregateGlobalPartialOrderingBefore(bool naf = false);
+
     void newTerm(char*);
 
 	static void rewriteAggregate(Rule* rule,InputRewriter* inputRewriter,StatementDependency* statementDependency);
-	static void manageSimpleRule(Rule* rule,StatementDependency * statementDependency);
 
 	static bool isFoundASafetyError() { return foundASafetyError; }
 	static const string& getSafetyErrorMessage() { return safetyErrorMessage; }
@@ -126,7 +142,16 @@ private:
 
 	bool hiddenNewPredicate;
 
- 	void addRule(Rule* rule);
+	int currentRuleOrdering;
+	vector<Atom*> currentRuleAtomsIndexed;
+	vector<vector<unsigned>> currentRuleAtomsIndexedArguments;
+	vector<vector<Atom*>> currentRuleAtomsBefore;
+	vector<vector<Atom*>> currentRuleAtomsAfter;
+
+	vector<Atom*> globalAtomsIndexed;
+	vector<vector<unsigned>> globalAtomsIndexedArguments;
+
+	void addRule(Rule* rule);
  	void createRule(vector<Atom*>* head, vector<Atom*>* body=0);
 	void createFact(Atom* fact);
 
@@ -144,6 +169,8 @@ private:
 	static bool currentRuleIsUnsafe;
 	static bool foundASafetyError;
 	static void safetyError(bool condition, Rule* rule);
+	void manageRuleAnnotations();
+
 	static string safetyErrorMessage;
 
 };

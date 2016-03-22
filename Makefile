@@ -4,17 +4,21 @@
 # to compile different binaries
 BUILD = release
 cxxflags.debug = \
- -Wall -std=c++11 -g3
+ -Wall -std=c++11 -g3 -pg
 linkflags.debug = \
  -lm
 cxxflags.trace = \
  -Wall -std=c++11 -DTRACE_ON
 linkflags.trace = \
  -lm
-cxxflags.release = \
+cxxflags.releasedynamic = \
  -Wall -std=c++11 -O3
-linkflags.release = \
+linkflags.releasedynamic = \
  -lm
+cxxflags.release = \
+ -Wall -std=c++11 -O3 -DSTATIC
+linkflags.release = \
+ -lm -static
 cxxflags.gprof = \
  -Wall -std=c++11 -DNDEBUG -O3 -g -pg
 linkflags.gprof = \

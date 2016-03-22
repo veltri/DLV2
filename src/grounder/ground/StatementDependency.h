@@ -196,7 +196,10 @@ public:
 	vector<Rule*>::iterator getBeginConstraints(){return constraints.begin();}
 	vector<Rule*>::iterator getEndConstraints(){return constraints.end();}
 
-	const vector<Rule*>& getWeakContraint(){return weak;}
+	const vector<Rule*>& getWeakContraints(){return weak;}
+
+	Rule* getWeakContraint(unsigned i){return weak[i];}
+	unsigned getWeakContraintsSize(){return weak.size();}
 
 	bool isOnlyInHead(index_object predicate){
 		return (!statementAtomMapping.isInBody(predicate));

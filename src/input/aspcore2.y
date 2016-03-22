@@ -39,6 +39,11 @@ This file is part of the ASPCOMP2013 ASP-Core-2 validator (validator in the foll
 %token <string> SYMBOLIC_CONSTANT NUMBER VARIABLE STRING DIRECTIVE_NAME DIRECTIVE_VALUE
 %token <string> AGGR_COUNT AGGR_MAX AGGR_MIN AGGR_SUM
 
+%token <string> ANNOTATION_RULE_ORDERING ANNOTATION_ORDERING_VALUE NUMBER_ANNOTATION
+%token <string> ANNOTATION_RULE_ATOM_INDEXED ANNOTATION_ATOM_INDEXED_ATOM ANNOTATION_ATOM_INDEXED_ARGUMENTS
+%token <string> ANNOTATION_RULE_PARTIAL_ORDER ANNOTATION_PARTIAL_ORDER_BEFORE ANNOTATION_PARTIAL_ORDER_AFTER
+%token <string> ANNOTATION_GLOBAL_ORDERING ANNOTATION_GLOBAL_ATOM_INDEXED ANNOTATION_GLOBAL_PARTIAL_ORDER
+
 %token ERROR NEWLINE   
 
 %token DOT DDOT SEMICOLON COLON CONS QUERY_MARK
@@ -69,6 +74,7 @@ program
     : 
     | real_program
     | directives real_program
+    | annotations_global real_program
     | error { yyerror(director,"Generic error"); }
     ;
 
@@ -80,6 +86,8 @@ real_program
 rules
     : rules rule
     | rule
+    | annotations_rule rule
+    | rules annotations_rule rule
     ;
 
 rule
@@ -610,3 +618,243 @@ aggregate_function
             delete[] $1;
         }
     ;   
+
+annotations_global 
+	: annotation_global
+	| annotation_global annotations_global
+	;
+
+annotation_global 
+	: annotation_global_ordering 
+	| annotation_global_atom_indexed
+	| annotation_global_partial_order
+	;
+    
+annotations_rule 
+	: annotation_rule
+	| annotation_rule annotations_rule
+	;
+    
+annotation_rule 
+	: annotation_rule_ordering 
+	| annotation_rule_atom_indexed
+	| annotation_rule_partial_order
+	;
+
+annotation_rule_ordering
+	: ANNOTATION_RULE_ORDERING PARAM_OPEN ANNOTATION_ORDERING_VALUE EQUAL rule_ordering_type PARAM_CLOSE DOT
+	;
+
+annotation_global_ordering
+	: ANNOTATION_GLOBAL_ORDERING PARAM_OPEN ANNOTATION_ORDERING_VALUE EQUAL global_ordering_type PARAM_CLOSE DOT
+	;
+
+rule_ordering_type 
+	:  NUMBER {
+		director.getBuilder()->onAnnotationRuleOrdering($1);
+        delete[] $1;
+	}
+	;
+
+global_ordering_type 
+	:  NUMBER {
+		director.getBuilder()->onAnnotationGlobalOrdering($1);
+        delete[] $1;
+	}
+	;
+
+annotation_rule_atom_indexed
+	: ANNOTATION_RULE_ATOM_INDEXED PARAM_OPEN ANNOTATION_ATOM_INDEXED_ATOM EQUAL rule_naf_literal_annotation
+	  COMMA ANNOTATION_ATOM_INDEXED_ARGUMENTS EQUAL CURLY_OPEN rule_indexing_arguments CURLY_CLOSE PARAM_CLOSE DOT 
+	;
+
+annotation_global_atom_indexed
+	: ANNOTATION_GLOBAL_ATOM_INDEXED PARAM_OPEN ANNOTATION_ATOM_INDEXED_ATOM EQUAL global_naf_literal_annotation
+	  COMMA ANNOTATION_ATOM_INDEXED_ARGUMENTS EQUAL CURLY_OPEN global_indexing_arguments CURLY_CLOSE PARAM_CLOSE DOT 
+	;
+	
+rule_indexing_arguments 
+	:  NUMBER {
+		director.getBuilder()->onAnnotationRuleAtomIndexedArgument($1);
+        delete[] $1;
+	}
+	| NUMBER COMMA NUMBER {
+		director.getBuilder()->onAnnotationRuleAtomIndexedArgument($1);
+		director.getBuilder()->onAnnotationRuleAtomIndexedArgument($3);
+        delete[] $1;
+        delete[] $3;
+	}
+	;
+
+rule_naf_literal_annotation 
+	 : classic_literal 
+        { 
+            director.getBuilder()->onAnnotationRuleAtomIndexedLiteral();
+        }
+    | NAF classic_literal 
+        { 
+            director.getBuilder()->onAnnotationRuleAtomIndexedLiteral(true);
+        }
+	;
+	
+global_indexing_arguments 
+	:  NUMBER {
+		director.getBuilder()->onAnnotationGlobalAtomIndexedArgument($1);
+        delete[] $1;
+	}
+	| NUMBER COMMA NUMBER {
+		director.getBuilder()->onAnnotationGlobalAtomIndexedArgument($1);
+		director.getBuilder()->onAnnotationGlobalAtomIndexedArgument($3);
+        delete[] $1;
+        delete[] $3;
+	}
+	;
+
+global_naf_literal_annotation 
+	 : classic_literal 
+        { 
+            director.getBuilder()->onAnnotationGlobalAtomIndexedLiteral();
+        }
+    | NAF classic_literal 
+        { 
+            director.getBuilder()->onAnnotationGlobalAtomIndexedLiteral(true);
+        }
+	;
+
+rule_atom_annotation_before
+    : classic_literal 
+        { 
+            director.getBuilder()->onAnnotationRulePartialOrderingBefore();
+        }
+    | NAF classic_literal 
+        { 
+            director.getBuilder()->onAnnotationRulePartialOrderingBefore(true);
+        }
+    | builtin_atom 
+        {
+            director.getBuilder()->onAnnotationRulePartialOrderingBefore();
+        }
+    | aggregate_atom
+        {
+           director.getBuilder()->onAnnotationAggregateRulePartialOrderingBefore();
+        }
+    | NAF aggregate_atom
+        {
+            director.getBuilder()->onAnnotationAggregateRulePartialOrderingBefore(true);
+        }
+    ;   
+
+global_atom_annotation_before
+    : classic_literal 
+        { 
+            director.getBuilder()->onAnnotationGlobalPartialOrderingBefore();
+        }
+    | NAF classic_literal 
+        { 
+            director.getBuilder()->onAnnotationGlobalPartialOrderingBefore(true);
+        }
+    | builtin_atom 
+        {
+            director.getBuilder()->onAnnotationGlobalPartialOrderingBefore();
+        }
+    | aggregate_atom
+        {
+           director.getBuilder()->onAnnotationAggregateGlobalPartialOrderingBefore();
+        }
+    | NAF aggregate_atom
+        {
+            director.getBuilder()->onAnnotationAggregateGlobalPartialOrderingBefore(true);
+        }
+    ;   
+    
+rule_atom_annotation_after
+    : classic_literal 
+        { 
+            director.getBuilder()->onAnnotationRulePartialOrderingAfter();
+        }
+    | NAF classic_literal 
+        { 
+            director.getBuilder()->onAnnotationRulePartialOrderingAfter(true);
+        }
+    | builtin_atom 
+        {
+            director.getBuilder()->onAnnotationRulePartialOrderingAfter();
+        }
+    | aggregate_atom
+        {
+           director.getBuilder()->onAnnotationAggregateRulePartialOrderingAfter();
+        }
+    | NAF aggregate_atom
+        {
+            director.getBuilder()->onAnnotationAggregateRulePartialOrderingAfter(true);
+        }
+    ;   
+
+global_atom_annotation_after
+    : classic_literal 
+        { 
+            director.getBuilder()->onAnnotationGlobalPartialOrderingAfter();
+        }
+    | NAF classic_literal 
+        { 
+            director.getBuilder()->onAnnotationGlobalPartialOrderingAfter(true);
+        }
+    | builtin_atom 
+        {
+            director.getBuilder()->onAnnotationGlobalPartialOrderingAfter();
+        }
+    | aggregate_atom
+        {
+           director.getBuilder()->onAnnotationAggregateGlobalPartialOrderingAfter();
+        }
+    | NAF aggregate_atom
+        {
+            director.getBuilder()->onAnnotationAggregateGlobalPartialOrderingAfter(true);
+        }
+    ;  
+
+rule_atoms_annotation_before
+	: rule_atom_annotation_before
+	| rule_atom_annotation_before COMMA rule_atoms_annotation_before
+	;
+
+global_atoms_annotation_before
+	: global_atom_annotation_before
+	| global_atom_annotation_before COMMA global_atoms_annotation_before
+	;
+
+rule_atoms_annotation_after
+	: rule_atom_annotation_after
+	| rule_atom_annotation_after COMMA rule_atoms_annotation_after
+	;
+
+global_atoms_annotation_after
+	: global_atom_annotation_after
+	| global_atom_annotation_after COMMA global_atoms_annotation_after
+	;
+
+annotation_rule_partial_order_begin
+	: ANNOTATION_RULE_PARTIAL_ORDER
+	{
+		director.getBuilder()->onAnnotationPartialOrdering();
+	};
+	
+annotation_global_partial_order_begin
+	: ANNOTATION_GLOBAL_PARTIAL_ORDER
+	{
+		director.getBuilder()->onAnnotationPartialOrdering(true);
+	};
+
+annotation_rule_partial_order
+	: annotation_rule_partial_order_begin PARAM_OPEN ANNOTATION_PARTIAL_ORDER_BEFORE EQUAL CURLY_OPEN rule_atoms_annotation_before CURLY_CLOSE
+		COMMA ANNOTATION_PARTIAL_ORDER_AFTER EQUAL CURLY_OPEN rule_atoms_annotation_after CURLY_CLOSE PARAM_CLOSE DOT
+	| annotation_rule_partial_order_begin PARAM_OPEN ANNOTATION_PARTIAL_ORDER_AFTER EQUAL CURLY_OPEN rule_atoms_annotation_after CURLY_CLOSE
+		COMMA ANNOTATION_PARTIAL_ORDER_BEFORE EQUAL CURLY_OPEN rule_atoms_annotation_before CURLY_CLOSE PARAM_CLOSE DOT
+	;
+	
+annotation_global_partial_order
+	: annotation_global_partial_order_begin PARAM_OPEN ANNOTATION_PARTIAL_ORDER_BEFORE EQUAL CURLY_OPEN global_atoms_annotation_before CURLY_CLOSE
+		COMMA ANNOTATION_PARTIAL_ORDER_AFTER EQUAL CURLY_OPEN global_atoms_annotation_after CURLY_CLOSE PARAM_CLOSE DOT
+	| annotation_global_partial_order_begin PARAM_OPEN ANNOTATION_PARTIAL_ORDER_AFTER EQUAL CURLY_OPEN global_atoms_annotation_after CURLY_CLOSE
+		COMMA ANNOTATION_PARTIAL_ORDER_BEFORE EQUAL CURLY_OPEN global_atoms_annotation_before CURLY_CLOSE PARAM_CLOSE DOT
+	;

@@ -30,7 +30,23 @@ This file is part of the ASPCOMP2013 ASP-Core-2 validator (validator in the foll
 
 BLANK               ([ \t]+)
 NEWLINE             \15?\n
-COMMENT             \%.*
+COMMENT             \%[^@].*
+DOT 				\.
+
+ANNOTATION_RULE_ORDERING			\%@rule_ordering
+ANNOTATION_ORDERING_VALUE			@value
+
+ANNOTATION_RULE_ATOM_INDEXED		\%@rule_atom_indexed
+ANNOTATION_ATOM_INDEXED_ATOM		@atom
+ANNOTATION_ATOM_INDEXED_ARGUMENTS	@arguments
+
+ANNOTATION_RULE_PARTIAL_ORDER		\%@rule_partial_order
+ANNOTATION_PARTIAL_ORDER_BEFORE		@before
+ANNOTATION_PARTIAL_ORDER_AFTER		@after
+
+ANNOTATION_GLOBAL_ORDERING			\%@global_ordering
+ANNOTATION_GLOBAL_ATOM_INDEXED		\%@global_atom_indexed
+ANNOTATION_GLOBAL_PARTIAL_ORDER		\%@global_partial_order
 
 AGGR_COUNT          #count
 AGGR_MAX            #max
@@ -43,6 +59,8 @@ SYMBOLIC_CONSTANT   ([a-z][A-Za-z_0-9]*)
 VARIABLE            ([A-Z][A-Za-z_0-9]*)
 STRING              (\"[^\"]*\")
 NUMBER              ([0-9]+)
+
+%x ANNOTATION
 
 %x DIRECTIVE_NAME_READ    
                       // Only in state DIRECTIVE_NAME_READ a directive value 
@@ -59,11 +77,11 @@ NUMBER              ([0-9]+)
         // requested with WANT_NEWLINE. (e.g. by a construct that is
         // terminated by a newline.)
 
-<WANT_NEWLINE,DIRECTIVE_NAME_READ>{NEWLINE} { 
+<WANT_NEWLINE,DIRECTIVE_NAME_READ>{NEWLINE} {
                             director.onNewLine();
                             BEGIN(INITIAL);
                             return NEWLINE;
-			}
+}
 
 {NEWLINE}               { director.onNewLine(); }
 "."                     { return DOT; }
@@ -150,7 +168,7 @@ NUMBER              ([0-9]+)
                             return SYMBOLIC_CONSTANT;
                         }
 
-{VARIABLE}		{
+{VARIABLE}				{
                             yylval.string=new char[strlen(yytext)+1];
                             strcpy(yylval.string,yytext);
                             return VARIABLE;
@@ -168,8 +186,9 @@ NUMBER              ([0-9]+)
                             return NUMBER; 
                         }
 
-\%.*			{ /* Skip comments */ }
-{BLANK}			{ /* Skip blanks */ }
+{COMMENT}				{ /* Skip comments */ }
+
+{BLANK}					{ /* Skip blanks */ }
 
 .                       {   
                             // Anything not matching one of the patterns
@@ -181,3 +200,49 @@ NUMBER              ([0-9]+)
 
                             return ERROR;
                         }
+                        
+{ANNOTATION_RULE_ORDERING}	{
+								return ANNOTATION_RULE_ORDERING;
+							}
+							
+{ANNOTATION_ORDERING_VALUE}	{
+								return ANNOTATION_ORDERING_VALUE;
+							}							
+														
+{ANNOTATION_RULE_ATOM_INDEXED}	{
+									return ANNOTATION_RULE_ATOM_INDEXED;
+								}
+
+{ANNOTATION_ATOM_INDEXED_ATOM}	{
+								return ANNOTATION_ATOM_INDEXED_ATOM;
+							}
+							
+{ANNOTATION_ATOM_INDEXED_ARGUMENTS}	{
+								return ANNOTATION_ATOM_INDEXED_ARGUMENTS;
+							}
+							
+{ANNOTATION_RULE_PARTIAL_ORDER}	{
+									return ANNOTATION_RULE_PARTIAL_ORDER;
+								}
+								
+{ANNOTATION_PARTIAL_ORDER_BEFORE}	{
+									return ANNOTATION_PARTIAL_ORDER_BEFORE;
+								}
+								
+{ANNOTATION_PARTIAL_ORDER_AFTER}	{
+									return ANNOTATION_PARTIAL_ORDER_AFTER;
+								}	
+															
+{ANNOTATION_GLOBAL_ORDERING}	{
+									return ANNOTATION_GLOBAL_ORDERING;
+								}
+
+{ANNOTATION_GLOBAL_ATOM_INDEXED} {
+									return ANNOTATION_GLOBAL_ATOM_INDEXED;
+								  }
+
+{ANNOTATION_GLOBAL_PARTIAL_ORDER} {
+									return ANNOTATION_GLOBAL_PARTIAL_ORDER;
+								  }
+
+								  

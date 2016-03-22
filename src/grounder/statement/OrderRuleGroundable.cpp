@@ -107,8 +107,10 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchTy
 	rule->clearDictionaryIntersection();
 	rule->setDictionaryIntersectionSize(rule->getVariablesSize()+2);
 
+	GroundingPreferences::getGroundingPreferences()->applyRulePartialOrder(rule);
+
 	while(!atomsToInsert.empty()){
-		list<unsigned>::iterator bestAtom=assignWeights(atomsToInsert);
+		list<unsigned>::iterator bestAtom=assignWeights();
 		Atom* atom=rule->getAtomInBody((*bestAtom));
 		orderdedPredicateSearchInsertTable.push_back(predicate_searchInsert_table[sizeHead+*bestAtom]);
 		if(atom->isClassicalLiteral())
@@ -120,6 +122,9 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchTy
 		variablesInTheBody.insert(atomsVariables[*bestAtom].begin(),atomsVariables[*bestAtom].end());
 		atomsToInsert.erase(bestAtom);
 	}
+
+	if(!Options::globalOptions()->isDisabledAnonymousFilter())
+		applyBinderSplittingRewriting();
 
 	rule->setBody(orderedBody);
 	predicate_searchInsert_table=orderdedPredicateSearchInsertTable;
@@ -135,9 +140,6 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchTy
 //		}
 //		cerr<<endl;
 //	);
-
-	if(!Options::globalOptions()->isDisabledAnonymousFilter())
-		applyBinderSplittingRewriting();
 
 	return orderedPositions;
 }
@@ -246,11 +248,13 @@ unsigned AllOrderRuleGroundable::computePredicateExtensionSize(	unsigned atomPos
 }
 
 
-list<unsigned>::iterator AllOrderRuleGroundable::assignWeights(list<unsigned>& atomsToInsert) {
+list<unsigned>::iterator AllOrderRuleGroundable::assignWeights() {
 	double bestWeight=LLONG_MAX;
 	list<unsigned>::iterator bestAtomIt=atomsToInsert.begin();
 	unsigned bestAtomExtensionSize=0;
 	for(list<unsigned>::iterator it=atomsToInsert.begin();it!=atomsToInsert.end();++it){
+		if(!GroundingPreferences::getGroundingPreferences()->checkPartialOrder(rule->getIndex(),*it,atomsToInsert))
+			continue;
 		Atom* atom=rule->getAtomInBody(*it);
 		double weight=INT_MAX;
 		trace_action_tag(grounding,2,
