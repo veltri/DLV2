@@ -87,6 +87,7 @@ void ProgramGrounder::orderPositiveAtomsBody(vector<unsigned>& originalOrderBody
 		orderRuleGroundable->order(predicate_searchInsert_table,predicate_searchInsert_atomSearcher,originalOrderBody,componentPredicateInHead);
 		delete orderRuleGroundable;
 	}
+//	GroundingPreferences::getGroundingPreferences()->print(rule);
 }
 
 void ProgramGrounder::orderPositiveAtomsBody(Rule* rule) {

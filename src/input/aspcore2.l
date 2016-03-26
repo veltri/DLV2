@@ -30,7 +30,6 @@ This file is part of the ASPCOMP2013 ASP-Core-2 validator (validator in the foll
 
 BLANK               ([ \t]+)
 NEWLINE             \15?\n
-COMMENT             \%[^@].*
 DOT 				\.
 
 ANNOTATION_RULE_ORDERING			\%@rule_ordering
@@ -47,6 +46,9 @@ ANNOTATION_PARTIAL_ORDER_AFTER		@after
 ANNOTATION_GLOBAL_ORDERING			\%@global_ordering
 ANNOTATION_GLOBAL_ATOM_INDEXED		\%@global_atom_indexed
 ANNOTATION_GLOBAL_PARTIAL_ORDER		\%@global_partial_order
+
+COMMENT_EMPTY       \%\n
+COMMENT             \%[^@\n].*
 
 AGGR_COUNT          #count
 AGGR_MAX            #max
@@ -185,22 +187,7 @@ NUMBER              ([0-9]+)
                             strcpy(yylval.string,yytext);
                             return NUMBER; 
                         }
-
-{COMMENT}				{ /* Skip comments */ }
-
-{BLANK}					{ /* Skip blanks */ }
-
-.                       {   
-                            // Anything not matching one of the patterns
-                            // given above is considered an error.
-                            char s[1024];
-                            assert(yytext[1]==0);
-                            sprintf(s,"Lexical syntax error (%s)",yytext); 
-                            yyerror(director,s);
-
-                            return ERROR;
-                        }
-                        
+                       
 {ANNOTATION_RULE_ORDERING}	{
 								return ANNOTATION_RULE_ORDERING;
 							}
@@ -245,4 +232,21 @@ NUMBER              ([0-9]+)
 									return ANNOTATION_GLOBAL_PARTIAL_ORDER;
 								  }
 
-								  
+{COMMENT_EMPTY}			{ /* Skip comments */}
+{COMMENT}				{ /* Skip comments */ }
+{BLANK}					{ /* Skip blanks */ }
+
+.                       {   
+                            // Anything not matching one of the patterns
+                            // given above is considered an error.
+                            char s[1024];
+                            assert(yytext[1]==0);
+                            sprintf(s,"Lexical syntax error (%s)",yytext); 
+                            yyerror(director,s);
+
+                            return ERROR;
+                        }
+                        
+                        
+                        
+                        
