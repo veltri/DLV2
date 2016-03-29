@@ -57,6 +57,8 @@ public:
 	~GroundingPreferences(){};
 	static void freeInstance(){	delete groundingPreferences;}
 
+	static void checkIfAtomIsPresentInRule(Rule* rule, Atom* atom, vector<unsigned>& positions);
+
 	void print(Rule* rule) const;
 private:
 	unordered_map<unsigned,unsigned> rulesOrderingTypes;
@@ -70,7 +72,6 @@ private:
 
 	bool applayedGlobalAnnotations;
 
-	void checkIfAtomIsPresentInRule(Rule* rule, Atom* atom, vector<unsigned>& positions);
 
 	bool applyGlobalAtomIndexingSetting();
 	bool applyGlobalPartialOrder();

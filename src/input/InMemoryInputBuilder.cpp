@@ -126,32 +126,42 @@ void InMemoryInputBuilder::onAnnotationPartialOrdering(bool global) {
 void InMemoryInputBuilder::clearAnnotationsSetting(){
 	currentRuleOrdering = -1;
 	for(auto atom:currentRuleAtomsIndexed)
-			delete atom;
+		delete atom;
 	currentRuleAtomsIndexed.clear();
 	currentRuleAtomsIndexedArguments.clear();
 	for(unsigned i=0;i<currentRuleAtomsBefore.size();++i){
-		for(auto atom:currentRuleAtomsBefore[i])
-				delete atom;
-		for(auto atom:currentRuleAtomsAfter[i])
+		for(auto atom:currentRuleAtomsBefore[i]){
+			if(atom->isAggregateAtom()) continue;
+			atom->deleteAtoms();
 			delete atom;
-		currentRuleAtomsBefore[i].clear();
-		currentRuleAtomsAfter[i].clear();
+		}
+		for(auto atom:currentRuleAtomsAfter[i]){
+			if(atom->isAggregateAtom()) continue;
+			atom->deleteAtoms();
+			delete atom;
+		}
 	}
 	currentRuleAtomsBefore.clear();
 	currentRuleAtomsAfter.clear();
+	for(auto atom:annotationsAtomsToDelete){
+		atom->deleteAtoms();
+		delete atom;
+	}
+
 }
 
-void InMemoryInputBuilder::manageRuleAnnotations(Rule* currentRule) {
+void InMemoryInputBuilder::manageRuleAnnotations(Rule* currentRule, bool rewritedRule) {
 	if (currentRuleOrdering != -1)
 		if(!GroundingPreferences::getGroundingPreferences()->addRuleOrderingType(
 				currentRule, currentRuleOrdering))
-			cerr<<"--> Warning : The ordering type "<<currentRuleOrdering<<" is not valid."<<endl;
+			if(!rewritedRule)
+				cerr<<"--> Warning : The ordering type "<<currentRuleOrdering<<" is not valid."<<endl;
 
 	for (unsigned i = 0; i < currentRuleAtomsIndexed.size(); ++i) {
 		AnnotationsError error=GroundingPreferences::getGroundingPreferences()->addRuleAtomIndexingSetting(
 				currentRule, currentRuleAtomsIndexed[i],
 				currentRuleAtomsIndexedArguments[i]);
-		if(error==ATOM_NOT_PRESENT){
+		if(!rewritedRule && error==ATOM_NOT_PRESENT){
 			cerr<<"--> Warning : The atom ";currentRuleAtomsIndexed[i]->print(cerr);cerr<<" is not present in the specified rule."<<endl;
 			currentRule->print(cerr);
 		}
@@ -159,19 +169,19 @@ void InMemoryInputBuilder::manageRuleAnnotations(Rule* currentRule) {
 
 	for(unsigned i=0;i<currentRuleAtomsBefore.size();++i){
 		GroundingPreferences::getGroundingPreferences()->addRulePartialOrder(currentRule);
-		for(auto atom:currentRuleAtomsBefore[i]){
+		for(auto& atom:currentRuleAtomsBefore[i]){
 			AnnotationsError error=GroundingPreferences::getGroundingPreferences()->addRulePartialOrderAtom(currentRule, atom);
-			if(error==ATOM_NOT_PRESENT){
+			if(!rewritedRule && error==ATOM_NOT_PRESENT){
 				cerr<<"--> Warning : The atom ";atom->print(cerr);cerr<<" is not present in the specified rule."<<endl;
 			}
 		}
-		for(auto atom:currentRuleAtomsAfter[i]){
+		for(auto& atom:currentRuleAtomsAfter[i]){
 			AnnotationsError error=GroundingPreferences::getGroundingPreferences()->addRulePartialOrderAtom(currentRule, atom);
-			if(error==ATOM_NOT_PRESENT){
+			if(!rewritedRule && error==ATOM_NOT_PRESENT){
 				cerr<<"--> Warning : The atom ";atom->print(cerr);cerr<<" is not present in the specified rule."<<endl;
 			}
 		}
-		if(GroundingPreferences::getGroundingPreferences()->checkRulePartialOrderConflicts(currentRule)==CONFLICT_FOUND){
+		if(!rewritedRule && GroundingPreferences::getGroundingPreferences()->checkRulePartialOrderConflicts(currentRule)==CONFLICT_FOUND){
 			cerr<<"--> Warning : In the rule ";currentRule->print(cerr);cerr<<"The partial ordering specified cannot be applied."<<endl;
 		}
 	}
@@ -696,9 +706,43 @@ void InMemoryInputBuilder::rewriteAggregate(Rule* rule,bool clear) {
 	bool isSafe = orderRule.order();
 	safetyError(isSafe,rule);
 
+	for(auto& v:currentRuleAtomsBefore){
+		for(unsigned i=0;i<v.size();++i){
+			Atom*& atom=v[i];
+			if(atom->isAggregateAtom()){
+				vector<unsigned> positions;
+				GroundingPreferences::checkIfAtomIsPresentInRule(rule,atom,positions);
+				if(positions.size()>0){
+					atom->deleteAtoms();
+					delete atom;
+					atom=rule->getAtomInBody(positions[0]);
+				}
+				else
+					annotationsAtomsToDelete.push_back(atom);
+			}
+		}
+	}
+	for(auto& v:currentRuleAtomsAfter){
+		for(unsigned i=0;i<v.size();++i){
+			Atom*& atom=v[i];
+			if(atom->isAggregateAtom()){
+				vector<unsigned> positions;
+				GroundingPreferences::checkIfAtomIsPresentInRule(rule,atom,positions);
+				if(positions.size()>0){
+					atom->deleteAtoms();
+					delete atom;
+					atom=rule->getAtomInBody(positions[0]);
+				}
+				else
+					annotationsAtomsToDelete.push_back(atom);
+			}
+		}
+	}
+
 	//Translate the rule
 	vector<Rule*> rules;
 	inputRewriter->translateAggregate(rule, rules, &orderRule);
+
 	for (auto r : rules) {
 		OrderRule orderR(r);
 		isSafe = orderR.order();
@@ -874,6 +918,7 @@ void InMemoryInputBuilder::onAnnotationRuleAtomIndexedLiteral(bool naf) {
 	currentAtom->setNegative(naf);
 	currentRuleAtomsIndexed.push_back(currentAtom);
 	currentRuleAtomsIndexedArguments.push_back(vector<unsigned>());
+	currentAtom= nullptr;
 }
 
 void InMemoryInputBuilder::onAnnotationRulePartialOrderingBefore(bool naf) {
@@ -924,26 +969,31 @@ void InMemoryInputBuilder::onAnnotationGlobalAtomIndexedLiteral(bool naf) {
 	currentAtom->setNegative(naf);
 	globalAtomsIndexed.push_back(currentAtom);
 	globalAtomsIndexedArguments.push_back(vector<unsigned>());
+	currentAtom= nullptr;
 }
 
 void InMemoryInputBuilder::onAnnotationGlobalPartialOrderingBefore(bool naf) {
 	currentAtom->setNegative(naf);
 	GroundingPreferences::getGroundingPreferences()->addGlobalPartialOrderAtomStart(currentAtom);
+	currentAtom= nullptr;
 }
 
 void InMemoryInputBuilder::onAnnotationGlobalPartialOrderingAfter(bool naf) {
 	currentAtom->setNegative(naf);
 	GroundingPreferences::getGroundingPreferences()->addGlobalPartialOrderAtomEnd(currentAtom);
+	currentAtom= nullptr;
 }
 
 void InMemoryInputBuilder::onAnnotationAggregateGlobalPartialOrderingAfter(bool naf) {
 	currentAggregate->setNegative(naf);
 	GroundingPreferences::getGroundingPreferences()->addGlobalPartialOrderAtomEnd(currentAggregate);
+	currentAggregate = nullptr;
 }
 
 void InMemoryInputBuilder::onAnnotationAggregateGlobalPartialOrderingBefore(bool naf) {
 	currentAggregate->setNegative(naf);
 	GroundingPreferences::getGroundingPreferences()->addGlobalPartialOrderAtomStart(currentAggregate);
+	currentAggregate = nullptr;
 }
 
 void InMemoryInputBuilder::safetyError(bool condition, Rule* rule) {

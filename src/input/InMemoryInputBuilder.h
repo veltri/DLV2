@@ -145,6 +145,7 @@ private:
 	vector<vector<unsigned>> currentRuleAtomsIndexedArguments;
 	vector<vector<Atom*>> currentRuleAtomsBefore;
 	vector<vector<Atom*>> currentRuleAtomsAfter;
+	vector<Atom*> annotationsAtomsToDelete;
 
 	vector<Atom*> globalAtomsIndexed;
 	vector<vector<unsigned>> globalAtomsIndexedArguments;
@@ -168,7 +169,7 @@ private:
 	static bool foundASafetyError;
 	static void safetyError(bool condition, Rule* rule);
 	void clearAnnotationsSetting();
-	void manageRuleAnnotations(Rule* currentRule);
+	void manageRuleAnnotations(Rule* currentRule,bool rewritedRule=false);
 
 	static string safetyErrorMessage;
 
