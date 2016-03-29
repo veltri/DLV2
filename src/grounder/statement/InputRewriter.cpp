@@ -152,10 +152,11 @@ void BaseInputRewriter::translateChoice(Rule*& rule,vector<Rule*>& ruleRewrited)
 		for(unsigned i=0;i<rule->getSizeBody();++i){
 			auto atom=rule->getAtomInBody(i);
 			if(atom->isNegative())continue;
+			if(atom->isAggregateAtom() && atom->getFirstBinop()!=EQUAL) continue;
 			set_term variables;
 			if(atom->isAggregateAtom() && atom->getFirstBinop()==EQUAL)
 				variables=atom->getGuardVariable();
-			else
+			else if(atom->isClassicalLiteral() || (atom->isBuiltIn() && atom->getBinop()==EQUAL))
 				variables=atom->getVariable();
 			variables_in_body.insert(variables.begin(),variables.end());
 		}
