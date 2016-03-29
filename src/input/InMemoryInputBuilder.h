@@ -163,7 +163,7 @@ private:
 	void rewriteAggregate(Rule* rule,bool clear=true);
 
 	void rewriteChoice(Rule* rule);
-	void manageSimpleRule(Rule* rule);
+	void manageSimpleRule(Rule* rule,bool clear=true);
 
 	static bool currentRuleIsUnsafe;
 	static bool foundASafetyError;

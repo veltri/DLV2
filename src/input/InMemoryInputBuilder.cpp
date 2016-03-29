@@ -172,12 +172,14 @@ void InMemoryInputBuilder::manageRuleAnnotations(Rule* currentRule, bool rewrite
 		for(auto& atom:currentRuleAtomsBefore[i]){
 			AnnotationsError error=GroundingPreferences::getGroundingPreferences()->addRulePartialOrderAtom(currentRule, atom);
 			if(!rewritedRule && error==ATOM_NOT_PRESENT){
+				currentRule->print(cerr);
 				cerr<<"--> Warning : The atom ";atom->print(cerr);cerr<<" is not present in the specified rule."<<endl;
 			}
 		}
 		for(auto& atom:currentRuleAtomsAfter[i]){
 			AnnotationsError error=GroundingPreferences::getGroundingPreferences()->addRulePartialOrderAtom(currentRule, atom);
 			if(!rewritedRule && error==ATOM_NOT_PRESENT){
+				currentRule->print(cerr);
 				cerr<<"--> Warning : The atom ";atom->print(cerr);cerr<<" is not present in the specified rule."<<endl;
 			}
 		}
@@ -765,13 +767,13 @@ void InMemoryInputBuilder::rewriteChoice(Rule* rule) {
 		if(r->isMustBeRewritedForAggregates()){
 			rewriteAggregate(r,false);
 		}else{
-			manageSimpleRule(r);
+			manageSimpleRule(r,false);
 		}
 	}
 	clearAnnotationsSetting();
 }
 
-void InMemoryInputBuilder::manageSimpleRule(Rule* rule) {
+void InMemoryInputBuilder::manageSimpleRule(Rule* rule,bool clear) {
 	if(currentRuleIsUnsafe){
 		safetyError(false,rule);
 		statementDependency->addRuleMapping(rule);
@@ -783,6 +785,8 @@ void InMemoryInputBuilder::manageSimpleRule(Rule* rule) {
 	statementDependency->addRuleMapping(rule);
 	rule->setUnsolvedPredicates();
 	manageRuleAnnotations(rule);
+	if(clear)
+		clearAnnotationsSetting();
 }
 
 void InMemoryInputBuilder::addRule(Rule* rule) {

@@ -45,7 +45,7 @@ public:
 	void addGlobalPartialOrderAtomEnd(Atom* atom);
 
 	int getOrderingType(Rule* r) ;
-	bool checkPartialOrder(unsigned ruleIndex,unsigned atomPosition,const list<unsigned>& atoms) ;
+	bool checkPartialOrder(Rule* rule,unsigned atomPosition,const list<unsigned>& atoms) ;
 	bool checkAtomIndexed(unsigned ruleIndex,Atom* atom,const vector<unsigned>& possibileArgs) ;
 
 	static GroundingPreferences* getGroundingPreferences() {

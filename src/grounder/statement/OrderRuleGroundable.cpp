@@ -253,10 +253,10 @@ list<unsigned>::iterator AllOrderRuleGroundable::assignWeights() {
 	list<unsigned>::iterator bestAtomIt=atomsToInsert.begin();
 	unsigned bestAtomExtensionSize=0;
 	for(list<unsigned>::iterator it=atomsToInsert.begin();it!=atomsToInsert.end();++it){
-		if(!GroundingPreferences::getGroundingPreferences()->checkPartialOrder(rule->getIndex(),*it,atomsToInsert))
+		if(!GroundingPreferences::getGroundingPreferences()->checkPartialOrder(rule,*it,atomsToInsert) )
 			continue;
-		Atom* atom=rule->getAtomInBody(*it);
 		double weight=INT_MAX;
+		Atom* atom=rule->getAtomInBody(*it);
 		trace_action_tag(grounding,2,
 			atom->print(cerr);
 		);
@@ -352,7 +352,7 @@ void CombinedCriterion::updateVariableSelectivity(Atom* atomAdded) {
 			Term* term=atomAdded->getTerm(i);
 			if(term->getType()==TermType::VARIABLE){
 				unsigned selectivity=predicateExtTable->getPredicateExt(atomAdded->getPredicate())->getPredicateInformation()->getSelectivity(i);
-				if(variablesInTheBody.count(term))
+				if(variablesInTheBody.count(term) && variablesDomains[term]>0)
 					variablesSelectivities[term]*=selectivity/variablesDomains[term];
 				else
 					variablesSelectivities[term]=selectivity;

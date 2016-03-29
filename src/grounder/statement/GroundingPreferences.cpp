@@ -186,8 +186,9 @@ int GroundingPreferences::getOrderingType(Rule* r) {
 	return globalOrderingType;
 }
 
-bool GroundingPreferences::checkPartialOrder(unsigned ruleIndex, unsigned atomPosition, const list<unsigned>& atoms) {
+bool GroundingPreferences::checkPartialOrder(Rule* rule, unsigned atomPosition, const list<unsigned>& atoms) {
 	setGlobalAnnotations();
+	unsigned ruleIndex=rule->getIndex();
 	if(rulesPartialOrders.count(ruleIndex)){
 		const vector<bool>& partialOrder=rulesPartialOrders.at(ruleIndex).at(atomPosition);
 		for(unsigned i=0;i<partialOrder.size();++i){
@@ -205,7 +206,7 @@ bool GroundingPreferences::checkPartialOrder(unsigned ruleIndex, unsigned atomPo
 		}
 		return true;
 	}
-	return false;;
+	return true;
 }
 
 bool GroundingPreferences::checkAtomIndexed(unsigned ruleIndex, Atom* atom, const vector<unsigned>& possibileArgs) {
