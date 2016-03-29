@@ -100,8 +100,6 @@ public:
 
     void newTerm(char*);
 
-	static void rewriteAggregate(Rule* rule,InputRewriter* inputRewriter,StatementDependency* statementDependency);
-
 	static bool isFoundASafetyError() { return foundASafetyError; }
 	static const string& getSafetyErrorMessage() { return safetyErrorMessage; }
 
@@ -161,7 +159,7 @@ private:
 	void expandAtoms(const vector<vector<Atom*>>& atoms, vector<Atom*>& currentAtoms, vector<vector<Atom*>>& atomsExpanded, unsigned currentPosition);
 	void expandRulePart(vector<Atom*>::const_iterator start, vector<Atom*>::const_iterator end, vector<vector<Atom*> >& atomsExpanded);
 	void expandRangeAtom(Atom* fact, vector<Atom*>& atomExpanded);
-	void rewriteAggregate(Rule* rule);
+	void rewriteAggregate(Rule* rule,bool clear=true);
 
 	void rewriteChoice(Rule* rule);
 	void manageSimpleRule(Rule* rule);
@@ -169,7 +167,8 @@ private:
 	static bool currentRuleIsUnsafe;
 	static bool foundASafetyError;
 	static void safetyError(bool condition, Rule* rule);
-	void manageRuleAnnotations();
+	void clearAnnotationsSetting();
+	void manageRuleAnnotations(Rule* currentRule);
 
 	static string safetyErrorMessage;
 

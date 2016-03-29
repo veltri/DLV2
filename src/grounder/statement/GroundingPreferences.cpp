@@ -241,6 +241,7 @@ void GroundingPreferences::checkIfAtomIsPresentInRule(Rule* rule, Atom* atom, ve
 }
 
 void GroundingPreferences::print(Rule* rule) const {
+	cout<<"Rule --> ";rule->print();
 	if(rulesOrderingTypes.count(rule->getIndex()))
 		cout<<"Ordering: "<<rulesOrderingTypes.at(rule->getIndex())<<endl;
 	else if(globalOrderingType!=-1)

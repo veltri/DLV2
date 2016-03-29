@@ -285,7 +285,7 @@ void DependencyGraph::calculateStrongComponent(unordered_map<index_object, unsig
 }
 
 
-void DependencyGraph::calculateUnstritifiedPredicate(unordered_set<index_object>& predicateUnstratified){
+void DependencyGraph::calculateUnstratifiedPredicate(unordered_set<index_object>& predicateUnstratified){
 	using namespace boost;
 
 	//Calculate the cycle in stratifiedGraph and verify thath not exist recursion and negation, if exist
@@ -367,7 +367,7 @@ void ComponentGraph::addEdge(index_object pred_body, index_object pred_head, int
 void ComponentGraph::createComponent(DependencyGraph &depGraph,
 		StatementAtomMapping &statementAtomMapping) {
 	depGraph.calculateStrongComponent(componentDependency);
-	depGraph.calculateUnstritifiedPredicate(predicateUnstratified);
+	depGraph.calculateUnstratifiedPredicate(predicateUnstratified);
 
 
 	// For each component create a vertex in a graph

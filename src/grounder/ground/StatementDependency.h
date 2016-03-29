@@ -79,7 +79,7 @@ public:
 	void calculateStrongComponent(unordered_map<index_object, unsigned int> &componentDepependency);
 
 	// It  calculate the predicate with negation recursive not stratified
-	void calculateUnstritifiedPredicate(unordered_set<index_object>& predicateUnstratified);
+	void calculateUnstratifiedPredicate(unordered_set<index_object>& predicateUnstratified);
 
 	/// This method adds an edge in the dependency graph between the two predicate given
 	void addEdge(index_object pred_body, index_object pred_head, int weight);

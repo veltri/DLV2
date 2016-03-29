@@ -123,12 +123,29 @@ void InMemoryInputBuilder::onAnnotationPartialOrdering(bool global) {
 	}
 }
 
-void InMemoryInputBuilder::manageRuleAnnotations() {
+void InMemoryInputBuilder::clearAnnotationsSetting(){
+	currentRuleOrdering = -1;
+	for(auto atom:currentRuleAtomsIndexed)
+			delete atom;
+	currentRuleAtomsIndexed.clear();
+	currentRuleAtomsIndexedArguments.clear();
+	for(unsigned i=0;i<currentRuleAtomsBefore.size();++i){
+		for(auto atom:currentRuleAtomsBefore[i])
+				delete atom;
+		for(auto atom:currentRuleAtomsAfter[i])
+			delete atom;
+		currentRuleAtomsBefore[i].clear();
+		currentRuleAtomsAfter[i].clear();
+	}
+	currentRuleAtomsBefore.clear();
+	currentRuleAtomsAfter.clear();
+}
+
+void InMemoryInputBuilder::manageRuleAnnotations(Rule* currentRule) {
 	if (currentRuleOrdering != -1)
 		if(!GroundingPreferences::getGroundingPreferences()->addRuleOrderingType(
 				currentRule, currentRuleOrdering))
 			cerr<<"--> Warning : The ordering type "<<currentRuleOrdering<<" is not valid."<<endl;
-	currentRuleOrdering = -1;
 
 	for (unsigned i = 0; i < currentRuleAtomsIndexed.size(); ++i) {
 		AnnotationsError error=GroundingPreferences::getGroundingPreferences()->addRuleAtomIndexingSetting(
@@ -139,10 +156,6 @@ void InMemoryInputBuilder::manageRuleAnnotations() {
 			currentRule->print(cerr);
 		}
 	}
-	for(auto atom:currentRuleAtomsIndexed)
-		delete atom;
-	currentRuleAtomsIndexed.clear();
-	currentRuleAtomsIndexedArguments.clear();
 
 	for(unsigned i=0;i<currentRuleAtomsBefore.size();++i){
 		GroundingPreferences::getGroundingPreferences()->addRulePartialOrder(currentRule);
@@ -161,15 +174,7 @@ void InMemoryInputBuilder::manageRuleAnnotations() {
 		if(GroundingPreferences::getGroundingPreferences()->checkRulePartialOrderConflicts(currentRule)==CONFLICT_FOUND){
 			cerr<<"--> Warning : In the rule ";currentRule->print(cerr);cerr<<"The partial ordering specified cannot be applied."<<endl;
 		}
-		for(auto atom:currentRuleAtomsBefore[i])
-			delete atom;
-		for(auto atom:currentRuleAtomsAfter[i])
-			delete atom;
-		currentRuleAtomsBefore[i].clear();
-		currentRuleAtomsAfter[i].clear();
 	}
-	currentRuleAtomsBefore.clear();
-	currentRuleAtomsAfter.clear();
 }
 
 void InMemoryInputBuilder::onRule() {
@@ -680,11 +685,7 @@ void InMemoryInputBuilder::onAggregate(bool naf) {
 	currentAggregate = nullptr;
 }
 
-void InMemoryInputBuilder::rewriteAggregate(Rule* rule) {
-	rewriteAggregate(rule,inputRewriter,statementDependency);
-}
-
-void InMemoryInputBuilder::rewriteAggregate(Rule* rule,InputRewriter* inputRewriter,StatementDependency* statementDependency) {
+void InMemoryInputBuilder::rewriteAggregate(Rule* rule,bool clear) {
 	//Sort the rule and check for safety
 	if(currentRuleIsUnsafe){
 		safetyError(false,rule);
@@ -703,11 +704,14 @@ void InMemoryInputBuilder::rewriteAggregate(Rule* rule,InputRewriter* inputRewri
 		isSafe = orderR.order();
 		if (!isSafe)
 			safetyError(isSafe,r);
-//			safetyError(isSafe,"RULE IS UNSAFE");
 		statementDependency->addRuleMapping(r);
+		manageRuleAnnotations(r);
 	}
 
 	statementDependency->addRuleMapping(rule);
+	manageRuleAnnotations(rule);
+	if(clear)
+		clearAnnotationsSetting();
 }
 
 void InMemoryInputBuilder::rewriteChoice(Rule* rule) {
@@ -715,10 +719,12 @@ void InMemoryInputBuilder::rewriteChoice(Rule* rule) {
 	inputRewriter->translateChoice(rule, rules);
 	for (auto r : rules){
 		if(r->isMustBeRewritedForAggregates()){
-			rewriteAggregate(r);
-		}else
+			rewriteAggregate(r,false);
+		}else{
 			manageSimpleRule(r);
+		}
 	}
+	clearAnnotationsSetting();
 }
 
 void InMemoryInputBuilder::manageSimpleRule(Rule* rule) {
@@ -730,10 +736,9 @@ void InMemoryInputBuilder::manageSimpleRule(Rule* rule) {
 	OrderRule orderRule(rule);
 	bool isSafe = orderRule.order();
 	safetyError(isSafe,rule);
-//	safetyError(isSafe,"RULE IS UNSAFE");
 	statementDependency->addRuleMapping(rule);
 	rule->setUnsolvedPredicates();
-	manageRuleAnnotations();
+	manageRuleAnnotations(rule);
 }
 
 void InMemoryInputBuilder::addRule(Rule* rule) {
@@ -884,11 +889,13 @@ void InMemoryInputBuilder::onAnnotationRulePartialOrderingAfter(bool naf) {
 void InMemoryInputBuilder::onAnnotationAggregateRulePartialOrderingAfter(bool naf) {
 	currentAggregate->setNegative(naf);
 	currentRuleAtomsAfter.back().push_back(currentAggregate);
+	currentAggregate = nullptr;
 }
 
 void InMemoryInputBuilder::onAnnotationAggregateRulePartialOrderingBefore(bool naf) {
 	currentAggregate->setNegative(naf);
 	currentRuleAtomsBefore.back().push_back(currentAggregate);
+	currentAggregate = nullptr;
 }
 
 void InMemoryInputBuilder::onAnnotationGlobalOrdering(char* annotation) {
@@ -897,7 +904,6 @@ void InMemoryInputBuilder::onAnnotationGlobalOrdering(char* annotation) {
 		if(!GroundingPreferences::getGroundingPreferences()->addGlobalOrderingType(globalOrdering))
 			cerr<<"--> Warning : The ordering type "<<currentRuleOrdering<<" is not valid."<<endl;
 	}
-	//FIXME check that the number is a val ordering type and has not yet been set
 }
 
 void InMemoryInputBuilder::onAnnotationGlobalAtomIndexedArgument(char* annotation) {
