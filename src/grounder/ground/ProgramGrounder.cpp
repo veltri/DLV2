@@ -279,6 +279,7 @@ void ProgramGrounder::ground() {
 		Rule *constraintRule=new Rule(true,0,2);
 		//Add constraint for true negation
 		for(auto predicate:predicateTable->getPredicateTrueNegated()){
+			if(foundEmptyConstraint)break;
 			//For each predicate true negated for table FACT and NOFACT try to find an a equal atom
 			// but with the predicate not true negated. If exist print the constraint
 			string predName=predicate->getName();
@@ -298,6 +299,10 @@ void ProgramGrounder::ground() {
 						constraintRule->setAtomToSimplifyInBody(0,atom->isFact());
 						constraintRule->setAtomToSimplifyInBody(1,atomNotTrueNegated->isFact());
 						outputBuilder->onRule(constraintRule);
+						if(atom->isFact() && atomNotTrueNegated->isFact()){
+							foundEmptyConstraint=true;
+							break;
+						}
 					}
 				}
 			}
