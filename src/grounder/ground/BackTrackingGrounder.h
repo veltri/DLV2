@@ -182,6 +182,7 @@ private:
 	void setIndexingStructureInHeadAndBody(unsigned position, unsigned atomPos, PredicateExtension* predicateExtension, Predicate* predicate, unordered_set<index_object>* componentPredicateInHead, unsigned table);
 	///Utility function for creating atoms Match information of atoms
 	void createMatchInfoClassicalLiteral(unsigned int index_current_atom, Atom* current_atom);
+	void onGroundRuleToPrint(const vector<bool>& newAtomsInHead);
 };
 
 } /* namespace grounder */

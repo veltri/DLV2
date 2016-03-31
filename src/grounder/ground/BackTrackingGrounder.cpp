@@ -265,36 +265,68 @@ bool BackTrackingGrounder::next() {
 	return true;
 }
 
+void BackTrackingGrounder::onGroundRuleToPrint(const vector<bool>& newAtomsInHead) {
+	for (unsigned i = 0; i < currentRule->getSizeHead(); ++i) {
+		if (newAtomsInHead[i]) {
+			Atom* headGroundAtom=groundTemplateAtomHead[i];
+			PredicateExtension* predicateExt = predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
+			Atom* searchAtom=nullptr;
+			for(auto atomSearcher:predicate_searchInsert_atomSearcher[i][0]){
+				if(atomSearcher==nullptr) continue;
+				searchAtom=atomSearcher->find(headGroundAtom);
+				if(searchAtom!=nullptr)
+					break;
+			}
+			if(searchAtom==nullptr){
+				Atom* newAtom = groundTemplateAtomHead[i]->clone();
+				predicateExt->addAtom(newAtom,predicate_searchInsert_table[i][0].first,iterationToInsert);
+				ground_rule->setAtomInHead(i, newAtom);
+			}
+			else
+				ground_rule->setAtomInHead(i, searchAtom);
+		}
+	}
+	outputBuilder->onRule(ground_rule);
+	if (printStats)
+		rstats->groundNewRule(currentRule->getIndex());
+	trace_action_tag(grounding,1,cerr<<"Ground Rule Produced: ";ground_rule->print(cerr);cerr<<endl;);
+}
 
 bool BackTrackingGrounder::foundAssignment() {
 	callFoundAssignment=true;
+
 	bool isAChoiceRule=currentRule->isChoiceRule();
-	bool undefinedAtomInBody=ground_rule->areThereUndefinedAtomInBody();
 	bool strongConstraint=currentRule->isAStrongConstraint();
-	bool head_true=(currentRule->getSizeHead() <= 1  && !isAChoiceRule) && (!undefinedAtomInBody);
+	bool isWeak=currentRule->isWeakConstraint();
+
+	bool undefinedAtomInBody=ground_rule->areThereUndefinedAtomInBody();
+	bool head_true=(currentRule->getSizeHead() == 1  && !isAChoiceRule) && (!undefinedAtomInBody);
 	bool ground_new_atom=false;
 	bool find_new_true_atom=false;
-	bool isWeak=currentRule->isWeakConstraint();
+	bool foundATrueAtomInDisjuction=false;
+
+	vector<bool> newAtomsInHead;
+	newAtomsInHead.resize(currentRule->getSizeHead(),false);
+
 	unsigned atom_counter=0;
 	Atom *searchAtom=nullptr;
 	if(isAChoiceRule){
 		if(Options::globalOptions()->getRewritingType()==COMPACT_NATIVE_CHOICE){
 			groundChoiceNatively(find_new_true_atom,ground_new_atom);
-			if(ground_rule!=0 && ground_rule->getSizeHead()==1 && ground_rule->isChoiceRule() && ground_rule->getAtomInHead(0)->getChoiceElementsSize()==0)
+			if(ground_rule!=0 && ground_rule->getSizeHead()==1 && isAChoiceRule && ground_rule->getAtomInHead(0)->getChoiceElementsSize()==0)
 				return false;
 		}
 		else
 			groundChoice(find_new_true_atom,ground_new_atom);
 	}
 
-	bool foundATrueAtomInDisjuction=false;
 
 	for(auto atom=currentRule->getBeginHead();atom!=currentRule->getEndHead()&&!isAChoiceRule;++atom,++atom_counter){
 
 		// When grounding head atoms, head template atoms are used in order to avoid the creation and deletion of atoms that are already present in the predicate extensions.
 		// In case an atom is not already present in the predicate extension then the corresponding grounded template atom is cloned
 		// and the atom obtained in this way is stored in the predicate extension.
-		Atom *headGroundAtom=groundTemplateAtomHead[atom_counter];
+		Atom *& headGroundAtom=groundTemplateAtomHead[atom_counter];
 		(*atom)->ground(current_assignment,headGroundAtom);
 		searchAtom=nullptr;
 		for(auto atomSearcher:predicate_searchInsert_atomSearcher[atom_counter][0]){
@@ -309,15 +341,9 @@ bool BackTrackingGrounder::foundAssignment() {
 
 			headGroundAtom->setFact(head_true);
 			if(head_true) foundATrueAtomInDisjuction=true;
-			Atom* newAtom=headGroundAtom->clone();
-			PredicateExtension* predicateExt=predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
-			predicateExt->addAtom(newAtom,predicate_searchInsert_table[atom_counter][0].first,iterationToInsert);
-
-			ground_rule->setAtomInHead(atom_counter,newAtom);
-
+			newAtomsInHead[atom_counter]=true;
 
 		}else{
-//			clock_t start=Timer::getInstance()->getClock();
 			//TODO If searchAtom is true ??? {a|b. a.} o {a :- b(X,Y).b(1,1).b(1,2)|d.}
 
 			//Previus atom is undef and now is true
@@ -330,13 +356,10 @@ bool BackTrackingGrounder::foundAssignment() {
 				foundATrueAtomInDisjuction=true;
 			//Check if previus is false now is true ground_new atom i have put true
 			ground_rule->setAtomInHead(atom_counter,searchAtom);
-//			clock_t end=Timer::getInstance()->getClock();
-//			Timer::getInstance()->sumTime(end-start);
 		}
 
 	}
 
-	trace_action_tag(grounding,1,cerr<<"Ground Rule Produced: ";ground_rule->print(cerr);cerr<<endl;);
 	// If the rule has possible undef atoms in its body its printing is postponed to the end of grounding
 	// So that:
 	// 	- if the printing type is numeric we give to that atoms the right indices,
@@ -345,6 +368,14 @@ bool BackTrackingGrounder::foundAssignment() {
 	// so after a ground rule is saved to be processed later, the ground_rule must be reinitialized coping
 	// into it, the body of the saved ground rule.
 	if(!atomsPossibleUndef.empty()){
+		for (unsigned i = 0; i < currentRule->getSizeHead(); ++i) {
+			if (newAtomsInHead[i]) {
+				Atom* newAtom = groundTemplateAtomHead[i]->clone();
+				PredicateExtension* predicateExt = predicateExtTable->getPredicateExt(newAtom->getPredicate());
+				predicateExt->addAtom(newAtom,predicate_searchInsert_table[i][0].first,iterationToInsert);
+				ground_rule->setAtomInHead(i, newAtom);
+			}
+		}
 		atomsPossibleUndefPositions.push_back(atomsPossibleUndef);
 		rulesWithPossibleUndefAtoms.push_back(ground_rule);
 		Rule* savedRule=ground_rule;
@@ -359,19 +390,29 @@ bool BackTrackingGrounder::foundAssignment() {
 		}
 	}
 
-	//Print if ground new atom, an atom changed from undef to true, the rule is a strong constraint, there are some undefined atom in body
-	else if( ground_new_atom || (!ground_new_atom && !head_true) || (find_new_true_atom && head_true) || strongConstraint || undefinedAtomInBody || isWeak){
-		if(isWeak)
+	else{
+		// FIXME In the can simplification is added to choice rules, be aware that atoms in head are added in predicate extension
+		// before the actual simplification (see the method groundChoice)
+		if(isAChoiceRule)
+			onGroundRuleToPrint(newAtomsInHead);
+		else if(strongConstraint)
+			onGroundRuleToPrint(newAtomsInHead);
+		else if(isWeak){
 			ground_rule->setWeightLevelLabel(currentRule->groundWeightLevel(current_assignment));
-
-		if(!foundATrueAtomInDisjuction || head_true){
-			outputBuilder->onRule(ground_rule);
-			if(printStats)
-				rstats->groundNewRule(currentRule->getIndex());
+			onGroundRuleToPrint(newAtomsInHead);
 		}
+		else if(find_new_true_atom)
+			onGroundRuleToPrint(newAtomsInHead);
+		else if(!foundATrueAtomInDisjuction && undefinedAtomInBody)
+			onGroundRuleToPrint(newAtomsInHead);
+		else if(currentRule->getSizeHead()==1 && !isAChoiceRule && ground_new_atom)
+			onGroundRuleToPrint(newAtomsInHead);
+		else if(currentRule->getSizeHead()>1 && !foundATrueAtomInDisjuction)
+			onGroundRuleToPrint(newAtomsInHead);
+		else
+			trace_action_tag(grounding,1,cerr<<"Ground Rule Produced Simplified."<<endl;);
 	}
 	if(strongConstraint && !undefinedAtomInBody){throw ConstrainException{};};
-
 
 	return ground_new_atom;
 }

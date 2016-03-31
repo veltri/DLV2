@@ -71,7 +71,7 @@ void ProgramGrounder::printProgram(const vector<vector<Rule*> >& exitRules,	cons
 void ProgramGrounder::findRecursivePredicatesInComponentRules(const unordered_set<index_object>& componentPredicateInHead, vector<unsigned>& recursivePredicatesPositions, Rule* rule, vector<unsigned >& orderedBody) {
 	for (unsigned j = 0; j < rule->getSizeBody(); ++j) {
 		Predicate* pred = rule->getAtomInBody(j)->getPredicate();
-		if (pred != nullptr	&& componentPredicateInHead.count(pred->getIndex()))
+		if (pred != nullptr	&& componentPredicateInHead.count(pred->getIndex()) && !rule->getAtomInBody(j)->isNegative())
 			recursivePredicatesPositions.push_back(j);
 		orderedBody.push_back(j);
 	}
@@ -186,7 +186,7 @@ void ProgramGrounder::ground() {
 			}
 			++iterationToInsert;
 			++iteration;
-
+			trace_action_tag(grounding,1,cerr<<"Iteration Number: "<<iteration<<endl;);
 
 			//Further Iterations
 			while (found_something) {
@@ -222,6 +222,8 @@ void ProgramGrounder::ground() {
 
 				++iteration;
 				++iterationToInsert;
+				trace_action_tag(grounding,1,cerr<<"Iteration Number: "<<iteration<<endl;);
+
 
 //				// If more rule share a recursive predicate, only the first rule
 //				// have to swap the delta, then we need a set of predicate evaluated
@@ -382,7 +384,6 @@ bool ProgramGrounder::nextSearchInsertPredicate(Rule* rule,unordered_set<index_o
 		vector<pair<unsigned,SearchType>> tableToInsert(1,{NOFACT,ALL});
 		predicate_searchInsert_table.push_back(tableToInsert);
 	}
-
 	unsigned i=0;
 	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();++atom,++i){
 		Predicate* pred=(*atom)->getPredicate();
