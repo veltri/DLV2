@@ -629,11 +629,13 @@ void StatementDependency::addRuleMapping(Rule* r) {
 		for(auto p:pred_head)p->setIdb();
 		statementAtomMapping.addRule(r);
 		rules.push_back(r);
-		depGraph.addInDependency(r);
 	}
 }
 
 void StatementDependency::createDependencyGraph(PredicateTable* pt) {
+
+	for(auto rule:rules)
+		depGraph.addInDependency(rule);
 
 	unordered_set<index_object> delete_pred;
 	pt->getEdbPredicate(delete_pred);
