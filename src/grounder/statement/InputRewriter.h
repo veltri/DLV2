@@ -41,6 +41,7 @@ public:
 	InputRewriter():predicateExtTable(PredicateExtTable::getInstance()), predicateTable(PredicateTable::getInstance()) {};
 	virtual void translateAggregate(Rule* rule, vector<Rule*>& ruleRewrited, OrderRule* orderRule=nullptr) = 0;
 	virtual void translateChoice(Rule*& rule, vector<Rule*>& ruleRewrited) = 0;
+	virtual void projectAtoms(Rule*& rule, vector<Rule*>& ruleRewrited)=0;
 	virtual void  chooseBestSaviorForAggregate(Rule* rule, AggregateElement* aggregateElement, set_term& unsafeVars, vector<Atom*>& atomToAdd, const OrderRule& orderRule) = 0;
 	virtual ~InputRewriter(){};
 protected:
@@ -76,6 +77,8 @@ public:
 	 */
 	virtual void translateChoice(Rule*& rule, vector<Rule*>& ruleRewrited);
 
+	void projectAtoms(Rule*& rule, vector<Rule*>& ruleRewrited);
+
 	/**
 	 * This template method searches for possible saviors of the negative atoms in the given aggregateElement.
 	 * Each possible savior found is passed to the saviorChoosingPolicy object that will independently select
@@ -99,6 +102,8 @@ protected:
 	virtual void rewriteChoiceConstraint(const vector<AggregateElement*>& elements, Atom* auxiliaryAtomBody, Atom* choice, vector<Rule*>& ruleRewrited);
 
 	virtual void createBodyRuleChoice(unsigned& id, unsigned& counter,ChoiceElement* choiceElement,Atom* auxiliaryAtomBody,set_term &terms_in_bodychoice,vector<Rule*>& ruleRewrited,vector<Atom*>& naf_elements,AggregateElement*& element,bool defaultGuard);
+private:
+	unordered_map<Predicate*,vector<pair<unordered_set<unsigned>,Predicate*>>,IndexForTable<Predicate>,IndexForTable<Predicate>> projectedAtoms;
 };
 
 class ChoiceBaseInputRewriter : public BaseInputRewriter{

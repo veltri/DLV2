@@ -28,6 +28,110 @@ Atom* InputRewriter::generateNewAuxiliaryAtom(string& predicate_name, vector<Ter
 	return auxiliaryAtom;
 }
 
+void BaseInputRewriter::projectAtoms(Rule*& rule, vector<Rule*>& ruleRewrited){
+	vector<set_term>atomsVariables;
+	atomsVariables.resize(rule->getSizeBody());
+
+	for(unsigned i=0;i<rule->getSizeBody();i++){
+		Atom* atom=rule->getAtomInBody(i);
+		if(atom->isAggregateAtom()){
+			atomsVariables[i]=atom->getSharedVariable(rule->getBeginBody(),rule->getEndBody());
+			set_term guards=atom->getGuardVariable();
+			atomsVariables[i].insert(guards.begin(),guards.end());
+		}
+		else
+			atomsVariables[i]=atom->getVariable();
+	}
+
+	unsigned int index_atom=0;
+	for(auto it=rule->getBeginBody();it!=rule->getEndBody();++it,++index_atom){
+
+		Atom *atom=rule->getAtomInBody(index_atom);
+		unordered_set<unsigned> termToFilter;
+		for (unsigned t = 0; t < atom->getTermsSize(); ++t) {
+			if(!(atom->isClassicalLiteral() && ! atom->isNegative()))continue;
+			Term* term = atom->getTerm(t);
+			if (term->getType() == VARIABLE) {
+				if (rule->isAnOutputVariable(term))
+					continue;
+
+				bool found = false;
+				for (unsigned i = 0; i < rule->getSizeBody(); ++i) {
+					if (index_atom != i && atomsVariables[i].count(term)) {
+						found = true;
+						break;
+					}
+				}
+				if (found)
+					continue;
+
+				for (unsigned t1 = 0; t1 < atom->getTermsSize(); ++t1) {
+					Term* term1 = atom->getTerm(t1);
+					if (t1 != t && term1->containsVariable(term)) {
+						found = true;
+						break;
+					}
+				}
+				if (found)
+					continue;
+
+				termToFilter.insert(t);
+			}
+		}
+		if(termToFilter.size()==0)continue;
+		vector<Term*> terms;
+		for(unsigned i=0;i<atom->getTermsSize();i++)
+			if(!termToFilter.count(i))
+				terms.push_back(atom->getTerm(i));
+		Atom *projAtom=nullptr;
+		if(projectedAtoms.count(atom->getPredicate())){
+			for(auto& aux:projectedAtoms[atom->getPredicate()]){
+				if(aux.first.size()==termToFilter.size() && Utils::isContained(aux.first,termToFilter)){
+					projAtom=new ClassicalLiteral(aux.second,terms,false,atom->isNegative());
+				}
+			}
+		}
+		if(projAtom==nullptr){
+			unsigned auxNumber=IdGenerator::getInstance()->getNewId();
+			string newName="aux"+to_string(auxNumber);
+			Predicate *newPred=new Predicate(newName,terms.size());
+			projAtom=new ClassicalLiteral(newPred,terms,false,atom->isNegative());
+			newPred->setHiddenForPrinting(true);
+			PredicateTable::getInstance()->insertPredicate(newPred);
+			PredicateExtTable::getInstance()->addPredicateExt(newPred);
+
+			projectedAtoms[atom->getPredicate()].push_back({termToFilter,newPred});
+			Rule *newRule=new Rule;
+			vector<Term*> termsInHead;
+			vector<Term*> termsInBody;
+			unordered_map<unsigned,Term*> mapTermVariable;
+			for(unsigned i=0;i<atom->getTermsSize();i++){
+				if(termToFilter.count(i))continue;
+				string name="X"+to_string(i);
+				Term* newTerm =TermTable::getInstance()->generateNewVariable(name);
+				termsInHead.push_back(newTerm);
+				mapTermVariable[i]=newTerm;
+			}
+			for(unsigned i=0;i<atom->getTermsSize();i++){
+				if(!termToFilter.count(i))
+					termsInBody.push_back(mapTermVariable[i]);
+				else{
+					string name="X"+to_string(i);
+					Term* newTerm =TermTable::getInstance()->generateNewVariable(name);
+					termsInBody.push_back(newTerm);
+				}
+
+			}
+
+			newRule->addInHead(new ClassicalLiteral(projAtom->getPredicate(),termsInHead,false,false));
+			newRule->addInBody(new ClassicalLiteral(atom->getPredicate(),termsInBody,false,false));
+			ruleRewrited.push_back(newRule);
+		}
+		rule->setAtomInBody(index_atom,projAtom);
+		delete atom;
+	}
+}
+
 void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited, OrderRule* orderRule) {
 
 	/// First, auxiliary rules for aggregates elements are generated

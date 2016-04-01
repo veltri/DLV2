@@ -46,6 +46,14 @@ public:
 		return term;
 	}
 
+	virtual Term* generateNewVariable(string name){
+		string s(name);
+		Term * term=new VariableTerm(false,s);
+		addTerm(term);
+		return term;
+
+	}
+
 	// Method for fetch the instance of singleton
     // If termTable is null instance the table based on parameter in the configuration
 	static TermTable* getInstance();
