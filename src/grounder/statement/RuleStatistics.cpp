@@ -105,7 +105,7 @@ string RuleStatistics::rawRuleStat(unsigned index){
 	for(unsigned i=0;i<rs.bodyPES.size();i++){
 		if(rs.bodyPES[i].first.size()==0)continue;
 		double size=rs.bodyPES[i].second;
-		ss+=appendSpace(rs.bodyPES[i].first,ATOMSPACE)+"P.E.S. = "+to_string(rs.bodyPES[i].second)+'\n';
+		ss+=appendSpace(rs.bodyPES[i].first,ATOMSPACE)+"SIZE = "+to_string(rs.bodyPES[i].second)+'\n';
 		for(auto& sel:rs.varSelectivity[i]){
 			unsigned select=sel.second/size*100;
 			ss+=sel.first+"  Selectivity = "+to_string(sel.second)+"("+to_string(select)+"%)"+'\n';
