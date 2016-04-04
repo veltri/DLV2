@@ -31,7 +31,7 @@ Atom* InputRewriter::generateNewAuxiliaryAtom(string& predicate_name, vector<Ter
 void BaseInputRewriter::projectAtoms(Rule*& rule, vector<Rule*>& ruleRewrited){
 	vector<set_term>atomsVariables;
 	atomsVariables.resize(rule->getSizeBody());
-
+	set_term varInHead;
 	for(unsigned i=0;i<rule->getSizeBody();i++){
 		Atom* atom=rule->getAtomInBody(i);
 		if(atom->isAggregateAtom()){
@@ -43,6 +43,12 @@ void BaseInputRewriter::projectAtoms(Rule*& rule, vector<Rule*>& ruleRewrited){
 			atomsVariables[i]=atom->getVariable();
 	}
 
+	for (auto it=rule->getBeginHead();it!=rule->getEndHead(); ++it) {
+		Atom* atom=*it;
+		const set_term& variables=atom->getVariable();
+		varInHead.insert(variables.begin(),variables.end());
+	}
+
 	unsigned int index_atom=0;
 	for(auto it=rule->getBeginBody();it!=rule->getEndBody();++it,++index_atom){
 
@@ -52,7 +58,7 @@ void BaseInputRewriter::projectAtoms(Rule*& rule, vector<Rule*>& ruleRewrited){
 			if(!(atom->isClassicalLiteral() && ! atom->isNegative()))continue;
 			Term* term = atom->getTerm(t);
 			if (term->getType() == VARIABLE) {
-				if (rule->isAnOutputVariable(term))
+				if (varInHead.count(term))
 					continue;
 
 				bool found = false;
