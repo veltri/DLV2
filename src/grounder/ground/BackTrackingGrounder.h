@@ -177,6 +177,8 @@ protected:
 	void printAssignment();
 #endif
 
+	vector<bool> headAtomsWithTheSamePredicate;
+
 private:
 	void findBoundTerms(unsigned int index_current_atom, unsigned position, Atom* current_atom);
 	void setIndexingStructureInHeadAndBody(unsigned position, unsigned atomPos, PredicateExtension* predicateExtension, Predicate* predicate, unordered_set<index_object>* componentPredicateInHead, unsigned table);

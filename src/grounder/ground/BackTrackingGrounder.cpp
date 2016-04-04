@@ -269,13 +269,15 @@ void BackTrackingGrounder::onGroundRuleToPrint(const vector<bool>& newAtomsInHea
 	for (unsigned i = 0; i < currentRule->getSizeHead(); ++i) {
 		if (newAtomsInHead[i]) {
 			Atom* headGroundAtom=groundTemplateAtomHead[i];
-			PredicateExtension* predicateExt = predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
 			Atom* searchAtom=nullptr;
-			for(auto atomSearcher:predicate_searchInsert_atomSearcher[i][0]){
-				if(atomSearcher==nullptr) continue;
-				searchAtom=atomSearcher->find(headGroundAtom);
-				if(searchAtom!=nullptr)
-					break;
+			PredicateExtension* predicateExt = predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
+			if(headAtomsWithTheSamePredicate[i]){
+				for(auto atomSearcher:predicate_searchInsert_atomSearcher[i][0]){
+					if(atomSearcher==nullptr) continue;
+					searchAtom=atomSearcher->find(headGroundAtom);
+					if(searchAtom!=nullptr)
+						break;
+				}
 			}
 			if(searchAtom==nullptr){
 				Atom* newAtom = groundTemplateAtomHead[i]->clone();
@@ -471,6 +473,18 @@ void BackTrackingGrounder::inizialize(Rule* rule, unordered_set<index_object>* c
 
 	outputVariablesInAtoms.clear();
 	outputVariablesInAtoms.resize(currentRule->getSizeBody());
+
+	headAtomsWithTheSamePredicate.resize(currentRule->getSizeHead(),false);
+	for(unsigned i=0;i<currentRule->getSizeHead();++i){
+		Predicate* p1=currentRule->getAtomInHead(i)->getPredicate();
+		for(unsigned j=i+1;j<currentRule->getSizeHead();++j){
+			Predicate* p2=currentRule->getAtomInHead(j)->getPredicate();
+			if(p2->getIndex()==p1->getIndex()){
+				headAtomsWithTheSamePredicate[i]=true;
+				headAtomsWithTheSamePredicate[j]=true;
+			}
+		}
+	}
 
 
 	if(ground_rule!=0)
