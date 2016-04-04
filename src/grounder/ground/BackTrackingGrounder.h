@@ -178,6 +178,7 @@ protected:
 #endif
 
 	vector<bool> headAtomsWithTheSamePredicate;
+	vector<bool> newAtomsInHead;
 
 private:
 	void findBoundTerms(unsigned int index_current_atom, unsigned position, Atom* current_atom);

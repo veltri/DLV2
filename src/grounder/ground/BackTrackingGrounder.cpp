@@ -297,31 +297,31 @@ void BackTrackingGrounder::onGroundRuleToPrint(const vector<bool>& newAtomsInHea
 bool BackTrackingGrounder::foundAssignment() {
 	callFoundAssignment=true;
 
+	unsigned sizeHead=currentRule->getSizeHead();
 	bool isAChoiceRule=currentRule->isChoiceRule();
 	bool strongConstraint=currentRule->isAStrongConstraint();
 	bool isWeak=currentRule->isWeakConstraint();
 
 	bool undefinedAtomInBody=ground_rule->areThereUndefinedAtomInBody();
-	bool head_true=(currentRule->getSizeHead() == 1  && !isAChoiceRule) && (!undefinedAtomInBody);
+	bool head_true=(sizeHead == 1  && !isAChoiceRule) && (!undefinedAtomInBody);
 	bool ground_new_atom=false;
 	bool find_new_true_atom=false;
 	bool foundATrueAtomInDisjuction=false;
 
-	vector<bool> newAtomsInHead;
-	newAtomsInHead.resize(currentRule->getSizeHead(),false);
-
 	unsigned atom_counter=0;
 	Atom *searchAtom=nullptr;
 	if(isAChoiceRule){
-		if(Options::globalOptions()->getRewritingType()==COMPACT_NATIVE_CHOICE){
-			groundChoiceNatively(find_new_true_atom,ground_new_atom);
-			if(ground_rule!=0 && ground_rule->getSizeHead()==1 && isAChoiceRule && ground_rule->getAtomInHead(0)->getChoiceElementsSize()==0)
-				return false;
-		}
-		else
+//		if(Options::globalOptions()->getRewritingType()==COMPACT_NATIVE_CHOICE){
+//			groundChoiceNatively(find_new_true_atom,ground_new_atom);
+//			if(ground_rule!=0 && ground_rule->getSizeHead()==1 && isAChoiceRule && ground_rule->getAtomInHead(0)->getChoiceElementsSize()==0)
+//				return false;
+//		}
+//		else
 			groundChoice(find_new_true_atom,ground_new_atom);
 	}
 
+	newAtomsInHead.assign(sizeHead,false);
+//	memset(&newAtomsInHead[0],false,newAtomsInHead.size());
 
 	for(auto atom=currentRule->getBeginHead();atom!=currentRule->getEndHead()&&!isAChoiceRule;++atom,++atom_counter){
 
@@ -362,58 +362,72 @@ bool BackTrackingGrounder::foundAssignment() {
 
 	}
 
-	// If the rule has possible undef atoms in its body its printing is postponed to the end of grounding
-	// So that:
-	// 	- if the printing type is numeric we give to that atoms the right indices,
-	// 	- independently from the output format, we simplify that atoms.
-	// In this case ground_rule content cannot be changed (for example, substituting atoms in its body),
-	// so after a ground rule is saved to be processed later, the ground_rule must be reinitialized coping
-	// into it, the body of the saved ground rule.
-	if(!atomsPossibleUndef.empty()){
-		for (unsigned i = 0; i < currentRule->getSizeHead(); ++i) {
+	// FIXME In the can simplification is added to choice rules, be aware that atoms in head are added in predicate extension
+	// before the actual simplification (see the method groundChoice)
+	if(isAChoiceRule || strongConstraint || isWeak || find_new_true_atom
+			||(!foundATrueAtomInDisjuction && undefinedAtomInBody)
+			||(sizeHead==1 && !isAChoiceRule && ground_new_atom)
+			||(sizeHead>1 && !foundATrueAtomInDisjuction)){
+		if(isWeak)
+			ground_rule->setWeightLevelLabel(currentRule->groundWeightLevel(current_assignment));
+		for (unsigned i = 0; i < sizeHead; ++i) {
 			if (newAtomsInHead[i]) {
-				Atom* newAtom = groundTemplateAtomHead[i]->clone();
-				PredicateExtension* predicateExt = predicateExtTable->getPredicateExt(newAtom->getPredicate());
-				predicateExt->addAtom(newAtom,predicate_searchInsert_table[i][0].first,iterationToInsert);
-				ground_rule->setAtomInHead(i, newAtom);
+				Atom* headGroundAtom=groundTemplateAtomHead[i];
+				Atom* searchAtom=nullptr;
+				PredicateExtension* predicateExt = predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
+				if(headAtomsWithTheSamePredicate[i]){
+					for(auto atomSearcher:predicate_searchInsert_atomSearcher[i][0]){
+						if(atomSearcher==nullptr) continue;
+						searchAtom=atomSearcher->find(headGroundAtom);
+						if(searchAtom!=nullptr)
+							break;
+					}
+				}
+				if(searchAtom==nullptr){
+					Atom* newAtom = groundTemplateAtomHead[i]->clone();
+					predicateExt->addAtom(newAtom,predicate_searchInsert_table[i][0].first,iterationToInsert);
+					ground_rule->setAtomInHead(i, newAtom);
+				}
+				else
+					ground_rule->setAtomInHead(i, searchAtom);
 			}
 		}
-		atomsPossibleUndefPositions.push_back(atomsPossibleUndef);
-		rulesWithPossibleUndefAtoms.push_back(ground_rule);
-		Rule* savedRule=ground_rule;
-		ground_rule=new Rule(true, currentRule->getSizeHead(), currentRule->getSizeBody());
-		for(unsigned i=0;i<currentRule->getSizeBody();i++){
-			Atom* atom=savedRule->getAtomInBody(i);
-			if(atom!=nullptr && ((atom->isClassicalLiteral() && atom->isNegative()) || atom->isAggregateAtom()))
-				substiteInGroundRule(i,atom->clone());
-			else
-				substiteInGroundRule(i,atom);
-			ground_rule->setAtomToSimplifyInBody(i,savedRule->isAtomToSimplifyInBody(i));
+		// If the rule has possible undef atoms in its body its printing is postponed to the end of grounding
+		// So that:
+		// 	- if the printing type is numeric we give to that atoms the right indices,
+		// 	- independently from the output format, we simplify that atoms.
+		// In this case ground_rule content cannot be changed (for example, substituting atoms in its body),
+		// so after a ground rule is saved to be processed later, the ground_rule must be reinitialized coping
+		// into it, the body of the saved ground rule.
+		if(!atomsPossibleUndef.empty()){
+//			for (unsigned i = 0; i < sizeHead; ++i) {
+//				if (newAtomsInHead[i]) {
+//					Atom* newAtom = groundTemplateAtomHead[i]->clone();
+//					PredicateExtension* predicateExt = predicateExtTable->getPredicateExt(newAtom->getPredicate());
+//					predicateExt->addAtom(newAtom,predicate_searchInsert_table[i][0].first,iterationToInsert);
+//					ground_rule->setAtomInHead(i, newAtom);
+//				}
+//			}
+			atomsPossibleUndefPositions.push_back(atomsPossibleUndef);
+			rulesWithPossibleUndefAtoms.push_back(ground_rule);
+			Rule* savedRule=ground_rule;
+			ground_rule=new Rule(true, sizeHead, currentRule->getSizeBody());
+			for(unsigned i=0;i<currentRule->getSizeBody();i++){
+				Atom* atom=savedRule->getAtomInBody(i);
+				if(atom!=nullptr && ((atom->isClassicalLiteral() && atom->isNegative()) || atom->isAggregateAtom()))
+					substiteInGroundRule(i,atom->clone());
+				else
+					substiteInGroundRule(i,atom);
+				ground_rule->setAtomToSimplifyInBody(i,savedRule->isAtomToSimplifyInBody(i));
+			}
 		}
-	}
-
-	else{
-		// FIXME In the can simplification is added to choice rules, be aware that atoms in head are added in predicate extension
-		// before the actual simplification (see the method groundChoice)
-		if(isAChoiceRule)
-			onGroundRuleToPrint(newAtomsInHead);
-		else if(strongConstraint)
-			onGroundRuleToPrint(newAtomsInHead);
-		else if(isWeak){
-			ground_rule->setWeightLevelLabel(currentRule->groundWeightLevel(current_assignment));
-			onGroundRuleToPrint(newAtomsInHead);
-		}
-		else if(find_new_true_atom)
-			onGroundRuleToPrint(newAtomsInHead);
-		else if(!foundATrueAtomInDisjuction && undefinedAtomInBody)
-			onGroundRuleToPrint(newAtomsInHead);
-		else if(currentRule->getSizeHead()==1 && !isAChoiceRule && ground_new_atom)
-			onGroundRuleToPrint(newAtomsInHead);
-		else if(currentRule->getSizeHead()>1 && !foundATrueAtomInDisjuction)
-			onGroundRuleToPrint(newAtomsInHead);
 		else
-			trace_action_tag(grounding,1,cerr<<"Ground Rule Produced Simplified."<<endl;);
+			outputBuilder->onRule(ground_rule);
+		if (printStats)
+			rstats->groundNewRule(currentRule->getIndex());
+		trace_action_tag(grounding,1,cerr<<"Ground Rule Produced: ";ground_rule->print(cerr);cerr<<endl;);
 	}
+//	trace_action_tag(grounding,1,cerr<<"Ground Rule Produced Simplified."<<endl;);
 	if(strongConstraint && !undefinedAtomInBody){throw ConstrainException{};};
 
 	return ground_new_atom;
@@ -474,6 +488,7 @@ void BackTrackingGrounder::inizialize(Rule* rule, unordered_set<index_object>* c
 	outputVariablesInAtoms.clear();
 	outputVariablesInAtoms.resize(currentRule->getSizeBody());
 
+	newAtomsInHead.resize(currentRule->getSizeHead(),false);
 	headAtomsWithTheSamePredicate.resize(currentRule->getSizeHead(),false);
 	for(unsigned i=0;i<currentRule->getSizeHead();++i){
 		Predicate* p1=currentRule->getAtomInHead(i)->getPredicate();
