@@ -343,7 +343,14 @@ bool BackTrackingGrounder::foundAssignment() {
 
 			headGroundAtom->setFact(head_true);
 			if(head_true) foundATrueAtomInDisjuction=true;
-			newAtomsInHead[atom_counter]=true;
+			if(sizeHead==1){
+				PredicateExtension* predicateExt = predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
+				Atom* newAtom = groundTemplateAtomHead[atom_counter]->clone();
+				predicateExt->addAtom(newAtom,predicate_searchInsert_table[atom_counter][0].first,iterationToInsert);
+				ground_rule->setAtomInHead(atom_counter, newAtom);
+			}
+			else
+				newAtomsInHead[atom_counter]=true;
 
 		}else{
 			//TODO If searchAtom is true ??? {a|b. a.} o {a :- b(X,Y).b(1,1).b(1,2)|d.}
@@ -369,26 +376,28 @@ bool BackTrackingGrounder::foundAssignment() {
 			||(sizeHead>1 && !foundATrueAtomInDisjuction)){
 		if(isWeak)
 			ground_rule->setWeightLevelLabel(currentRule->groundWeightLevel(current_assignment));
-		for (unsigned i = 0; i < sizeHead; ++i) {
-			if (newAtomsInHead[i]) {
-				Atom* headGroundAtom=groundTemplateAtomHead[i];
-				Atom* searchAtom=nullptr;
-				PredicateExtension* predicateExt = predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
-				if(headAtomsWithTheSamePredicate[i]){
-					for(auto atomSearcher:predicate_searchInsert_atomSearcher[i][0]){
-						if(atomSearcher==nullptr) continue;
-						searchAtom=atomSearcher->find(headGroundAtom);
-						if(searchAtom!=nullptr)
-							break;
+		if(sizeHead>1){
+			for (unsigned i = 0; i < sizeHead; ++i) {
+				if (newAtomsInHead[i]) {
+					Atom* headGroundAtom=groundTemplateAtomHead[i];
+					Atom* searchAtom=nullptr;
+					PredicateExtension* predicateExt = predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
+					if(headAtomsWithTheSamePredicate[i]){
+						for(auto atomSearcher:predicate_searchInsert_atomSearcher[i][0]){
+							if(atomSearcher==nullptr) continue;
+							searchAtom=atomSearcher->find(headGroundAtom);
+							if(searchAtom!=nullptr)
+								break;
+						}
 					}
+					if(searchAtom==nullptr){
+						Atom* newAtom = groundTemplateAtomHead[i]->clone();
+						predicateExt->addAtom(newAtom,predicate_searchInsert_table[i][0].first,iterationToInsert);
+						ground_rule->setAtomInHead(i, newAtom);
+					}
+					else
+						ground_rule->setAtomInHead(i, searchAtom);
 				}
-				if(searchAtom==nullptr){
-					Atom* newAtom = groundTemplateAtomHead[i]->clone();
-					predicateExt->addAtom(newAtom,predicate_searchInsert_table[i][0].first,iterationToInsert);
-					ground_rule->setAtomInHead(i, newAtom);
-				}
-				else
-					ground_rule->setAtomInHead(i, searchAtom);
 			}
 		}
 		// If the rule has possible undef atoms in its body its printing is postponed to the end of grounding
