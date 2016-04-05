@@ -150,6 +150,16 @@ public:
 	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
 };
 
+class CombinedCriterion5 : public CombinedCriterion {
+public:
+	CombinedCriterion5(Rule* rule):CombinedCriterion(rule){}
+	CombinedCriterion5(Rule* rule,Priority p):CombinedCriterion(rule,p){}
+	virtual ~CombinedCriterion5(){}
+	virtual double manageEqualWeights(unsigned originalPosition);
+	unsigned countVariablesOccurencies(unsigned originalPosition);
+
+};
+
 class IndexingArgumentsOrderRuleGroundable  : public AllOrderRuleGroundable{
 public:
 	IndexingArgumentsOrderRuleGroundable(Rule* rule):AllOrderRuleGroundable(rule),DOUBLE_INDEX_THRESHOLD(0.3),currentJoinSize(1){}
@@ -257,6 +267,9 @@ public:
 			case DLV_ORDERING_FUNCTION:
 				return new CombinedCriterion3(rule);
 				break;
+			case DLV_ORDERING_VARS_OCCURENCIES:
+				return new CombinedCriterion5(rule);
+				break;
 			default:
 				return new CombinedCriterion(rule);
 				break;
@@ -265,7 +278,7 @@ public:
 	static bool isAValidOrderingType(unsigned orderingType){
 		if(orderingType==NO_ORDERING || orderingType==DLV_ORDERING || orderingType==INDEXING_ORDERING || orderingType==DLV_INDEXING_ORDERING
 			|| orderingType==DLV_BINDER_ORDERING || orderingType==DLV_BINDER_INDEXING_BOUND_ATOMS_ORDERING
-			|| orderingType==BINDER_ORDERING || orderingType==DLV_ORDERING_FUNCTION)
+			|| orderingType==BINDER_ORDERING || orderingType==DLV_ORDERING_FUNCTION || orderingType==DLV_ORDERING_VARS_OCCURENCIES)
 			return true;
 		return false;
 	}

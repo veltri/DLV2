@@ -556,6 +556,31 @@ double CombinedCriterion4::assignWeightPositiveClassicalLit(Atom* atom, unsigned
 	return sel_c;
 }
 
+double CombinedCriterion5::manageEqualWeights(unsigned originalPosition){
+	unsigned numVar=this->rule->getVariablesSize();
+	double weight=CombinedCriterion::manageEqualWeights(originalPosition);
+	unsigned occurencies=countVariablesOccurencies(originalPosition);
+	return (numVar-occurencies)*weight;
+}
+
+unsigned CombinedCriterion5::countVariablesOccurencies(unsigned originalPosition) {
+	Atom* atom=rule->getAtomInBody(originalPosition);
+	unsigned numOccurrencies=0;
+	if(atom->isClassicalLiteral() && !atom->isNegative()){
+		set_term variables=atom->getVariable();
+		for(auto var:variables){
+			for(auto a:this->atomsToInsert){
+				if(originalPosition==a)continue;
+				for(auto v:atomsVariables[a])
+					if(v->getIndex()==var->getIndex())
+						numOccurrencies++;
+			}
+		}
+	}
+//	atom->print();cout<<" "<<numOccurrencies<<endl;
+	return numOccurrencies;
+}
+
 //double IndexingArgumentsOrderRuleGroundable::manageEqualWeights(unsigned originalPosition) {
 //	Atom* atom=rule->getAtomInBody(originalPosition);
 //	Predicate* predicate=atom->getPredicate();
