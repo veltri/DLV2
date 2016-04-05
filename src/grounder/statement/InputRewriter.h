@@ -38,10 +38,12 @@ private:
 /// Abstract class that defines how to rewrite the input program
 class InputRewriter {
 public:
+	using PredicateToSkip=function<bool(Predicate*,bool recursive)>;
+
 	InputRewriter():predicateExtTable(PredicateExtTable::getInstance()), predicateTable(PredicateTable::getInstance()) {};
 	virtual void translateAggregate(Rule* rule, vector<Rule*>& ruleRewrited, OrderRule* orderRule=nullptr) = 0;
 	virtual void translateChoice(Rule*& rule, vector<Rule*>& ruleRewrited) = 0;
-	virtual void projectAtoms(Rule*& rule, vector<Rule*>& ruleRewrited)=0;
+	virtual void projectAtoms(Rule*& rule, vector<Rule*>& ruleRewrited,unordered_set<unsigned>* recursivePredicate=nullptr,PredicateToSkip f=[](Predicate* p,bool recursive){return false;})=0;
 	virtual void  chooseBestSaviorForAggregate(Rule* rule, AggregateElement* aggregateElement, set_term& unsafeVars, vector<Atom*>& atomToAdd, const OrderRule& orderRule) = 0;
 	virtual ~InputRewriter(){};
 protected:
@@ -77,7 +79,7 @@ public:
 	 */
 	virtual void translateChoice(Rule*& rule, vector<Rule*>& ruleRewrited);
 
-	void projectAtoms(Rule*& rule, vector<Rule*>& ruleRewrited);
+	virtual void projectAtoms(Rule*& rule, vector<Rule*>& ruleRewrited,unordered_set<unsigned>* recursivePredicate=nullptr,PredicateToSkip f=[](Predicate* p,bool recursive){return false;});
 
 	/**
 	 * This template method searches for possible saviors of the negative atoms in the given aggregateElement.

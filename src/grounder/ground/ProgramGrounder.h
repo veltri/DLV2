@@ -20,6 +20,7 @@
 #include "../output/NumericOutputBuilder.h"
 #include "../exception/ConstrainException.h"
 #include "../statement/RuleStatistics.h"
+#include "../statement/InputRewriter.h"
 
 
 
@@ -184,6 +185,7 @@ private:
 	void findRecursivePredicatesInComponentRules(const unordered_set<index_object>& componentPredicateInHead, vector<unsigned>& recursivePredicatesPositions, Rule* rule, vector<unsigned >& orderedBody);
 	void orderPositiveAtomsBody(vector<unsigned>& originalOrderBody,Rule* rule, unordered_set<index_object>* componentPredicateInHead);
 	void orderPositiveAtomsBody(Rule* rule);
+	void projectAtomsInRule(vector<Rule*>& exitRules,vector<Rule*>& recursiveRule,vector<Rule*>& constraint,unordered_set<index_object>& recursivePred,BaseInputRewriter& rewriter);
 
 };
 

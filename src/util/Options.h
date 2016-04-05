@@ -152,6 +152,10 @@ namespace DLV2
 		this->compactFacts = compactFacts;
 	}
 
+	unsigned getRewProject(){
+		return rewProject;
+	}
+
     private:
 
         static Options* instance;
@@ -233,6 +237,8 @@ namespace DLV2
     	bool compactFacts;
 
     	unsigned printGroundStats;
+
+    	unsigned rewProject;
     };
     
 };

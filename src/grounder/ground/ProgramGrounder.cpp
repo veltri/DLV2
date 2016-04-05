@@ -89,6 +89,65 @@ void ProgramGrounder::orderPositiveAtomsBody(vector<unsigned>& originalOrderBody
 	}
 }
 
+void ProgramGrounder::projectAtomsInRule(vector<Rule*>& exitRules,vector<Rule*>& recursiveRule, vector<Rule*>& constraint,unordered_set<index_object>& recursivePred,BaseInputRewriter& rewriter) {
+
+	for(unsigned i=0;i<exitRules.size();i++){
+		vector<Rule*> rules;
+		rewriter.projectAtoms(exitRules[i],rules,&recursivePred,[](Predicate* p,bool recursive){
+			return p->isSolved();
+		});
+		unsigned start=i;
+		for(unsigned j=0;j<rules.size();j++){
+			exitRules.insert(exitRules.begin()+start+j,rules[j]);
+			++i;
+		}
+	}
+
+	for(unsigned i=0;i<recursiveRule.size();i++){
+		vector<Rule*> rules;
+		rewriter.projectAtoms(recursiveRule[i],rules,&recursivePred,[](Predicate* p,bool recursive){
+			return p->isSolved()&&!recursive;
+		});
+		unsigned start=i;
+		for(unsigned j=0;j<rules.size();j++){
+			Predicate *predicateInBody=rules[j]->getAtomInBody(0)->getPredicate();
+			if(recursivePred.count(predicateInBody->getIndex())){
+				recursivePred.insert(rules[j]->getAtomInHead(0)->getPredicate()->getIndex());
+				recursiveRule.insert(recursiveRule.begin()+start+j,rules[j]);
+				++i;
+			}else
+				exitRules.push_back(rules[j]);
+
+		}
+	}
+
+	for(unsigned i=0;i<constraint.size();i++){
+		vector<Rule*> rules;
+		rewriter.projectAtoms(constraint[i],rules,&recursivePred,[](Predicate* p,bool recursive){
+			return p->isSolved();
+		});
+		unsigned start=i;
+		for(unsigned j=0;j<rules.size();j++){
+			constraint.insert(constraint.begin()+start+j,rules[j]);
+			++i;
+		}
+	}
+
+//	cout<<"AFTER PROJ"<<endl;
+//	cout<<"EXIT"<<endl;
+//	for(auto r:exitRules)
+//		r->print();
+//	cout<<"RECURSIVE"<<endl;
+//	for(auto r:recursiveRule)
+//		r->print();
+//	cout<<"CONSTRAINT"<<endl;
+//	for(auto r:constraint)
+//		r->print();
+//
+//	cout<<"END"<<endl;
+
+}
+
 void ProgramGrounder::orderPositiveAtomsBody(Rule* rule) {
 	rule->computeVariablesLocalIndices();
 	predicate_searchInsert_atomSearcher.clear();
@@ -104,6 +163,8 @@ void ProgramGrounder::ground() {
 	//Create the dependency graph
 	statementDependency->createDependencyGraph(predicateTable);
 	bool foundEmptyConstraint=false;
+	bool projectAtomsInRules=Options::globalOptions()->getRewProject()==2;
+	BaseInputRewriter rewriter;
 
 	// Create the component graph and compute an ordering among components.
 	// Components' rules are classified as exit or recursive.
@@ -127,6 +188,11 @@ void ProgramGrounder::ground() {
 		trace_msg(grounding,1,"Component: "<<component);
 		trace_msg(grounding,1,"Exit rules: "<<exitRules[component].size());
 		trace_msg(grounding,1,"Recursive rules: "<<recursiveRules[component].size());
+
+//		if(projectAtomsInRules){
+//			projectAtomsInRule(exitRules[component],recursiveRules[component],constraintRules[component],componentPredicateInHead[component],rewriter);
+//		}
+
 
 		iteration=0;
 		iterationToInsert=0;
@@ -613,6 +679,8 @@ void ProgramGrounder::setDefaultAtomSearchers(Rule* rule, unordered_set<index_ob
 
 
 }
+
+
 
 }}
 

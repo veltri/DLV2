@@ -57,7 +57,8 @@ InMemoryInputBuilder::InMemoryInputBuilder() :
 	weight(nullptr),
 	level(nullptr),
 	hiddenNewPredicate(false),
-	currentRuleOrdering(-1)
+	currentRuleOrdering(-1),
+	projectAtom(false)
 {
 
 	Options * opt=Options::globalOptions();
@@ -86,6 +87,7 @@ InMemoryInputBuilder::InMemoryInputBuilder() :
 			predicateTable->getInstance()->insertPredicate(predicate);
 		}
 	}
+	projectAtom=(opt->getRewProject()==1);
 
 }
 
@@ -704,6 +706,9 @@ void InMemoryInputBuilder::rewriteAggregate(Rule* rule,bool clear) {
 		statementDependency->addRuleMapping(rule);
 		return;
 	}
+
+	projectionRewrite(rule);
+
 	OrderRule orderRule(rule);
 	bool isSafe = orderRule.order();
 	safetyError(isSafe,rule);
@@ -746,6 +751,9 @@ void InMemoryInputBuilder::rewriteAggregate(Rule* rule,bool clear) {
 	inputRewriter->translateAggregate(rule, rules, &orderRule);
 
 	for (auto r : rules) {
+		{
+			projectionRewrite(r);
+		}
 		OrderRule orderR(r);
 		isSafe = orderR.order();
 		if (!isSafe)
@@ -773,12 +781,26 @@ void InMemoryInputBuilder::rewriteChoice(Rule* rule) {
 	clearAnnotationsSetting();
 }
 
+void InMemoryInputBuilder::projectionRewrite(Rule* rule){
+	if(!projectAtom)return;
+	vector<Rule*> rules;
+	inputRewriter->projectAtoms(rule,rules);
+	for(auto r:rules){
+		statementDependency->addRuleMapping(r);
+		r->setUnsolvedPredicates();
+	}
+}
+
+
 void InMemoryInputBuilder::manageSimpleRule(Rule* rule,bool clear) {
 	if(currentRuleIsUnsafe){
 		safetyError(false,rule);
 		statementDependency->addRuleMapping(rule);
 		return;
 	}
+	//Do projection rewriting for each rule parsered
+	projectionRewrite(rule);
+
 	OrderRule orderRule(rule);
 	bool isSafe = orderRule.order();
 	safetyError(isSafe,rule);

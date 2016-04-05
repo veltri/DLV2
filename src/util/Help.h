@@ -68,7 +68,7 @@ namespace DLV2
             std::cout << "--no-anonymous-filter                 - Disable the filter of the anonymous variable" << std::endl;
             std::cout << "--compact-facts                       - Assign the fact atom a unique index" << std::endl;
             std::cout << "--gstats                              - Display statistc of time and rule produced of the the program. Possible values = Text based:1, Interactive Console:2" << std::endl;
-
+            std::cout << "--project                             - Project atom with irrelevant variables, Possible values = 1 rewrite ever, 2 rewrite only the unsolved predicate." << std::endl;
 
             std::cout << separator << std::endl;
 

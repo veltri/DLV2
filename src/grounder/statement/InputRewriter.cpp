@@ -28,7 +28,11 @@ Atom* InputRewriter::generateNewAuxiliaryAtom(string& predicate_name, vector<Ter
 	return auxiliaryAtom;
 }
 
-void BaseInputRewriter::projectAtoms(Rule*& rule, vector<Rule*>& ruleRewrited){
+void BaseInputRewriter::projectAtoms(Rule*& rule, vector<Rule*>& ruleRewrited,unordered_set<unsigned>* recursivePredicate, function<bool(Predicate*,bool recursive)> f){
+	if(rule->getSizeBody()<=1)return;
+
+	//First find all the variable in the rule for each atom in the body and
+	// all the variable that are in the head of the rule
 	vector<set_term>atomsVariables;
 	atomsVariables.resize(rule->getSizeBody());
 	set_term varInHead;
@@ -49,42 +53,43 @@ void BaseInputRewriter::projectAtoms(Rule*& rule, vector<Rule*>& ruleRewrited){
 		varInHead.insert(variables.begin(),variables.end());
 	}
 
+	//For each atom in the body if is a classical literal and not negative, find the term to filter.
+	//A term is filtered if is a variable and not compare in the head of the rule, in some atom in the
+	//body of the rule and also check if the variable compare two or more times in the current atom.
+	// If the atom not contain term to filter we can skip this atom
 	unsigned int index_atom=0;
 	for(auto it=rule->getBeginBody();it!=rule->getEndBody();++it,++index_atom){
 
 		Atom *atom=rule->getAtomInBody(index_atom);
+		if(!(atom->isClassicalLiteral() && ! atom->isNegative()))continue;
+		bool recursive=(recursivePredicate!=nullptr)?recursivePredicate->count(atom->getPredicate()->getIndex()):false;
+		if(f(atom->getPredicate(),recursive))continue;
 		unordered_set<unsigned> termToFilter;
 		for (unsigned t = 0; t < atom->getTermsSize(); ++t) {
-			if(!(atom->isClassicalLiteral() && ! atom->isNegative()))continue;
 			Term* term = atom->getTerm(t);
 			if (term->getType() == VARIABLE) {
 				if (varInHead.count(term))
 					continue;
 
 				bool found = false;
-				for (unsigned i = 0; i < rule->getSizeBody(); ++i) {
-					if (index_atom != i && atomsVariables[i].count(term)) {
-						found = true;
-						break;
-					}
+				for (unsigned i = 0; i < rule->getSizeBody()&&!found; ++i) {
+					if (index_atom != i && atomsVariables[i].count(term)) found = true;
 				}
-				if (found)
-					continue;
 
-				for (unsigned t1 = 0; t1 < atom->getTermsSize(); ++t1) {
+				for (unsigned t1 = 0; t1 < atom->getTermsSize()&&!found; ++t1) {
 					Term* term1 = atom->getTerm(t1);
-					if (t1 != t && term1->containsVariable(term)) {
-						found = true;
-						break;
-					}
+					if (t1 != t && term1->containsVariable(term)) found = true;
 				}
-				if (found)
-					continue;
+				if (found)	continue;
 
 				termToFilter.insert(t);
 			}
 		}
 		if(termToFilter.size()==0)continue;
+		//We have to project the current variable with the variable that are not present in termToFilter.
+		//Then check if the atom is not already projected in previous rule else we create a new predicate and
+		// a new auxiliary rule for the projection.
+
 		vector<Term*> terms;
 		for(unsigned i=0;i<atom->getTermsSize();i++)
 			if(!termToFilter.count(i))
