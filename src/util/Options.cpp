@@ -75,6 +75,7 @@ namespace DLV2
 #define OPTIONID_predicateToFilter ('z' + 49)
 #define OPTIONID_compactFacts ('z' + 50)
 #define OPTIONID_gstats ('z' + 51)
+#define OPTIONID_project ('z' + 52)
 
 
 
@@ -137,7 +138,8 @@ Options::Options():
 		rewriteArith(false),
 		disabledAnonymousFilter(false),
 		compactFacts(false),
-		printGroundStats(0)
+		printGroundStats(0),
+		rewProject(0)
 {
 
 }
@@ -166,7 +168,8 @@ Options::Options(
 		rewriteArith(false),
 		disabledAnonymousFilter(false),
 		compactFacts(true),
-		printGroundStats(0)
+		printGroundStats(0),
+		rewProject(0)
 {
 
 }
@@ -226,9 +229,9 @@ Options::init(
 		{"filter",required_argument, NULL, OPTIONID_predicateToFilter},
 		{"compact-facts",required_argument, NULL, OPTIONID_compactFacts},
 		{"gstats",required_argument, NULL, OPTIONID_gstats},
+		{"project",required_argument, NULL, OPTIONID_project},
 
-
-        // Required at end of array. 
+		// Required at end of array.
         { NULL, 0, NULL, 0 }
     };
   
@@ -384,6 +387,10 @@ Options::init(
 
             case OPTIONID_gstats:
             	printGroundStats=atoi(optarg);
+				break;
+
+            case OPTIONID_project:
+            	rewProject=atoi(optarg);
 				break;
 
             default:

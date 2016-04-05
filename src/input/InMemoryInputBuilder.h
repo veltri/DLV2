@@ -170,6 +170,9 @@ private:
 	static void safetyError(bool condition, Rule* rule);
 	void clearAnnotationsSetting();
 	void manageRuleAnnotations(Rule* currentRule,bool rewritedRule=false);
+	void projectionRewrite(Rule* rule);
+
+	bool projectAtom;
 
 	static string safetyErrorMessage;
 
