@@ -317,19 +317,19 @@ bool BackTrackingGrounder::foundAssignment() {
 //				return false;
 //		}
 //		else
-			groundChoice(find_new_true_atom,ground_new_atom);
+		groundChoice(find_new_true_atom,ground_new_atom);
 	}
 
-	newAtomsInHead.assign(sizeHead,false);
-//	memset(&newAtomsInHead[0],false,newAtomsInHead.size());
 
 	for(auto atom=currentRule->getBeginHead();atom!=currentRule->getEndHead()&&!isAChoiceRule;++atom,++atom_counter){
+		newAtomsInHead[atom_counter]=false;
 
 		// When grounding head atoms, head template atoms are used in order to avoid the creation and deletion of atoms that are already present in the predicate extensions.
 		// In case an atom is not already present in the predicate extension then the corresponding grounded template atom is cloned
 		// and the atom obtained in this way is stored in the predicate extension.
-		Atom *& headGroundAtom=groundTemplateAtomHead[atom_counter];
+		Atom * headGroundAtom=groundTemplateAtomHead[atom_counter];
 		(*atom)->ground(current_assignment,headGroundAtom);
+
 		searchAtom=nullptr;
 		for(auto atomSearcher:predicate_searchInsert_atomSearcher[atom_counter][0]){
 			if(atomSearcher==nullptr) continue;
@@ -350,7 +350,6 @@ bool BackTrackingGrounder::foundAssignment() {
 
 			//Previus atom is undef and now is true
 			if(head_true && !searchAtom->isFact()){
-				foundATrueAtomInDisjuction=true;
 				searchAtom->setFact(true);
 				find_new_true_atom=true;
 			}
@@ -400,14 +399,6 @@ bool BackTrackingGrounder::foundAssignment() {
 		// so after a ground rule is saved to be processed later, the ground_rule must be reinitialized coping
 		// into it, the body of the saved ground rule.
 		if(!atomsPossibleUndef.empty()){
-//			for (unsigned i = 0; i < sizeHead; ++i) {
-//				if (newAtomsInHead[i]) {
-//					Atom* newAtom = groundTemplateAtomHead[i]->clone();
-//					PredicateExtension* predicateExt = predicateExtTable->getPredicateExt(newAtom->getPredicate());
-//					predicateExt->addAtom(newAtom,predicate_searchInsert_table[i][0].first,iterationToInsert);
-//					ground_rule->setAtomInHead(i, newAtom);
-//				}
-//			}
 			atomsPossibleUndefPositions.push_back(atomsPossibleUndef);
 			rulesWithPossibleUndefAtoms.push_back(ground_rule);
 			Rule* savedRule=ground_rule;
@@ -427,7 +418,6 @@ bool BackTrackingGrounder::foundAssignment() {
 			rstats->groundNewRule(currentRule->getIndex());
 		trace_action_tag(grounding,1,cerr<<"Ground Rule Produced: ";ground_rule->print(cerr);cerr<<endl;);
 	}
-//	trace_action_tag(grounding,1,cerr<<"Ground Rule Produced Simplified."<<endl;);
 	if(strongConstraint && !undefinedAtomInBody){throw ConstrainException{};};
 
 	return ground_new_atom;
