@@ -128,6 +128,9 @@ namespace grounder{
 	#define STATS_INTERACTIVE 2
 
 
+	#define FRONTEND_BRAVE 1
+	#define FRONTEND_CAUTIOUS 2
+
 	typedef unsigned index_object;
 
 };

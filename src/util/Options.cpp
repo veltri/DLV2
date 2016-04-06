@@ -76,6 +76,10 @@ namespace DLV2
 #define OPTIONID_compactFacts ('z' + 50)
 #define OPTIONID_gstats ('z' + 51)
 #define OPTIONID_project ('z' + 52)
+#define OPTIONID_bf ('z' + 53)
+#define OPTIONID_cf ('z' + 54)
+
+
 
 
 
@@ -139,7 +143,8 @@ Options::Options():
 		disabledAnonymousFilter(false),
 		compactFacts(false),
 		printGroundStats(0),
-		rewProject(1)
+		rewProject(1),
+		optionFrontend(0)
 {
 
 }
@@ -169,7 +174,8 @@ Options::Options(
 		disabledAnonymousFilter(false),
 		compactFacts(true),
 		printGroundStats(0),
-		rewProject(1)
+		rewProject(1),
+		optionFrontend(0)
 {
 
 }
@@ -230,6 +236,8 @@ Options::init(
 		{"compact-facts",required_argument, NULL, OPTIONID_compactFacts},
 		{"gstats",required_argument, NULL, OPTIONID_gstats},
 		{"project",required_argument, NULL, OPTIONID_project},
+		{"FC",no_argument, NULL, OPTIONID_bf},
+		{"FB",no_argument, NULL, OPTIONID_cf},
 
 		// Required at end of array.
         { NULL, 0, NULL, 0 }
@@ -391,6 +399,14 @@ Options::init(
 
             case OPTIONID_project:
             	rewProject=atoi(optarg);
+				break;
+
+            case OPTIONID_bf:
+            	optionFrontend =FRONTEND_BRAVE;
+				break;
+
+            case OPTIONID_cf:
+            	optionFrontend =FRONTEND_CAUTIOUS;
 				break;
 
             default:

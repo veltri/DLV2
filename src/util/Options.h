@@ -156,6 +156,10 @@ namespace DLV2
 		return rewProject;
 	}
 
+	unsigned getOptionFrontend() const{
+		return optionFrontend;
+	}
+
     private:
 
         static Options* instance;
@@ -239,6 +243,8 @@ namespace DLV2
     	unsigned printGroundStats;
 
     	unsigned rewProject;
+
+        unsigned optionFrontend;
     };
     
 };

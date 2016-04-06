@@ -292,6 +292,7 @@ void InMemoryInputBuilder::onBody() {
 
 void InMemoryInputBuilder::onNafLiteral(bool naf) {
 	if(foundASafetyError) return;
+	if(naf) statementDependency->negativeAtomFound();
 	currentAtom->setNegative(naf);
 	if(naf && currentAtom->containsAnonymous()){
 		currentRuleIsUnsafe=true;
@@ -586,6 +587,7 @@ void InMemoryInputBuilder::onChoiceElement() {
 
 void InMemoryInputBuilder::onChoiceAtom() {
 	if(foundASafetyError) return;
+	statementDependency->choiceFound();
 	if(currentChoice->getFirstBinop()==NONE_OP && currentChoice->getSecondBinop()==NONE_OP){
 		currentChoice->setSecondBinop(GREATER_OR_EQ);
 		currentChoice->setSecondGuard(termTable->term_zero);
@@ -695,6 +697,7 @@ void InMemoryInputBuilder::onAggregateElement() {
 
 void InMemoryInputBuilder::onAggregate(bool naf) {
 	if(foundASafetyError) return;
+	statementDependency->aggregateFound();
 	currentAggregate->setNegative(naf);
 	currentAtom = currentAggregate;
 	currentAtom->changeInStandardFormat();

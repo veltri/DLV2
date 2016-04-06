@@ -32,8 +32,8 @@ ostream & operator<<(ostream &out, const TARGET &target);
 
 class RewriteMagic {
 private:
-Predicate* createPredicate(string name,unsigned size){
-	Predicate *newPred=new Predicate(name,size);
+Predicate* createPredicate(string newName,Predicate *oldPredicate){
+	Predicate *newPred=new Predicate(newName,oldPredicate->getArity(),oldPredicate->isEdb());
 	PredicateTable::getInstance()->insertPredicate(newPred);
 	PredicateExtTable::getInstance()->addPredicateExt(newPred);
 	return newPred;
@@ -57,6 +57,8 @@ private:
     bool OptionOptimizedDisjunctiveMagicSets;
     bool OptionMagicSetsExplicit;
     bool OptionSubsumptionCheckingAfterDMS;
+    unsigned OptionFrontend;
+
     // store the set of bound variables for each rule
     typedef set_term SetofBoundVars;
 
@@ -74,15 +76,15 @@ private:
 
     // Given a predicate name, generate the corresponding magic predicate
     // name and record it in the structure magicNames.
-    Predicate* createMagicPredicateName(string name,unsigned arity)
+    Predicate* createMagicPredicateName(Predicate* oldPredicate)
         {
-        string magicName(MAGIC_PREFIX + name);
+        string magicName(MAGIC_PREFIX + oldPredicate->getName());
 
 
         // Insert the new magic name into the structure holding all magic
         // names, ignoring the return value (we don't care whether it has
         // been generated already).
-        Predicate *magicPredicate=createPredicate(magicName,arity);
+        Predicate *magicPredicate=createPredicate(magicName,oldPredicate);
         magicNames.insert(magicPredicate);
         return magicPredicate;
         }
@@ -241,7 +243,8 @@ private:
         char *name = new char[strlen(a->getPredicate()->getName().c_str())+a->getPredicate()->getArity()+2];
         strcpy(name,a->getPredicate()->getName().c_str());
         strcat(strcat(name,"#"),adornment);
-        Predicate *newPred=createPredicate(name,a->getPredicate()->getArity());
+        Predicate *newPred=createPredicate(name,a->getPredicate());
+
         Atom *aa=a->clone();
         aa->setPredicate(newPred);
         delete[] name;
@@ -256,7 +259,7 @@ private:
         // propositional
 //        assert( a.isIDB() && !a.isPropositional() );
     	assert(a->hasPredicate());
-    	Predicate *newPred=createPredicate(adornedName,a->getPredicate()->getArity());
+    	Predicate *newPred=createPredicate(adornedName,a->getPredicate());
         Atom *aa=a->clone();
         aa->setPredicate(newPred);
         return aa;
@@ -627,8 +630,10 @@ private:
             delete[] adornment;
             }
 
-        Predicate* p=createMagicPredicateName(aa->getPredicate()->getName(),params.size());
-
+        string name=aa->getPredicate()->getName();
+        Predicate *oldPred=new Predicate(name,params.size(),aa->getPredicate()->isEdb());
+        Predicate* p=createMagicPredicateName(oldPred);
+        delete oldPred;
         Atom *m=aa->clone();
         m->setPredicate(p);
         m->setTerms(params);
@@ -1015,16 +1020,14 @@ private:
 				   const ADORNMENT_GENERATOR &ag)
         {
         assert( r->getSizeHead()==1 );
-
         vector<Atom*> newRuleHead;
         Atom *head = r->getAtomInHead(0);
-
         // the rules which are IDB facts, e.g. p(1,2)., matching with the
         // unadorned version of aa, must be adorned w.r.t. the adornment
         // of aa.
         // for instance if the adornment of aa is '#bb' the new
         // adorned IDB fact will be p#bb(1,2).
-        if( !r->getSizeBody()>0 )
+        if( r->getSizeBody()==0 )
             {
             assert( ag_type != typeQuery );
             if( !head->getTermsSize()==0 )
@@ -1802,7 +1805,7 @@ private:
             	vector<Atom*> headQueryRule;
                 char *name = getUnadornedName((*j)->getPredicate()->getName());
                 Atom *newAtom=(*j)->clone();
-                newAtom->setPredicate(createPredicate(name,newAtom->getTermsSize()));
+                newAtom->setPredicate(createPredicate(name,newAtom->getPredicate()));
                 headQueryRule.push_back(newAtom);
                 vector<Atom*> bodyQueryRule;
                 bodyQueryRule.push_back(*j);
@@ -2072,7 +2075,7 @@ private:
         assert(a->hasPredicate());
         char *name = getUnadornedName((a)->getPredicate()->getName());
         Atom * unadornedAtom=a->clone();
-        unadornedAtom->setPredicate(createPredicate(name,unadornedAtom->getTermsSize()));
+        unadornedAtom->setPredicate(createPredicate(name,unadornedAtom->getPredicate()));
         delete[] name;
         return unadornedAtom;
         }
@@ -2190,7 +2193,6 @@ public:
 //                 {
 //                 cdebug << "skip magic sets rewriting because #query rule was removed." << endl;
 //                 }
-        	 cout<<"CIAO"<<endl;
              return;
              }
 
@@ -2518,8 +2520,6 @@ public:
          IDB.erase( IDB.begin() + firstRule, IDB.end() );
          IDB.insert( IDB.end(), UnadornedRules.begin(), UnadornedRules.end() );
 
-//         for(auto r:IDB)
-//        	 r->print();
          // print the magic unadorned program
 //         if( TraceLevel >= 1 )
 //             {
@@ -2543,6 +2543,8 @@ public:
 //             SubsumptionCheckingRewriting(IDB, firstRule);
              }
          }
+
+
 
 //////////////////////////////////////////////////////////////
 

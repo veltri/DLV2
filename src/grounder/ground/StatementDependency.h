@@ -242,13 +242,25 @@ public:
 		delete r;
 	}
 
+	void aggregateFound(){
+		hasAggregate=true;
+	}
+
+	void choiceFound(){
+		hasChoice=true;
+	}
+
+	void negativeAtomFound(){
+		hasNegativeAtom=true;
+	}
+
 	static StatementDependency* getInstance();
 
 private:
 
 	static StatementDependency* statementDependency;
 
-	StatementDependency(){};
+	StatementDependency():hasAggregate(false),hasChoice(false),hasNegativeAtom(false),isQueryGround(true){};
 
 	/// The Dependency Graph
 	DependencyGraph depGraph;
@@ -264,6 +276,15 @@ private:
 	vector<Rule*> weak;
 	///Vector of query atoms
 	vector<Atom*> query;
+
+	bool hasAggregate;
+
+	bool hasChoice;
+
+	bool hasNegativeAtom;
+
+	bool isQueryGround;
+
 	/// This method checks if a rule is a recursive rule or an exit rule
 	/// An rule occurring in a component is recursive if there is a predicate belonging
 	/// to the component in its positive body, otherwise it is said to be an exit rule.
@@ -272,6 +293,9 @@ private:
 	/// @retval true If the rule is an exit rule
 	/// @retval false If the rule is a recursive rule
 	bool checkIfExitRule(unsigned int component, Rule* rule);
+
+	bool HandleQuery(unsigned &queryConstraints);
+	void magic();
 };
 
 }

@@ -633,23 +633,46 @@ void StatementDependency::addRuleMapping(Rule* r) {
 	}
 }
 
-void StatementDependency::createDependencyGraph(PredicateTable* pt) {
+void StatementDependency::magic() {
+	string errmsg;
+	unsigned queryConstraints = 0;
+	HandleQuery(queryConstraints);
+	if (query.empty()) {
+		errmsg = "No query supplied.";
+	} else if (constraints.size() > queryConstraints) {
+		errmsg = "The program contains integrity constraints.";
+	} else if (weak.size() > 0) {
+		errmsg = "The program contains weak constraints.";
+	} else if (hasAggregate) {
+		errmsg = "The program contains aggregates.";
+	} else if (Options::globalOptions()->getOptionFrontend() != FRONTEND_CAUTIOUS
+	&& Options::globalOptions()->getOptionFrontend() != FRONTEND_BRAVE) {
+		errmsg = "Neither brave nor cautious reasoning was specified.";
+	} else if (rules.empty()) {
+		errmsg = "IDB is empty or has become empty due to optimizations.";
+	}
 
-	if(!query.empty()){
-		bool isGroundQuery=true;
-		for(auto atom:query)
-			if(!atom->isGround()){
-				isGroundQuery=false;
+	if (errmsg.empty()) {
+		bool isGroundQuery = true;
+		for (auto atom : query)
+			if (!atom->isGround()) {
+				isGroundQuery = false;
 				break;
 			}
-		RewriteMagic rewriteMagic(rules,constraints,weak,&query,isGroundQuery);
+		RewriteMagic rewriteMagic(rules, constraints, weak, &query,
+				isGroundQuery);
 		rewriteMagic.rewrite(isGroundQuery);
-
-//		cout<<"PROGRAM"<<endl;
-//		for(auto r:rules)
-//			r->print();
-//		cout<<endl;
+				cout<<"PROGRAM"<<endl;
+				for(auto r:rules)
+					r->print();
+				cout<<endl;
 	}
+}
+
+void StatementDependency::createDependencyGraph(PredicateTable* pt) {
+
+	if(!query.empty())
+		magic();
 
 	for(auto rule:rules)
 		depGraph.addInDependency(rule);
@@ -801,6 +824,146 @@ StatementDependency* StatementDependency::getInstance(){
 }
 
 
-};
+/** creates appropriate constraints for implementing queries efficiently
+  * Note: Error messages are not terminated by newline, since it is expected
+  *       that some other message (indicating how the program will proceed)
+  *       is printed immediately afterwards.
+  * @param queryConstraints the number of constraints introduced by this query
+  * @return false if some error occurred
+  */
+ bool StatementDependency::HandleQuery(unsigned &queryConstraints)
+     {
+     if( query.empty() )
+         {
+         // No query has been specified, but one is required when brave
+         // or cautious reasoning are requested.
+    	 if( Options::globalOptions()->getOptionFrontend() == FRONTEND_BRAVE
+             || Options::globalOptions()->getOptionFrontend() == FRONTEND_CAUTIOUS )
+             {
+             cerr << "No query supplied. Cannot continue." << endl;
+             return false;
+             }
+         else
+             return true;
+         }
 
-};
+//        if( TraceLevel >= 1 )
+//            cdebug << "Handling Query " << *Query << "?" << endl;
+
+     unsigned maxVar=0;                // maximum variable index in the query
+     set_term variables;
+
+     // Make one pass through the query, checking whether it is ground
+     // or not and looking for the maximum variable index.
+     for( vector<Atom*>::const_iterator i=query.begin();
+          i != query.end();
+          i++ )
+         {
+         if( ! (*i)->isGround() )
+             {
+             isQueryGround=false;
+
+             set_term vars=(*i)->getVariable();
+             variables.insert(vars.begin(),vars.end());
+//                for( vector<Term*>::const_iterator j=(*i)->getTerms().begin();
+//                     j != (*i)->getTerms().end();
+//                     j++ )
+//                    if( (*j)->getType()==VARIABLE )
+//                        maxVar=max(maxVar,j->getVar());
+//                    else if( j->isComplex() )
+//                        {
+//                        set<TERM> vars;
+//                        j->getComplexTerm().getComplexVars(vars);
+//                        for( set<TERM>::const_iterator v = vars.begin();
+//                             v != vars.end(); v++ )
+//                            maxVar=max(maxVar,v->getVar());
+//                        }
+                }
+         }
+
+     if( Options::globalOptions()->getOptionFrontend() == FRONTEND_CAUTIOUS )
+         {
+         if( isQueryGround )
+             {
+             // We do cautious reasoning and have a ground query.
+
+             // The query is treated as an internal constraint.
+             // Example: a, not b ?
+             //  becomes :- a, not b.
+             //
+             // If a model is computed, this means that this model did not
+             // violate the constraint, i.e. at least one of the query's
+             // literals is false in this model.  This model can be seen as
+             // a witness that the query is not true in all possible models.
+             //
+             // If no model is computed, the query is cautiously true.
+
+             // Create a constraint containing exactly the query
+             // conjunction and mark it as internal.
+         	Rule *c=new Rule;
+         	c->setBody(query);
+            constraints.push_back(c);
+            queryConstraints++;
+
+//             if( TraceLevel >= 1 )
+//                 cdebug << "                " << c << endl;
+             }
+         }
+     else
+         {
+         // We either do brave reasoning, or just have a query without
+         // reasoning (possibly coming from a frontend).  For now, we
+         // forbid the latter for non-ground queries.
+         if( Options::globalOptions()->getOptionFrontend() != FRONTEND_BRAVE  &&  ! isQueryGround )
+             {
+             cerr << "Non-ground queries are only supported with brave and "
+                     "cautious reasoning." << endl;
+             return false;
+             }
+
+         // Each ground literal in the query is transformed into a constraint,
+         // which we add to the program (marked as internal).
+         // Example: a, not b? becomes :- not a.
+         //                            :- b.
+         for( vector<Atom*>::const_iterator i=query.begin();
+              i != query.end();
+              i++ )
+             if( (*i)->isGround() )
+                 {
+                 Rule *c=new Rule;
+                 Atom *newAtom=(*i)->clone();
+                 newAtom->setNegative(!((*i)->isNegative()));
+                 c->addInBody(newAtom);
+                 constraints.push_back(c);
+                 queryConstraints++;
+
+//                 if( TraceLevel >= 1 )
+//                     cdebug << "                " << c << endl;
+                 }
+         }
+
+     // If the query is non-ground, we need to create a new "query rule" with
+     // the query in the body, and initialize the interpretation that will
+     // hold the union or intersection, respectively, of all models found.
+//     if( ! isQueryGround )
+//         {
+//         TERMS t;
+//         for(unsigned i=0; i <= maxVar; i++)
+//             t.push_back( TERM(i) );
+//
+//         DISJUNCTION head;
+//         head.add( ATOM(PREDNAME_QUERY,&t,PREDICATE_NAMES::typeQuery) );
+//         IDB.push_back( RULE(&head,Query) );
+//
+////         if( TraceLevel >= 1 )
+////             cdebug << "Adding rule for non-ground query: "
+////                    << IDB.back() << endl;
+//
+//         assert( IDB.back().isSafe() );
+//         }
+
+     return true;
+     }
+
+}
+}
