@@ -95,7 +95,7 @@ public:
 private:
 	/// The Dependency Graph
 	Graph depGraph;
-	/// The Stratified Graph
+	/// The Stratified Graphquery=currentAtom;
 	WeightGraph stratifiedGraph;
 	/// The map that containing as keys indices of the predicate,
 	/// and as values indices of the vertex in the dependency graph
@@ -209,6 +209,9 @@ public:
 		return (!statementAtomMapping.isInHead(predicate));
 	}
 
+	void addQueryAtom(Atom* query){
+		this->query.push_back(query);
+	}
 
 	///Printer method
 	void print();
@@ -223,6 +226,8 @@ public:
 		for(Rule* r:weak)
 			clearRule(r);
 
+		for(auto a:query)
+			delete a;
 	}
 
 	void clearRule(Rule *r){
@@ -257,6 +262,8 @@ private:
 	vector<Rule*> constraints;
 	/// The vector of weak contraints composing the program
 	vector<Rule*> weak;
+	///Vector of query atoms
+	vector<Atom*> query;
 	/// This method checks if a rule is a recursive rule or an exit rule
 	/// An rule occurring in a component is recursive if there is a predicate belonging
 	/// to the component in its positive body, otherwise it is said to be an exit rule.

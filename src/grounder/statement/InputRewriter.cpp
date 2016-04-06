@@ -67,7 +67,9 @@ void BaseInputRewriter::projectAtoms(Rule*& rule, vector<Rule*>& ruleRewrited,un
 		unordered_set<unsigned> termToFilter;
 		for (unsigned t = 0; t < atom->getTermsSize(); ++t) {
 			Term* term = atom->getTerm(t);
-			if (term->getType() == VARIABLE) {
+			if(term->getType()==ANONYMOUS)
+				termToFilter.insert(t);
+			else if (term->getType() == VARIABLE) {
 				if (varInHead.count(term))
 					continue;
 

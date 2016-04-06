@@ -178,7 +178,7 @@ private:
 	/// The set of variables appearing in the head of the current rule
 	set_term outputVariables;
 	/// For each atom a vector of match information. If is classical literal the vector contain exactly one matchInformation, if is
-	/// an aggregate atom contain a matchInformation for each aggregate element
+	/// an aggregate atom contain a matchInreturn r->;formation for each aggregate element
 	vector<vector<MatchInformation>> atomMatchInformation;
 };
 
@@ -217,6 +217,9 @@ public:
 	const vector<Atom*>& getHead() const {return head;}
 	///Setter method for head atoms
 	void setHead(const vector<Atom*>& head) {this->head = head;}
+
+	///Clone a non ground rule
+	Rule* clone();
 
 	///This method returns true if it is a strong constrain
 	virtual bool isAStrongConstraint(){return head.empty();}

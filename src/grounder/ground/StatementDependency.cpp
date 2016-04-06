@@ -19,6 +19,7 @@
 #include "../table/PredicateExtension.h"
 #include "../statement/InputRewriter.h"
 #include "../../input/InMemoryInputBuilder.h"
+#include "RewriteMagic.h"
 namespace DLV2{
 
 
@@ -633,6 +634,17 @@ void StatementDependency::addRuleMapping(Rule* r) {
 }
 
 void StatementDependency::createDependencyGraph(PredicateTable* pt) {
+
+	if(!query.empty()){
+		bool isGroundQuery=true;
+		for(auto atom:query)
+			if(!atom->isGround()){
+				isGroundQuery=false;
+				break;
+			}
+		RewriteMagic rewriteMagic(rules,constraints,weak,&query,isGroundQuery);
+		rewriteMagic.rewrite(isGroundQuery);
+	}
 
 	for(auto rule:rules)
 		depGraph.addInDependency(rule);

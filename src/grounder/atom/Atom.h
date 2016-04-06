@@ -102,6 +102,10 @@ public:
 		return false;
 	};
 
+	bool hasPredicate()const{
+		return getPredicate()!=nullptr;
+	}
+
 	/******** Methods useful for ClassicalLiteral ********/
 	/**
 	 * Getter method for the predicate

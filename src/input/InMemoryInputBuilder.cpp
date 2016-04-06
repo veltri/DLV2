@@ -263,6 +263,8 @@ void InMemoryInputBuilder::onWeakConstraint() {
 
 void InMemoryInputBuilder::onQuery() {
 	if(foundASafetyError) return;
+	statementDependency->addQueryAtom(currentAtom);
+	currentAtom=nullptr;
 }
 
 void InMemoryInputBuilder::onHeadAtom() {

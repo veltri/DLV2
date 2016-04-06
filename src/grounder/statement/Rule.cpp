@@ -316,6 +316,17 @@ void Rule::computeVariablesLocalIndices() {
 	this->variablesSize=variableLocalIndex.size()+1;
 }
 
+Rule* Rule::clone() {
+	Rule *newRule=new Rule;
+	for(auto atom:head)
+		newRule->addInHead(atom->clone());
+
+	for(auto atom:body)
+		newRule->addInBody(atom->clone());
+
+	return newRule;
+}
+
 // ******************************* WeakConstraint *****************************************
 
 void WeakConstraint::print(ostream& stream){

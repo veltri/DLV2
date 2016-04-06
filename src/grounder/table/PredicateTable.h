@@ -41,6 +41,8 @@ public:
 	void getEdbPredicate(set_predicate& edb_pred);
 	/// Get all the Edb predicate index
 	void getEdbPredicate(unordered_set<index_object>& edb_pred);
+	///Get all predicates in the program
+	void getPredicateName(unordered_set<string>& names);
 
 	const set_predicate& getPredicateTrueNegated(){return predicate_true_negated;}
 
