@@ -48,7 +48,7 @@ public:
 	void normalizeMagicPredicateNames();
 
 private:
-    vector<Rule*> IDB;
+    vector<Rule*>& IDB;
     size_t firstRule;
     const vector<Rule*> &Constraints;
     const vector<Rule*> &WConstraints;
@@ -2518,8 +2518,8 @@ public:
          IDB.erase( IDB.begin() + firstRule, IDB.end() );
          IDB.insert( IDB.end(), UnadornedRules.begin(), UnadornedRules.end() );
 
-         for(auto r:IDB)
-        	 r->print();
+//         for(auto r:IDB)
+//        	 r->print();
          // print the magic unadorned program
 //         if( TraceLevel >= 1 )
 //             {

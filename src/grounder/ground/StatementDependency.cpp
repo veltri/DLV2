@@ -644,6 +644,11 @@ void StatementDependency::createDependencyGraph(PredicateTable* pt) {
 			}
 		RewriteMagic rewriteMagic(rules,constraints,weak,&query,isGroundQuery);
 		rewriteMagic.rewrite(isGroundQuery);
+
+//		cout<<"PROGRAM"<<endl;
+//		for(auto r:rules)
+//			r->print();
+//		cout<<endl;
 	}
 
 	for(auto rule:rules)

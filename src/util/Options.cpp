@@ -139,7 +139,7 @@ Options::Options():
 		disabledAnonymousFilter(false),
 		compactFacts(false),
 		printGroundStats(0),
-		rewProject(0)
+		rewProject(1)
 {
 
 }
@@ -169,7 +169,7 @@ Options::Options(
 		disabledAnonymousFilter(false),
 		compactFacts(true),
 		printGroundStats(0),
-		rewProject(0)
+		rewProject(1)
 {
 
 }
