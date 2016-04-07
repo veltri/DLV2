@@ -163,7 +163,7 @@ void ProgramGrounder::ground() {
 	//Create the dependency graph
 	statementDependency->createDependencyGraph(predicateTable);
 	bool foundEmptyConstraint=false;
-	bool projectAtomsInRules=Options::globalOptions()->getRewProject()==2;
+//	bool projectAtomsInRules=Options::globalOptions()->getRewProject()==2;
 	BaseInputRewriter rewriter;
 
 	// Create the component graph and compute an ordering among components.
@@ -176,7 +176,6 @@ void ProgramGrounder::ground() {
 	vector<Rule*> remainedConstraint;
 	vector<unordered_set<index_object>> componentPredicateInHead;
 	statementDependency->createComponentGraphAndComputeAnOrdering(exitRules, recursiveRules, componentPredicateInHead,constraintRules,remainedConstraint);
-
 
 	trace_msg(grounding,1,"Grounding Starts Now.");
 
@@ -196,7 +195,6 @@ void ProgramGrounder::ground() {
 
 		iteration=0;
 		iterationToInsert=0;
-
 		// Ground exit rules
 		for (Rule* rule : exitRules[component]){
 //			r->sortPositiveLiteralInBody(predicate_searchInsert_table);

@@ -46,6 +46,8 @@ public:
 
 	const set_predicate& getPredicateTrueNegated(){return predicate_true_negated;}
 
+	void print(){predicate_set.print();}
+
 	~PredicateTable(){};
 protected:
 	static PredicateTable* predicateTable;

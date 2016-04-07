@@ -963,6 +963,7 @@ private:
                                   const ADORNMENT_GENERATOR &ag,
                                   SetofBoundVars &BV)
         {
+
         size_t pos = getLiteralPosition(L,ag,ag_type);
         if( L->hasPredicate() &&  !L->getPredicate()->isEdb())
             {
@@ -976,7 +977,7 @@ private:
             else
                 {
                 insertPredicate(L,pos,ag_type,ag);
-                body.push_back(L);
+                body.push_back(L->clone());
                 }
             }
         else // EDB or built-in literal
@@ -988,9 +989,8 @@ private:
             if( (L->isBuiltIn() || (L->hasPredicate() && L->getPredicate()->isEdb())  ))
             {
             	string name=(L->isBuiltIn())
-            			?name=L->getBinopToStrng(L->getBinop())
-						:name=L->getPredicate()->getName();
-
+            			?L->getBinopToStrng(L->getBinop())
+						:L->getPredicate()->getName();
             	if( EDBAdornedPredicates.find(name) == EDBAdornedPredicates.end() )
 					EDBAdornedPredicates.insert(name);
             }
@@ -999,7 +999,7 @@ private:
             // FIXME: The separation between positive and negative
             // literals is explicitly ignored in order to ensure the
             // intended ordering of literals.
-            body.push_back(L);
+            body.push_back(L->clone());
             }
         }
 
@@ -1061,7 +1061,7 @@ private:
                 newRuleHead.push_back(buildAdornedAtom(head,aa));
                 }
             else
-                newRuleHead.push_back(head);
+                newRuleHead.push_back(head->clone());
 
             vector<Atom*> newRuleBody;
 
@@ -1079,12 +1079,15 @@ private:
             bool foundPermissible = true;
             while( !notYetConsideredLiterals.empty() && foundPermissible )
                 {
+
+
                 foundPermissible=false;
                 vector<Atom*>::iterator i =
                     notYetConsideredLiterals.begin();
-
                 // selection of the first permissible LITERAL to propagate
                 // bindings
+
+
                 while( i != notYetConsideredLiterals.end()
                        && !foundPermissible )
                     {
@@ -1095,6 +1098,7 @@ private:
                         // not yet found a permissible literal
                         i++;
                     }
+
 
                 if( i == notYetConsideredLiterals.end() )
                     // No permissible literal found.
@@ -1123,6 +1127,7 @@ private:
                                 }
                             }
                         }
+
                     // if a literal is IDB and not propositional adorn it
                     // and add it to the body of the rule to be adorned,
                     // otherwise simply add it to the body of the rule
@@ -1131,6 +1136,8 @@ private:
                                              ag_type,
                                              ag,
                                              BV);
+
+
 		    // update the set of bound variables of the current
 		    // rule adding all of the variables of the just chosen
 		    // literal
@@ -1141,7 +1148,6 @@ private:
 		    notYetConsideredLiterals.erase(i);
                     }
                 }
-
             // if there are remaining literals it means that they are not
             // permissible and we do not have to propagate the adornment
             // through them, but they must be added to the body of the new
@@ -1160,7 +1166,6 @@ private:
             Rule *r1=new Rule;
             r1->setBody(newRuleBody);
             r1->setHead(newRuleHead);
-
 
             return r1;
             }
@@ -1251,6 +1256,7 @@ private:
     // @param originalHead, the original head of r in case it was a disjunctive rule.
     void shiftBackHead(Rule *&r,const vector<Atom*> &originalHead)
         {
+
 
         assert( r->getSizeHead() == 1 );
         // modify the normal rule r by shifting, from its body to its
@@ -1540,7 +1546,6 @@ private:
                                   at.first,
                                   type,
                                   ag);
-
         onlyForMagic = OptionOptimizedDisjunctiveMagicSets &&
             redundancy(ag.iRule->getHead(),L,at.first);
 
@@ -1925,7 +1930,7 @@ private:
     // the query is completely non-ground: no bindings among variables.
     //
     bool rewriteQuery(const bool groundQuery,
-                      Rule* AdornedQueryRule,
+                      Rule*& AdornedQueryRule,
                       vector<Rule*> &magicQueryRules)
         {
         bool rewrittenQuery = false;
@@ -1948,33 +1953,34 @@ private:
             assert( qr != PredicatesRulesIndex.end() );
             assert( qr->second.size() == 1 );
             Rule* queryRule = IDB[qr->second.front()];
-                    const vector<Atom*> &head = queryRule->getHead();
-                    ADORNMENT_GENERATOR ag;
-                    ag.iRule=(IDB[qr->second.front()]);
-                    assert( head.size() == 1 && !head[0]->getPredicate()->isEdb() && !head[0]->getTermsSize()==0 );
-                    Atom* aa=adornQueryAtom(*(head.begin()));
-                    assert(aa->hasPredicate());
-                    AdornedQueryRule = adornRule(queryRule,aa->getPredicate()->getName(),typeQuery,ag);
-                    // if there is at least one literal in the query rule
-                    // that can propagate a binding (i.e. a literal with
-                    // some bound argument), generate the magic rules and
-                    // adorn the program.
-                    if( OptionMagicSetsExplicit || hasBoundLiterals(AdornedQueryRule) )
-                        {
-                        for( vector<Atom*>::const_iterator j = AdornedQueryRule->getBeginBody();
-                             j != AdornedQueryRule->getEndBody();
-                             j++ )
-                            insertPredicate(*j,getLiteralPosition(*j,ag,typeQuery),typeQuery,ag);
+			const vector<Atom*> &head = queryRule->getHead();
+			ADORNMENT_GENERATOR ag;
+			ag.iRule=(IDB[qr->second.front()]);
+			assert( head.size() == 1 && !head[0]->getPredicate()->isEdb() && !head[0]->getTermsSize()==0 );
+			Atom* aa=adornQueryAtom(*(head.begin()));
+			assert(aa->hasPredicate());
+			AdornedQueryRule = adornRule(queryRule,aa->getPredicate()->getName(),typeQuery,ag);
+			// if there is at least one literal in the query rule
+			// that can propagate a binding (i.e. a literal with
+			// some bound argument), generate the magic rules and
+			// adorn the program.
+			if( OptionMagicSetsExplicit || hasBoundLiterals(AdornedQueryRule) )
+				{
+				for( vector<Atom*>::const_iterator j = AdornedQueryRule->getBeginBody();
+					 j != AdornedQueryRule->getEndBody();
+					 j++ )
+					insertPredicate(*j,getLiteralPosition(*j,ag,typeQuery),typeQuery,ag);
 
-                        magicQueryRules = buildMagicQueryRules(AdornedQueryRule);
-                        rewrittenQuery=true;
-                        }
-                    else
-                        {
-                        rewrittenQuery=false;
-                        }
-                    //                    }
-                    //                }
+				magicQueryRules = buildMagicQueryRules(AdornedQueryRule);
+
+				rewrittenQuery=true;
+				}
+			else
+				{
+				rewrittenQuery=false;
+				}
+			//                    }
+			//                }
             }
         else
             {
@@ -2223,9 +2229,8 @@ public:
 //             if( TraceLevel >= 2 )
 //                 cdebug << "Not rewriting the query. Magic Sets are not applied!"
 //                        << endl << endl;
-             return;
+        	 return;
              }
-
          // adorn the rules and the constraints
          while( !AdPredsAndTargs.empty() )
              {
@@ -2443,13 +2448,13 @@ public:
                  }
              delete [] name;
              }
-
 //         if( TraceLevel >= 1 )
 //             {
 //             cdebug << endl << endl << " Adorned Query" << endl;
 //             cdebug << AdornedQueryRule << endl;
 //             cdebug << endl << endl << " Adorned Rules" << endl;
-//             print_list(cdebug,AdornedRules,"\n");
+//             print_list(cdebug,AdornedR)a(X);b(X):-c(X).
+
 //             cdebug << endl;
 //             }
 //
@@ -2490,14 +2495,15 @@ public:
 //
 //     		delete r;
 //         } );
+
          IDB.erase( IDB.begin() + firstRule, IDB.end() );
 
          addReorderedRules(ModifiedRules);
          IDB.insert(IDB.end(),MagicRules.begin(),MagicRules.end());
 
-         if( !groundQuery )
+         if( !groundQuery){
              IDB.push_back(AdornedQueryRule);
-
+         }
          // add the query rules
          IDB.insert(IDB.end(),queryRules.begin(),queryRules.end());
 
@@ -2512,6 +2518,8 @@ public:
 
          // stripp off adornments from the rewritten program in order to
          // preserve the correct semantics
+
+
          ListOfAdornedPredicates list = getPredicates();
          const vector<Rule*> &UnadornedRules = stripOffAdornments(list,IDB);
          IDB.erase( IDB.begin() + firstRule, IDB.end() );

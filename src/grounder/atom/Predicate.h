@@ -81,6 +81,10 @@ public:
 	inline bool isTrueNegated(){return trueNegated;}
 	inline void setTrueNegated(bool trueN){trueNegated=trueN;}
 
+	void print(){
+		cout<<"PREDICATE: "<<name<<" INDEX: "<<index<<endl;
+	}
+
 private:
 	///Arity
 	unsigned int arity;

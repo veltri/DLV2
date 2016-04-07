@@ -75,7 +75,6 @@ StatementAtomMapping::~StatementAtomMapping() {}
  */
 
 void DependencyGraph::addInDependency(Rule* r) {
-
 	// Temporary set of predicates
 	unordered_set<index_object> head_predicateVisited;
 	unordered_set<index_object> body_predicateVisited;
@@ -626,9 +625,7 @@ void StatementDependency::addRuleMapping(Rule* r) {
 	}else if(r->isWeakConstraint()){
 		weak.push_back(r);
 	}else{
-		set_predicate pred_head=r->getPredicateInHead();
-		for(auto p:pred_head)p->setIdb();
-		statementAtomMapping.addRule(r);
+		addAtomMappingAndSetEdb(r);
 		rules.push_back(r);
 	}
 }
@@ -656,9 +653,11 @@ bool StatementDependency::magic() {
 	} else if (rules.empty()) {
 		errmsg = "IDB is empty or has become empty due to optimizations.";
 		return false;
-	}
+	} else if(hasNegativeAtom)
+		errmsg = "NO negative";
 
 	if (errmsg.empty()) {
+
 		bool isGroundQuery = true;
 		for (auto atom : query)
 			if (!atom->isGround()) {
@@ -668,15 +667,67 @@ bool StatementDependency::magic() {
 		RewriteMagic rewriteMagic(rules, constraints, weak, &query,
 				isGroundQuery);
 		rewriteMagic.rewrite(isGroundQuery);
-		cout<<"PROGRAM"<<endl;
-		for(auto r:rules)
-			r->print();
-		for(auto r:constraints)
-			r->print();
 
-		cout<<"FINE"<<endl;
+
+		simplifyMagicRules();
+
+		if(Options::globalOptions()->isPrintRewrittenProgram()){
+			cerr<<"----------MAGIC PROGRAM----------"<<endl;
+			for(auto r:rules)
+				r->print(cerr);
+			for(auto r:constraints)
+				r->print(cerr);
+
+			cerr<<"----------    END      ----------"<<endl;
+		}
+
 	}
 	return true;
+}
+
+void StatementDependency::simplifyMagicRules(){
+	//Check if the magic rewriting create a fact rule
+	for(unsigned i=0;i<rules.size();i++){
+		Rule *rule=rules[i];
+		if(rule->isAFact()){
+			Atom *fact=rule->getAtomInHead(0);
+
+			fact->setFact(true);
+			Predicate* predicate = fact->getPredicate();
+//			IndexingStructure* atomSearcher=nullptr;
+//			PredicateExtTable::getInstance()->getPredicateExt(predicate)->getAtomSearcher(FACT);
+//			if(Options::globalOptions()->getCheckFactDuplicate())
+//				atomSearcher=instancesTable->getPredicateExt(predicate)->addAtomSearcher(FACT,HASHSET,nullptr);
+//			if(atomSearcher==nullptr || atomSearcher->find(fact)==nullptr){
+			PredicateExtTable::getInstance()->getPredicateExt(predicate)->addAtom(fact,FACT);
+//				if (!Options::globalOptions()->isNofacts()) {
+					OutputBuilder::getInstance()->onFact(fact);
+//				}
+			rules.erase(rules.begin()+i);
+		}
+	}
+	//Check duplicate rule
+	for(unsigned i=0;i<rules.size();i++){
+
+		for(unsigned j=i+1;j<rules.size();j++){
+
+			if(*rules[i]==*rules[j]){
+				cout<<"ERASE"<<endl;
+				rules[i]->print();rules[j]->print();
+				rules.erase(rules.begin()+j);
+			}
+		}
+
+	}
+
+}
+
+void StatementDependency::addAtomMappingAndSetEdb(Rule *r){
+	if(!r->isAStrongConstraint() && !r->isWeakConstraint()){
+		set_predicate pred_head=r->getPredicateInHead();
+		for(auto p:pred_head)p->setIdb();
+	}
+	statementAtomMapping.addRule(r);
 }
 
 void StatementDependency::createDependencyGraph(PredicateTable* pt) {
@@ -684,16 +735,26 @@ void StatementDependency::createDependencyGraph(PredicateTable* pt) {
 	bool appliedMagicRewriting=false;
 	if(!query.empty()){
 		appliedMagicRewriting=magic();
-		if(appliedMagicRewriting)
+
+		if(appliedMagicRewriting){
 			statementAtomMapping.clear();
+
+			for(unsigned i=0;i<constraints.size();i++){
+				constraints[i]->setIndex(rules.size()+i);
+				addAtomMappingAndSetEdb(constraints[i]);
+			}
+		}
 	}
 
-	for(auto rule:rules){
-		if(appliedMagicRewriting)
-			addRuleMapping(rule);
+
+	for(unsigned i=0;i<rules.size();i++){
+		Rule * rule=rules[i];
+		if(appliedMagicRewriting){
+			addAtomMappingAndSetEdb(rule);
+			rule->setIndex(i);
+		}
 		depGraph.addInDependency(rule);
 	}
-
 	unordered_set<index_object> delete_pred;
 	pt->getEdbPredicate(delete_pred);
 	depGraph.deleteVertex(delete_pred);
@@ -760,8 +821,10 @@ void StatementDependency::createComponentGraphAndComputeAnOrdering(vector<vector
 				/// For each rule classify it as exit or recursive
 				for(Rule* r: componentsRules){
 					if(addedRules.insert(r->getIndex()).second){
-						if(checkIfExitRule(comp,r))
+						if(checkIfExitRule(comp,r)){
 							exitRules[i].push_back(r);
+						}
+
 						else{
 							recursiveRules[i].push_back(r);
 							for(auto p:r->getPredicateInHead()){
@@ -821,7 +884,8 @@ void StatementDependency::print() {
 //			depGraph.printFile(fileDGraph);
 //	}
 //	if (Config::getInstance()->isComponent()) {
-//		if (strcmp(fileCGraph.c_str(), "CG") == 0)
+//		if (strcmp(fileCGraph.c_str(), "C
+//	G") == 0)
 //			compGraph.print();
 //		else
 //			compGraph.printFile(fileCGraph);
@@ -963,25 +1027,38 @@ StatementDependency* StatementDependency::getInstance(){
      // If the query is non-ground, we need to create a new "query rule" with
      // the query in the body, and initialize the interpretation that will
      // hold the union or intersection, respectively, of all models found.
-//     if( ! isQueryGround )
-//         {
+     if( ! isQueryGround )
+         {
 //         TERMS t;
 //         for(unsigned i=0; i <= maxVar; i++)
 //             t.push_back( TERM(i) );
-//
+
+    	 Rule *newRule=new Rule;
+//    	 for(auto q:query)
+//    		 newRule->addInBody(q->clone());
+    	 newRule->setBody(query);
+    	 string name=PREDNAME_QUERY;
+		Predicate *newPred=new Predicate(name,variables.size(),false);
+		PredicateTable::getInstance()->insertPredicate(newPred);
+		PredicateExtTable::getInstance()->addPredicateExt(newPred);
+		vector<Term*> terms;
+		for(auto t:variables)terms.push_back(t);
+    	 newRule->addInHead(new ClassicalLiteral(newPred,terms,false,false));
+
 //         DISJUNCTION head;
 //         head.add( ATOM(PREDNAME_QUERY,&t,PREDICATE_NAMES::typeQuery) );
 //         IDB.push_back( RULE(&head,Query) );
-//
-////         if( TraceLevel >= 1 )
-////             cdebug << "Adding rule for non-ground query: "
-////                    << IDB.back() << endl;
-//
-//         assert( IDB.back().isSafe() );
-//         }
 
+//         if( TraceLevel >= 1 )
+//             cdebug << "Adding rule for non-ground query: "
+//                    << IDB.back() << endl;
+//         assert( IDB.back().isSafe() );
+		 rules.push_back(newRule);
+         }
      return true;
      }
+
+
 
 }
 }

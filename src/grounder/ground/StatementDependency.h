@@ -161,6 +161,11 @@ public:
 	/// stores their mapping, and updates the dependency graph properly according this mapping
 	void addRuleMapping(Rule *r);
 
+	void addAtomMappingAndSetEdb(Rule *r);
+
+	void simplifyMagicRules();
+
+
 	/// This method creates the dependency graph
 	void createDependencyGraph(PredicateTable* pt);
 	/// This method creates the components graph
