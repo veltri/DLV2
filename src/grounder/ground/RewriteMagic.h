@@ -964,7 +964,7 @@ private:
                                   SetofBoundVars &BV)
         {
         size_t pos = getLiteralPosition(L,ag,ag_type);
-        if( !L->hasPredicate() ||  !L->getPredicate()->isEdb())
+        if( L->hasPredicate() &&  !L->getPredicate()->isEdb())
             {
             if( !L->getTermsSize()==0 )
                 {
@@ -1071,10 +1071,7 @@ private:
             getBoundVars(*(newRuleHead.begin()),BV);
 
             // store all the body literals of r in notYetConsideredLiterals
-            vector<Atom*> notYetConsideredLiterals;
-            notYetConsideredLiterals.insert(notYetConsideredLiterals.begin(),
-                                            r->getBeginBody(),
-                                            r->getEndBody());
+            vector<Atom*> notYetConsideredLiterals=r->getClonedBody();
 
             // add the permissible literals of the original body to the
             // new body according to the order defined by the preferential
@@ -1204,7 +1201,7 @@ private:
         // head atoms different from a
         vector<Atom*> newBody;
         if( r->getSizeBody()>0)
-            newBody = r->getBody();
+            newBody = r->getClonedBody();
         for( vector<Atom*>::const_iterator j= r->getBeginHead();
              j != r->getEndHead();
              j++ )
@@ -1252,8 +1249,9 @@ private:
     //
     // @param r, the rule whose head should be shifted back;
     // @param originalHead, the original head of r in case it was a disjunctive rule.
-    void shiftBackHead(Rule *r,const vector<Atom*> &originalHead)
+    void shiftBackHead(Rule *&r,const vector<Atom*> &originalHead)
         {
+
         assert( r->getSizeHead() == 1 );
         // modify the normal rule r by shifting, from its body to its
         // head, the positive versions of the literals occurring with
@@ -1296,7 +1294,7 @@ private:
 
                     }
                 if( !found )
-                    newBody.push_back(*i);
+                    newBody.push_back((*i)->clone());
                 delete[] name;
                 }
             delete[] nameHead;
@@ -1387,13 +1385,13 @@ private:
              j != head.end();
              j++, pos2++ )
             if( pos2 == pos )
-                return *j;
+                return (*j)->clone();
 
         for( vector<Atom*>::const_iterator j=body.begin();
              j != body.end();
              j++, pos2++ )
             if( pos2 == pos )
-                return *j;
+                return (*j)->clone();
 
         assert(0);
         return nullptr;
@@ -1691,7 +1689,7 @@ private:
                                         }
                                     //TODO check j->isUndef()
                                     if( useful )
-                                        newMagicRuleBody.push_back(*j);
+                                        newMagicRuleBody.push_back((*j)->clone());
                                     }
                                 }
 
@@ -1751,6 +1749,7 @@ private:
         // If the rule was not disjunctive, no literal is shifted
         // back.
         shiftBackHead(adornedRule,h);
+
        const  vector<Atom*> &head = (adornedRule)->getHead();
         assert( &head );
         assert( head.size() >= 1 );
@@ -1777,7 +1776,6 @@ private:
                 adornedRule->setBody(body);
                 }
             }
-
 
         return adornedRule; // modified!!!
         }
@@ -2038,7 +2036,7 @@ private:
                  body.begin();
              j != body.end();
              j++ )
-            body1.push_back(*j);
+            body1.push_back((*j)->clone());
         return body1;
         }
 
@@ -2054,7 +2052,7 @@ private:
              i!=rules.end();
              i++)
             {
-            vector<Atom*> Head((*i)->getHead());
+            vector<Atom*> Head((*i)->getClonedHead());
             vector<Atom*> Body;
             if( (*i)->getSizeBody()>0)
                 Body = reorderBody(((*i)->getBody()));
@@ -2115,9 +2113,9 @@ private:
                 {
             	//TODO check k->isUndef()
             	assert((*k)->hasPredicate());
-                if( isMagic(*k) || ((*k)->hasPredicate() && (*k)->getPredicate()->isEdb()) || (*k)->getTermsSize()==0 ||
-                		(*k)->isBuiltIn() || !isAdorned((*k)->getPredicate()->getName()) )
-                    newHead.push_back(*k);
+                if( (*k)->isBuiltIn() || isMagic(*k) || ((*k)->hasPredicate() && (*k)->getPredicate()->isEdb()) || (*k)->getTermsSize()==0
+                		 || !isAdorned((*k)->getPredicate()->getName()) )
+                    newHead.push_back((*k)->clone());
                 else
                     if( find(AdornedPredicates.begin(),AdornedPredicates.end(),
                              (*k)->getPredicate()->getName()) != AdornedPredicates.end() ||
@@ -2136,9 +2134,8 @@ private:
                      k++ )
                     {
                 	//TODO check k->isUndef()
-                    if( isMagic(*k) || ((*k)->hasPredicate() && (*k)->getPredicate()->isEdb()) || (*k)->getTermsSize()==0 ||
-                    		(*k)->isBuiltIn() )
-                        newBody.push_back(*k);
+                    if( (*k)->isBuiltIn()  || isMagic(*k) || ((*k)->hasPredicate() && (*k)->getPredicate()->isEdb()) || (*k)->getTermsSize()==0 )
+                        newBody.push_back((*k)->clone());
                     else
                         {
                         Atom* unadornedAtom = buildUnadornedAtom(*k);

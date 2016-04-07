@@ -668,10 +668,13 @@ bool StatementDependency::magic() {
 		RewriteMagic rewriteMagic(rules, constraints, weak, &query,
 				isGroundQuery);
 		rewriteMagic.rewrite(isGroundQuery);
-				cout<<"PROGRAM"<<endl;
-				for(auto r:rules)
-					r->print();
-				cout<<endl;
+		cout<<"PROGRAM"<<endl;
+		for(auto r:rules)
+			r->print();
+		for(auto r:constraints)
+			r->print();
+
+		cout<<"FINE"<<endl;
 	}
 	return true;
 }
@@ -864,7 +867,6 @@ StatementDependency* StatementDependency::getInstance(){
 //        if( TraceLevel >= 1 )
 //            cdebug << "Handling Query " << *Query << "?" << endl;
 
-     unsigned maxVar=0;                // maximum variable index in the query
      set_term variables;
 
      // Make one pass through the query, checking whether it is ground
@@ -895,8 +897,10 @@ StatementDependency* StatementDependency::getInstance(){
                 }
          }
 
+
      if( Options::globalOptions()->getOptionFrontend() == FRONTEND_CAUTIOUS )
          {
+
          if( isQueryGround )
              {
              // We do cautious reasoning and have a ground query.

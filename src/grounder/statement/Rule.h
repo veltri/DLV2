@@ -211,6 +211,20 @@ public:
 
 	///Getter method for body atoms
 	const vector<Atom*>& getBody() const {return body;}
+
+	vector<Atom*> getClonedBody()const{
+		vector<Atom*> atoms;
+		for(auto atom:body)
+			atoms.push_back(atom->clone());
+		return atoms;
+	}
+
+	vector<Atom*> getClonedHead()const{
+		vector<Atom*> atoms;
+		for(auto atom:head)
+			atoms.push_back(atom->clone());
+		return atoms;
+	}
 	///Setter method for body atoms
 	void setBody(const vector<Atom*>& body) {this->body = body;}
 	///Getter method for head atoms

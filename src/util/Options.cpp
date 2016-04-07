@@ -236,15 +236,15 @@ Options::init(
 		{"compact-facts",required_argument, NULL, OPTIONID_compactFacts},
 		{"gstats",required_argument, NULL, OPTIONID_gstats},
 		{"project",required_argument, NULL, OPTIONID_project},
-		{"FC",no_argument, NULL, OPTIONID_FB},
-		{"FB",no_argument, NULL, OPTIONID_FC},
+		{"FC",no_argument, NULL, OPTIONID_FC},
+		{"FB",no_argument, NULL, OPTIONID_FB},
 
 		// Required at end of array.
         { NULL, 0, NULL, 0 }
     };
   
     do{
-        // The function getopt_long() stores the option index here.
+        // The function getopt_long() stores the opoptionFrontendtion index here.
         int optionIndex = 0;
         
         code = getopt_long (argc, argv, shortOptions, longOptions, &optionIndex);
