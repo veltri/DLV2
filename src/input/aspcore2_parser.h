@@ -160,7 +160,7 @@ extern int yydebug;
 typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-#line 29 "src/input/aspcore2.y" /* yacc.c:1909  */
+#line 32 "src/input/aspcore2.y" /* yacc.c:1909  */
 
     char* string;
     char single_char;

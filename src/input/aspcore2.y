@@ -21,6 +21,9 @@ This file is part of the ASPCOMP2013 ASP-Core-2 validator (validator in the foll
 */
 
 #include "InputDirector.h"
+#include <iostream>
+
+bool queryFound=false;
 
 %}
 %lex-param {DLV2::InputDirector& director}
@@ -31,6 +34,7 @@ This file is part of the ASPCOMP2013 ASP-Core-2 validator (validator in the foll
     char single_char;
     int integer;
 }
+
 
 %type <integer> terms 
 %type <single_char> arithop
@@ -80,7 +84,6 @@ program
 
 real_program
     : rules
-    | rules query { director.getBuilder()->onQuery(); }
     ;
 
 rules
@@ -111,6 +114,13 @@ rule
         { 
             director.getBuilder()->onWeakConstraint(); 
         }
+  	| query 
+    	{ 
+			if(!queryFound) 
+				{ queryFound=true; director.getBuilder()->onQuery(); } 
+			else 
+				{ yyerror(director,"A query has been already found"); }
+		}
     ;
 
 head
