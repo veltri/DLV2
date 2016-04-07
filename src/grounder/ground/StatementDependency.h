@@ -44,6 +44,8 @@ public:
 	bool isInHead(index_object p);
 	bool isInBody(index_object p);
 
+	void clear(){headMap.clear();bodyMap.clear();}
+
 	virtual ~StatementAtomMapping();
 private:
 	//The unordered multimap containing the maps between predicates and rules in which they appear in the head
@@ -295,7 +297,7 @@ private:
 	bool checkIfExitRule(unsigned int component, Rule* rule);
 
 	bool HandleQuery(unsigned &queryConstraints);
-	void magic();
+	bool magic();
 };
 
 }

@@ -633,23 +633,29 @@ void StatementDependency::addRuleMapping(Rule* r) {
 	}
 }
 
-void StatementDependency::magic() {
+bool StatementDependency::magic() {
 	string errmsg;
 	unsigned queryConstraints = 0;
 	HandleQuery(queryConstraints);
 	if (query.empty()) {
 		errmsg = "No query supplied.";
+		return false;
 	} else if (constraints.size() > queryConstraints) {
 		errmsg = "The program contains integrity constraints.";
+		return false;
 	} else if (weak.size() > 0) {
 		errmsg = "The program contains weak constraints.";
+		return false;
 	} else if (hasAggregate) {
 		errmsg = "The program contains aggregates.";
+		return false;
 	} else if (Options::globalOptions()->getOptionFrontend() != FRONTEND_CAUTIOUS
 	&& Options::globalOptions()->getOptionFrontend() != FRONTEND_BRAVE) {
 		errmsg = "Neither brave nor cautious reasoning was specified.";
+		return false;
 	} else if (rules.empty()) {
 		errmsg = "IDB is empty or has become empty due to optimizations.";
+		return false;
 	}
 
 	if (errmsg.empty()) {
@@ -667,15 +673,23 @@ void StatementDependency::magic() {
 					r->print();
 				cout<<endl;
 	}
+	return true;
 }
 
 void StatementDependency::createDependencyGraph(PredicateTable* pt) {
 
-	if(!query.empty())
-		magic();
+	bool appliedMagicRewriting=false;
+	if(!query.empty()){
+		appliedMagicRewriting=magic();
+		if(appliedMagicRewriting)
+			statementAtomMapping.clear();
+	}
 
-	for(auto rule:rules)
+	for(auto rule:rules){
+		if(appliedMagicRewriting)
+			addRuleMapping(rule);
 		depGraph.addInDependency(rule);
+	}
 
 	unordered_set<index_object> delete_pred;
 	pt->getEdbPredicate(delete_pred);

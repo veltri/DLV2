@@ -76,8 +76,8 @@ namespace DLV2
 #define OPTIONID_compactFacts ('z' + 50)
 #define OPTIONID_gstats ('z' + 51)
 #define OPTIONID_project ('z' + 52)
-#define OPTIONID_bf ('z' + 53)
-#define OPTIONID_cf ('z' + 54)
+#define OPTIONID_FB ('z' + 53)
+#define OPTIONID_FC ('z' + 54)
 
 
 
@@ -236,8 +236,8 @@ Options::init(
 		{"compact-facts",required_argument, NULL, OPTIONID_compactFacts},
 		{"gstats",required_argument, NULL, OPTIONID_gstats},
 		{"project",required_argument, NULL, OPTIONID_project},
-		{"FC",no_argument, NULL, OPTIONID_bf},
-		{"FB",no_argument, NULL, OPTIONID_cf},
+		{"FC",no_argument, NULL, OPTIONID_FB},
+		{"FB",no_argument, NULL, OPTIONID_FC},
 
 		// Required at end of array.
         { NULL, 0, NULL, 0 }
@@ -401,12 +401,12 @@ Options::init(
             	rewProject=atoi(optarg);
 				break;
 
-            case OPTIONID_bf:
-            	optionFrontend =FRONTEND_BRAVE;
+            case OPTIONID_FB:
+            	optionFrontend = FRONTEND_BRAVE;
 				break;
 
-            case OPTIONID_cf:
-            	optionFrontend =FRONTEND_CAUTIOUS;
+            case OPTIONID_FC:
+            	optionFrontend = FRONTEND_CAUTIOUS;
 				break;
 
             default:
