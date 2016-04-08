@@ -83,6 +83,8 @@ public:
 	virtual ~ProgramGrounder();
 
 protected:
+	int countFound;
+	int countMatch;
 	///A pointer to the predicate table
 	PredicateTable* predicateTable;
 	///A pointer to the instances table

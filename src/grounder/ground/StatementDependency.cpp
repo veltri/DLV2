@@ -668,13 +668,13 @@ bool StatementDependency::magic() {
 				isGroundQuery);
 		rewriteMagic.rewrite(isGroundQuery);
 
-
 		simplifyMagicRules();
 
 		if(Options::globalOptions()->isPrintRewrittenProgram()){
 			cerr<<"----------MAGIC PROGRAM----------"<<endl;
-			for(auto r:rules)
+			for(auto r:rules){
 				r->print(cerr);
+			}
 			for(auto r:constraints)
 				r->print(cerr);
 
@@ -703,6 +703,7 @@ void StatementDependency::simplifyMagicRules(){
 //				if (!Options::globalOptions()->isNofacts()) {
 					OutputBuilder::getInstance()->onFact(fact);
 //				}
+			delete rule;
 			rules.erase(rules.begin()+i);
 		}
 	}
@@ -711,9 +712,11 @@ void StatementDependency::simplifyMagicRules(){
 
 		for(unsigned j=i+1;j<rules.size();j++){
 
-			if(*rules[i]==*rules[j])
+			if(*rules[i]==*rules[j]){
+				rules[j]->free();
+				delete rules[j];
 				rules.erase(rules.begin()+j);
-
+			}
 		}
 
 	}

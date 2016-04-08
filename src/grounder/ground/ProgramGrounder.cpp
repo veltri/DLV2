@@ -391,6 +391,8 @@ void ProgramGrounder::ground() {
 	if(printStats)
 		rstats->printStats();
 
+
+
 //	Timer::getInstance()->printSumTime(cerr);
 
 	//Print and simplify the rule
@@ -506,8 +508,7 @@ inline void statsGroundRule(bool printStats,bool printRuleTime,Rule *rule,clock_
 	if(printStats || printRuleTime){
 		clock_t end=Timer::getInstance()->getClock();
 		if(printRuleTime){
-			{cerr<<"RULE: ";rule->print(cerr);}
-			{cerr<<endl<<"RULE ORDERED: \t";rule->print(cerr);}
+//			{cerr<<endl<<"RULE ORDERED: \t";rule->print(cerr);}
 			Timer::printTimeElapsed(end-start,cerr);
 		}if(printStats)
 			rstats->setTime(rule->getIndex(),((end-start)/(double) CLOCKS_PER_SEC));
@@ -522,9 +523,10 @@ bool ProgramGrounder::groundRule(Rule* rule, unordered_set<index_object>* compon
 
 	clock_t start=0;
 
-	if(printStats || printRuleTime)
+	if(printStats || printRuleTime){
 		start=Timer::getInstance()->getClock();
-
+		if(printRuleTime){cerr<<"RULE: ";rule->print(cerr);}
+	}
 
 	inizialize(rule,componentPredicateInHead);
 
@@ -671,7 +673,7 @@ void ProgramGrounder::setDefaultAtomSearchers(Rule* rule, unordered_set<index_ob
 //				if(j!=nullptr)
 //					cout<<j->getType()<<" ";
 //		}
-//		cout<<endl;
+//		cout<<endl;i
 //	}
 //	cout<<endl;
 

@@ -1143,7 +1143,7 @@ private:
 		    // literal
 		    if( !(*i)->getTermsSize()==0 && hasBoundTerms(*i,BV) )
                         updateBoundVars(BV,*i);
-
+		    delete (*i);
 		    // we have considered the literal *i
 		    notYetConsideredLiterals.erase(i);
                     }
@@ -1161,6 +1161,9 @@ private:
                                          ag_type,
                                          ag,
                                          BV);
+
+            for(auto atom:notYetConsideredLiterals)
+            	delete atom;
 
             // finally create the adorned rule
             Rule *r1=new Rule;
@@ -1542,10 +1545,13 @@ private:
 
         // adorn the rule
         assert( type == typeNormalRule || type == typeDisjunctive );
-        Rule *r = adornRule(shiftHead(L,(ag.iRule)),
+        Rule *shiftedRule=shiftHead(L->clone(),(ag.iRule));
+        Rule *r = adornRule(shiftedRule,
                                   at.first,
                                   type,
                                   ag);
+        shiftedRule->free();
+        delete shiftedRule;
         onlyForMagic = OptionOptimizedDisjunctiveMagicSets &&
             redundancy(ag.iRule->getHead(),L,at.first);
 
@@ -1703,13 +1709,15 @@ private:
                         mRule->setHead(newMagicRuleHead);
                         mRule->setBody(newMagicRuleBody);
 
-
                         //TODO verificare se aggiungere funzione || ! subsumption(mRule,MagicRules)
                         if( ! OptionOptimizedDisjunctiveMagicSets )
                             {
 
                             MagicRules.push_back(mRule);
 
+                            }else{
+                            	mRule->free();
+                            	delete mRule;
                             }
                         }
                     }
@@ -1846,20 +1854,23 @@ private:
                 head.push_back(magic(*i));
                 Rule *qf = new Rule;
                 qf->setHead(head);
-
                 // if the magic literal is completely ground, build a
                 // magic query fact
                 if( (qf->getAtomInHead(0))->isGround() )
                     {
                     magicQueryRules.push_back(qf);
                     }
-                else // if the magic literal is completely or partially
+                else
+                	{// if the magic literal is completely or partially
                     // non ground a magic rule must be generated. If the
                     // adorned query rule is:
                     //    #query(X,Y):- a(3,X), p#bf(X,Y).mL
                     // the magic query rule will be:
                     //    magic#p#bf(X) :- a(3,X).
                     canBuildMagicRules = true;
+                    qf->free();
+                    delete qf;
+                	}
                 }
         }
         if( canBuildMagicRules )
@@ -2218,7 +2229,7 @@ public:
 //             cdebug<<endl;
 //             }
 
-         Rule *AdornedQueryRule=new Rule;
+         Rule *AdornedQueryRule;
          vector<Rule*> AdornedRules,queryRules,magicQueryRules,MagicRules,ModifiedRules,magicRulesPerAdornedRule;
 
          // ADORN STEP
@@ -2436,6 +2447,7 @@ public:
                                              ModifiedRules.push_back(modifiedRule);
                                              }
                                          }
+									 delete adornedRule;
                                      }
                                  }
                                         //                        else
@@ -2503,7 +2515,8 @@ public:
 
          if( !groundQuery){
              IDB.push_back(AdornedQueryRule);
-         }
+         }else
+        	 delete AdornedQueryRule;
          // add the query rules
          IDB.insert(IDB.end(),queryRules.begin(),queryRules.end());
 
@@ -2522,6 +2535,11 @@ public:
 
          ListOfAdornedPredicates list = getPredicates();
          const vector<Rule*> &UnadornedRules = stripOffAdornments(list,IDB);
+
+         for_each(IDB.begin(),IDB.end(),[](Rule *r){
+        	r->free();
+        	delete r;
+         });
          IDB.erase( IDB.begin() + firstRule, IDB.end() );
          IDB.insert( IDB.end(), UnadornedRules.begin(), UnadornedRules.end() );
 

@@ -303,6 +303,16 @@ public:
 	///This method remove all the atoms in the body and in the head
 	void clear(){head.clear();body.clear();};
 
+	void free(){
+		deleteBody([](Atom* atom){
+			return 2;
+		});
+		if(!isAStrongConstraint())
+			deleteHead([](Atom* atom){
+				return 2;
+			});
+	}
+
 	///Printer method
 	virtual void print(ostream& stream=cout);
 

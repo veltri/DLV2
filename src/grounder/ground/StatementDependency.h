@@ -238,13 +238,7 @@ public:
 	}
 
 	void clearRule(Rule *r){
-		r->deleteBody([](Atom* atom){
-			return 2;
-		});
-		if(!r->isAStrongConstraint())
-			r->deleteHead([](Atom* atom){
-				return 2;
-			});
+		r->free();
 
 		delete r;
 	}
