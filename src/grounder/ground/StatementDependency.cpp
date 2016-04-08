@@ -654,7 +654,7 @@ bool StatementDependency::magic() {
 		errmsg = "IDB is empty or has become empty due to optimizations.";
 		return false;
 	} else if(hasNegativeAtom)
-		errmsg = "NO negative";
+		errmsg = "Warning: The program contains negative literals.\nThe correctness of Magic Sets is only guaranteed for super-coherent programs.";
 
 	if (errmsg.empty()) {
 
@@ -682,10 +682,13 @@ bool StatementDependency::magic() {
 		}
 
 	}
+	else
+		cerr<<errmsg<<endl;
 	return true;
 }
 
 void StatementDependency::simplifyMagicRules(){
+
 	//Check if the magic rewriting create a fact rule
 	for(unsigned i=0;i<rules.size();i++){
 		Rule *rule=rules[i];
@@ -707,15 +710,16 @@ void StatementDependency::simplifyMagicRules(){
 			rules.erase(rules.begin()+i);
 		}
 	}
+
 	//Check duplicate rule
 	for(unsigned i=0;i<rules.size();i++){
 
 		for(unsigned j=i+1;j<rules.size();j++){
-
 			if(*rules[i]==*rules[j]){
 				rules[j]->free();
 				delete rules[j];
 				rules.erase(rules.begin()+j);
+				j--;
 			}
 		}
 

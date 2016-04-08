@@ -19,7 +19,21 @@ namespace grounder {
 
 bool subsumption(const Rule*, vector<Rule*>&);
 
-
+//struct RULE{
+//	RULE(Rule *rule){
+//		for(auto atom:rule->getHead()){
+//			shared_ptr<Atom> shared(atom);
+//			head.push_back(shared);
+//		}
+//		for(auto atom:rule->getBody()){
+//			shared_ptr<Atom> shared(atom);
+//			body.push_back(shared);
+//		}
+//	}
+//
+//	vector<shared_ptr<Atom>> head;
+//	vector<shared_ptr<Atom>> body;
+//};
 
 // when an adorned predicate is stored, we have to specify the
 // target of the adornment
@@ -2447,7 +2461,6 @@ public:
                                              ModifiedRules.push_back(modifiedRule);
                                              }
                                          }
-									 delete adornedRule;
                                      }
                                  }
                                         //                        else
