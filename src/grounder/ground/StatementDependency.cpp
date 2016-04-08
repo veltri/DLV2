@@ -711,11 +711,9 @@ void StatementDependency::simplifyMagicRules(){
 
 		for(unsigned j=i+1;j<rules.size();j++){
 
-			if(*rules[i]==*rules[j]){
-				cout<<"ERASE"<<endl;
-				rules[i]->print();rules[j]->print();
+			if(*rules[i]==*rules[j])
 				rules.erase(rules.begin()+j);
-			}
+
 		}
 
 	}
