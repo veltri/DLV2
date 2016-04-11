@@ -405,8 +405,8 @@ bool ProgramGrounder::isNotEmptyPredExt(Predicate* pred,unsigned table) {
 			table) > 0;
 }
 
-bool ProgramGrounder::isNotEmptyPredExt(Predicate* pred,unsigned table,SearchType type) {
-	return PredicateExtTable::getInstance()->getPredicateExt(pred)->getPredicateExtentionSize(table,type) > 0;
+bool ProgramGrounder::isNotEmptyPredExt(Predicate* pred,unsigned table,SearchType type,unsigned iteration) {
+	return PredicateExtTable::getInstance()->getPredicateExt(pred)->getPredicateExtentionSize(table,type,iteration) > 0;
 }
 
 bool ProgramGrounder::inizializeSearchInsertPredicateBody(Rule* rule) {
@@ -470,7 +470,7 @@ bool ProgramGrounder::nextSearchInsertPredicate(Rule* rule,unordered_set<index_o
 
 			if(isNotEmptyPredExt(pred,FACT) && type!=NEW)
 				tableToInsert.push_back({FACT,type});
-			if(isNotEmptyPredExt(pred,NOFACT))
+			if(isNotEmptyPredExt(pred,NOFACT,type,iteration))
 				tableToInsert.push_back({NOFACT,type});
 
 		}else

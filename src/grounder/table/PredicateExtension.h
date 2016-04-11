@@ -177,6 +177,13 @@ public:
 	unsigned getPredicateExtentionSize(unsigned table) const {if(table<tables.size()) return tables[table]->size(); return 0;}
 	unsigned getPredicateExtentionSize() const { unsigned size=0; for(auto table:tables) size+=table->size(); return size;}
 	unsigned getPredicateExtentionSize(unsigned table,SearchType type) const {if(table<tables.size()) return tables[table]->size_iteration(type); return 0;}
+	unsigned getPredicateExtentionSize(unsigned table,SearchType type,unsigned iteration) const {
+		if(table<tables.size()) {
+			auto it=tables[table]->getElements(type,iteration);
+			return it.second-it.first;
+		}
+		return 0;
+	}
 
 
 	IndexingStructure* addAtomSearcher(unsigned table, vector<unsigned>* indexingTerms,bool recursive=false);
