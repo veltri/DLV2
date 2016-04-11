@@ -23,6 +23,8 @@ using SHAREDATOM = shared_ptr<Atom>;
 
 class RULE{
 public:
+	RULE(){};
+
 	RULE(Rule *rule){
 		for(auto atom:rule->getHead()){
 			shared_ptr<Atom> shared(atom->clone());
@@ -51,20 +53,59 @@ public:
 		return *this;
 	}
 
-	const vector<SHAREDATOM>& getHead(){return head;}
+	bool isChoiceRule() const{ return (head.size()==1 && head[0]->isChoice());}
 
-	const vector<SHAREDATOM>& getBody(){return body;}
+	SHAREDATOM getAtomInHead(unsigned i)const {return head[i];}
 
-	vector<SHAREDATOM> getClonedBody(){
+	const vector<SHAREDATOM>& getHead()const {return head;}
+
+	const vector<SHAREDATOM>& getBody()const{return body;}
+
+	vector<SHAREDATOM> getClonedBody()const{
 		vector<SHAREDATOM> newBody;
 		for(auto atom:body)
 			newBody.emplace_back(atom->clone());
 		return newBody;
 	}
 
-	unsigned getSizeHead(){return head.size();}
+	vector<SHAREDATOM> getClonedHead()const{
+		vector<SHAREDATOM> newBody;
+		for(auto atom:head)
+			newBody.emplace_back(atom->clone());
+		return newBody;
+	}
 
-	unsigned getSizeBody(){return body.size();}
+	void setHead(vector<SHAREDATOM>& head){
+		this->head=head;
+	}
+
+	void setBody(vector<SHAREDATOM>& body){
+			this->body=body;
+	}
+
+	///This method adds an atom in the head
+	void addInHead(SHAREDATOM a){head.push_back(a);};
+	///This method adds an atom in the body
+	void addInBody(SHAREDATOM a){body.push_back(a);};
+
+	///Insert an element in the body at specified position
+	void insertInBody(SHAREDATOM atom,unsigned position){body.insert(body.begin()+position,atom);};
+
+	///This method returns an iterator that points to the first atom in the body
+	vector<SHAREDATOM>::iterator getBeginBody(){return body.begin();};
+	vector<SHAREDATOM>::const_iterator getBeginBody()const{return body.begin();};
+	///This method returns an iterator that points to the last atom in the body
+	vector<SHAREDATOM>::const_iterator getEndBody()const{return body.end();};
+	vector<SHAREDATOM>::iterator getEndBody(){return body.end();};
+	///This method returns an iterator that points to the first atom in the head
+	vector<SHAREDATOM>::const_iterator getBeginHead()const{return head.begin();};
+	///This method returns an iterator that points to the last atom in the head
+	vector<SHAREDATOM>::const_iterator getEndHead()const{return head.end();};
+
+	unsigned getSizeHead()const {return head.size();}
+
+	unsigned getSizeBody()const {return body.size();}
+
 
 private:
 	vector<SHAREDATOM> head;
@@ -85,6 +126,10 @@ class RewriteMagic {
 private:
 Predicate* createPredicate(string newName,Predicate *oldPredicate){
 	Predicate *newPred=new Predicate(newName,oldPredicate->getArity(),oldPredicate->isEdb());
+	if(newName!=PREDNAME_QUERY)
+		newPred->setHiddenForPrinting(true);
+	else
+		newPred->setHiddenForPrinting(false);
 	PredicateTable::getInstance()->insertPredicate(newPred);
 	PredicateExtTable::getInstance()->addPredicateExt(newPred);
 	return newPred;
@@ -99,10 +144,10 @@ public:
 	void normalizeMagicPredicateNames();
 
 private:
-    vector<Rule*>& IDB;
+    vector<RULE> IDB;
     vector<Rule*>& IDB_OLD;
     size_t firstRule;
-    vector<Atom*> *Query;
+    vector<SHAREDATOM> Query;
     bool IsQueryGround;
     bool OptionOptimizedDisjunctiveMagicSets;
     bool OptionMagicSetsExplicit;
@@ -144,7 +189,7 @@ private:
         }
 
 
-    bool isMagic(const Atom* atom)
+    bool isMagic(const SHAREDATOM atom)
         {
     	assert(atom->hasPredicate());
         return isMagic(atom->getPredicate());
@@ -157,9 +202,9 @@ private:
     // rule, or a constraint or the query
     union ADORNMENT_GENERATOR
         {
-        vector<Atom*> *iQuery;
-        Rule *iRule;
-        Rule *iConstr;
+        vector<SHAREDATOM> *iQuery;
+        RULE *iRule;
+        RULE *iConstr;
         WeakConstraint *iWConstr;
         };
 
@@ -285,7 +330,7 @@ private:
         }
 
     // receive an atom and an adornment and builds a new adorned atom
-    Atom* buildAdornedAtom(Atom* a,const char *adornment)
+    SHAREDATOM buildAdornedAtom(SHAREDATOM a,const char *adornment)
         {
         // it is possible to adorn an atom only if it is IDB
     	assert(a->hasPredicate());
@@ -294,7 +339,7 @@ private:
         strcat(strcat(name,"#"),adornment);
         Predicate *newPred=createPredicate(name,a->getPredicate());
 
-        Atom *aa=a->clone();
+        SHAREDATOM aa(a->clone());
         aa->setPredicate(newPred);
         delete[] name;
         return aa;
@@ -302,20 +347,20 @@ private:
 
     // receive an atom and an adorned name and build a new adorned atom
     // with the same name of adornedName
-    Atom* buildAdornedAtom(Atom *a,const string &adornedName)
+    SHAREDATOM buildAdornedAtom(SHAREDATOM a,const string &adornedName)
         {
         // it is possible to adorn an atom only if it is IDB and not
         // propositional
 //        assert( a.isIDB() && !a.isPropositional() );
     	assert(a->hasPredicate());
     	Predicate *newPred=createPredicate(adornedName,a->getPredicate());
-        Atom *aa=a->clone();
+        SHAREDATOM aa(a->clone());
         aa->setPredicate(newPred);
         return aa;
         }
 
     // receive a single query atom and build the adorned version
-    Atom* adornQueryAtom(Atom* query_atom)
+    SHAREDATOM adornQueryAtom(SHAREDATOM query_atom)
         {
 
         const vector<Term*>& params = query_atom->getTerms();
@@ -337,7 +382,7 @@ private:
 //                    ( i->isComplex() && i->getComplexTerm().isConstantTerm() ) );
                 strcat(adornment,"b");
                 }
-        Atom* a=buildAdornedAtom(query_atom,adornment);
+        SHAREDATOM a=buildAdornedAtom(query_atom,adornment);
         delete[] adornment;
         return a;
         }
@@ -348,7 +393,7 @@ private:
     //        to the set of bound variables BoundVars
     // @param BoundVars, the set of bound variables at the current
     //        position of the considered rule
-    void getBoundVars(Atom* &adorned_atom,
+    void getBoundVars(SHAREDATOM &adorned_atom,
                       SetofBoundVars &BoundVars)
         {
 //        assert( adorned_atom.isIDB() );
@@ -379,7 +424,7 @@ private:
     // @param L, the literal to be adorned
     // @param BoundVars, the set of bound variables at the current
     //        position of the considered rule
-    Atom* adornLiteral(Atom* L,const SetofBoundVars &BoundVars)
+    SHAREDATOM adornLiteral(SHAREDATOM L,const SetofBoundVars &BoundVars)
         {
 //        assert( L.isIDB() && !L.isPropositional() );
         assert(L->hasPredicate());
@@ -413,7 +458,7 @@ private:
                 strcat(adornment,"b");
                 }
 
-        Atom *L1=buildAdornedAtom(L,adornment);
+        SHAREDATOM L1=buildAdornedAtom(L,adornment);
         L1->setNegative(L->isNegative());
         delete[] adornment;
         return L1;
@@ -421,7 +466,7 @@ private:
 
     // check if an atom has at least one constant term.
     // @param a, the atom to be checked if it has bound terms
-    bool hasConstants(Atom *a)
+    bool hasConstants(SHAREDATOM a)
         {
 //        assert( !a.isPropositional() );
         const vector<Term*> &params = a->getTerms();
@@ -439,7 +484,7 @@ private:
     // @param a, the atom to be checked if it has bound terms
     // @param BV, the set of bound variables at the current position of
     //        the considered rule
-    bool hasBoundTerms(Atom *a,const SetofBoundVars &BV)
+    bool hasBoundTerms(SHAREDATOM a,const SetofBoundVars &BV)
         {
 //        assert( !a.isPropositional() );
         //check if the literal contains at least a bound term
@@ -457,7 +502,7 @@ private:
     // receive an adorned IDB atom and return true if it contains at least
     // a bound term
     // @param a, the adorned IDB atom to be checked if it has bound terms
-    bool hasBoundTermsIDB(const Atom* ad)
+    bool hasBoundTermsIDB(const SHAREDATOM ad)
         {
 //        assert( ad.isIDB() );
         if ( ad->getTermsSize()==0 )
@@ -474,7 +519,7 @@ private:
     // @param a, the atom whose number of bound terms must be calculated
     // @param BV, the set of bound variables at the current position of
     //        the considered rule
-    size_t getNumberBoundTerms(Atom* a,const SetofBoundVars &BV)
+    size_t getNumberBoundTerms(SHAREDATOM a,const SetofBoundVars &BV)
         {
         size_t count=0;
         const vector<Term*> &params = a->getTerms();
@@ -494,7 +539,7 @@ private:
     //        the considered rule
     // @param L, the literal whose variables must be added to the set of
     //        bound variables BV
-    void updateBoundVars(SetofBoundVars &BV,Atom *L)
+    void updateBoundVars(SetofBoundVars &BV,SHAREDATOM L)
         {
 //        assert( !L.isPropositional() );
         const vector<Term*> &params = L->getTerms();
@@ -513,7 +558,7 @@ private:
     // FIXME: this function should probably be relocated
     // @param L, the builtin literal to be checked if it a comparison
     //        builtin, (except the equality built-in)
-    bool isComparison(const Atom *L)
+    bool isComparison(const SHAREDATOM L)
         {
 //        assert( L->isBuiltIn() && (L->getTerm(0)->contain(ARITH) || L->getTerm(1)->contain(ARITH) ) );
         if(L->getBinop()==EQUAL)
@@ -538,7 +583,7 @@ private:
     // @param L, the literal to be checked
     // @param BV, the set of bound variables at the current position of
     //        the considered rule
-    bool fullyBound(Atom *L,const SetofBoundVars &BV)
+    bool fullyBound(SHAREDATOM L,const SetofBoundVars &BV)
         {
 //        assert( !L.isPropositional() );
         const vector<Term*> &params = L->getTerms();
@@ -559,7 +604,7 @@ private:
     // @param L, the literal to be checked
     // @param BV, the set of bound variables at the current position of
     //        the considered rule
-    bool isPermissible(Atom* L,const SetofBoundVars &BV)
+    bool isPermissible(SHAREDATOM L,const SetofBoundVars &BV)
         {
         // a propositional literal is permissible
         if ( L->getTermsSize()==0 )
@@ -595,8 +640,8 @@ private:
     // @param L2, the literal to be compared
     // @param BV, the set of bound variables at the current position of
     //        the considered rule
-    bool isPreferable( Atom* L1,
-                       Atom *L2,
+    bool isPreferable( SHAREDATOM L1,
+                       SHAREDATOM L2,
                       const SetofBoundVars &BV)
         {
         // an undefined propositional literal is always preferable
@@ -659,7 +704,7 @@ private:
 
     //
     // @param aa, the atom to transform
-    Atom* magic(Atom *aa)
+    SHAREDATOM magic(SHAREDATOM aa)
         {
         assert( !aa->getPredicate()->isEdb());
 
@@ -683,7 +728,7 @@ private:
         Predicate *oldPred=new Predicate(name,params.size(),aa->getPredicate()->isEdb());
         Predicate* p=createMagicPredicateName(oldPred);
         delete oldPred;
-        Atom *m=aa->clone();
+        SHAREDATOM m(aa->clone());
         m->setPredicate(p);
         m->setTerms(params);
 
@@ -799,8 +844,8 @@ private:
     //
     // @param L, the literal to look for
     // @param body, the body of the rule to check
-    size_t getPosFromBody(const Atom* L,
-                          const vector<Atom*> &body)
+    size_t getPosFromBody(const SHAREDATOM L,
+                          const vector<SHAREDATOM> &body)
         {
     	for(unsigned i=0;i<body.size();i++)
     		if(*body[i]==*L)
@@ -813,7 +858,7 @@ private:
     //
     // @param L, the literal to look for
     // @param ag, the pointer to the rule or constraint to check
-    size_t getLiteralPosition(Atom *L,
+    size_t getLiteralPosition(SHAREDATOM L,
                               const ADORNMENT_GENERATOR &ag,
                               const AG_TYPE type)
         {
@@ -821,7 +866,7 @@ private:
         if( type == typeNormalRule )
             {
             assert( ag.iRule->getHead().size() == 1 );
-            Atom* headAtom=ag.iRule->getAtomInHead(0);
+            SHAREDATOM headAtom=ag.iRule->getAtomInHead(0);
             if( *headAtom == *L )
                 pos = 1;
             else
@@ -851,10 +896,10 @@ private:
     //
     // @param ad_pred, the adorned predicate which we are looking for
     // @param head, the head which should include ad_pred.
-    bool predIsInHead(const string &item,const vector<Atom*> &head)
+    bool predIsInHead(const string &item,const vector<SHAREDATOM> &head)
         {
         const char *name = getUnadornedName(item);
-        for( vector<Atom*>::const_iterator j = head.begin();
+        for( vector<SHAREDATOM>::const_iterator j = head.begin();
              j != head.end();
              j++ )
         {
@@ -872,7 +917,7 @@ private:
         }
 
 
-    void insertPredicate(const Atom *aL,
+    void insertPredicate(const SHAREDATOM aL,
                          const size_t pos,
                          const AG_TYPE &ag_type,
                          const ADORNMENT_GENERATOR &ag)
@@ -1006,8 +1051,8 @@ private:
     // @param BV, the set of bound variables at the current position of
     //           the considered rule
     //
-    void adornAndAddLiteralToBody(Atom *L,
-                                  vector<Atom*> &body,
+    void adornAndAddLiteralToBody(SHAREDATOM L,
+                                  vector<SHAREDATOM> &body,
                                   const AG_TYPE &ag_type,
                                   const ADORNMENT_GENERATOR &ag,
                                   SetofBoundVars &BV)
@@ -1018,7 +1063,7 @@ private:
             {
             if( !L->getTermsSize()==0 )
                 {
-                Atom* aL(adornLiteral(L,BV));
+                SHAREDATOM aL(adornLiteral(L,BV));
                 // insert the adorned literal aL to the body of the rule
                 insertPredicate(aL,pos,ag_type,ag);
                 body.push_back(aL);
@@ -1026,7 +1071,7 @@ private:
             else
                 {
                 insertPredicate(L,pos,ag_type,ag);
-                body.push_back(L->clone());
+                body.emplace_back(L->clone());
                 }
             }
         else // EDB or built-in literal
@@ -1048,7 +1093,7 @@ private:
             // FIXME: The separation between positive and negative
             // literals is explicitly ignored in order to ensure the
             // intended ordering of literals.
-            body.push_back(L->clone());
+            body.emplace_back(L->clone());
             }
         }
 
@@ -1063,20 +1108,20 @@ private:
     //           disjunctive rule, strong or weak constraint, query
     // @param ag, the pointer to the source of the adornment (normal or
     //           disjunctive rule, strong or weak constraint, query
-    Rule* adornRule(Rule* r,
+    RULE adornRule(const RULE& r,
                    const string &aa,
                    const AG_TYPE &ag_type,
 				   const ADORNMENT_GENERATOR &ag)
         {
-        assert( r->getSizeHead()==1 );
-        vector<Atom*> newRuleHead;
-        Atom *head = r->getAtomInHead(0);
+        assert( r.getSizeHead()==1 );
+        vector<SHAREDATOM> newRuleHead;
+        SHAREDATOM head = r.getAtomInHead(0);
         // the rules which are IDB facts, e.g. p(1,2)., matching with the
         // unadorned version of aa, must be adorned w.r.t. the adornment
         // of aa.
         // for instance if the adornment of aa is '#bb' the new
         // adorned IDB fact will be p#bb(1,2).
-        if( r->getSizeBody()==0 )
+        if( r.getSizeBody()==0 )
             {
             assert( ag_type != typeQuery );
             if( !head->getTermsSize()==0 )
@@ -1087,12 +1132,12 @@ private:
                 delete[] name;
 #endif
                 newRuleHead.push_back(buildAdornedAtom(head,aa));
-                Rule * newRule=new Rule;
-                newRule->setHead(newRuleHead);
+                RULE newRule;
+                newRule.setHead(newRuleHead);
                 return newRule;
                 }
             else
-                return r->clone();
+                return RULE(r);
 
             }
         else
@@ -1110,9 +1155,9 @@ private:
                 newRuleHead.push_back(buildAdornedAtom(head,aa));
                 }
             else
-                newRuleHead.push_back(head->clone());
+                newRuleHead.emplace_back(head->clone());
 
-            vector<Atom*> newRuleBody;
+            vector<SHAREDATOM> newRuleBody;
 
             //initialize BV with the set of bound variables of the adorned head
             SetofBoundVars BV;
@@ -1120,7 +1165,7 @@ private:
             getBoundVars(*(newRuleHead.begin()),BV);
 
             // store all the body literals of r in notYetConsideredLiterals
-            vector<Atom*> notYetConsideredLiterals=r->getClonedBody();
+            vector<SHAREDATOM> notYetConsideredLiterals=r.getClonedBody();
 
             // add the permissible literals of the original body to the
             // new body according to the order defined by the preferential
@@ -1131,7 +1176,7 @@ private:
 
 
                 foundPermissible=false;
-                vector<Atom*>::iterator i =
+                vector<SHAREDATOM>::iterator i =
                     notYetConsideredLiterals.begin();
                 // selection of the first permissible LITERAL to propagate
                 // bindings
@@ -1160,7 +1205,7 @@ private:
                     // permissible body literals
                     if( i != notYetConsideredLiterals.end()-1 )
                         {
-                        vector<Atom*>::iterator j = i+1;
+                        vector<SHAREDATOM>::iterator j = i+1;
                         while( i != notYetConsideredLiterals.end()-1
                                && j != notYetConsideredLiterals.end() )
                             {
@@ -1192,7 +1237,6 @@ private:
 		    // literal
 		    if( !(*i)->getTermsSize()==0 && hasBoundTerms(*i,BV) )
                         updateBoundVars(BV,*i);
-		    delete (*i);
 		    // we have considered the literal *i
 		    notYetConsideredLiterals.erase(i);
                     }
@@ -1201,7 +1245,7 @@ private:
             // permissible and we do not have to propagate the adornment
             // through them, but they must be added to the body of the new
             // rule in any case
-            for( vector<Atom*>::iterator k =
+            for( vector<SHAREDATOM>::iterator k =
                      notYetConsideredLiterals.begin();
                  k != notYetConsideredLiterals.end();
                  k++ )
@@ -1211,13 +1255,11 @@ private:
                                          ag,
                                          BV);
 
-            for(auto atom:notYetConsideredLiterals)
-            	delete atom;
 
             // finally create the adorned rule
-            Rule *r1=new Rule;
-            r1->setBody(newRuleBody);
-            r1->setHead(newRuleHead);
+            RULE r1;
+            r1.setBody(newRuleBody);
+            r1.setHead(newRuleHead);
 
             return r1;
             }
@@ -1243,34 +1285,34 @@ private:
     // @param a, the istance of the adorned predicate at for which the
     //        binding is propagated
     // @param r,
-    Rule* shiftHead( Atom* a,Rule* r)
+    RULE shiftHead( SHAREDATOM a,RULE &r)
         {
-        assert( r->getSizeHead()>0 );
-        assert( r->getSizeHead() >= 1 );
-        assert( find_if(r->getBeginHead(),r->getEndHead(),[&a](Atom* a1){return *a1==*a;}) != r->getEndHead() );
-        if( r->getSizeHead() == 1)
-            return r->clone();
+        assert( r.getSizeHead()>0 );
+        assert( r.getSizeHead() >= 1 );
+        assert( find_if(r.getBeginHead(),r.getEndHead(),[&a](SHAREDATOM a1){return *a1==*a;}) != r.getEndHead() );
+        if( r.getSizeHead() == 1)
+            return RULE(r);
 
-        vector<Atom*> newHead;
+        vector<SHAREDATOM> newHead;
         newHead.push_back(a);
         // build the body of the new rule with all the predicates
         // already present in the original body and then shift the other
         // head atoms different from a
-        vector<Atom*> newBody;
-        if( r->getSizeBody()>0)
-            newBody = r->getClonedBody();
-        for( vector<Atom*>::const_iterator j= r->getBeginHead();
-             j != r->getEndHead();
+        vector<SHAREDATOM> newBody;
+        if( r.getSizeBody()>0)
+            newBody = r.getClonedBody();
+        for( vector<SHAREDATOM>::const_iterator j= r.getBeginHead();
+             j != r.getEndHead();
              j++ )
             if (!(**j == *a)){
-            	Atom *cloneAtom=(*j)->clone();
+            	SHAREDATOM cloneAtom((*j)->clone());
             	cloneAtom->setNegative(true);
             	newBody.push_back(cloneAtom);
             }
 
-        Rule *sr=new Rule;
-        sr->setBody(newBody);
-        sr->setHead(newHead);
+        RULE sr;
+        sr.setBody(newBody);
+        sr.setHead(newHead);
         return sr;
         }
 
@@ -1279,7 +1321,7 @@ private:
     //
     // @param L1, one literal to compare.
     // @param L1, another literal to compare.
-    bool sameTerms(Atom* L1,Atom* L2)
+    bool sameTerms(SHAREDATOM L1,SHAREDATOM L2)
         {
         if( L1->getTermsSize()==0 &&  L2->getTermsSize()==0 )
             return true;
@@ -1306,11 +1348,11 @@ private:
     //
     // @param r, the rule whose head should be shifted back;
     // @param originalHead, the original head of r in case it was a disjunctive rule.
-    void shiftBackHead(Rule *&r,const vector<Atom*> &originalHead)
+    void shiftBackHead(RULE&r,const vector<SHAREDATOM> &originalHead)
         {
 
 
-        assert( r->getSizeHead() == 1 );
+        assert( r.getSizeHead() == 1 );
         // modify the normal rule r by shifting, from its body to its
         // head, the positive versions of the literals occurring with
         // negation in the body of r and occurring also in the original
@@ -1321,12 +1363,12 @@ private:
             return;
         else
             {
-            const Atom* a=r->getAtomInHead(0);
-            assert(!r->isChoiceRule());
+            const SHAREDATOM a=r.getAtomInHead(0);
+            assert(!r.isChoiceRule());
             const char *nameHead = getUnadornedName(a->getPredicate()->getName());
-            const vector<Atom*>& body = r->getBody();
-            vector<Atom*> newBody;
-            for( vector<Atom*>::const_iterator i = body.begin();
+            const vector<SHAREDATOM>& body = r.getBody();
+            vector<SHAREDATOM> newBody;
+            for( vector<SHAREDATOM>::const_iterator i = body.begin();
                  i != body.end();
                  i++ )
                 {
@@ -1334,7 +1376,7 @@ private:
                 assert((*i)->hasPredicate());
                 const char *name = getUnadornedName((*i)->getPredicate()->getName());
                 bool found=false;
-                for( vector<Atom*>::const_iterator j = originalHead.begin();
+                for( vector<SHAREDATOM>::const_iterator j = originalHead.begin();
                      j != originalHead.end() && !found;
                      j++ )
                     {
@@ -1345,25 +1387,18 @@ private:
                         // Found shifted atom: make it positive and shift
                         // it back to the head.
                         found=true;
-                        Atom * newAtom=(*i)->clone();
+                        SHAREDATOM newAtom((*i)->clone());
                         newAtom->setNegative(false);
-                        r->addInHead(newAtom);
+                        r.addInHead(newAtom);
                         }
 
                     }
                 if( !found )
-                    newBody.push_back((*i)->clone());
+                    newBody.emplace_back((*i)->clone());
                 delete[] name;
                 }
             delete[] nameHead;
-            r->deleteBody([](Atom* a){
-            	if(a->isClassicalLiteral())
-            		return 1;
-            	if(a->isAggregateAtom())
-            		return 2;
-            	return 0;
-            });
-            r->setBody(newBody);
+            r.setBody(newBody);
             }
         }
 
@@ -1383,13 +1418,13 @@ private:
     // @param a, the istance of the adorned predicate at for which the
     //        binding is propagated
     // @param aa, the predicate name matching with a
-    bool redundancy(const vector<Atom*> &head,
-                     Atom* a,
+    bool redundancy(const vector<SHAREDATOM> &head,
+                     SHAREDATOM a,
                     const string &aa)
         {
         assert( OptionOptimizedDisjunctiveMagicSets );
 
-        for( vector<Atom*>::const_iterator j = head.begin();
+        for( vector<SHAREDATOM>::const_iterator j = head.begin();
              j != head.end();
              j++ )
             {
@@ -1400,7 +1435,7 @@ private:
                 {
                 if( !(*j)->getTermsSize()==0)
                     {
-                    Atom *L = buildAdornedAtom(*j,getAdornment(aa));
+                    SHAREDATOM L = buildAdornedAtom(*j,getAdornment(aa));
                     if( Sources.find(L->getPredicate()->getName().c_str()) != Sources.end() )
                         {
                         // if L has already adorned the program, i.e. it
@@ -1428,7 +1463,35 @@ private:
 
 
     // Get the atom with pos 'pos' from a rule or a constraint.
-    Atom* getAtomByPos( const vector<Atom*> &head,
+    SHAREDATOM getAtomByPos( const vector<SHAREDATOM> &head,
+                       const vector<SHAREDATOM> &body,
+                      const size_t &pos)
+        {
+        // FIXME: this assert can be avoided when constraints will be
+        // considered.
+        assert( head.size() > 0 || body.size() > 0 );
+
+        assert( pos > 0 );
+        size_t pos2 = 1;
+
+        for( vector<SHAREDATOM>::const_iterator j = head.begin();
+             j != head.end();
+             j++, pos2++ )
+            if( pos2 == pos )
+                return SHAREDATOM((*j)->clone());
+
+        for( vector<SHAREDATOM>::const_iterator j=body.begin();
+             j != body.end();
+             j++, pos2++ )
+            if( pos2 == pos )
+                return SHAREDATOM((*j)->clone());
+
+        assert(0);
+        return nullptr;
+        }
+
+    // Get the atom with pos 'pos' from a rule or a constraint.
+    SHAREDATOM getAtomByPos( const vector<SHAREDATOM> &head,
                        const vector<Atom*> &body,
                       const size_t &pos)
         {
@@ -1439,40 +1502,41 @@ private:
         assert( pos > 0 );
         size_t pos2 = 1;
 
-        for( vector<Atom*>::const_iterator j = head.begin();
+        for( vector<SHAREDATOM>::const_iterator j = head.begin();
              j != head.end();
              j++, pos2++ )
             if( pos2 == pos )
-                return (*j)->clone();
+                return SHAREDATOM((*j)->clone());
 
         for( vector<Atom*>::const_iterator j=body.begin();
              j != body.end();
              j++, pos2++ )
             if( pos2 == pos )
-                return (*j)->clone();
+                return SHAREDATOM((*j)->clone());
 
         assert(0);
         return nullptr;
         }
 
     //
-    Atom* getAtomByPos(const ADORNMENT_GENERATOR &ag,const AG_TYPE &type,const size_t &pos)
+    SHAREDATOM getAtomByPos(const ADORNMENT_GENERATOR &ag,const AG_TYPE &type,const size_t &pos)
         {
         if( type == typeNormalRule || type == typeDisjunctive )
             {
             if( ag.iRule->getSizeBody()>0 )
                 return getAtomByPos(ag.iRule->getHead(),ag.iRule->getBody(),pos);
             else
-                return getAtomByPos(ag.iRule->getHead(),vector<Atom*>(),pos);
+                return getAtomByPos(ag.iRule->getHead(),vector<SHAREDATOM>(),pos);
             }
         else
             {
-        	vector<Atom*> emptyHead;
+        	vector<SHAREDATOM> emptyHead;
             if( type == typeConstraint )
                 return getAtomByPos(emptyHead,(ag.iConstr)->getBody(),pos);
             else
-                if( type == typeWConstraint )
+                if( type == typeWConstraint ){
                     return getAtomByPos(emptyHead,(ag.iWConstr)->getBody(),pos);
+                }
             }
         assert(0);
         return nullptr;
@@ -1486,20 +1550,20 @@ private:
     // @param onlyForMagic, set to true if the modified constraint is
     //           redundant and so only the corresponding magic rule must be
     //           constructed
-    pair<bool,Rule*> adornSource(const NAMESITEM_TARGET &at,
+    pair<bool,RULE> adornSource(const NAMESITEM_TARGET &at,
                                 const SOURCE &s,
                                 bool &onlyForMagic)
         {
         assert( at.second == onlySource );
         assert( s.ag_type == typeNormalRule || s.ag_type == typeDisjunctive );
         assert( predIsInHead(at.first,(s.ag.iRule)->getHead()) );
-        Atom* L(getAtomByPos(s.ag,s.ag_type,s.atom_pos));
+        SHAREDATOM L(getAtomByPos(s.ag,s.ag_type,s.atom_pos));
 
 
-        Rule* shiftedRule(shiftHead(L,(s.ag.iRule)));
-        if( predIsInHead(at.first,shiftedRule->getHead()) )
+        RULE shiftedRule(shiftHead(L,*(s.ag.iRule)));
+        if( predIsInHead(at.first,shiftedRule.getHead()) )
             {
-            Rule *r = adornRule(shiftedRule,
+            const RULE &r = adornRule(shiftedRule,
                                       at.first,
                                       s.ag_type,
                                       s.ag);
@@ -1507,10 +1571,10 @@ private:
             onlyForMagic = OptionOptimizedDisjunctiveMagicSets &&
                 redundancy(s.ag.iRule->getHead(),L,at.first);
 
-            return pair<bool,Rule*>(true,r);
+            return pair<bool,RULE>(true,r);
             }
         else
-            return pair<bool,Rule*>(false,(s.ag.iRule));
+            return pair<bool,RULE>(false,*(s.ag.iRule));
         }
 
     // Prevent the generation of redundant rules. The propagation of the
@@ -1585,22 +1649,19 @@ private:
     // @param onlyForMagic, set to true if the modified constraint is
     //           redundant and so only the corresponding magic rule must be
     //           constructed
-    Rule* adorn(const NAMESITEM_TARGET &at,
+    RULE adorn(const NAMESITEM_TARGET &at,
                const ADORNMENT_GENERATOR &ag,
                const AG_TYPE type,
-               Atom *L,
+               SHAREDATOM L,
                bool &onlyForMagic)
         {
 
         // adorn the rule
         assert( type == typeNormalRule || type == typeDisjunctive );
-        Rule *shiftedRule=shiftHead(L->clone(),(ag.iRule));
-        Rule *r = adornRule(shiftedRule,
+        const RULE& r = adornRule(shiftHead(SHAREDATOM(L->clone()),*(ag.iRule)),
                                   at.first,
                                   type,
                                   ag);
-        shiftedRule->free();
-        delete shiftedRule;
         onlyForMagic = OptionOptimizedDisjunctiveMagicSets &&
             redundancy(ag.iRule->getHead(),L,at.first);
 
@@ -1609,10 +1670,10 @@ private:
 
     ///////////////////////////////////////////////////////////////
 
-    bool queryRule(const Rule *r)
+    bool queryRule(const RULE &r)
         {
-        vector<Atom*> head(r->getHead());
-        assert(!r->isChoiceRule());
+        const vector<SHAREDATOM>& head=r.getHead();
+        assert(!r.isChoiceRule());
         return ( head.size() == 1 && strcmp( head[0]->getPredicate()->getName().c_str(),PREDNAME_QUERY) == 0 )
             || strstr(head[0]->getPredicate()->getName().c_str(),"#query");
         }
@@ -1630,15 +1691,15 @@ private:
     //
     // @param adornedRule, the adorned rule for which the magic rules are
     //              generated
-    vector<Rule*> generate(Rule* &adornedRule)
+    vector<RULE> generate(RULE &adornedRule)
         {
 
-        assert( adornedRule->getSizeHead() == 1 );
+        assert( adornedRule.getSizeHead() == 1 );
 
-        vector<Rule*> MagicRules;
+        vector<RULE> MagicRules;
         bool queryR = queryRule(adornedRule);
-        Atom *head = (adornedRule->getAtomInHead(0));
-        assert(!adornedRule->isChoiceRule());
+        SHAREDATOM head(adornedRule.getAtomInHead(0));
+        assert(!adornedRule.isChoiceRule());
         assert( !head->getPredicate()->isEdb());
 
         // When a magic rule has to be generated for a literal p, it must
@@ -1646,13 +1707,13 @@ private:
         // useful for propagating bindings from the head of the rule to p.
         // An unuseful literal (EDB or IDB) is included only if it is
         // propositional or undefined.
-        if( adornedRule->getSizeBody()>0 )
+        if( adornedRule.getSizeBody()>0 )
             {
             // for each adorned predicate of the body with bound
             // arguments build a magic rule
-            for( vector<Atom*>::const_iterator i=
-                     adornedRule->getBeginBody();
-                 i != adornedRule->getEndBody();
+            for( vector<SHAREDATOM>::const_iterator i=
+                     adornedRule.getBeginBody();
+                 i != adornedRule.getEndBody();
                  i++ )
                 {
                 if( (*i)->hasPredicate() && !(*i)->getPredicate()->isEdb() && ( isAdorned((*i)->getPredicate()->getName()) || (*i)->getTermsSize()==0 )
@@ -1666,18 +1727,18 @@ private:
                     {
                     SetofBoundVars BV;
                     if( !(*i)->getTermsSize()==0 && hasBoundTermsIDB((*i)) ){
-                    	Atom *atom=*i;
+                    	SHAREDATOM atom=*i;
                         getBoundVars(atom,BV);
                     }
                     // the new rule must have in the head the magic
                     // version of the current body literal ...
-                    Atom* magicA = magic(*i);
+                    SHAREDATOM magicA = magic(*i);
                     magicA->setNegative(false);
-                    Atom * magicL = magic(head);
+                    SHAREDATOM magicL = magic(head);
                     if( ! (*magicA == *magicL)  )
                         {
-                    	vector<Atom*> newMagicRuleHead;
-                    	vector<Atom*> newMagicRuleBody;
+                    	vector<SHAREDATOM> newMagicRuleHead;
+                    	vector<SHAREDATOM> newMagicRuleBody;
                         newMagicRuleHead.push_back(magicA);
                         // ... and the magic version of the head
                         // literal in the body, except if it is the
@@ -1689,9 +1750,9 @@ private:
                         // add to the new magic rule all the literals
                         // useful to propagate binding to the considered
                         // body literal *i and preceding it in the body
-                        if( i > adornedRule->getBeginBody() )
-                            for( vector<Atom*>::const_iterator j = i-1;
-                                 j >= adornedRule->getBeginBody();
+                        if( i > adornedRule.getBeginBody() )
+                            for( vector<SHAREDATOM>::const_iterator j = i-1;
+                                 j >= adornedRule.getBeginBody();
                                  j-- )
                                 {
                                 bool useful = false;
@@ -1740,7 +1801,7 @@ private:
                                                 if( (*j)->isBuiltIn() )
                                                     updateBoundVars(BV,*j);
                                                 else{
-                                                	Atom *atomNonConst=*j;
+                                                	SHAREDATOM atomNonConst=*j;
                                                     getBoundVars(atomNonConst,BV);
                                                 }
                                                 break;
@@ -1749,14 +1810,14 @@ private:
                                         }
                                     //TODO check j->isUndef()
                                     if( useful )
-                                        newMagicRuleBody.push_back((*j)->clone());
+                                        newMagicRuleBody.emplace_back((*j)->clone());
                                     }
                                 }
 
                         // build the new magic rule
-                        Rule* mRule=new Rule;
-                        mRule->setHead(newMagicRuleHead);
-                        mRule->setBody(newMagicRuleBody);
+                        RULE mRule;
+                        mRule.setHead(newMagicRuleHead);
+                        mRule.setBody(newMagicRuleBody);
 
                         //TODO verificare se aggiungere funzione || ! subsumption(mRule,MagicRules)
                         if( ! OptionOptimizedDisjunctiveMagicSets )
@@ -1764,9 +1825,6 @@ private:
 
                             MagicRules.push_back(mRule);
 
-                            }else{
-                            	mRule->free();
-                            	delete mRule;
                             }
                         }
                     }
@@ -1802,7 +1860,7 @@ private:
 
     ////////////////////////////////////////////////////////////
 
-    Rule* modify(Rule* adornedRule,const vector<Atom*> &h)
+    RULE modify(RULE &adornedRule,const vector<SHAREDATOM> &h)
         {
 
         // h->size() > 1 means that the original rules was
@@ -1812,30 +1870,30 @@ private:
         // back.
         shiftBackHead(adornedRule,h);
 
-       const  vector<Atom*> &head = (adornedRule)->getHead();
+       const  vector<SHAREDATOM> &head = (adornedRule).getHead();
         assert( &head );
         assert( head.size() >= 1 );
 
         // for each adorned literal of the head create the
         // corresponding magic literal and put it into the body of the
         // modified rule
-        for( vector<Atom*>::const_iterator k = head.begin();
+        for( vector<SHAREDATOM>::const_iterator k = head.begin();
              k != head.end();
              k++ )
             {
-            Atom* mL(magic(*k));
-            if( adornedRule->getSizeBody()>0)
-            	adornedRule->insertInBody(mL,0);
+            SHAREDATOM mL(magic(*k));
+            if( adornedRule.getSizeBody()>0)
+            	adornedRule.insertInBody(mL,0);
 
 //                (*(adornedRule.getBodyForModification())).
 //                    insert((*(adornedRule.getBodyForModification()))
 //                           .pos_begin(),mL);
             else // it is a fact
                 {
-                assert( ! adornedRule->getSizeBody()>0 );
-                vector<Atom*> body;
+                assert( ! adornedRule.getSizeBody()>0 );
+                vector<SHAREDATOM> body;
                 body.insert(body.begin(),mL);
-                adornedRule->setBody(body);
+                adornedRule.setBody(body);
                 }
             }
 
@@ -1853,25 +1911,25 @@ private:
     // from the rewritten rules where the IDB atoms are magic and adorned.
     //
     // @param adornedQuery, the adorned query to be processed
-    vector<Rule*> buildQueryRules(vector<Atom*> &adornedQuery)
+    vector<RULE> buildQueryRules(vector<SHAREDATOM> &adornedQuery)
         {
-    	vector<Rule*> queryRules;
-        for( vector<Atom*>::iterator j=adornedQuery.begin();
+    	vector<RULE> queryRules;
+        for( vector<SHAREDATOM>::iterator j=adornedQuery.begin();
              j != adornedQuery.end();
              j++ ){
         	assert((*j)->hasPredicate());
             if( !(*j)->getTermsSize()==0 && !(*j)->getPredicate()->isEdb())
                 {
-            	vector<Atom*> headQueryRule;
+            	vector<SHAREDATOM> headQueryRule;
                 char *name = getUnadornedName((*j)->getPredicate()->getName());
-                Atom *newAtom=(*j)->clone();
+                SHAREDATOM newAtom((*j)->clone());
                 newAtom->setPredicate(createPredicate(name,newAtom->getPredicate()));
                 headQueryRule.push_back(newAtom);
-                vector<Atom*> bodyQueryRule;
+                vector<SHAREDATOM> bodyQueryRule;
                 bodyQueryRule.push_back(*j);
-                Rule *qr=new Rule;
-                qr->setHead(headQueryRule);
-                qr->setBody(bodyQueryRule);
+                RULE qr;
+                qr.setHead(headQueryRule);
+                qr.setBody(bodyQueryRule);
                 queryRules.push_back(qr);
                 delete[] name;
                 }
@@ -1886,26 +1944,26 @@ private:
     // relevant fact for answering the original query.
     //
     // @param AdornedQueryRule, the adorned query rule.
-    vector<Rule*> buildMagicQueryRules(Rule* AdornedQueryRule)
+    vector<RULE> buildMagicQueryRules(RULE &AdornedQueryRule)
         {
-        assert( AdornedQueryRule->getSizeBody()>0 );
-        const vector<Atom*> &AdornedQuery = (AdornedQueryRule->getBody());
-        vector<Rule*> magicQueryRules;
+        assert( AdornedQueryRule.getSizeBody()>0 );
+        const vector<SHAREDATOM> &AdornedQuery = (AdornedQueryRule.getBody());
+        vector<RULE> magicQueryRules;
         bool canBuildMagicRules =false;
-        for( vector<Atom*>::const_iterator i=AdornedQuery.begin();
+        for( vector<SHAREDATOM>::const_iterator i=AdornedQuery.begin();
              i!= AdornedQuery.end();
              i++ )
         {
         	assert((*i)->hasPredicate());
             if( !(*i)->getPredicate()->isEdb() )
                 {
-                vector<Atom*> head;
+                vector<SHAREDATOM> head;
                 head.push_back(magic(*i));
-                Rule *qf = new Rule;
-                qf->setHead(head);
+                RULE qf;
+                qf.setHead(head);
                 // if the magic literal is completely ground, build a
                 // magic query fact
-                if( (qf->getAtomInHead(0))->isGround() )
+                if( (qf.getAtomInHead(0))->isGround() )
                     {
                     magicQueryRules.push_back(qf);
                     }
@@ -1917,15 +1975,13 @@ private:
                     // the magic query rule will be:
                     //    magic#p#bf(X) :- a(3,X).
                     canBuildMagicRules = true;
-                    qf->free();
-                    delete qf;
                 	}
                 }
         }
         if( canBuildMagicRules )
             {
-            assert( AdornedQueryRule->getSizeHead()>0 && queryRule(AdornedQueryRule) );
-            vector<Rule*> magicQuery = generate(AdornedQueryRule);
+            assert( AdornedQueryRule.getSizeHead()>0 && queryRule(AdornedQueryRule) );
+            vector<RULE> magicQuery = generate(AdornedQueryRule);
             magicQueryRules.insert(magicQueryRules.end(),magicQuery.begin(),magicQuery.end());
             }
 
@@ -1934,10 +1990,10 @@ private:
 
     // FIXME!
     // necessary only for non-ground queries (at the moment)
-    bool hasBoundLiterals(const Rule* r)
+    bool hasBoundLiterals(const RULE& r)
         {
-        for(  vector<Atom*>::const_iterator i=r->getBeginBody();
-             i!=r->getEndBody();
+        for(  vector<SHAREDATOM>::const_iterator i=r.getBeginBody();
+             i!=r.getEndBody();
              i++ ){
         	assert((*i)->hasPredicate());
             if( !(*i)->getPredicate()->isEdb() && hasBoundTermsIDB(*i) )
@@ -1990,8 +2046,8 @@ private:
     // the query is completely non-ground: no bindings among variables.
     //
     bool rewriteQuery(const bool groundQuery,
-                      Rule*& AdornedQueryRule,
-                      vector<Rule*> &magicQueryRules)
+                      RULE& AdornedQueryRule,
+                      vector<RULE> &magicQueryRules)
         {
         bool rewrittenQuery = false;
         if( !groundQuery )
@@ -2012,12 +2068,12 @@ private:
             PREDICATES_RULES_INDEX::const_iterator qr = PredicatesRulesIndex.find("#query");
             assert( qr != PredicatesRulesIndex.end() );
             assert( qr->second.size() == 1 );
-            Rule* queryRule = IDB[qr->second.front()];
-			const vector<Atom*> &head = queryRule->getHead();
+            RULE queryRule = IDB[qr->second.front()];
+			const vector<SHAREDATOM> &head = queryRule.getHead();
 			ADORNMENT_GENERATOR ag;
-			ag.iRule=(IDB[qr->second.front()]);
+			ag.iRule=&(IDB[qr->second.front()]);
 			assert( head.size() == 1 && !head[0]->getPredicate()->isEdb() && !head[0]->getTermsSize()==0 );
-			Atom* aa=adornQueryAtom(*(head.begin()));
+			SHAREDATOM aa=adornQueryAtom(*(head.begin()));
 			assert(aa->hasPredicate());
 			AdornedQueryRule = adornRule(queryRule,aa->getPredicate()->getName(),typeQuery,ag);
 			// if there is at least one literal in the query rule
@@ -2026,8 +2082,8 @@ private:
 			// adorn the program.
 			if( OptionMagicSetsExplicit || hasBoundLiterals(AdornedQueryRule) )
 				{
-				for( vector<Atom*>::const_iterator j = AdornedQueryRule->getBeginBody();
-					 j != AdornedQueryRule->getEndBody();
+				for( vector<SHAREDATOM>::const_iterator j = AdornedQueryRule.getBeginBody();
+					 j != AdornedQueryRule.getEndBody();
 					 j++ )
 					insertPredicate(*j,getLiteralPosition(*j,ag,typeQuery),typeQuery,ag);
 
@@ -2047,22 +2103,22 @@ private:
             // If the query is completely ground it is always possible to
             // adorn it.
             size_t pos;
-            vector<Atom*> adornedQuery;
-            for( vector<Atom*>::iterator i = Query->begin();
-                 i != Query->end();
+            vector<SHAREDATOM> adornedQuery;
+            for( vector<SHAREDATOM>::iterator i = Query.begin();
+                 i != Query.end();
                  i++ )
                 {
-                pos = i - Query->begin();
+                pos = i - Query.begin();
                 assert((*i)->hasPredicate());
                 if ( !(*i)->getPredicate()->isEdb() && !(*i)->getTermsSize()==0 )
                     {
-                    Atom* aa=adornQueryAtom(*i);
+                    SHAREDATOM aa=adornQueryAtom(*i);
                     adornedQuery.push_back(aa);
                     assert(aa->hasPredicate());
                     if( Sources.find(aa->getPredicate()->getName().c_str()) == Sources.end() )
                         {
                         ADORNMENT_GENERATOR ag;
-                        ag.iQuery = Query;
+                        ag.iQuery = &Query;
                         insertPredicate(aa,pos,typeQuery,ag);
                         }
                     }
@@ -2071,15 +2127,15 @@ private:
                         {
                         if( Sources.find((*i)->getPredicate()->getName().c_str()) == Sources.end() )
                             {
-                            adornedQuery.push_back(*i);
+                            adornedQuery.emplace_back((*i)->clone());
                             ADORNMENT_GENERATOR ag;
-                            ag.iQuery = Query;
+                            ag.iQuery = &Query;
                             insertPredicate((*i),pos,typeQuery,ag);
                             }
                         }
                 }
-            AdornedQueryRule=new Rule;
-            AdornedQueryRule->setBody(adornedQuery);
+            AdornedQueryRule=RULE();
+            AdornedQueryRule.setBody(adornedQuery);
             magicQueryRules = buildMagicQueryRules(AdornedQueryRule);
             rewrittenQuery=true;
             }
@@ -2095,14 +2151,14 @@ private:
     // ignored).
     //
     // @param body, the body to be reordered.
-    vector<Atom*> reorderBody(const vector<Atom*> &body)
+    vector<SHAREDATOM> reorderBody(const vector<SHAREDATOM> &body)
         {
-    	vector<Atom*> body1;
-        for( vector<Atom*>::const_iterator j =
+    	vector<SHAREDATOM> body1;
+        for( vector<SHAREDATOM>::const_iterator j =
                  body.begin();
              j != body.end();
              j++ )
-            body1.push_back((*j)->clone());
+            body1.emplace_back((*j)->clone());
         return body1;
         }
 
@@ -2112,33 +2168,33 @@ private:
     // required by the grounding step, since in the adornRule procedure
     // they were created without respecting the separation between
     // positive and negative literals
-    void addReorderedRules(const vector<Rule*> &rules)
+    void addReorderedRules(const vector<RULE> &rules)
         {
-        for( vector<Rule*>::const_iterator i=rules.begin();
+        for( vector<RULE>::const_iterator i=rules.begin();
              i!=rules.end();
              i++)
             {
-            vector<Atom*> Head((*i)->getClonedHead());
-            vector<Atom*> Body;
-            if( (*i)->getSizeBody()>0)
-                Body = reorderBody(((*i)->getBody()));
-            Rule *r=new Rule;
-            r->setBody(Body);
-            r->setHead(Head);
+            vector<SHAREDATOM> Head=(*i).getClonedHead();
+            vector<SHAREDATOM> Body;
+            if( (*i).getSizeBody()>0)
+                Body = reorderBody(((*i).getBody()));
+            RULE r;
+            r.setBody(Body);
+            r.setHead(Head);
             IDB.push_back(r);
             }
         }
 
     // receive an (adorned) atom a and build a new unadorned atom
     // with the same name of a
-    Atom* buildUnadornedAtom(Atom* a)
+    SHAREDATOM buildUnadornedAtom(SHAREDATOM a)
         {
         // it is possible to unadorn an atom only if it is IDB and not
         // propositional
         assert(!isMagic(a) && (a->hasPredicate() && !a->getPredicate()->isEdb()) && !a->getTermsSize()==0 && !a->isBuiltIn());
         assert(a->hasPredicate());
         char *name = getUnadornedName((a)->getPredicate()->getName());
-        Atom * unadornedAtom=a->clone();
+        SHAREDATOM unadornedAtom(a->clone());
         unadornedAtom->setPredicate(createPredicate(name,unadornedAtom->getPredicate()));
         delete[] name;
         return unadornedAtom;
@@ -2160,20 +2216,20 @@ private:
     // @param AdornedPredicates, the list of adorned predicates
     //        w.r.t. stripp off the adornments from the program
     // @param rules, the rules of the adorned program.
-    vector<Rule*> stripOffAdornments(const ListOfAdornedPredicates &AdornedPredicates,
-    		vector<Rule*> &rules)
+    vector<RULE> stripOffAdornments(const ListOfAdornedPredicates &AdornedPredicates,
+    		vector<RULE> &rules)
         {
-    	vector<Rule*> unadornedRules;
-        for( vector<Rule*>::iterator j = rules.begin() + firstRule;
+    	vector<RULE> unadornedRules;
+        for( vector<RULE>::iterator j = rules.begin() + firstRule;
              j != rules.end();
              j++)
             {
-            vector<Atom*> newHead;
-            vector<Atom*> newBody;
+            vector<SHAREDATOM> newHead;
+            vector<SHAREDATOM> newBody;
             // strip off adornment of adorned predicate *i from head of rule *j
-            const vector<Atom*> &head = (*j)->getHead();
+            const vector<SHAREDATOM> &head = (*j).getHead();
 
-            for( vector<Atom*>::const_iterator k = head.begin();
+            for( vector<SHAREDATOM>::const_iterator k = head.begin();
                  k != head.end();
                  k++ )
                 {
@@ -2181,42 +2237,42 @@ private:
             	assert((*k)->hasPredicate());
                 if( (*k)->isBuiltIn() || isMagic(*k) || ((*k)->hasPredicate() && (*k)->getPredicate()->isEdb()) || (*k)->getTermsSize()==0
                 		 || !isAdorned((*k)->getPredicate()->getName()) )
-                    newHead.push_back((*k)->clone());
+                    newHead.emplace_back((*k)->clone());
                 else
                     if( find(AdornedPredicates.begin(),AdornedPredicates.end(),
                              (*k)->getPredicate()->getName()) != AdornedPredicates.end() ||
                         strstr((*k)->getPredicate()->getName().c_str(),"#query") )
                         {
-                        Atom* unadornedAtom = buildUnadornedAtom(*k);
+                        SHAREDATOM unadornedAtom = buildUnadornedAtom(*k);
                         newHead.push_back(unadornedAtom);
                         }
                 }
-            if( (*j)->getSizeBody()>0 )
+            if( (*j).getSizeBody()>0 )
                 // strip off adornment of adorned predicate *i from body of rule *j
                 {
-                const vector<Atom*> &body = ((*j)->getBody());
-                for(  vector<Atom*>::const_iterator k = body.begin();
+                const vector<SHAREDATOM> &body = ((*j).getBody());
+                for(  vector<SHAREDATOM>::const_iterator k = body.begin();
                      k != body.end();
                      k++ )
                     {
                 	//TODO check k->isUndef()
                     if( (*k)->isBuiltIn()  || isMagic(*k) || ((*k)->hasPredicate() && (*k)->getPredicate()->isEdb()) || (*k)->getTermsSize()==0 )
-                        newBody.push_back((*k)->clone());
+                        newBody.emplace_back((*k)->clone());
                     else
                         {
-                        Atom* unadornedAtom = buildUnadornedAtom(*k);
+                        SHAREDATOM unadornedAtom = buildUnadornedAtom(*k);
                         unadornedAtom->setNegative((*k)->isNegative());
                         newBody.push_back(unadornedAtom);
                         }
                     }
-                Rule *newrule=new Rule;
-                newrule->setHead(newHead);
-                newrule->setBody(newBody);
+                RULE newrule;
+                newrule.setHead(newHead);
+                newrule.setBody(newBody);
                 unadornedRules.push_back(newrule);
                 }
             else{
-                Rule *newrule=new Rule;
-                newrule->setHead(newHead);
+                RULE newrule;
+                newrule.setHead(newHead);
                 unadornedRules.push_back(newrule);
             }
             }
@@ -2243,7 +2299,7 @@ public:
     // perform the Magic Sets Optimization Technique
     void rewrite(const bool groundQuery)
          {
-         assert( Query );
+         assert( !Query.empty() );
 //         if( TraceLevel >= 1 )
 //             {
 //             cdebug << "-------    Magic Sets Rewriting   -------"
@@ -2278,8 +2334,8 @@ public:
 //             cdebug<<endl;
 //             }
 
-         Rule *AdornedQueryRule;
-         vector<Rule*> AdornedRules,queryRules,magicQueryRules,MagicRules,ModifiedRules,magicRulesPerAdornedRule;
+         RULE AdornedQueryRule;
+         vector<RULE> AdornedRules,queryRules,magicQueryRules,MagicRules,ModifiedRules,magicRulesPerAdornedRule;
 
          // ADORN STEP
 
@@ -2319,7 +2375,7 @@ public:
                  assert( Sources.find(at.first.c_str()) != Sources.end() );
                  SOURCE s((Sources.find(at.first.c_str()))->second);
                  // 1) search the source of at and adorn it,
-                 pair<bool,Rule*> adornedSource(adornSource(at,s,onlyForMagic));
+                 pair<bool,RULE> adornedSource(adornSource(at,s,onlyForMagic));
 
                  if( adornedSource.first )
                      {
@@ -2342,7 +2398,7 @@ public:
                      magicRulesPerAdornedRule=generate(adornedSource.second);
                      if( OptionOptimizedDisjunctiveMagicSets )
                          {
-                         for( vector<Rule*>::iterator i = magicRulesPerAdornedRule.begin();
+                         for( vector<RULE>::iterator i = magicRulesPerAdornedRule.begin();
                               i != magicRulesPerAdornedRule.end();
                               i++ )
                              {
@@ -2367,8 +2423,8 @@ public:
                      // 3) modify the adorned rule
                      if( ! onlyForMagic )
                          {
-                         const vector<Atom*> &head = (s.ag.iRule)->getHead();
-                         Rule* modifiedRule(modify(adornedSource.second,head));
+                         const vector<SHAREDATOM> &head = (s.ag.iRule)->getHead();
+                         RULE modifiedRule(modify(adornedSource.second,head));
                          //TODO verificare || ! subsumption(modifiedRule,ModifiedRules)
                          if( ! OptionOptimizedDisjunctiveMagicSets  )
                              {
@@ -2410,17 +2466,17 @@ public:
                           headrulei != headrules->second.end();
                           headrulei++ )
                          {
-                         Rule* &headrule = IDB[*headrulei];
+                         RULE &headrule = IDB[*headrulei];
 
-                         assert( headrule->getSizeHead()>0 );
-                         const vector<Atom*> &head = headrule->getHead();
-                         ag.iRule = headrule;
-                         if( headrule->getSizeHead()>1 )
+                         assert( headrule.getSizeHead()>0 );
+                         const vector<SHAREDATOM> &head = headrule.getHead();
+                         ag.iRule = &headrule;
+                         if( headrule.getSizeHead()>1 )
                              type=typeDisjunctive;
                          else
                              type=typeNormalRule;
 
-                         for( vector<Atom*>::const_iterator j=head.begin();
+                         for( vector<SHAREDATOM>::const_iterator j=head.begin();
                               j != head.end();
                               j++ )
                              {
@@ -2439,7 +2495,7 @@ public:
                                  if( !generateRedundancy(ag,type,at,getLiteralPosition(*j,ag,type)) )
                                      {
                                      // 1) build the rule and adorn it
-                                     Rule* adornedRule(adorn(at,ag,type,*j,onlyForMagic));
+                                     RULE adornedRule(adorn(at,ag,type,*j,onlyForMagic));
                                      //TODO verificare || ! subsumption(adornedRule,AdornedRules)
                                      if( ! OptionOptimizedDisjunctiveMagicSets  )
                                          {
@@ -2458,7 +2514,7 @@ public:
                                      magicRulesPerAdornedRule=generate(adornedRule);
                                      if( OptionOptimizedDisjunctiveMagicSets )
                                          {
-                                         for(vector<Rule*>::iterator i = magicRulesPerAdornedRule.begin();
+                                         for(vector<RULE>::iterator i = magicRulesPerAdornedRule.begin();
                                              i != magicRulesPerAdornedRule.end();
                                              i++)
                                         	 //TODO verificare ! subsumption(*i,MagicRules)
@@ -2481,7 +2537,7 @@ public:
                                      // 3) modify the adorned rule
                                      if( ! onlyForMagic )
                                          {
-                                         Rule* modifiedRule(modify(adornedRule,head));
+                                         RULE modifiedRule(modify(adornedRule,head));
                                          //TODO verificare || ! subsumption( modifiedRule,ModifiedRules)
                                          if( ! OptionOptimizedDisjunctiveMagicSets  )
                                              {
@@ -2544,12 +2600,12 @@ public:
 
          // REWRITING THE ORIGINAL RULES
          // substitute the rewritten rules for the original ones
-//         for_each( IDB.begin() + firstRule, IDB.end(),[](Rule * r){
-//     		r->deleteBody([](Atom* atom){
+//         for_each( IDB.begin() + firstRule, IDB.end(),[](RULE r){
+//     		r->deleteBody([](SHAREDATOM atom){
 //     			return 2;
 //     		});
 //     		if(!r->isAStrongConstraint())
-//     			r->deleteHead([](Atom* atom){
+//     			r->deleteHead([](SHAREDATOM atom){
 //     				return 2;
 //     			});
 //
@@ -2563,8 +2619,8 @@ public:
 
          if( !groundQuery){
              IDB.push_back(AdornedQueryRule);
-         }else
-        	 delete AdornedQueryRule;
+         }
+
          // add the query rules
          IDB.insert(IDB.end(),queryRules.begin(),queryRules.end());
 
@@ -2582,12 +2638,9 @@ public:
 
 
          ListOfAdornedPredicates list = getPredicates();
-         const vector<Rule*> &UnadornedRules = stripOffAdornments(list,IDB);
+         const vector<RULE> &UnadornedRules = stripOffAdornments(list,IDB);
 
-         for_each(IDB.begin(),IDB.end(),[](Rule *r){
-        	r->free();
-        	delete r;
-         });
+
          IDB.erase( IDB.begin() + firstRule, IDB.end() );
          IDB.insert( IDB.end(), UnadornedRules.begin(), UnadornedRules.end() );
 
@@ -2613,6 +2666,23 @@ public:
         	 //TODO verificare possiamo evitarla
 //             SubsumptionCheckingRewriting(IDB, firstRule);
              }
+
+         for(auto r:IDB_OLD){
+        	 r->free();
+        	 delete r;
+         }
+         IDB_OLD.clear();
+
+         for(auto& rule:IDB){
+        	 Rule *r=new Rule;
+        	 for(auto headAtom:rule.getHead())
+        		 r->addInHead(headAtom->clone());
+        	 for(auto bodyAtom:rule.getBody())
+        		 r->addInBody(bodyAtom->clone());
+        	 IDB_OLD.push_back(r);
+
+         }
+
          }
 
 

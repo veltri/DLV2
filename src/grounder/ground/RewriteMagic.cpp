@@ -12,27 +12,30 @@ namespace grounder {
 
 RewriteMagic::RewriteMagic(vector<Rule*>& idb,
 		const vector<Rule*>& constraints, const vector<Rule*>& wconstraints,
-		vector<Atom*>* query, bool isqueryground): IDB(idb),
+		vector<Atom*>* query, bool isqueryground): IDB_OLD(idb),
 		          firstRule(0),
-		          Query(query),
 		          IsQueryGround(isqueryground),
 		          AdPredsAndTargs(),
 		          EDBAdornedPredicates(),
 		          magicNames(),
 		          Sources()        {
+	for(auto rule:idb)
+		IDB.emplace_back(rule);
+	for(auto atom:*query)
+		Query.emplace_back(atom->clone());
 //    assert( ! IDB.empty() );
     size_t fact = IDB.size() - 1;
     while( true )
         {
-        while( firstRule <= fact && IDB[ firstRule ]->getSizeHead() == 1 && IDB[ firstRule ]->getSizeBody() == 0 )
+        while( firstRule <= fact && IDB[ firstRule ].getSizeHead() == 1 && IDB[ firstRule ].getSizeBody() == 0 )
             firstRule++;
 
-        while( firstRule < fact && ( IDB[ fact ]->getSizeHead() > 1 || IDB[ fact ]->getSizeBody() > 0 ) )
+        while( firstRule < fact && ( IDB[ fact ].getSizeHead() > 1 || IDB[ fact ].getSizeBody() > 0 ) )
             fact--;
 
         if( firstRule < fact )
             {
-            Rule* tmp = IDB[ fact ];
+            RULE tmp = IDB[ fact ];
             IDB[ fact ] = IDB[ firstRule ];
             IDB[ firstRule ] = tmp;
             }
@@ -42,10 +45,10 @@ RewriteMagic::RewriteMagic(vector<Rule*>& idb,
 
     for( size_t i = firstRule; i < IDB.size(); i++ )
         {
-        const vector<Atom*> &head = IDB[ i ]->getHead();
-        assert( head.size() > 1 || IDB[ i ]->getSizeBody() > 0  );
+        const vector<SHAREDATOM> &head = IDB[ i ].getHead();
+        assert( head.size() > 1 || IDB[ i ].getSizeBody() > 0  );
 
-        for( vector<Atom*>::const_iterator j = head.begin();
+        for( vector<SHAREDATOM>::const_iterator j = head.begin();
                      j != head.end();
                      j++ )
             {

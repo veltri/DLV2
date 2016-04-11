@@ -988,7 +988,9 @@ StatementDependency* StatementDependency::getInstance(){
              // Create a constraint containing exactly the query
              // conjunction and mark it as internal.
          	Rule *c=new Rule;
-         	c->setBody(query);
+         	for(auto atom:query)
+         		c->addInBody(atom->clone());
+//         	c->setBody(query);
             constraints.push_back(c);
             queryConstraints++;
 
@@ -1041,7 +1043,9 @@ StatementDependency* StatementDependency::getInstance(){
     	 Rule *newRule=new Rule;
 //    	 for(auto q:query)
 //    		 newRule->addInBody(q->clone());
-    	 newRule->setBody(query);
+    	 for(auto atom:query)
+    		 newRule->addInBody(atom->clone());
+//    	newRule->setBody(query);
     	 string name=PREDNAME_QUERY;
 		Predicate *newPred=new Predicate(name,variables.size(),false);
 		PredicateTable::getInstance()->insertPredicate(newPred);

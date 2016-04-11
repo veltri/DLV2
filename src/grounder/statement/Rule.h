@@ -303,7 +303,7 @@ public:
 	///This method remove all the atoms in the body and in the head
 	void clear(){head.clear();body.clear();};
 
-	void free(){
+	virtual void free(){
 		deleteBody([](Atom* atom){
 			return 2;
 		});
@@ -512,6 +512,12 @@ public:
 		level=get<1>(groundWeightLevelLabel);
 		label=move(get<2>(groundWeightLevelLabel));
 	};
+
+	virtual void free(){
+		deleteBody([](Atom* atom){
+			return 2;
+		});
+	}
 
 
 	///Ground the Weight, the level and the label of the weak and return with the tuple
