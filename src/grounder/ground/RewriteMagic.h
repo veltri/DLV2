@@ -17,23 +17,60 @@ namespace grounder {
 #define MAGIC_PREFIX "magic#"
 #define PREDNAME_QUERY "#query"
 
-bool subsumption(const Rule*, vector<Rule*>&);
+//bool subsumption(const Rule*, vector<Rule*>&);
 
-//struct RULE{
-//	RULE(Rule *rule){
-//		for(auto atom:rule->getHead()){
-//			shared_ptr<Atom> shared(atom);
-//			head.push_back(shared);
-//		}
-//		for(auto atom:rule->getBody()){
-//			shared_ptr<Atom> shared(atom);
-//			body.push_back(shared);
-//		}
-//	}
-//
-//	vector<shared_ptr<Atom>> head;
-//	vector<shared_ptr<Atom>> body;
-//};
+using SHAREDATOM = shared_ptr<Atom>;
+
+class RULE{
+public:
+	RULE(Rule *rule){
+		for(auto atom:rule->getHead()){
+			shared_ptr<Atom> shared(atom->clone());
+			head.push_back(shared);
+		}
+		for(auto atom:rule->getBody()){
+			shared_ptr<Atom> shared(atom->clone());
+			body.push_back(shared);
+		}
+	}
+
+	RULE(const RULE& r){
+		for(auto atom:r.head)
+			head.emplace_back(atom->clone());
+		for(auto atom:r.body)
+			body.emplace_back(atom->clone());
+	}
+
+	RULE& operator=(const RULE& r){
+		head.clear();
+		body.clear();
+		for(auto atom:r.head)
+			head.emplace_back(atom->clone());
+		for(auto atom:r.body)
+			body.emplace_back(atom->clone());
+		return *this;
+	}
+
+	const vector<SHAREDATOM>& getHead(){return head;}
+
+	const vector<SHAREDATOM>& getBody(){return body;}
+
+	vector<SHAREDATOM> getClonedBody(){
+		vector<SHAREDATOM> newBody;
+		for(auto atom:body)
+			newBody.emplace_back(atom->clone());
+		return newBody;
+	}
+
+	unsigned getSizeHead(){return head.size();}
+
+	unsigned getSizeBody(){return body.size();}
+
+private:
+	vector<SHAREDATOM> head;
+	vector<SHAREDATOM> body;
+};
+
 
 // when an adorned predicate is stored, we have to specify the
 // target of the adornment
@@ -63,15 +100,13 @@ public:
 
 private:
     vector<Rule*>& IDB;
+    vector<Rule*>& IDB_OLD;
     size_t firstRule;
-    const vector<Rule*> &Constraints;
-    const vector<Rule*> &WConstraints;
     vector<Atom*> *Query;
     bool IsQueryGround;
     bool OptionOptimizedDisjunctiveMagicSets;
     bool OptionMagicSetsExplicit;
     bool OptionSubsumptionCheckingAfterDMS;
-    unsigned OptionFrontend;
 
     // store the set of bound variables for each rule
     typedef set_term SetofBoundVars;
