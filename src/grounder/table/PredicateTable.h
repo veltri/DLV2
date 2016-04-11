@@ -48,6 +48,12 @@ public:
 
 	void print(){predicate_set.print();}
 
+	void setAllPredicateHidden(){
+		for(auto predicate:predicate_set.flyweight_set){
+			predicate->setHiddenForPrinting(true);
+		}
+	}
+
 	~PredicateTable(){};
 protected:
 	static PredicateTable* predicateTable;

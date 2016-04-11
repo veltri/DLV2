@@ -491,6 +491,19 @@ void NumericOutputBuilder::onEnd() {
 
 	if(Options::globalOptions()->isCompactFacts() && streamCompactFactsNumericTableTmp.str().size()>to_string(idCompactFacts).size())
 		printf("%s 1 %d 0 0\n",streamCompactFacts.str().c_str(),idCompactFacts);
+
+	//Print atom filtered
+	if(atomToFilter!=nullptr){
+		Predicate *predicate=atomToFilter->getPredicate();
+		auto atomInTable=PredicateExtTable::getInstance()->getPredicateExt(predicate)->addAtomSearcher(FACT,MAP,nullptr)->find(atomToFilter);
+		if(atomInTable==nullptr)
+			atomInTable=PredicateExtTable::getInstance()->getPredicateExt(predicate)->addAtomSearcher(NOFACT,MAP,nullptr)->find(atomToFilter);
+
+		if(atomInTable!=nullptr)
+			{streamAtomTable<<atomInTable->getIndex()<<" ";ClassicalLiteral::print(atomInTable->getPredicate(),atomInTable->getTerms(),false,false,streamAtomTable);streamAtomTable<<endl;}
+
+
+	}
 	printf("0\n%s",streamAtomTable.str().c_str());
 	if(Options::globalOptions()->isCompactFacts() && streamCompactFactsNumericTableTmp.str().size()>to_string(idCompactFacts).size()){
 		printf("%s%s",streamCompactFactsNumericTable.str().c_str(),streamCompactFactsNumericTableTmp.str().c_str());
@@ -505,7 +518,7 @@ void NumericOutputBuilder::appendToStreamAtomTable(Atom* atom, bool fact) {
 		streamCompactFactsNumericTableTmp<<" "<<tmp.str()<<".";
 		return;
 	}
-	if(!atom->getPredicate()->isHiddenForPrinting()){
+	if(!atom->getPredicate()->isHiddenForPrinting() && atomToFilter==nullptr){
 		streamAtomTable<<atom->getIndex()<<" ";ClassicalLiteral::print(atom->getPredicate(),atom->getTerms(),false,false,streamAtomTable);streamAtomTable<<endl;
 	}
 

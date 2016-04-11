@@ -263,8 +263,18 @@ void InMemoryInputBuilder::onWeakConstraint() {
 
 void InMemoryInputBuilder::onQuery() {
 	if(foundASafetyError) return;
+
+	predicateTable->setAllPredicateHidden();
+	if(currentAtom->isGround()){
+		currentAtom->getPredicate()->setHiddenForPrinting(false);
+		OutputBuilder::getInstance()->setAtomToFilter(currentAtom);
+	}
+
+	OutputBuilder::getInstance()->clearStreamAtomTable();
+
 	statementDependency->addQueryAtom(currentAtom);
 	currentAtom=nullptr;
+	hiddenNewPredicate=true;
 }
 
 void InMemoryInputBuilder::onHeadAtom() {

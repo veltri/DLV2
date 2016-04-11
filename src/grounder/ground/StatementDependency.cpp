@@ -1046,10 +1046,11 @@ StatementDependency* StatementDependency::getInstance(){
     	 for(auto atom:query)
     		 newRule->addInBody(atom->clone());
 //    	newRule->setBody(query);
-    	 string name=PREDNAME_QUERY;
+    	string name=PREDNAME_QUERY;
 		Predicate *newPred=new Predicate(name,variables.size(),false);
 		PredicateTable::getInstance()->insertPredicate(newPred);
 		PredicateExtTable::getInstance()->addPredicateExt(newPred);
+		newPred->setHiddenForPrinting(false);
 		vector<Term*> terms;
 		for(auto t:variables)terms.push_back(t);
     	 newRule->addInHead(new ClassicalLiteral(newPred,terms,false,false));

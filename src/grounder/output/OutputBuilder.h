@@ -38,6 +38,10 @@ public:
 
     virtual void appendToStreamAtomTable(Atom* atom, bool fact=false){};
 
+	virtual void setAtomToFilter(Atom* atomToFilter){};
+
+	virtual void clearStreamAtomTable(){}
+
     virtual ~OutputBuilder(){};
 
     static OutputBuilder* getInstance();
