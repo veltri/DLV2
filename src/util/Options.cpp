@@ -78,6 +78,8 @@ namespace DLV2
 #define OPTIONID_project ('z' + 52)
 #define OPTIONID_FB ('z' + 53)
 #define OPTIONID_FC ('z' + 54)
+#define OPTIONID_OMSM ('z' + 55)
+
 
 
 
@@ -144,7 +146,8 @@ Options::Options():
 		compactFacts(false),
 		printGroundStats(0),
 		rewProject(1),
-		optionFrontend(0)
+		optionFrontend(0),
+		magicRewriting(true)
 {
 
 }
@@ -175,7 +178,8 @@ Options::Options(
 		compactFacts(true),
 		printGroundStats(0),
 		rewProject(1),
-		optionFrontend(0)
+		optionFrontend(0),
+		magicRewriting(true)
 {
 
 }
@@ -238,6 +242,7 @@ Options::init(
 		{"project",required_argument, NULL, OPTIONID_project},
 		{"FC",no_argument, NULL, OPTIONID_FC},
 		{"FB",no_argument, NULL, OPTIONID_FB},
+		{"OMS-",no_argument, NULL, OPTIONID_OMSM},
 
 		// Required at end of array.
         { NULL, 0, NULL, 0 }
@@ -408,6 +413,10 @@ Options::init(
             case OPTIONID_FC:
             	optionFrontend = FRONTEND_CAUTIOUS;
 				break;
+            case OPTIONID_OMSM:
+            	magicRewriting = false;
+				break;
+
 
             default:
                 ErrorMessage::errorGeneric( "This option is not supported." );

@@ -634,6 +634,7 @@ bool StatementDependency::magic() {
 	string errmsg;
 	unsigned queryConstraints = 0;
 	HandleQuery(queryConstraints);
+	if(!Options::globalOptions()->rewriteMagic())return true;
 	if (query.empty()) {
 		errmsg = "No query supplied.";
 		return false;
@@ -646,10 +647,10 @@ bool StatementDependency::magic() {
 	} else if (hasAggregate) {
 		errmsg = "The program contains aggregates.";
 		return false;
-	} else if (Options::globalOptions()->getOptionFrontend() != FRONTEND_CAUTIOUS
-	&& Options::globalOptions()->getOptionFrontend() != FRONTEND_BRAVE) {
-		errmsg = "Neither brave nor cautious reasoning was specified.";
-		return false;
+//	} else if (Options::globalOptions()->getOptionFrontend() != FRONTEND_CAUTIOUS
+//	&& Options::globalOptions()->getOptionFrontend() != FRONTEND_BRAVE) {
+//		errmsg = "Neither brave nor cautious reasoning was specified.";
+//		return false;
 	} else if (rules.empty()) {
 		errmsg = "IDB is empty or has become empty due to optimizations.";
 		return false;
@@ -682,8 +683,9 @@ bool StatementDependency::magic() {
 		}
 
 	}
-	else
+	else{
 		cerr<<errmsg<<endl;
+	}
 	return true;
 }
 
@@ -998,7 +1000,7 @@ StatementDependency* StatementDependency::getInstance(){
 //                 cdebug << "                " << c << endl;
              }
          }
-     else
+     else if( Options::globalOptions()->getOptionFrontend() == FRONTEND_BRAVE )
          {
          // We either do brave reasoning, or just have a query without
          // reasoning (possibly coming from a frontend).  For now, we

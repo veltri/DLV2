@@ -369,7 +369,8 @@ public:
 	virtual Term* getLevel() const {	return nullptr;}
 	virtual Term* getWeight() const {return nullptr;}
 	virtual void setWeightLevelLabel(tupleWeak&& tp){};
-	virtual tupleWeak groundWeightLevel(var_assignment& current_assignment){return make_tuple(nullptr,nullptr,vector<Term*>());}
+	virtual tupleWeak groundWeightLevel(var_assignment& current_assignment){return make_tuple(nullptr,nullptr,vector<Term*>());
+	}
 
 	//-----------------Rule Information Interface -------------------------------
 
