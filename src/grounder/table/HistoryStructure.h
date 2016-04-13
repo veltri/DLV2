@@ -24,6 +24,7 @@ template<typename T>
 class HistorySet{
 public:
 	bool insert(T* obj,unsigned iteration){
+		if(set.count(obj)) return false;
 		return set.insert({obj,iteration}).second;
 	}
 	T* find(T* obj,const SearchType type,const unsigned iteration){
@@ -137,11 +138,18 @@ public:
 		return current_iteration;
 	}
 
+	inline unsigned getPreviousIteration(){
+		return previus_iteration;
+	}
+
+
 	inline unsigned getIndexIteration(){
 		return index_iteration;
 	}
 
-
+	inline unsigned gePrevioustIndexIteration(){
+		return index_previous_iteration;
+	}
 
 
 private:

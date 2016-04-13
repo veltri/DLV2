@@ -286,9 +286,18 @@ void HistoryUnorderedSet::update() {
 
 	unsigned currentIndexIteration=table->getIndexIteration();
 	unsigned currentIteration=table->getCurrentIteration();
+	unsigned prevIteration=table->getPreviousIteration();
+	unsigned currentPrevIndexIteration=table->gePrevioustIndexIteration();
 	for (;lastUpdate<table->size();++lastUpdate) {
 		Atom *a=(*table)[lastUpdate];
-		unsigned atomIteration=(lastUpdate<currentIndexIteration)?currentIteration-1:currentIteration;
+		unsigned atomIteration;
+		if(lastUpdate<currentPrevIndexIteration)
+			atomIteration=prevIteration-1;
+		else if(lastUpdate<currentIndexIteration)
+			atomIteration=prevIteration;
+		else
+			atomIteration=currentIteration;
+
 		indexingStructure.insert(a,atomIteration);
 	}
 }
