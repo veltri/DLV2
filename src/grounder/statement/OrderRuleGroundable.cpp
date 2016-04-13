@@ -15,6 +15,14 @@ namespace DLV2 {
 namespace grounder {
 
 void OrderRuleGroundable::applyBinderSplittingRewriting() {
+	set_term variablesWeak;
+	if(rule->isWeakConstraint()){
+		rule->getLevel()->getVariable(variablesWeak);
+		rule->getWeight()->getVariable(variablesWeak);
+		for(auto termInLabel:rule->getLabel()){
+			termInLabel->getVariable(variablesWeak);
+		}
+	}
 	for (unsigned j = 0; j < rule->getSizeBody(); ++j) {
 		Atom* atom = rule->getAtomInBody(j);
 		if (atom->isClassicalLiteral() && atom->getPredicate()->isSolved()) {
@@ -22,6 +30,8 @@ void OrderRuleGroundable::applyBinderSplittingRewriting() {
 				Term* term = atom->getTerm(t);
 				if (term->getType() == VARIABLE) {
 					if (rule->isAnOutputVariable(term))
+						continue;
+					if(variablesWeak.count(term))
 						continue;
 
 					bool found = false;
@@ -186,10 +196,6 @@ bool OrderRuleGroundable::isBound(Atom* atom, unsigned orginalPosition, const se
 			atom->getTerm(1)->getVariable(varSecond);
 			if(Utils::isContained(varSecond,terms) && atom->getTerm(0)->getType()==VARIABLE && !terms.count(atom->getTerm(0))){
 				atom->setAssignment(true);
-				return true;
-			}
-			if(Utils::isContained(atomsVariables[orginalPosition],terms)){
-				atom->setAssignment(false);
 				return true;
 			}
 		}

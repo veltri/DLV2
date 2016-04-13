@@ -160,6 +160,10 @@ namespace DLV2
 		return optionFrontend;
 	}
 
+	bool rewriteMagic(){
+		return magicRewriting;
+	}
+
     private:
 
         static Options* instance;
@@ -245,6 +249,8 @@ namespace DLV2
     	unsigned rewProject;
 
         unsigned optionFrontend;
+
+        bool magicRewriting;
     };
     
 };

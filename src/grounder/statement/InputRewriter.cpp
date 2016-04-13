@@ -36,6 +36,7 @@ void BaseInputRewriter::projectAtoms(Rule*& rule, vector<Rule*>& ruleRewrited,un
 	vector<set_term>atomsVariables;
 	atomsVariables.resize(rule->getSizeBody());
 	set_term varInHead;
+	set_term variablesWeak;
 	for(unsigned i=0;i<rule->getSizeBody();i++){
 		Atom* atom=rule->getAtomInBody(i);
 		if(atom->isAggregateAtom()){
@@ -45,6 +46,13 @@ void BaseInputRewriter::projectAtoms(Rule*& rule, vector<Rule*>& ruleRewrited,un
 		}
 		else
 			atomsVariables[i]=atom->getVariable();
+	}
+	if(rule->isWeakConstraint()){
+		rule->getLevel()->getVariable(variablesWeak);
+		rule->getWeight()->getVariable(variablesWeak);
+		for(auto termInLabel:rule->getLabel()){
+			termInLabel->getVariable(variablesWeak);
+		}
 	}
 
 	for (auto it=rule->getBeginHead();it!=rule->getEndHead(); ++it) {
@@ -71,6 +79,8 @@ void BaseInputRewriter::projectAtoms(Rule*& rule, vector<Rule*>& ruleRewrited,un
 				termToFilter.insert(t);
 			else if (term->getType() == VARIABLE) {
 				if (varInHead.count(term))
+					continue;
+				if(variablesWeak.count(term))
 					continue;
 
 				bool found = false;
