@@ -111,7 +111,6 @@ bool BackTrackingGrounder::findGroundMatch(){
 
 
 bool BackTrackingGrounder::match() {
-	countMatch++;
 	//Avoid call multiple time method match for the ground atom in the last position of the rule
 	if(is_bound_atom[index_current_atom] && !direction)
  		return false;
@@ -296,7 +295,6 @@ void BackTrackingGrounder::onGroundRuleToPrint(const vector<bool>& newAtomsInHea
 
 bool BackTrackingGrounder::foundAssignment() {
 	callFoundAssignment=true;
-	countFound++;
 	unsigned sizeHead=currentRule->getSizeHead();
 	bool isAChoiceRule=currentRule->isChoiceRule();
 	bool strongConstraint=currentRule->isAStrongConstraint();

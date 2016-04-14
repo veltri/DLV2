@@ -68,6 +68,8 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchTy
 	unsigned sizeBody=rule->getSizeBody();
 	atomsVariables.resize(sizeBody);
 
+	this->componentPredicateInHead=componentPredicateInHead;
+
 	for(unsigned i=0;i<sizeBody;i++){
 		Atom* atom=rule->getAtomInBody(i);
 		if(atom->isAggregateAtom()){
@@ -248,7 +250,7 @@ void OrderRuleGroundable::computeDictionaryIntersection(Atom* atom) {
 unsigned AllOrderRuleGroundable::computePredicateExtensionSize(	unsigned atomPosition, Predicate* p) {
 	unsigned extensionSize = 0;
 	for (auto j : predicate_searchInsert_table[atomPosition + rule->getSizeHead()])
-		if(componentPredicateInHead->count(p->getIndex()) && !rule->getAtomInBody(atomPosition)->isNegative())
+		if(componentPredicateInHead!=nullptr && componentPredicateInHead->count(p->getIndex()) && !rule->getAtomInBody(atomPosition)->isNegative())
 			extensionSize += predicateExtTable->getInstance()->getPredicateExt(p)->getPredicateExtentionSize(j.first,j.second);
 		else
 			extensionSize += predicateExtTable->getInstance()->getPredicateExt(p)->getPredicateExtentionSize(j.first);
@@ -394,9 +396,10 @@ double CombinedCriterion::assignWeightPositiveClassicalLit(Atom* atom, unsigned 
 		computeVariablesDomains();
 
 	if(size==-1){
-		size=0;
-		for(auto j:predicate_searchInsert_table[originalPosition+rule->getSizeHead()])
-			size+=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(j.first,j.second);
+		if(atom->getPredicate()!=0)
+			size=computePredicateExtensionSize(originalPosition,atom->getPredicate());
+		else
+			size=0;
 	}
 
 	long double prodSelectivity_a=1;
@@ -429,7 +432,7 @@ double CombinedCriterion::assignWeightPositiveClassicalLit(Atom* atom, unsigned 
 //			}
 	}
 
-	double sel_a=size*prodSelectivity_a/prodDomains_a;
+	double sel_a=sizeTablesToSearch*prodSelectivity_a/prodDomains_a;
 	double sel_b=prodSelectivity_b/prodDomains_b;
 
 //	atom->print();cout<<" ";
