@@ -108,7 +108,7 @@ TraceLevels::TraceLevels()
     types.push_back( pair< string, unsigned >( "weakconstraints", 0 ) );
     types.push_back( pair< string, unsigned >( "backjumping", 0 ) );
     types.push_back( pair< string, unsigned >( "backtracking", 0 ) );
-    types.push_back( pair< string, unsigned >( "recursion", 1 ) );
+    types.push_back( pair< string, unsigned >( "recursion", 0 ) );
 
 
 }
