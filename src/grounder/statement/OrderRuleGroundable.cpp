@@ -432,7 +432,7 @@ double CombinedCriterion::assignWeightPositiveClassicalLit(Atom* atom, unsigned 
 //			}
 	}
 
-	double sel_a=sizeTablesToSearch*prodSelectivity_a/prodDomains_a;
+	double sel_a=size*prodSelectivity_a/prodDomains_a;
 	double sel_b=prodSelectivity_b/prodDomains_b;
 
 //	atom->print();cout<<" ";
