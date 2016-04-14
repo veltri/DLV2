@@ -46,7 +46,7 @@ public:
 	 */
 	ProgramGrounder() :
 		predicateTable(PredicateTable::getInstance()), predicateExtTable(PredicateExtTable::getInstance()),
-		statementDependency(StatementDependency::getInstance()), termsMap(TermTable::getInstance()),outputBuilder(OutputBuilder::getInstance()),iteration(0),iterationToInsert(0),
+		statementDependency(StatementDependency::getInstance()), termsMap(TermTable::getInstance()),outputBuilder(OutputBuilder::getInstance()),iteration(0),
 		rstats(RuleStatistics::getInstance()),printRuleTime(Options::globalOptions()->getRuleTime()),printStats(Options::globalOptions()->getPrintGroundStats()!=0){
 	};
 
@@ -164,11 +164,23 @@ protected:
 	///Utility method for setDefaultAtomSearchers
 	virtual void createAtomSearchersForPredicateHead(unsigned position, unsigned choiceElementPos, Predicate* predicate, unordered_set<index_object>* componentPredicateInHead, bool firstAtom){};
 
+	///For each recursive predicate in the set update the indices corresponding delta and nf table
+	///This function must be called at the beginning of iteration
+	void updateIndiciesHistoryTable(unordered_set<unsigned> recursivePredicate){
+		trace_action_tag(recursion,1,cerr<<"ITERATION "<<iteration<<endl;);
+
+		for(auto p:recursivePredicate){
+			auto predExt=predicateExtTable->getPredicateExt(p);
+			trace_action_tag(recursion,1,cerr<<"Update predicate "<<predExt->getPredicate()->getName()<<endl;);
+			predExt->updateIndiciesTable(NOFACT,iteration);
+			predExt->updateIndiciesTable(FACT,iteration);
+		}
+	}
+
+
 	//Iteration of the current instantiation
 	unsigned iteration;
 
-	//Iteration of the derived atom
-	unsigned iterationToInsert;
 
 	///Statistic for each rule grounded
 	RuleStatistics* rstats;

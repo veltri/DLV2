@@ -92,6 +92,8 @@ class TraceLevels
         unsigned weakconstraints() { return 3; }
         unsigned backjumping() { return 4; }
         unsigned backtracking() { return 5; }
+        unsigned recursion() { return 6; }
+
 
 
     private:
@@ -101,11 +103,13 @@ class TraceLevels
 TraceLevels::TraceLevels()
 {
     types.push_back( pair< string, unsigned >( "parser", 0 ) );
-    types.push_back( pair< string, unsigned >( "grounding", 2 ) );
+    types.push_back( pair< string, unsigned >( "grounding", 0 ) );
     types.push_back( pair< string, unsigned >( "aggregates", 0 ) );
     types.push_back( pair< string, unsigned >( "weakconstraints", 0 ) );
     types.push_back( pair< string, unsigned >( "backjumping", 0 ) );
     types.push_back( pair< string, unsigned >( "backtracking", 0 ) );
+    types.push_back( pair< string, unsigned >( "recursion", 1 ) );
+
 
 }
 

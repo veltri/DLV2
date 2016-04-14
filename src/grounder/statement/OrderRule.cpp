@@ -164,7 +164,6 @@ bool OrderRule::order() {
 	if(rule->isWeakConstraint() && !checkWeakSafety())
 		return false;
 	// Check head safety once that the safe variables are known
-
 	return checkHeadSafety();
 
 }

@@ -32,15 +32,17 @@ public:
 		if(findIt==set.end())return nullptr;
 		switch (type) {
 			case ALL:
-				return findIt->first;
-				break;
-			case OLD:
 				if(findIt->second<iteration)
 					return findIt->first;
 				return nullptr;
 				break;
+			case OLD:
+				if(findIt->second<iteration-1)
+					return findIt->first;
+				return nullptr;
+				break;
 			case NEW:
-				if(findIt->second==iteration)
+				if(findIt->second==iteration-1)
 					return findIt->first;
 				return nullptr;
 				break;
@@ -63,74 +65,35 @@ public:
 	using ElementsType = vector<T>;
 	typedef typename std::vector<T>::iterator iterator;
 
+	HistoryVector():current_iteration(0),index_iteration(0),index_previous_iteration(0){}
+	HistoryVector(unsigned iteration):current_iteration(iteration),index_iteration(0),index_previous_iteration(0){}
 
-	HistoryVector():current_iteration(0),index_iteration(0),index_previous_iteration(0),previus_iteration(0){}
-
-	HistoryVector(T& element,unsigned iteration):HistoryVector(){push_back(element,iteration);}
-
-	inline void push_back_iteration(const T& element,unsigned iteration){
-		if(current_iteration<iteration){
-			previus_iteration=current_iteration;
-			current_iteration=iteration;
+	void updateIndices(unsigned iteration){
+		if(current_iteration+1==iteration){
 			index_previous_iteration=index_iteration;
 			index_iteration=vector<T>::size();
+			current_iteration=iteration;
+		}else if(current_iteration+1<iteration){
+			index_previous_iteration=vector<T>::size();
+			index_iteration=vector<T>::size();
+			current_iteration=iteration;
 		}
-		vector<T>::push_back(element);
 	}
 
-
+	unsigned size_iteration(SearchType type){
+		unsigned start=(type==NEW)? index_previous_iteration:0;
+		unsigned end=(type==OLD)?index_previous_iteration:index_iteration;
+		return end-start;
+	}
 
 	pair<unsigned,unsigned> getElements(SearchType type,unsigned iteration){
-		if(iteration>current_iteration ){
-			if(type==OLD)
-				type=ALL;
-			else if(type==NEW)
-				return {0,0};
+		///TODO AFTER test it DELETE ASSERT
+		assert(current_iteration==iteration);
 
-		}
-		if(iteration<current_iteration){
-			if(type==ALL){
-				type=OLD;
-				iteration=current_iteration;
-			}else if(type==NEW && iteration!=previus_iteration)
-				return {0,0};
+		unsigned start=(type==NEW)? index_previous_iteration:0;
+		unsigned end=(type==OLD)?index_previous_iteration:index_iteration;
 
-		}
-
-
-		unsigned index=(iteration==current_iteration)?index_iteration:index_previous_iteration;
-		unsigned end=(iteration==current_iteration)?vector<T>::size():index_iteration;
-
-		switch (type) {
-			case ALL:
-				return {0,vector<T>::size()};
-				break;
-			case OLD:
-				return {0,index};
-				break;
-			case NEW:
-				return {index,end};
-				break;
-			default:
-				return {0,vector<T>::size()};
-		}
-	}
-
-
-	inline unsigned size_iteration(SearchType type){
-		switch (type) {
-			case ALL:
-				return vector<T>::size();
-				break;
-			case OLD:
-				return index_iteration;
-				break;
-			case NEW:
-				return vector<T>::size()-index_iteration;
-				break;
-			default:
-				return vector<T>::size();
-		}
+		return {start,end};
 	}
 
 
@@ -138,25 +101,30 @@ public:
 		return current_iteration;
 	}
 
-	inline unsigned getPreviousIteration(){
-		return previus_iteration;
-	}
 
-
-	inline unsigned getIndexIteration(){
+	inline unsigned getDeltaIndexIteration(){
 		return index_iteration;
 	}
 
-	inline unsigned gePrevioustIndexIteration(){
+	inline unsigned getNFIndexIteration(){
 		return index_previous_iteration;
 	}
 
+	void push_back_delta(T& element){
+		vector<T>::push_back(element);
+		index_iteration=vector<T>::size();
+	}
+
+	void push_back_nf(T& element){
+		vector<T>::push_back(element);
+		index_previous_iteration=vector<T>::size();
+		index_iteration=vector<T>::size();
+	}
 
 private:
 	unsigned current_iteration;
 	unsigned index_iteration;
 	unsigned index_previous_iteration;
-	unsigned previus_iteration;
 
 };
 

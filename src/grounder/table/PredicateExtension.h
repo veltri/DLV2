@@ -142,24 +142,23 @@ public:
 		if(atom->getIndex()==0) setIndexOfAtom(atom);
 	}
 
-	inline void addAtom(Atom* atom, unsigned table,unsigned iteration){
-		if(iteration>0)
-			tables[table]->push_back_iteration(atom,iteration);
-		else
-			tables[table]->push_back(atom);
-
-		predicateInformation->update(atom);
-
-		if(predicate->isSolved() && !atom->isFact())
-			predicate->setSolved(false);
-		if(atom->getIndex()==0) setIndexOfAtom(atom);
-	}
-
 	//Moves the content of the tableFrom (source) to the tableTo (destination)
 	void swapTables(unsigned tableFrom,unsigned tableTo);
 
 	//Swap the pointers of the tableFrom (source) to the tableTo (destination)
 	void swapPointersTables(unsigned tableFrom,unsigned tableTo);
+
+	///Update the indicies of Delta and NF table for the recursion
+	void updateIndiciesTable(unsigned table,unsigned iteration){
+		if(tables.size()>table){
+			tables[table]->updateIndices(iteration);
+			trace_action_tag(recursion,1,cerr<<"TABLE "<<table<<" IT: "<<tables[table]->getCurrentIteration()<<" DELTA-INDEX: "<<
+					tables[table]->getDeltaIndexIteration()<<" NF-INDEX: "<<tables[table]->getNFIndexIteration()<<endl;);
+			trace_action_tag(recursion,1,for(unsigned i=0;i<tables[table]->size();i++)(*tables[table])[i]->print(cerr);;cerr<<endl;);
+
+		}
+
+	}
 
 	///Printer method for a single table
 	inline void print(unsigned table){for(auto fact:*tables[table]){cout<<fact->getIndex()<<" ";ClassicalLiteral::print(predicate,fact->getTerms(),false,false,cout);cout<<endl;}}
@@ -176,7 +175,10 @@ public:
 
 	unsigned getPredicateExtentionSize(unsigned table) const {if(table<tables.size()) return tables[table]->size(); return 0;}
 	unsigned getPredicateExtentionSize() const { unsigned size=0; for(auto table:tables) size+=table->size(); return size;}
-	unsigned getPredicateExtentionSize(unsigned table,SearchType type) const {if(table<tables.size()) return tables[table]->size_iteration(type); return 0;}
+	unsigned getPredicateExtentionSize(unsigned table,SearchType type) const {
+		if(table<tables.size())
+			return tables[table]->size_iteration(type); return 0;
+	}
 	unsigned getPredicateExtentionSize(unsigned table,SearchType type,unsigned iteration) const {
 		if(table<tables.size()) {
 			auto it=tables[table]->getElements(type,iteration);

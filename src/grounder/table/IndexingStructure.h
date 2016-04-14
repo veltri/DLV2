@@ -176,8 +176,6 @@ public:
 	IndexingStructureRecursive(AtomHistoryVector* table):IndexingStructure(table){};
 
 	inline virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg=0){
-//		if(searchSpecification.first==ALL && table->getCurrentIteration()<=searchSpecification.second)
-//			return new VectorIteratorIndex(0,table->size(),table);
 		auto it=table->getElements(searchSpecification.first,searchSpecification.second);
 		return new VectorIteratorIndex(it.first,it.second,table);
 	};
@@ -206,14 +204,16 @@ private:
  **/
 class HistoryUnorderedSet : public IndexingStructure {
 public:
-	HistoryUnorderedSet(AtomHistoryVector* table):IndexingStructure(table){};
+	HistoryUnorderedSet(AtomHistoryVector* table):IndexingStructure(table),updateIteration(0){};
 	void add(Atom* atom){};
 	Atom* find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification);
-	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
+	void clear(){IndexingStructure::clear(); deltaIndexingStructure.clear();nfIndexingStructure.clear();};
 	virtual void update();
 	virtual unsigned getType(){return HISTORY_HASHSET;};
 private:
-	HistorySet<Atom> indexingStructure;
+	AtomTable deltaIndexingStructure;
+	AtomTable nfIndexingStructure;
+	unsigned updateIteration;
 };
 
 /**
@@ -270,15 +270,16 @@ private:
  **/
 class UnorderedMapOfHistoryVector : public IndexingStructure {
 public:
-	UnorderedMapOfHistoryVector(AtomHistoryVector* table, vector<unsigned>& indexingTerm): IndexingStructure(table,indexingTerm){};
+	UnorderedMapOfHistoryVector(AtomHistoryVector* table, vector<unsigned>& indexingTerm): IndexingStructure(table,indexingTerm),lastUpdateIteration(0){};
 	void add(Atom* atom);
 	Atom* find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification={ALL,0});
 	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
-	virtual void update();
+	virtual void update(unsigned iteration);
 	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg=0);
 	virtual unsigned getType(){return MAP_HISTORY_VECTOR;}
 private:
 	unordered_map<index_object,AtomHistoryVector> indexingStructure;
+	unsigned lastUpdateIteration;
 };
 
 /**
@@ -287,15 +288,16 @@ private:
  **/
 class UnorderedMapOfPairHistoryVector : public IndexingStructure {
 public:
-	UnorderedMapOfPairHistoryVector(AtomHistoryVector* table, vector<unsigned>& indexingTerm): IndexingStructure(table,indexingTerm){};
+	UnorderedMapOfPairHistoryVector(AtomHistoryVector* table, vector<unsigned>& indexingTerm): IndexingStructure(table,indexingTerm),lastUpdateIteration(0){};
 	void add(Atom* atom);
 	Atom* find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification={ALL,0});
 	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
-	virtual void update();
+	virtual void update(unsigned iteration);
 	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg=0);
 	virtual unsigned getType(){return MAP_PAIR_HISTORY_VECTOR;}
 private:
 	unordered_map<pair<index_object,index_object>,AtomHistoryVector,HashPair<index_object>,HashPair<index_object>> indexingStructure;
+	unsigned lastUpdateIteration;
 };
 
 /**

@@ -194,7 +194,6 @@ void ProgramGrounder::ground() {
 
 
 		iteration=0;
-		iterationToInsert=0;
 		// Ground exit rules
 		for (Rule* rule : exitRules[component]){
 //			r->sortPositiveLiteralInBody(predicate_searchInsert_table);
@@ -222,8 +221,8 @@ void ProgramGrounder::ground() {
 			vector<vector<unsigned>> originalOrderBody;
 			originalOrderBody.resize(n_rules);
 
-			++iterationToInsert;
-
+			iteration++;
+			updateIndiciesHistoryTable(componentPredicateInHead[component]);
 
 			// First iteration
 			for (unsigned int i = 0; i < n_rules; ++i) {
@@ -248,12 +247,14 @@ void ProgramGrounder::ground() {
 //				trace_action_tag(grounding,2,printTableInRule(rule,predicate_searchInsert_table,false););
 
 			}
-			++iterationToInsert;
-			++iteration;
 			trace_action_tag(grounding,1,cerr<<"Iteration Number: "<<iteration<<endl;);
 
 			//Further Iterations
 			while (found_something) {
+
+				++iteration;
+				updateIndiciesHistoryTable(componentPredicateInHead[component]);
+
 //				trace_msg(grounding,1,"Further Iterations");
 				found_something = false;
 
@@ -284,8 +285,6 @@ void ProgramGrounder::ground() {
 					}
 				}
 
-				++iteration;
-				++iterationToInsert;
 				trace_action_tag(grounding,1,cerr<<"Iteration Number: "<<iteration<<endl;);
 
 
@@ -470,7 +469,7 @@ bool ProgramGrounder::nextSearchInsertPredicate(Rule* rule,unordered_set<index_o
 
 			if(isNotEmptyPredExt(pred,FACT) && type!=NEW)
 				tableToInsert.push_back({FACT,type});
-			if(isNotEmptyPredExt(pred,NOFACT,type,iteration))
+			if(isNotEmptyPredExt(pred,NOFACT))
 				tableToInsert.push_back({NOFACT,type});
 
 		}else

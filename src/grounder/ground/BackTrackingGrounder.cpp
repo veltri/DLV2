@@ -281,7 +281,7 @@ void BackTrackingGrounder::onGroundRuleToPrint(const vector<bool>& newAtomsInHea
 			}
 			if(searchAtom==nullptr){
 				Atom* newAtom = groundTemplateAtomHead[i]->clone();
-				predicateExt->addAtom(newAtom,predicate_searchInsert_table[i][0].first,iterationToInsert);
+				predicateExt->addAtom(newAtom,predicate_searchInsert_table[i][0].first);
 				ground_rule->setAtomInHead(i, newAtom);
 			}
 			else
@@ -346,7 +346,7 @@ bool BackTrackingGrounder::foundAssignment() {
 			if(sizeHead==1){
 				PredicateExtension* predicateExt = predicateExtTable->getPredicateExt(headGroundAtom->getPredicate());
 				Atom* newAtom = groundTemplateAtomHead[atom_counter]->clone();
-				predicateExt->addAtom(newAtom,predicate_searchInsert_table[atom_counter][0].first,iterationToInsert);
+				predicateExt->addAtom(newAtom,predicate_searchInsert_table[atom_counter][0].first);
 				ground_rule->setAtomInHead(atom_counter, newAtom);
 			}
 			else
@@ -392,7 +392,7 @@ bool BackTrackingGrounder::foundAssignment() {
 					}
 					if(searchAtom==nullptr){
 						Atom* newAtom = groundTemplateAtomHead[i]->clone();
-						predicateExt->addAtom(newAtom,predicate_searchInsert_table[i][0].first,iterationToInsert);
+						predicateExt->addAtom(newAtom,predicate_searchInsert_table[i][0].first);
 						ground_rule->setAtomInHead(i, newAtom);
 					}
 					else
@@ -1240,7 +1240,7 @@ void BackTrackingGrounder::groundChoice(bool& find_new_true_atom,bool& ground_ne
 
 			headGroundAtom->setFact(false);
 //			for(unsigned i=0;i<predicate_searchInsert_table[0].size();++i)
-				predicateExt->addAtom(headGroundAtom,predicate_searchInsert_table[0][0].first,iterationToInsert);
+				predicateExt->addAtom(headGroundAtom,predicate_searchInsert_table[0][0].first);
 
 			ground_choice->addSingleChoiceElement(headGroundAtom);
 		}else{
@@ -1383,7 +1383,7 @@ void BackTrackingGrounder::groundChoiceFirstAtom(Atom* firstAtom, unsigned i, bo
 	if(searchAtom==nullptr){
 		ground_new_atom = true;
 		headGroundAtom->setFact(false);
-		predicateExt1->addAtom(headGroundAtom,predicate_searchInsert_table[0][0].first,iterationToInsert);
+		predicateExt1->addAtom(headGroundAtom,predicate_searchInsert_table[0][0].first);
 		ground_choice->addSingleChoiceElement(headGroundAtom);
 
 	}else{

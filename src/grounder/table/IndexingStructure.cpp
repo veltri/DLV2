@@ -275,31 +275,35 @@ void UnorderedSet::update() {
 /******************************************************** History Unordered Set **************************************************/
 
 Atom* HistoryUnorderedSet::find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification) {
-	if(lastUpdate<table->size())
+	if(updateIteration!=table->getCurrentIteration())
 		update();
-
-	auto atomFound_it=indexingStructure.find(atom,searchSpecification.first,searchSpecification.second);
-	return atomFound_it;
+	Atom *atomFound=nullptr;
+	if(searchSpecification.first==NEW || searchSpecification.first==ALL){
+		auto atomFound_it=deltaIndexingStructure.find(atom);
+		if(atomFound_it!=deltaIndexingStructure.end())
+			return *atomFound_it;
+	}
+	if(searchSpecification.first==OLD || searchSpecification.first==ALL){
+		auto atomFound_it=nfIndexingStructure.find(atom);
+		if(atomFound_it!=nfIndexingStructure.end())
+			return *atomFound_it;
+	}
+	return atomFound;
 }
 
 void HistoryUnorderedSet::update() {
-
-	unsigned currentIndexIteration=table->getIndexIteration();
-	unsigned currentIteration=table->getCurrentIteration();
-	unsigned prevIteration=table->getPreviousIteration();
-	unsigned currentPrevIndexIteration=table->gePrevioustIndexIteration();
-	for (;lastUpdate<table->size();++lastUpdate) {
-		Atom *a=(*table)[lastUpdate];
-		unsigned atomIteration;
-		if(lastUpdate<currentPrevIndexIteration)
-			atomIteration=prevIteration-1;
-		else if(lastUpdate<currentIndexIteration)
-			atomIteration=prevIteration;
+	for(auto atom:deltaIndexingStructure)
+		nfIndexingStructure.insert(atom);
+	deltaIndexingStructure.clear();
+	unsigned deltaIt=table->getDeltaIndexIteration();
+	unsigned nfIt=table->getNFIndexIteration();
+	for (;lastUpdate<deltaIt;++lastUpdate) {
+		if(lastUpdate<nfIt)
+			nfIndexingStructure.insert((*table)[lastUpdate]);
 		else
-			atomIteration=currentIteration;
-
-		indexingStructure.insert(a,atomIteration);
+			deltaIndexingStructure.insert((*table)[lastUpdate]);
 	}
+	updateIteration=table->getCurrentIteration();
 }
 
 
@@ -429,51 +433,67 @@ void UnorderedMapOfHistoryVector::add(Atom* atom) {
 }
 
 Atom* UnorderedMapOfHistoryVector::find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification) {
-	if(lastUpdate<table->size())
-		update();
+	if(lastUpdateIteration!=searchSpecification.second)
+		update(searchSpecification.second);
 
 	unsigned i=indexingTerms[0];
 	index_object term = atom->getTerm(i)->getIndex();
-	AtomHistoryVector& matchingTable=indexingStructure[term];
+	auto find_it=indexingStructure.find(term);
+	if(find_it==indexingStructure.end())return nullptr;
+	AtomHistoryVector& matchingTable=find_it->second;
 
-	for(auto atom1:matchingTable){
-		if(*atom1==*atom){
-			return atom1;
+	auto it=matchingTable.getElements(searchSpecification.first,searchSpecification.second);
+	for(unsigned i=it.first;i<it.second;i++){
+		if(*(matchingTable[i])==*atom){
+			return matchingTable[i];
 		}
 	}
 	return nullptr;
 }
 
-void UnorderedMapOfHistoryVector::update() {
+void UnorderedMapOfHistoryVector::update(unsigned iteration) {
+	//First update the vector in the index table
+	for(auto& element:indexingStructure)
+		element.second.updateIndices(iteration);
+	//After update the history in the indexingStructure add the atom after the
+	// lastUpdate index in indexingStructure
 	unsigned i=indexingTerms[0];
-	unsigned currentIndexIteration=table->getIndexIteration();
-	unsigned currentIteration=table->getCurrentIteration();
+	unsigned deltaIt=table->getDeltaIndexIteration();
+	unsigned nfIt=table->getNFIndexIteration();
 	for (;lastUpdate<table->size();++lastUpdate) {
 		Atom *a=(*table)[lastUpdate];
 		index_object termIndex=a->getTerm(i)->getIndex();
-		unsigned atomIteration=(lastUpdate<currentIndexIteration)?currentIteration-1:currentIteration;
 		if(!indexingStructure.count(termIndex)){
-			AtomHistoryVector values;
+			AtomHistoryVector values(iteration);
 //			values.reserve(table->size()/PredicateExtTable::getInstance()->getPredicateExt(predicate)->getPredicateInformation()->getSelectivity(indexingTerm));
-			values.push_back_iteration(a,atomIteration);
 			indexingStructure.insert({termIndex,values});
 		}
+		auto& values=indexingStructure[termIndex];
+		if(lastUpdate<nfIt)
+			values.push_back_nf(a);
+		else if(lastUpdate<deltaIt)
+			values.push_back_delta(a);
 		else
-			indexingStructure[termIndex].push_back_iteration(a,atomIteration);
+			values.push_back(a);
 	}
+	lastUpdateIteration=iteration;
 }
 
 
 GeneralIterator* UnorderedMapOfHistoryVector::computeMatchIterator(Atom* templateAtom, const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg) {
-	if(lastUpdate<table->size())
-		update();
+	if(lastUpdateIteration!=searchSpecification.second)
+		update(searchSpecification.second);
 
+	trace_action_tag(recursion,2,cerr<<"FIND ";templateAtom->print(cerr);cerr<<" IN "<<searchSpecification.first<<" IT "<<searchSpecification.second;cerr<<endl;);
 	GeneralIterator* currentMatch;
 	int indexingTerm=indexingTerms[0];
 	index_object term = templateAtom->getTerm(indexingTerm)->getIndex();
-	AtomHistoryVector* matchingTable=&indexingStructure[term];
-
+	auto find_it=indexingStructure.find(term);
+	if(find_it==indexingStructure.end())return new VectorIteratorIndex(table->size(),table->size(),table);
+	AtomHistoryVector* matchingTable=&find_it->second;
 	auto it=matchingTable->getElements(searchSpecification.first,searchSpecification.second);
+	trace_action_tag(recursion,2,cerr<<"MATCH TABLE IT "<<matchingTable->getCurrentIteration()<<" DELTA "<<matchingTable->getDeltaIndexIteration()<<" NF "<<matchingTable->getNFIndexIteration();cerr<<endl;);
+	trace_action_tag(recursion,2,cerr<<"RESULT SEARCH "<<it.first<<" "<<it.second;cerr<<endl;);
 	currentMatch=new VectorIteratorIndex(it.first,it.second,matchingTable);
 
 	return currentMatch;
@@ -487,8 +507,8 @@ void UnorderedMapOfPairHistoryVector::add(Atom* atom) {
 }
 
 Atom* UnorderedMapOfPairHistoryVector::find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification) {
-	if(lastUpdate<table->size())
-		update();
+	if(lastUpdateIteration!=searchSpecification.second)
+		update(searchSpecification.second);
 
 	unsigned i=indexingTerms[0];
 	unsigned next=indexingTerms[1];
@@ -496,41 +516,54 @@ Atom* UnorderedMapOfPairHistoryVector::find(Atom* atom,const pair<SearchType,uns
 	index_object term = atom->getTerm(i)->getIndex();
 	index_object nextTerm=atom->getTerm(next)->getIndex();
 
-	AtomHistoryVector& matchingTable=indexingStructure[{term,nextTerm}];
 
-	for(auto atom1:matchingTable){
-		if(*atom1==*atom){
-			return atom1;
+	auto find_it=indexingStructure.find({term,nextTerm});
+	if(find_it==indexingStructure.end())return nullptr;
+	AtomHistoryVector& matchingTable=find_it->second;
+
+	auto it=matchingTable.getElements(searchSpecification.first,searchSpecification.second);
+	for(unsigned i=it.first;i<it.second;i++){
+		if(*(matchingTable[i])==*atom){
+			return matchingTable[i];
 		}
 	}
 	return nullptr;
 }
 
-void UnorderedMapOfPairHistoryVector::update() {
+void UnorderedMapOfPairHistoryVector::update(unsigned iteration) {
+	//First update the vector in the index table
+	for(auto& element:indexingStructure)
+		element.second.updateIndices(iteration);
+
 	unsigned i=indexingTerms[0];
 	unsigned next=indexingTerms[1];
-	unsigned currentIndexIteration=table->getIndexIteration();
-	unsigned currentIteration=table->getCurrentIteration();
+	unsigned deltaIt=table->getDeltaIndexIteration();
+	unsigned nfIt=table->getNFIndexIteration();
+
 	for (;lastUpdate<table->size();++lastUpdate) {
 		Atom *a=(*table)[lastUpdate];
 		index_object termIndex=a->getTerm(i)->getIndex();
 		index_object nextTermIndex=a->getTerm(next)->getIndex();
-		unsigned atomIteration=(lastUpdate<currentIndexIteration)?currentIteration-1:currentIteration;
 		if(!indexingStructure.count({termIndex,nextTermIndex})){
-			AtomHistoryVector values;
+			AtomHistoryVector values(iteration);
 //			values.reserve(table->size()/PredicateExtTable::getInstance()->getPredicateExt(predicate)->getPredicateInformation()->getSelectivity(indexingTerm));
-			values.push_back_iteration(a,atomIteration);
 			indexingStructure.insert({{termIndex,nextTermIndex},values});
 		}
+		auto& values=indexingStructure[{termIndex,nextTermIndex}];
+		if(lastUpdate<nfIt)
+			values.push_back_nf(a);
+		else if(lastUpdate<deltaIt)
+			values.push_back_delta(a);
 		else
-			indexingStructure[{termIndex,nextTermIndex}].push_back_iteration(a,atomIteration);
+			values.push_back(a);
 	}
+	lastUpdateIteration=iteration;
 }
 
 
 GeneralIterator* UnorderedMapOfPairHistoryVector::computeMatchIterator(Atom* templateAtom, const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg) {
-	if(lastUpdate<table->size())
-		update();
+	if(lastUpdateIteration!=searchSpecification.second)
+		update(searchSpecification.second);
 
 	GeneralIterator* currentMatch;
 	unsigned i=indexingTerms[0];
@@ -539,8 +572,9 @@ GeneralIterator* UnorderedMapOfPairHistoryVector::computeMatchIterator(Atom* tem
 	index_object term = templateAtom->getTerm(i)->getIndex();
 	index_object nextTerm=templateAtom->getTerm(next)->getIndex();
 
-	AtomHistoryVector& matchingTable=indexingStructure[{term,nextTerm}];
-
+	auto find_it=indexingStructure.find({term,nextTerm});
+	if(find_it==indexingStructure.end())return new VectorIteratorIndex(table->size(),table->size(),table);
+	AtomHistoryVector& matchingTable=find_it->second;
 	auto it=matchingTable.getElements(searchSpecification.first,searchSpecification.second);
 	currentMatch=new VectorIteratorIndex(it.first,it.second,&matchingTable);
 
