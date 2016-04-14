@@ -248,8 +248,10 @@ void OrderRuleGroundable::computeDictionaryIntersection(Atom* atom) {
 unsigned AllOrderRuleGroundable::computePredicateExtensionSize(	unsigned atomPosition, Predicate* p) {
 	unsigned extensionSize = 0;
 	for (auto j : predicate_searchInsert_table[atomPosition + rule->getSizeHead()])
-		extensionSize +=
-				predicateExtTable->getInstance()->getPredicateExt(p)->getPredicateExtentionSize(j.first,j.second);
+		if(componentPredicateInHead->count(p->getIndex()) && !rule->getAtomInBody(atomPosition)->isNegative())
+			extensionSize += predicateExtTable->getInstance()->getPredicateExt(p)->getPredicateExtentionSize(j.first,j.second);
+		else
+			extensionSize += predicateExtTable->getInstance()->getPredicateExt(p)->getPredicateExtentionSize(j.first);
 	return extensionSize;
 }
 
@@ -648,31 +650,31 @@ double CombinedCriterion5::assignWeightPositiveClassicalLit(Atom* atom, unsigned
 	if(atomsToInsert.size()==rule->getSizeBody()){
 		if(maximumSize==0 && minimumSize==INT_MAX){
 			unsigned i=0;
-			string nMax;
-			string nMin;
 			for(auto it=rule->getBeginBody();it!=rule->getEndBody();++it,++i){
 				Predicate* p=(*it)->getPredicate();
 				if(p!=nullptr){
 					unsigned size=computePredicateExtensionSize(i,p);
 					if(size>maximumSize){
-						nMax=p->getName();
+						posMax=i;
 						maximumSize=size;
 					}
 					if(size<minimumSize){
-						nMin=p->getName();
+						posMin=i;
 						minimumSize=size;
 					}
 				}
 			}
-//			cerr<<"MAX: "<<maximumSize<<" "<<nMax<<endl;
-//			cerr<<"MIN: "<<minimumSize<<" "<<nMin<<endl;
+//			cerr<<"MAX: "<<maximumSize<<" "<<posMax<<endl;
+//			cerr<<"MIN: "<<minimumSize<<" "<<posMin<<endl;
 		}
-		double similarity=estimateSizeSimilarity(originalPosition);
-		if(similarity>=SIZE_SIMILARITY_THRESHOLD){
-			double sel_c=CombinedCriterion::assignWeightPositiveClassicalLit(atom,originalPosition,maximumSize);
-//			cerr<<"SIMIL: "<<similarity<<" "<<sel_c<<endl;
-			return sel_c;
-		}
+//		if(originalPosition!=posMax && originalPosition!=posMin){
+			double similarity=estimateSizeSimilarity(originalPosition);
+			if(similarity>=SIZE_SIMILARITY_THRESHOLD){
+				double sel_c=CombinedCriterion::assignWeightPositiveClassicalLit(atom,originalPosition,maximumSize);
+//				cerr<<"SIMIL: "<<similarity<<" "<<sel_c<<endl;
+				return sel_c;
+			}
+//		}
 	}
 	double sel_c=CombinedCriterion::assignWeightPositiveClassicalLit(atom,originalPosition);
 //	cerr<<"NO: "<<sel_c<<endl;

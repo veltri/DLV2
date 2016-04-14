@@ -152,8 +152,8 @@ public:
 
 class CombinedCriterion5 : public CombinedCriterion {
 public:
-	CombinedCriterion5(Rule* rule):CombinedCriterion(rule),SIZE_SIMILARITY_THRESHOLD(0),maximumSize(0),minimumSize(INT_MAX){}
-	CombinedCriterion5(Rule* rule,Priority p):CombinedCriterion(rule,p),SIZE_SIMILARITY_THRESHOLD(0),maximumSize(0),minimumSize(INT_MAX){}
+	CombinedCriterion5(Rule* rule):CombinedCriterion(rule),SIZE_SIMILARITY_THRESHOLD(0),maximumSize(0),minimumSize(INT_MAX),posMax(0),posMin(0){}
+	CombinedCriterion5(Rule* rule,Priority p):CombinedCriterion(rule,p),SIZE_SIMILARITY_THRESHOLD(0),maximumSize(0),minimumSize(INT_MAX),posMax(0),posMin(0){}
 	virtual ~CombinedCriterion5(){}
 	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
 	virtual double manageEqualWeights(unsigned originalPosition);
@@ -163,6 +163,8 @@ public:
 private:
 	unsigned maximumSize;
 	unsigned minimumSize;
+	unsigned posMax;
+	unsigned posMin;
 
 };
 

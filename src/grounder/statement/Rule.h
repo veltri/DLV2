@@ -349,8 +349,6 @@ public:
 
 	void setUnsolvedPredicates();
 
-	void sortPositiveLiteralInBody(vector<vector<unsigned>>& predicate_searchInsert_table,vector<unsigned>& originalOrderMapping);
-
 	void computeVariablesLocalIndices();
 
 	inline unsigned getVariablesSize() const {
