@@ -159,6 +159,7 @@ public:
 	virtual void setAssignment(bool assigment){};
 	//Return true if the builtin not contains in the operator of Airth term a DIV or a TIMES and not contain function
 	virtual bool plusMinusBuiltin(){return true;};
+	virtual bool isComparisonBuiltIn() const{return false;}
 	/*****************************************************/
 
 	/******** Methods useful for AggregateAtom ********/

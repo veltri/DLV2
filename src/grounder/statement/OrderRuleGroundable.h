@@ -96,7 +96,7 @@ public:
 	virtual double manageEqualWeights(unsigned originalPosition);
 	virtual bool ckeckSimilarity(double weight1,double weight2){return weight1==weight2;};
 
-private:
+protected:
 	unsigned computePredicateExtensionSize(unsigned atomPosition, Predicate* p);
 };
 
@@ -105,12 +105,12 @@ public:
 	CombinedCriterion(Rule* rule):AllOrderRuleGroundable(rule),DOUBLE_INDEX_THRESHOLD(2){positiveAtomsIndexingTerms.resize(rule->getSizeBody());}
 	CombinedCriterion(Rule* rule,Priority p):AllOrderRuleGroundable(rule,p),DOUBLE_INDEX_THRESHOLD(2){positiveAtomsIndexingTerms.resize(rule->getSizeBody());}
 	virtual ~CombinedCriterion(){}
-	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
-	virtual void update(Atom* atomAdded, unsigned originalPosition){updateVariableSelectivity(atomAdded);};
+	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition, int size=-1);
+	virtual void update(Atom* atomAdded, unsigned originalPosition){updateVariableSelectivity(atomAdded,originalPosition);};
 	virtual bool setAtomSearcher(Atom* atom, unsigned orginalPosition,unsigned newPosition);
 protected:
 	void computeVariablesDomains();
-	void updateVariableSelectivity(Atom* atomAdded);
+	void updateVariableSelectivity(Atom* atomAdded, unsigned atomPos);
 	map_term<unsigned> variablesDomains;
 	map_term<double> variablesSelectivities;
 
@@ -152,11 +152,17 @@ public:
 
 class CombinedCriterion5 : public CombinedCriterion {
 public:
-	CombinedCriterion5(Rule* rule):CombinedCriterion(rule){}
-	CombinedCriterion5(Rule* rule,Priority p):CombinedCriterion(rule,p){}
+	CombinedCriterion5(Rule* rule):CombinedCriterion(rule),SIZE_SIMILARITY_THRESHOLD(0),maximumSize(0),minimumSize(INT_MAX){}
+	CombinedCriterion5(Rule* rule,Priority p):CombinedCriterion(rule,p),SIZE_SIMILARITY_THRESHOLD(0),maximumSize(0),minimumSize(INT_MAX){}
 	virtual ~CombinedCriterion5(){}
+	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
 	virtual double manageEqualWeights(unsigned originalPosition);
-	unsigned countVariablesOccurencies(unsigned originalPosition);
+	unsigned countVariablesOccurencies(unsigned originalPosition, set_term& variablesShared);
+	double estimateSizeSimilarity(unsigned originalPosition);
+	const double SIZE_SIMILARITY_THRESHOLD;
+private:
+	unsigned maximumSize;
+	unsigned minimumSize;
 
 };
 

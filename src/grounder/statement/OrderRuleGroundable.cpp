@@ -198,6 +198,10 @@ bool OrderRuleGroundable::isBound(Atom* atom, unsigned orginalPosition, const se
 				atom->setAssignment(true);
 				return true;
 			}
+			if(Utils::isContained(atomsVariables[orginalPosition],terms)){
+				atom->setAssignment(false);
+				return true;
+			}
 		}
 
 		return false;
@@ -348,12 +352,29 @@ void CombinedCriterion::computeVariablesDomains() {
 	}
 }
 
-void CombinedCriterion::updateVariableSelectivity(Atom* atomAdded) {
+int estimateSelection(unsigned orginalSelectivity, int n, int max, int min){
+	return ((n+abs(min))/(abs(max)+abs(min)))*orginalSelectivity;
+}
+
+void CombinedCriterion::updateVariableSelectivity(Atom* atomAdded, unsigned atomPos) {
 	if(atomAdded->isClassicalLiteral() && !atomAdded->isNegative()){
+		PredicateInformation* predInfo=predicateExtTable->getPredicateExt(atomAdded->getPredicate())->getPredicateInformation();
 		for(unsigned i=0;i<atomAdded->getTermsSize();++i){
 			Term* term=atomAdded->getTerm(i);
 			if(term->getType()==TermType::VARIABLE){
-				unsigned selectivity=predicateExtTable->getPredicateExt(atomAdded->getPredicate())->getPredicateInformation()->getSelectivity(i);
+				unsigned selectivity=predInfo->getSelectivity(i);
+//				for(auto it=rule->getBeginBody();it!=rule->getEndBody();++it){
+//					if((*it)->isBuiltIn() && (*it)->isComparisonBuiltIn()){
+//						if((*it)->getTerm(0)->getIndex()==term->getIndex()){
+//							selectivity=estimateSelection(selectivity,(*it)->getTerm(1)->getConstantValue(),predInfo->getMax(i),predInfo->getMin(i));
+//							cout<<"Selectivity: "<<selectivity<<endl;
+//						}
+//						else if((*it)->getTerm(1)->getIndex()==term->getIndex()){
+//							selectivity=estimateSelection(selectivity,(*it)->getTerm(0)->getConstantValue(),predInfo->getMax(i),predInfo->getMin(i));
+//							cout<<"Selectivity: "<<selectivity<<endl;
+//						}
+//					}
+//				}
 				if(variablesInTheBody.count(term) && variablesDomains[term]>0)
 					variablesSelectivities[term]*=selectivity/variablesDomains[term];
 				else
@@ -366,13 +387,15 @@ void CombinedCriterion::updateVariableSelectivity(Atom* atomAdded) {
 	}
 }
 
-double CombinedCriterion::assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition) {
+double CombinedCriterion::assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition, int size) {
 	if(variablesDomains.empty())
 		computeVariablesDomains();
 
-	unsigned sizeTablesToSearch=0;
-	for(auto j:predicate_searchInsert_table[originalPosition+rule->getSizeHead()])
-		sizeTablesToSearch+=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(j.first,j.second);
+	if(size==-1){
+		size=0;
+		for(auto j:predicate_searchInsert_table[originalPosition+rule->getSizeHead()])
+			size+=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(j.first,j.second);
+	}
 
 	long double prodSelectivity_a=1;
 	long unsigned prodDomains_a=1;
@@ -404,7 +427,7 @@ double CombinedCriterion::assignWeightPositiveClassicalLit(Atom* atom, unsigned 
 //			}
 	}
 
-	double sel_a=sizeTablesToSearch*prodSelectivity_a/prodDomains_a;
+	double sel_a=size*prodSelectivity_a/prodDomains_a;
 	double sel_b=prodSelectivity_b/prodDomains_b;
 
 //	atom->print();cout<<" ";
@@ -559,13 +582,39 @@ double CombinedCriterion4::assignWeightPositiveClassicalLit(Atom* atom, unsigned
 }
 
 double CombinedCriterion5::manageEqualWeights(unsigned originalPosition){
+	Atom* atom=rule->getAtomInBody(originalPosition);
 	unsigned numVar=this->rule->getVariablesSize();
-	double weight=CombinedCriterion::manageEqualWeights(originalPosition);
-	unsigned occurencies=countVariablesOccurencies(originalPosition);
-	return (numVar-occurencies)*weight;
+	double size=CombinedCriterion::manageEqualWeights(originalPosition);
+	double similarity=estimateSizeSimilarity(originalPosition);
+	set_term variablesShared;
+	unsigned occurencies=countVariablesOccurencies(originalPosition,variablesShared);
+//	for(auto v:variablesShared){
+//		v->print(cerr);
+//		cerr<<" ";
+//	}
+//	cerr<<endl;
+
+	if(atomsToInsert.size()==rule->getSizeBody() && similarity>=SIZE_SIMILARITY_THRESHOLD){
+		double indexBestGoodness=0;
+		for(unsigned i=0;i<atom->getTermsSize();++i){
+			Term* t=atom->getTerm(i);
+			if(t->getType()==VARIABLE && variablesShared.count(t)){
+				unsigned sel=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateInformation()->getSelectivity(i);
+//				t->print(cerr);
+//				cerr<<" "<<sel<<endl;
+				double indexGoodness=sel/size;
+				if(indexGoodness>indexBestGoodness)
+					indexBestGoodness=indexGoodness;
+			}
+		}
+//		cerr<<" Best Index weight: "<<indexBestGoodness<<endl;
+//		cerr<<" Weight: "<<((numVar-occurencies)*maximumSize*indexBestGoodness)<<endl;
+		return ((numVar-occurencies)*maximumSize*indexBestGoodness);
+	}
+	return (numVar-occurencies)*size;
 }
 
-unsigned CombinedCriterion5::countVariablesOccurencies(unsigned originalPosition) {
+unsigned CombinedCriterion5::countVariablesOccurencies(unsigned originalPosition, set_term& variablesShared) {
 	Atom* atom=rule->getAtomInBody(originalPosition);
 	unsigned numOccurrencies=0;
 	if(atom->isClassicalLiteral() && !atom->isNegative()){
@@ -574,14 +623,65 @@ unsigned CombinedCriterion5::countVariablesOccurencies(unsigned originalPosition
 			for(auto a:this->atomsToInsert){
 				if(originalPosition==a)continue;
 				for(auto v:atomsVariables[a])
-					if(v->getIndex()==var->getIndex())
+					if(v->getIndex()==var->getIndex()){
+						variablesShared.insert(var);
 						numOccurrencies++;
+					}
 			}
 		}
 	}
 //	atom->print();cout<<" "<<numOccurrencies<<endl;
 	return numOccurrencies;
 }
+
+double CombinedCriterion5::estimateSizeSimilarity(unsigned originalPosition) {
+	Atom* atom=rule->getAtomInBody(originalPosition);
+	if(atom->isClassicalLiteral() && !atom->isNegative()){
+		unsigned size=computePredicateExtensionSize(originalPosition,atom->getPredicate());
+		return double(size)/maximumSize;
+	}
+	return 0;
+}
+
+double CombinedCriterion5::assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition) {
+//	cerr<<"Atom: ";atom->print(cerr);cerr<<endl;
+	if(atomsToInsert.size()==rule->getSizeBody()){
+		if(maximumSize==0 && minimumSize==INT_MAX){
+			unsigned i=0;
+			string nMax;
+			string nMin;
+			for(auto it=rule->getBeginBody();it!=rule->getEndBody();++it,++i){
+				Predicate* p=(*it)->getPredicate();
+				if(p!=nullptr){
+					unsigned size=computePredicateExtensionSize(i,p);
+					if(size>maximumSize){
+						nMax=p->getName();
+						maximumSize=size;
+					}
+					if(size<minimumSize){
+						nMin=p->getName();
+						minimumSize=size;
+					}
+				}
+			}
+//			cerr<<"MAX: "<<maximumSize<<" "<<nMax<<endl;
+//			cerr<<"MIN: "<<minimumSize<<" "<<nMin<<endl;
+		}
+		double similarity=estimateSizeSimilarity(originalPosition);
+		if(similarity>=SIZE_SIMILARITY_THRESHOLD){
+			double sel_c=CombinedCriterion::assignWeightPositiveClassicalLit(atom,originalPosition,maximumSize);
+//			cerr<<"SIMIL: "<<similarity<<" "<<sel_c<<endl;
+			return sel_c;
+		}
+	}
+	double sel_c=CombinedCriterion::assignWeightPositiveClassicalLit(atom,originalPosition);
+//	cerr<<"NO: "<<sel_c<<endl;
+	return sel_c;
+
+}
+
+
+
 
 //double IndexingArgumentsOrderRuleGroundable::manageEqualWeights(unsigned originalPosition) {
 //	Atom* atom=rule->getAtomInBody(originalPosition);

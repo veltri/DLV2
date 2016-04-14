@@ -115,9 +115,18 @@ public:
 		return true;
 	}
 
-
 	///Destructor
 	~BuiltInAtom() {};
+
+	virtual bool isComparisonBuiltIn() const{
+//		if(terms[0]->getType()==VARIABLE && terms[1]->getType()==VARIABLE && !assignment)
+//			return true;
+		if(terms[0]->getType()==TermType::NUMERIC_CONSTANT && terms[1]->getType()==VARIABLE && !assignment)
+			return true;
+		if(terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==NUMERIC_CONSTANT && !assignment)
+			return true;
+		return false;
+	}
 
 private:
 	///Binary operation @see Binop
