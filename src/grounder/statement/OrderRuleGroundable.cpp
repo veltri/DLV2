@@ -248,6 +248,7 @@ void OrderRuleGroundable::computeDictionaryIntersection(Atom* atom) {
 /****************************************** AllOrderRuleGroundable ***********************************************/
 
 unsigned AllOrderRuleGroundable::computePredicateExtensionSize(	unsigned atomPosition, Predicate* p) {
+	if(p==0) return 0;
 	unsigned extensionSize = 0;
 	for (auto j : predicate_searchInsert_table[atomPosition + rule->getSizeHead()])
 		if(componentPredicateInHead!=nullptr && componentPredicateInHead->count(p->getIndex()) && !rule->getAtomInBody(atomPosition)->isNegative())
@@ -396,10 +397,7 @@ double CombinedCriterion::assignWeightPositiveClassicalLit(Atom* atom, unsigned 
 		computeVariablesDomains();
 
 	if(size==-1){
-		if(atom->getPredicate()!=0)
-			size=computePredicateExtensionSize(originalPosition,atom->getPredicate());
-		else
-			size=0;
+		size=computePredicateExtensionSize(originalPosition,atom->getPredicate());
 	}
 
 	long double prodSelectivity_a=1;
@@ -442,9 +440,9 @@ double CombinedCriterion::assignWeightPositiveClassicalLit(Atom* atom, unsigned 
 }
 
 double CombinedCriterion::computeBestIndexingTerms(Atom* atom, unsigned originalPosition) {
-	unsigned sizeTablesToSearch=0;
-	for(auto j:predicate_searchInsert_table[originalPosition+rule->getSizeHead()])
-		sizeTablesToSearch+=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(j.first,j.second);
+	unsigned sizeTablesToSearch=computePredicateExtensionSize(originalPosition,atom->getPredicate());
+//	for(auto j:predicate_searchInsert_table[originalPosition+rule->getSizeHead()])
+//		sizeTablesToSearch+=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(j.first,j.second);
 
 	double max=0;
 	double secondMax=0;
@@ -514,9 +512,10 @@ double CombinedCriterion1::assignWeightPositiveClassicalLit(Atom* atom, unsigned
 	if(variablesDomains.empty())
 		computeVariablesDomains();
 
-	unsigned sizeTablesToSearch=0;
-	for(auto j:predicate_searchInsert_table[originalPosition+rule->getSizeHead()])
-		sizeTablesToSearch+=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(j.first,j.second);
+	unsigned sizeTablesToSearch=computePredicateExtensionSize(originalPosition,atom->getPredicate());
+//	unsigned sizeTablesToSearch=0;
+//	for(auto j:predicate_searchInsert_table[originalPosition+rule->getSizeHead()])
+//		sizeTablesToSearch+=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(j.first,j.second);
 
 	long double num1=1;
 	long unsigned  den1=1;
@@ -743,7 +742,7 @@ double IndexingArgumentsOrderRuleGroundable::assignWeightPositiveClassicalLit(At
 
 //	cout<<"-->";atom->print();cout<<endl;
 	PredicateExtension* predicateExtension=PredicateExtTable::getInstance()->getPredicateExt(atom->getPredicate());
-	unsigned size=predicateExtension->getPredicateExtentionSize();
+	unsigned size=computePredicateExtensionSize(originalPosition,atom->getPredicate());
 	double max=0;
 	double secondMax=0;
 	double backwardWeight=currentJoinSize;
@@ -788,7 +787,7 @@ double IndexingArgumentsOrderRuleGroundable::assignWeightPositiveClassicalLit(At
 		PredicateExtension* predicateExtension =
 				PredicateExtTable::getInstance()->getPredicateExt(
 						a->getPredicate());
-		unsigned s = predicateExtension->getPredicateExtentionSize();
+		unsigned s = computePredicateExtensionSize(originalPosition,atom->getPredicate());
 		double maxOther = 0;
 		double secondMaxOther = 0;
 		double bestIndex = 0;
@@ -903,9 +902,11 @@ double SemiJoinIndexingArgumentsOrderRuleGroundable::assignWeightPositiveClassic
 		computeBoundArgumentsSelectivities();
 
 //	cout<<"-->";atom->print();cout<<endl;
-	unsigned sizeTablesToSearch=0;
-	for(auto j:predicate_searchInsert_table[originalPosition+rule->getSizeHead()])
-		sizeTablesToSearch+=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(j.first,j.second);
+
+	unsigned sizeTablesToSearch=computePredicateExtensionSize(originalPosition,atom->getPredicate());
+//	unsigned sizeTablesToSearch=0;
+//	for(auto j:predicate_searchInsert_table[originalPosition+rule->getSizeHead()])
+//		sizeTablesToSearch+=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(j.first,j.second);
 
 	long double prod=1;
 	for(unsigned i=0;i<atom->getTermsSize();++i){
@@ -972,9 +973,10 @@ double SemiJoinIndexingArgumentsOrderRuleGroundable2::assignWeightPositiveClassi
 		computeBoundArgumentsSelectivities();
 
 //	cout<<"-->";atom->print();cout<<endl;
-	unsigned sizeTablesToSearch=0;
-	for(auto j:predicate_searchInsert_table[originalPosition+rule->getSizeHead()])
-		sizeTablesToSearch+=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(j.first,j.second);
+	unsigned sizeTablesToSearch=computePredicateExtensionSize(originalPosition,atom->getPredicate());
+//	unsigned sizeTablesToSearch=0;
+//	for(auto j:predicate_searchInsert_table[originalPosition+rule->getSizeHead()])
+//		sizeTablesToSearch+=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(j.first,j.second);
 
 	long double prod=1;
 	for(unsigned i=0;i<atom->getTermsSize();++i){
@@ -993,9 +995,10 @@ double SemiJoinIndexingArgumentsOrderRuleGroundable2::assignWeightPositiveClassi
 
 double SemiJoinIndexingArgumentsOrderRuleGroundable2::manageEqualWeights(unsigned originalPosition) {
 	Atom* atom=rule->getAtomInBody(originalPosition);
-	unsigned sizeTablesToSearch=0;
-	for(auto j:predicate_searchInsert_table[originalPosition+rule->getSizeHead()])
-		sizeTablesToSearch+=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(j.first,j.second);
+	unsigned sizeTablesToSearch=computePredicateExtensionSize(originalPosition,atom->getPredicate());
+//	unsigned sizeTablesToSearch=0;
+//	for(auto j:predicate_searchInsert_table[originalPosition+rule->getSizeHead()])
+//		sizeTablesToSearch+=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(j.first,j.second);
 
 	double max=0;
 	double secondMax=0;
