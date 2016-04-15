@@ -86,7 +86,7 @@ public:
 	virtual ~AllOrderRuleGroundable(){}
 	virtual list<unsigned>::iterator assignWeights();
 
-	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition){return 0;};
+	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition, int size=-1){return 0;};
 	virtual double assignWeightBoundPositiveClassicalLit(Atom* atom, unsigned originalPosition){return priorities.BOUND_POSITIVE_CLASSICAL_LIT;};
 	virtual double assignWeightNegativeClassicalLit(Atom* atom, unsigned originalPosition){return priorities.NEGATIVE_CLASSICAL_LIT;};
 	//TODO check aggregate type
@@ -131,7 +131,7 @@ public:
 	CombinedCriterion1(Rule* rule):CombinedCriterion(rule){}
 	CombinedCriterion1(Rule* rule,Priority p):CombinedCriterion(rule,p){}
 	virtual ~CombinedCriterion1(){}
-	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
+	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition, int size=-1);
 };
 
 class CombinedCriterion3 : public CombinedCriterion {
@@ -139,7 +139,7 @@ public:
 	CombinedCriterion3(Rule* rule):CombinedCriterion(rule){}
 	CombinedCriterion3(Rule* rule,Priority p):CombinedCriterion(rule,p){}
 	virtual ~CombinedCriterion3(){}
-	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
+	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition, int size=-1);
 };
 
 class CombinedCriterion4 : public CombinedCriterion {
@@ -147,7 +147,7 @@ public:
 	CombinedCriterion4(Rule* rule):CombinedCriterion(rule){}
 	CombinedCriterion4(Rule* rule,Priority p):CombinedCriterion(rule,p){}
 	virtual ~CombinedCriterion4(){}
-	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
+	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition, int size=-1);
 };
 
 class CombinedCriterion5 : public CombinedCriterion {
@@ -155,7 +155,7 @@ public:
 	CombinedCriterion5(Rule* rule):CombinedCriterion(rule),SIZE_SIMILARITY_THRESHOLD(0),maximumSize(0),minimumSize(INT_MAX),posMax(0),posMin(0){}
 	CombinedCriterion5(Rule* rule,Priority p):CombinedCriterion(rule,p),SIZE_SIMILARITY_THRESHOLD(0),maximumSize(0),minimumSize(INT_MAX),posMax(0),posMin(0){}
 	virtual ~CombinedCriterion5(){}
-	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
+	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition, int size=-1);
 	virtual double manageEqualWeights(unsigned originalPosition);
 	unsigned countVariablesOccurencies(unsigned originalPosition, set_term& variablesShared);
 	double estimateSizeSimilarity(unsigned originalPosition);
@@ -173,7 +173,7 @@ public:
 	IndexingArgumentsOrderRuleGroundable(Rule* rule):AllOrderRuleGroundable(rule),DOUBLE_INDEX_THRESHOLD(0.3),currentJoinSize(1){}
 	IndexingArgumentsOrderRuleGroundable(Rule* rule,Priority p):AllOrderRuleGroundable(rule,p),DOUBLE_INDEX_THRESHOLD(0.3),currentJoinSize(1){}
 	virtual ~IndexingArgumentsOrderRuleGroundable(){}
-	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
+	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition, int size=-1);
 	virtual void update(Atom* atomAdded, unsigned originalPosition);
 //	virtual double manageEqualWeights(unsigned originalPosition);
 
@@ -192,7 +192,7 @@ public:
 	SemiJoinIndexingArgumentsOrderRuleGroundable(Rule* rule):CombinedCriterion(rule),DOUBLE_INDEX_THRESHOLD(0.3){}
 	SemiJoinIndexingArgumentsOrderRuleGroundable(Rule* rule,Priority p):CombinedCriterion(rule,p),DOUBLE_INDEX_THRESHOLD(0.3){}
 	virtual ~SemiJoinIndexingArgumentsOrderRuleGroundable(){}
-	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
+	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition, int size=-1);
 protected:
 	vector<unordered_map<unsigned,double>> boundArgumentsSelectivities;
 	const double DOUBLE_INDEX_THRESHOLD;
@@ -204,7 +204,7 @@ public:
 	SemiJoinIndexingArgumentsOrderRuleGroundable2(Rule* rule):SemiJoinIndexingArgumentsOrderRuleGroundable(rule),SIMILARITY_THRESHOLD(0.3){}
 	SemiJoinIndexingArgumentsOrderRuleGroundable2(Rule* rule,Priority p):SemiJoinIndexingArgumentsOrderRuleGroundable(rule,p),SIMILARITY_THRESHOLD(0.3){}
 	virtual ~SemiJoinIndexingArgumentsOrderRuleGroundable2(){}
-	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
+	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition, int size=-1);
 	virtual double manageEqualWeights(unsigned originalPosition);
 	virtual bool ckeckSimilarity(double weight1,double weight2);
 private:
@@ -216,7 +216,7 @@ public:
 	CombinedCriterionIndexingArgumentsOrderRuleGroundable(Rule* rule):SemiJoinIndexingArgumentsOrderRuleGroundable(rule){}
 	CombinedCriterionIndexingArgumentsOrderRuleGroundable(Rule* rule,Priority p):SemiJoinIndexingArgumentsOrderRuleGroundable(rule,p){}
 	virtual ~CombinedCriterionIndexingArgumentsOrderRuleGroundable(){}
-	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
+	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition, int size=-1);
 };
 
 class BindersOrderRuleGroundable : public AllOrderRuleGroundable {
@@ -224,7 +224,7 @@ public:
 	BindersOrderRuleGroundable(Rule* rule):AllOrderRuleGroundable(rule){}
 	BindersOrderRuleGroundable(Rule* rule,Priority p):AllOrderRuleGroundable(rule,p){}
 	virtual ~BindersOrderRuleGroundable(){}
-	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
+	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition, int size=-1);
 };
 
 class CombinedCriterionBindersOrderRuleGroundable: public CombinedCriterion {
@@ -232,7 +232,7 @@ public:
 	CombinedCriterionBindersOrderRuleGroundable(Rule* rule):CombinedCriterion(rule){}
 	CombinedCriterionBindersOrderRuleGroundable(Rule* rule,Priority p):CombinedCriterion(rule,p){}
 	virtual ~CombinedCriterionBindersOrderRuleGroundable(){}
-	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
+	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition, int size=-1);
 };
 
 class CombinedCriterionAdvanced: public CombinedCriterion {
@@ -240,7 +240,7 @@ public:
 	CombinedCriterionAdvanced(Rule* rule):CombinedCriterion(rule){}
 	CombinedCriterionAdvanced(Rule* rule,Priority p):CombinedCriterion(rule,p){}
 	virtual ~CombinedCriterionAdvanced(){}
-	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition);
+	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition, int size=-1);
 };
 
 /**
