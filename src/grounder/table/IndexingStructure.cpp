@@ -63,7 +63,6 @@ bool AtomSearcher::checkMatch(unsigned int id,Atom *genericAtom, Atom *templateA
 		currentAssignment[bind.second]=genericTerms[bind.first];
 
 	if(!mi.other.empty()){
-
 		vector<unsigned> addedVar;
 		addedVar.reserve(currentAssignment.size());
 		bool fail=false;
@@ -73,11 +72,9 @@ bool AtomSearcher::checkMatch(unsigned int id,Atom *genericAtom, Atom *templateA
 				break;
 			}
 		}
-
-		if(!outputVariables.empty()){
+		if(!fail && !outputVariables.empty()){
 			if(checkOutputVariables(outputVariables, id, genericAtom))
 				fail=true;
-
 		}
 
 		if(fail){
