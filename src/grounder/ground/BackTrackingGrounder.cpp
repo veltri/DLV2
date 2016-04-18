@@ -288,9 +288,9 @@ void BackTrackingGrounder::onGroundRuleToPrint(const vector<bool>& newAtomsInHea
 		}
 	}
 	outputBuilder->onRule(ground_rule);
+	trace_action_tag(grounding,1,cerr<<"Ground Rule Produced: ";ground_rule->print(cerr);cerr<<endl;);
 	if (printStats)
 		rstats->groundNewRule(currentRule->getIndex());
-	trace_action_tag(grounding,1,cerr<<"Ground Rule Produced: ";ground_rule->print(cerr);cerr<<endl;);
 }
 
 bool BackTrackingGrounder::foundAssignment() {
@@ -419,11 +419,12 @@ bool BackTrackingGrounder::foundAssignment() {
 				ground_rule->setAtomToSimplifyInBody(i,savedRule->isAtomToSimplifyInBody(i));
 			}
 		}
-		else
+		else{
 			outputBuilder->onRule(ground_rule);
+			trace_action_tag(grounding,1,cerr<<"Ground Rule Produced: ";ground_rule->print(cerr);cerr<<endl;);
+		}
 		if (printStats)
 			rstats->groundNewRule(currentRule->getIndex());
-		trace_action_tag(grounding,1,cerr<<"Ground Rule Produced: ";ground_rule->print(cerr);cerr<<endl;);
 	}
 	if(strongConstraint && !undefinedAtomInBody){throw ConstrainException{};};
 

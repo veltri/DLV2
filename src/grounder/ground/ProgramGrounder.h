@@ -75,7 +75,7 @@ public:
 	PredicateTable* getPredicateTable() {return predicateTable;};
 
 	bool isNotEmptyPredExt(Predicate* pred,unsigned table);
-	bool isNotEmptyPredExt(Predicate* pred,unsigned table,SearchType type,unsigned iteration);
+	bool isNotEmptyPredExt(Predicate* pred,unsigned table,SearchType type);
 
 
 

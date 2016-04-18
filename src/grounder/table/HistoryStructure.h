@@ -121,6 +121,13 @@ public:
 		index_iteration=vector<T>::size();
 	}
 
+	void print(ostream& o=cout){
+		for(auto e:*this){
+			e->print(o);o<<" ";
+		}
+		o<<endl;
+	}
+
 private:
 	unsigned current_iteration;
 	unsigned index_iteration;
