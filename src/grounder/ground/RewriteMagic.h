@@ -372,7 +372,7 @@ private:
         for( vector<Term*>::const_iterator i=params.begin();
              i != params.end();
              i++ )
-            if( (*i)->getType()==VARIABLE || ( (*i)->getType()==FUNCTION && !(*i)->isGround() ) )
+            if( (*i)->getType()==VARIABLE || (*i)->getType()==ANONYMOUS || ( (*i)->getType()==FUNCTION && !(*i)->isGround() ) )
                 {
                 strcat(adornment,"f");
                 }
@@ -411,7 +411,7 @@ private:
                  i++,adornmentpos++ )
                 {
 //                assert( !(*i).isNull() );
-                if( (*i)->getType()==VARIABLE && (*adornmentpos == 'b') )
+                if( ((*i)->getType()==VARIABLE ) && (*adornmentpos == 'b') )
                     BoundVars.insert(*i);
                 }
 
@@ -434,7 +434,7 @@ private:
         for( vector<Term*>::const_iterator i=params.begin();
              i != params.end();
              i++ )
-            if( (*i)->getType()==VARIABLE )
+            if( (*i)->getType()==VARIABLE || (*i)->getType()==ANONYMOUS)
                 {
                 // if it is contained into the SetofBoundVars put it to
                 // bound,else put it to false
@@ -474,7 +474,7 @@ private:
              k != params.end();
              k++ )
             // FIXME: We would need a method isConstant() here.
-            if( !(*k)->getType()==VARIABLE )
+            if( (*k)->isGround() )
                 return true;
         return false;
         }
@@ -492,9 +492,9 @@ private:
         for( vector<Term*>::const_iterator k=params.begin();
              k != params.end();
              k++ )
-            if( ((*k)->getType()==VARIABLE  && BV.find(*k) != BV.end())
+            if( ( (*k)->getType()==VARIABLE   && BV.find(*k) != BV.end())
                 // FIXME: We would need a method isConstant() here.
-                || !(*k)->getType()==VARIABLE )
+                || (*k)->isGround() )
                 return true;
         return false;
         }
@@ -528,7 +528,7 @@ private:
              i++ )
             if( ( (*i)->getType()==VARIABLE && BV.find(*i) != BV.end() )
                 // FIXME: We would need a method isConstant() here.
-                || !(*i)->getType()==VARIABLE )
+                ||  (*i)->isGround() )
                 count++;
         return count;
         }
