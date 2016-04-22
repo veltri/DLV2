@@ -636,26 +636,21 @@ bool StatementDependency::magic() {
 	HandleQuery(queryConstraints);
 	if(!Options::globalOptions()->rewriteMagic())return true;
 	if (query.empty()) {
-		errmsg = "No query supplied.";
-		return false;
+		errmsg = "Warning: No query supplied.";
 	} else if (constraints.size() > queryConstraints) {
 		errmsg = "The program contains integrity constraints.";
-		return false;
 	} else if (weak.size() > 0) {
-		errmsg = "The program contains weak constraints.";
-		return false;
+		errmsg = "Warning: The program contains weak constraints.";
 	} else if (hasAggregate) {
-		errmsg = "The program contains aggregates.";
-		return false;
+		errmsg = "Warning: The program contains aggregates.";
 //	} else if (Options::globalOptions()->getOptionFrontend() != FRONTEND_CAUTIOUS
 //	&& Options::globalOptions()->getOptionFrontend() != FRONTEND_BRAVE) {
 //		errmsg = "Neither brave nor cautious reasoning was specified.";
 //		return false;
 	} else if (rules.empty()) {
-		errmsg = "IDB is empty or has become empty due to optimizations.";
-		return false;
+		errmsg = "Warning: IDB is empty or has become empty due to optimizations.";
 	} else if(hasNegativeAtom)
-		errmsg = "Warning: The program contains negative literals.\nThe correctness of Magic Sets is only guaranteed for super-coherent programs.";
+		cerr<< "Warning: The program contains negative literals.\nThe correctness of Magic Sets is only guaranteed for super-coherent programs."<<endl;
 
 	if (errmsg.empty()) {
 
@@ -685,6 +680,8 @@ bool StatementDependency::magic() {
 	}
 	else{
 		cerr<<errmsg<<endl;
+		cerr<<"Warning: Magic Sets not applied."<<endl;
+		return false;
 	}
 	return true;
 }
