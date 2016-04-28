@@ -108,7 +108,7 @@ bool AtomSearcher::matchTermFunctional(Term *generic, Term *toMatch, var_assignm
 			Term* term=varAssignment[index];
 			if(term!=nullptr)
 				{
-					if( term != genericTerm)return false;
+					if( term != genericTerm){return false;}
 				}
 			else{
 
@@ -147,6 +147,7 @@ bool AtomSearcher::evaluateFastBuiltin(const RuleInformation& ruleInformation,in
 	for (auto builtin : ruleInformation.getBounderBuiltin(index)) {
 		varAssignment[index] = genericTerm;
 		bool evaluation = builtin->groundAndEvaluate(varAssignment);
+		varAssignment[index] = nullptr;
 		if (!evaluation) {
 			return false;
 		}
