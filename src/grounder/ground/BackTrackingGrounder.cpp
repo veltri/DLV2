@@ -486,7 +486,9 @@ void BackTrackingGrounder::inizialize(Rule* rule, unordered_set<index_object>* c
 	outputVariablesInAtoms.clear();
 	outputVariablesInAtoms.resize(currentRule->getSizeBody());
 
+	newAtomsInHead.clear();
 	newAtomsInHead.resize(currentRule->getSizeHead(),false);
+	headAtomsWithTheSamePredicate.clear();
 	headAtomsWithTheSamePredicate.resize(currentRule->getSizeHead(),false);
 	for(unsigned i=0;i<currentRule->getSizeHead();++i){
 		Predicate* p1=currentRule->getAtomInHead(i)->getPredicate();
@@ -498,6 +500,12 @@ void BackTrackingGrounder::inizialize(Rule* rule, unordered_set<index_object>* c
 			}
 		}
 	}
+
+//	cerr<<"Head atoms"<<endl;
+//	for(unsigned i=0;i<currentRule->getSizeHead();++i){
+//		cerr<<headAtomsWithTheSamePredicate[i]<<" ";
+//	}
+//	cerr<<endl;
 
 
 	if(ground_rule!=0)
