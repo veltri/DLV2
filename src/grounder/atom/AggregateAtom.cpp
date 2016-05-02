@@ -402,12 +402,12 @@ ResultEvaluation AggregateAtom::finalEvaluateSum() {
 	//If the aggregate is defined or contain only positive atoms
 	//If the aggregate is defined we can check the value also if the aggregate contain negative number because we know the
 	//exact value.
-	if(!findUndefInSum || POSITIVE){
+	if(!findUndefInSum || elemType==POSITIVE){
 
 		if(checkOperator(firstGuard,firstBinop,EQUAL,LESS,true) || checkOperator(firstGuard,firstBinop,EQUAL,GREATER,false))
 			return UNSATISFY;
 
-		if(checkOperator(firstGuard,firstBinop,EQUAL,EQUAL,false))
+		if(!findUndefInSum && checkOperator(firstGuard,firstBinop,EQUAL,EQUAL,false))
 			return SATISFY;
 
 		if(checkOperator(firstGuard,firstBinop,LESS_OR_EQ,LESS,true))
@@ -440,6 +440,34 @@ ResultEvaluation AggregateAtom::finalEvaluateSum() {
 			return SATISFY;
 
 
+	}else if(elemType==NEGATIVE){
+
+		if(checkOperator(firstGuard,firstBinop,EQUAL,LESS,false))
+			return UNSATISFY;
+
+		if(checkOperator(firstGuard,firstBinop,LESS_OR_EQ,LESS,false))
+			return UNSATISFY;
+		if(checkOperator(firstGuard,firstBinop,LESS,LESS_OR_EQ,false))
+			return UNSATISFY;
+
+		if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,true))
+			return SATISFY;
+		if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS,GREATER,true))
+			return SATISFY;
+
+		if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS,LESS,false))
+			return SATISFY;
+		if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,false))
+			return SATISFY;
+
+		if(checkOperator(secondGuard,secondBinop,LESS,LESS,false) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,true))
+			return SATISFY;
+		if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,false) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,true))
+			return SATISFY;
+		if(checkOperator(secondGuard,secondBinop,LESS,LESS,false) && checkOperator(firstGuard,firstBinop,LESS,GREATER,true))
+			return SATISFY;
+		if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,false) && checkOperator(firstGuard,firstBinop,LESS,GREATER,true))
+			return SATISFY;
 	}
 
 	//TODO ADD check for undefined negative weight
