@@ -460,6 +460,11 @@ ResultEvaluation AggregateAtom::finalEvaluateSum() {
 		if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,false))
 			return SATISFY;
 
+		if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS,GREATER_OR_EQ,true))
+			return UNSATISFY;
+		if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS_OR_EQ,GREATER,true))
+			return UNSATISFY;
+
 		if(checkOperator(secondGuard,secondBinop,LESS,LESS,false) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,true))
 			return SATISFY;
 		if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,false) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,true))
@@ -470,7 +475,6 @@ ResultEvaluation AggregateAtom::finalEvaluateSum() {
 			return SATISFY;
 	}
 
-	//TODO ADD check for undefined negative weight
 
 	if(isAnAssigment()) findUndefAtoms();
 	return UNDEF;
