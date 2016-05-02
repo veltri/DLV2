@@ -19,6 +19,11 @@ namespace DLV2{
 
 namespace grounder{
 
+///Specify the type of the element in the aggregate.
+enum ElementType{
+	POSITIVE,NEGATIVE,MIXED,EMPTY
+};
+
 
 /**
  * This class implements an aggregate atom extending atom
@@ -33,7 +38,7 @@ public:
 
 	///Default constructor
 	AggregateAtom(): firstBinop(Binop::NONE_OP), secondBinop(Binop::NONE_OP), aggregateFunction(AggregateFunction::NONE), negative(false),
-		partialEvaluation(TermTable::getInstance()->term_zero), undefAtomEvaluation(TermTable::getInstance()->term_zero), firstGuard(nullptr), secondGuard(nullptr), assignment(false){};
+		partialEvaluation(TermTable::getInstance()->term_zero), undefAtomEvaluation(TermTable::getInstance()->term_zero), firstGuard(nullptr), secondGuard(nullptr), assignment(false),elemType(EMPTY),findUndefInSum(false){};
 
 	/** Constructor
 		 * @param f set the first term of comparison
@@ -45,12 +50,12 @@ public:
 		 * @param negative set whether the atom is negated with negation as failure
 		 */
 	AggregateAtom(Term* f, Binop fB, Term* s, Binop sB, AggregateFunction aF, vector<AggregateElement*> aE, bool n):
-		firstBinop(fB), secondBinop(sB), aggregateElements(move(aE)), negative(n), partialEvaluation(TermTable::getInstance()->term_zero), undefAtomEvaluation(TermTable::getInstance()->term_zero), firstGuard(f), secondGuard(s), assignment(false) {
+		firstBinop(fB), secondBinop(sB), aggregateElements(move(aE)), negative(n), partialEvaluation(TermTable::getInstance()->term_zero), undefAtomEvaluation(TermTable::getInstance()->term_zero), firstGuard(f), secondGuard(s), assignment(false),elemType(EMPTY),findUndefInSum(false) {
 		setAggregateFunction(aF);
 	}
 
 	AggregateAtom(Term* f, Binop fB, Term* s, Binop sB, AggregateFunction aF, bool n):
-		firstBinop(fB), secondBinop(sB), negative(n),partialEvaluation(TermTable::getInstance()->term_zero), undefAtomEvaluation(TermTable::getInstance()->term_zero), firstGuard(f), secondGuard(s), assignment(false) {
+		firstBinop(fB), secondBinop(sB), negative(n),partialEvaluation(TermTable::getInstance()->term_zero), undefAtomEvaluation(TermTable::getInstance()->term_zero), firstGuard(f), secondGuard(s), assignment(false),elemType(EMPTY),findUndefInSum(false) {
 		setAggregateFunction(aF);
 	}
 
@@ -259,6 +264,11 @@ private:
 	///Get the sum of undef and true evaluation with sum and count, the maximum between undef and true with max,the minimun between undef and true with min
 	Term* getCheckValue();
 
+	///Used for the final evaluation of the aggregate sum. Is the type of the element undefined in the aggregate
+	ElementType elemType;
+
+	/// True if in the sum aggregate there are an a undefined aggregate element
+	bool findUndefInSum;
 };
 
 }}

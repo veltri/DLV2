@@ -245,13 +245,29 @@ ResultEvaluation AggregateAtom::partialEvaluateMin() {
 ResultEvaluation AggregateAtom::partialEvaluateSum() {
 	Atom *lastAtom=aggregateElements.back()->getNafLiteral(0);
 	Term* term=aggregateElements.back()->getTerms().front();
-	if(!lastAtom->isFact() && term->getType()==NUMERIC_CONSTANT){
-		undefAtomEvaluation=undefAtomEvaluation->sum(term);
-		return UNDEF;
+	bool isNumeric=term->getType()==NUMERIC_CONSTANT;
+
+	if(isNumeric){
+
+		if(!lastAtom->isFact()){
+			if(elemType!=MIXED){
+				bool positive=(term->getConstantValue())>=0;
+				if(elemType==EMPTY)
+					elemType=(positive)?POSITIVE:NEGATIVE;
+				else if(elemType==POSITIVE && !positive)
+					elemType=MIXED;
+				else if(elemType==NEGATIVE && positive)
+					elemType=MIXED;
+			}
+
+			undefAtomEvaluation=undefAtomEvaluation->sum(term);
+			findUndefInSum=true;
+			return UNDEF;
+		}
+
+		partialEvaluation=partialEvaluation->sum(term);
 	}
 
-	if(term->getType()==NUMERIC_CONSTANT)
-		partialEvaluation=partialEvaluation->sum(term);
 
 	if(PredicateExtTable::getInstance()->getPredicateExt(lastAtom->getPredicate())->getPredicateInformation()->isOnlyPositive()){
 		if(checkOperator(firstGuard,firstBinop,EQUAL,GREATER,false))
@@ -382,40 +398,51 @@ ResultEvaluation AggregateAtom::finalEvaluateMin() {
 }
 
 ResultEvaluation AggregateAtom::finalEvaluateSum() {
-	if(checkOperator(firstGuard,firstBinop,EQUAL,LESS,true) || checkOperator(firstGuard,firstBinop,EQUAL,GREATER,false))
-		return UNSATISFY;
 
-	if(undefAtomEvaluation->getIndex()==TermTable::getInstance()->term_zero->getIndex() && checkOperator(firstGuard,firstBinop,EQUAL,EQUAL,false))
-		return SATISFY;
+	//If the aggregate is defined or contain only positive atoms
+	//If the aggregate is defined we can check the value also if the aggregate contain negative number because we know the
+	//exact value.
+	if(!findUndefInSum || POSITIVE){
 
-	if(checkOperator(firstGuard,firstBinop,LESS_OR_EQ,LESS,true))
-		return UNSATISFY;
-	if(checkOperator(firstGuard,firstBinop,LESS,LESS_OR_EQ,true))
-		return UNSATISFY;
+		if(checkOperator(firstGuard,firstBinop,EQUAL,LESS,true) || checkOperator(firstGuard,firstBinop,EQUAL,GREATER,false))
+			return UNSATISFY;
 
-	if(checkOperator(secondGuard,secondBinop,LESS,GREATER_OR_EQ,false))
-		return UNSATISFY;
-	if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,GREATER,false))
-		return UNSATISFY;
+		if(checkOperator(firstGuard,firstBinop,EQUAL,EQUAL,false))
+			return SATISFY;
 
-	if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
-		return SATISFY;
-	if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS,GREATER,false))
-		return SATISFY;
+		if(checkOperator(firstGuard,firstBinop,LESS_OR_EQ,LESS,true))
+			return UNSATISFY;
+		if(checkOperator(firstGuard,firstBinop,LESS,LESS_OR_EQ,true))
+			return UNSATISFY;
 
-	if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS,LESS,true))
-		return SATISFY;
-	if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,true))
-		return SATISFY;
+		if(checkOperator(secondGuard,secondBinop,LESS,GREATER_OR_EQ,false))
+			return UNSATISFY;
+		if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,GREATER,false))
+			return UNSATISFY;
 
-	if(checkOperator(secondGuard,secondBinop,LESS,LESS,true) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
-		return SATISFY;
-	if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,true) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
-		return SATISFY;
-	if(checkOperator(secondGuard,secondBinop,LESS,LESS,true) && checkOperator(firstGuard,firstBinop,LESS,GREATER,false))
-		return SATISFY;
-	if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,true) && checkOperator(firstGuard,firstBinop,LESS,GREATER,false))
-		return SATISFY;
+		if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
+			return SATISFY;
+		if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS,GREATER,false))
+			return SATISFY;
+
+		if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS,LESS,true))
+			return SATISFY;
+		if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,true))
+			return SATISFY;
+
+		if(checkOperator(secondGuard,secondBinop,LESS,LESS,true) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
+			return SATISFY;
+		if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,true) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
+			return SATISFY;
+		if(checkOperator(secondGuard,secondBinop,LESS,LESS,true) && checkOperator(firstGuard,firstBinop,LESS,GREATER,false))
+			return SATISFY;
+		if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,true) && checkOperator(firstGuard,firstBinop,LESS,GREATER,false))
+			return SATISFY;
+
+
+	}
+
+	//TODO ADD check for undefined negative weight
 
 	if(isAnAssigment()) findUndefAtoms();
 	return UNDEF;

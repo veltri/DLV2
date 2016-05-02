@@ -187,7 +187,6 @@ void NumericOutputBuilder::onFact(Atom* atom) {
 
 unsigned NumericOutputBuilder::onWeightRule(Atom* aggregateAtom, unsigned bound) {
 	unsigned pred_id=IdGenerator::getInstance()->getNewId(1);
-	stream<<"5 "<<pred_id<<" "<<bound<<" ";
 	unsigned body_size=aggregateAtom->getAggregateElementsSize();
 	vector<Atom*> negative,positive;
 	vector<int> weight_negative,weight_positive;
@@ -199,16 +198,19 @@ unsigned NumericOutputBuilder::onWeightRule(Atom* aggregateAtom, unsigned bound)
 	for(unsigned i=0;i<aggregateAtom->getAggregateElementsSize();i++){
 		AggregateElement *element=aggregateAtom->getAggregateElement(i);
 		atom=element->getNafLiteral(0);
-		if(!atom->isNegative()){
+		int weight=element->getTerm(0)->getConstantValue();
+		if(!atom->isNegative() && weight>=0){
 			positive.push_back(atom);
-			weight_positive.push_back(element->getTerm(0)->getConstantValue());
+			weight_positive.push_back(weight);
 		}else{
 			negative.push_back(atom);
-			weight_negative.push_back(element->getTerm(0)->getConstantValue());
+			unsigned absweight=abs(weight);
+			weight_negative.push_back(absweight);
+			if(weight<0)bound+=absweight;
 		}
 	}
 
-	stream<<negative.size()+positive.size()<<" "<<negative.size()<<" ";
+	stream<<"5 "<<pred_id<<" "<<bound<<" "<<negative.size()+positive.size()<<" "<<negative.size()<<" ";
 	for(auto& atom:negative)
 		stream<<atom->getIndex()<<" ";
 	for(auto& atom:positive)
