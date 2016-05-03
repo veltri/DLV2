@@ -269,10 +269,9 @@ list<unsigned>::iterator AllOrderRuleGroundable::assignWeights() {
 			continue;
 		double weight=INT_MAX;
 		Atom* atom=rule->getAtomInBody(*it);
-//		trace_action_tag(grounding,2,
+		trace_action_tag(grounding,2,
 			atom->print(cerr);
-			cerr<<" "<<(*it)<<endl;
-//		);
+		);
 
 		bool bound=isBound(atom,*it,variablesInTheBody);
 		if(atom->isClassicalLiteral() && !atom->isNegative() && ((!bound && mapPositiveAtomsBoundVariables[*it].empty()) || (bound && mapPositiveAtomsBoundVariables[*it].size()>0))){

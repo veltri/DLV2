@@ -299,8 +299,11 @@ public:
 			case DLV_ORDERING_VARS_OCCURENCIES:
 				return new CombinedCriterion5(rule);
 				break;
-			default:
+			case DLV_ORDERING_COMPARISONS_ESTIMATION:
 				return new CombinedCriterionComparisonsEstimation(rule);
+				break;
+			default:
+				return new CombinedCriterion(rule);
 				break;
 		}
 	}
