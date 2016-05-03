@@ -127,7 +127,7 @@ unsigned NumericOutputBuilder::printCountSumAggregate(Atom* atom) {
 	unsigned pred_first_binop=0,pred_second_binop=0;
 	//TODO we can optimize scan the aggregate one time also if there is two guard, saving the body of the rule in string
 	if(atom->getFirstBinop()!=NONE_OP){
-		unsigned bound=atom->getFirstGuard()->getConstantValue();
+		int bound=atom->getFirstGuard()->getConstantValue();
 		if(atom->getFirstBinop()==LESS)bound++;
 		if(atom->getAggregateFunction()==COUNT)
 			pred_first_binop=onConstraintRule(atom,bound);
@@ -135,7 +135,7 @@ unsigned NumericOutputBuilder::printCountSumAggregate(Atom* atom) {
 			pred_first_binop=onWeightRule(atom,bound);
 	}
 	if(atom->getSecondBinop()!=NONE_OP || atom->getFirstBinop()==EQUAL){
-		unsigned bound;
+		int bound;
 		if(atom->getFirstBinop()==EQUAL)
 			bound=atom->getFirstGuard()->getConstantValue()+1;
 		else
@@ -185,7 +185,7 @@ void NumericOutputBuilder::onFact(Atom* atom) {
 	handleCompactFactsPrinting(atom);
 }
 
-unsigned NumericOutputBuilder::onWeightRule(Atom* aggregateAtom, unsigned bound) {
+unsigned NumericOutputBuilder::onWeightRule(Atom* aggregateAtom, int bound) {
 	unsigned pred_id=IdGenerator::getInstance()->getNewId(1);
 	unsigned body_size=aggregateAtom->getAggregateElementsSize();
 	vector<Atom*> negative,positive;

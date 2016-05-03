@@ -42,7 +42,7 @@ public:
     virtual void onEnd();
 
     virtual unsigned printCountSumAggregate(Atom *atom);
-    virtual unsigned onWeightRule(Atom *aggregateAtom,unsigned bound);
+    virtual unsigned onWeightRule(Atom *aggregateAtom,int bound);
     virtual unsigned onConstraintRule(Atom *aggregateAtom,unsigned bound);
 
     virtual unsigned printMaxMinAggregate(Atom *atom);

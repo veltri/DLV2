@@ -249,9 +249,13 @@ ResultEvaluation AggregateAtom::partialEvaluateSum() {
 
 	if(isNumeric){
 
+		bool positive=(term->getConstantValue())>=0;
+		if(!positive)
+			sumCheckInfo.negativeSumValue+=term->getConstantValue();
+
 		if(!lastAtom->isFact()){
-			if(elemType!=MIXED){
-				bool positive=(term->getConstantValue())>=0;
+			if(sumCheckInfo.elemType!=MIXED){
+				ElementType& elemType=sumCheckInfo.elemType;
 				if(elemType==EMPTY)
 					elemType=(positive)?POSITIVE:NEGATIVE;
 				else if(elemType==POSITIVE && !positive)
@@ -260,8 +264,9 @@ ResultEvaluation AggregateAtom::partialEvaluateSum() {
 					elemType=MIXED;
 			}
 
+
 			undefAtomEvaluation=undefAtomEvaluation->sum(term);
-			findUndefInSum=true;
+			sumCheckInfo.findUndefInSum=true;
 			return UNDEF;
 		}
 
@@ -402,12 +407,12 @@ ResultEvaluation AggregateAtom::finalEvaluateSum() {
 	//If the aggregate is defined or contain only positive atoms
 	//If the aggregate is defined we can check the value also if the aggregate contain negative number because we know the
 	//exact value.
-	if(!findUndefInSum || elemType==POSITIVE){
+	if(!sumCheckInfo.findUndefInSum || sumCheckInfo.elemType==POSITIVE){
 
 		if(checkOperator(firstGuard,firstBinop,EQUAL,LESS,true) || checkOperator(firstGuard,firstBinop,EQUAL,GREATER,false))
 			return UNSATISFY;
 
-		if(!findUndefInSum && checkOperator(firstGuard,firstBinop,EQUAL,EQUAL,false))
+		if(!sumCheckInfo.findUndefInSum && checkOperator(firstGuard,firstBinop,EQUAL,EQUAL,false))
 			return SATISFY;
 
 		if(checkOperator(firstGuard,firstBinop,LESS_OR_EQ,LESS,true))
@@ -440,7 +445,7 @@ ResultEvaluation AggregateAtom::finalEvaluateSum() {
 			return SATISFY;
 
 
-	}else if(elemType==NEGATIVE){
+	}else if(sumCheckInfo.elemType==NEGATIVE){
 
 		if(checkOperator(firstGuard,firstBinop,EQUAL,LESS,false))
 			return UNSATISFY;
@@ -474,6 +479,20 @@ ResultEvaluation AggregateAtom::finalEvaluateSum() {
 		if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,false) && checkOperator(firstGuard,firstBinop,LESS,GREATER,true))
 			return SATISFY;
 	}
+
+	//Avoid negative guard if the sum of the negative weight in the aggregate are less of the guard
+	if(firstBinop!=NONE_OP)
+		if(firstGuard->getConstantValue()<0 && ((firstGuard->getConstantValue())-(sumCheckInfo.negativeSumValue))<0){
+			if(secondBinop==NONE_OP)
+				return SATISFY;
+			else{
+				firstBinop=NONE_OP;
+				firstGuard=nullptr;
+			}
+		}
+	if(secondBinop!=NONE_OP)
+		if(secondGuard->getConstantValue()<0 && ((secondGuard->getConstantValue())-(sumCheckInfo.negativeSumValue))<0)
+			return UNSATISFY;
 
 
 	if(isAnAssigment()) findUndefAtoms();
