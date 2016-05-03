@@ -118,13 +118,110 @@ public:
 	///Destructor
 	~BuiltInAtom() {};
 
-	virtual bool isComparisonBuiltIn() const{
+	bool isVariableLessConstant() const{
+		if(binop==Binop::LESS && terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==TermType::NUMERIC_CONSTANT)
+			return true;
+		return false;
+	}
+	bool isConstantLessVariable() const{
+		if(binop==Binop::LESS && terms[1]->getType()==TermType::VARIABLE && terms[0]->getType()==TermType::NUMERIC_CONSTANT)
+			return true;
+		return false;
+	}
+	bool isVariableLessOrEqConstant() const{
+		if(binop==Binop::LESS_OR_EQ && terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==TermType::NUMERIC_CONSTANT)
+			return true;
+		return false;
+	}
+	bool isConstantLessOrEqVariable() const{
+		if(binop==Binop::LESS_OR_EQ && terms[1]->getType()==TermType::VARIABLE && terms[0]->getType()==TermType::NUMERIC_CONSTANT)
+			return true;
+		return false;
+	}
+	bool isVariableGreaterConstant() const{
+		if(binop==Binop::GREATER && terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==TermType::NUMERIC_CONSTANT)
+			return true;
+		return false;
+	}
+	bool isConstantGreaterVariable() const{
+		if(binop==Binop::GREATER && terms[1]->getType()==TermType::VARIABLE && terms[0]->getType()==TermType::NUMERIC_CONSTANT)
+			return true;
+		return false;
+	}
+	bool isVariableGreaterOrEqConstant() const{
+		if(binop==Binop::GREATER_OR_EQ && terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==TermType::NUMERIC_CONSTANT)
+			return true;
+		return false;
+	}
+	bool isConstantGreaterOrEqVariable() const{
+		if(binop==Binop::GREATER_OR_EQ && terms[1]->getType()==TermType::VARIABLE && terms[0]->getType()==TermType::NUMERIC_CONSTANT)
+			return true;
+		return false;
+	}
+	bool isVariableEqualConstantNotAssignment() const{
+		if(binop==Binop::EQUAL && !assignment && terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==TermType::NUMERIC_CONSTANT)
+			return true;
+		return false;
+	}
+	bool isConstantEqualVariableNotAssignment() const{
+		if(binop==Binop::EQUAL && !assignment && terms[1]->getType()==TermType::VARIABLE && terms[0]->getType()==TermType::NUMERIC_CONSTANT)
+			return true;
+		return false;
+	}
+	bool isVariableUnequalConstant() const{
+		if(binop==Binop::UNEQUAL && terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==TermType::NUMERIC_CONSTANT)
+			return true;
+		return false;
+	}
+	bool isConstantUnequalVariable() const{
+		if(binop==Binop::UNEQUAL && terms[1]->getType()==TermType::VARIABLE && terms[0]->getType()==TermType::NUMERIC_CONSTANT)
+			return true;
+		return false;
+	}
+	bool isVariableLessVariable() const{
+		if(binop==Binop::LESS && terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==TermType::VARIABLE)
+			return true;
+		return false;
+	}
+	bool isVariableLessOrEqVariable() const{
+		if(binop==Binop::LESS_OR_EQ && terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==TermType::VARIABLE)
+			return true;
+		return false;
+	}
+	bool isVariableGreaterVariable() const{
+		if(binop==Binop::GREATER && terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==TermType::VARIABLE)
+			return true;
+		return false;
+	}
+	bool isVariableGreaterOrEqVariable() const{
+		if(binop==Binop::GREATER_OR_EQ && terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==TermType::VARIABLE)
+			return true;
+		return false;
+	}
+	bool isVariableEqualVariableNotAssignment() const{
+		if(binop==Binop::EQUAL && !assignment && terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==TermType::VARIABLE)
+			return true;
+		return false;
+	}
+	bool isVariableUnequalVariable() const{
+		if(binop==Binop::UNEQUAL && terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==TermType::VARIABLE)
+			return true;
+		return false;
+	}
+
+	virtual bool isComparisonBuiltIn(Term*& variableTerm, Term*& constantTerm) const{
 //		if(terms[0]->getType()==VARIABLE && terms[1]->getType()==VARIABLE && !assignment)
 //			return true;
-		if(terms[0]->getType()==TermType::NUMERIC_CONSTANT && terms[1]->getType()==VARIABLE && !assignment)
+		if(terms[0]->getType()==TermType::NUMERIC_CONSTANT && terms[1]->getType()==VARIABLE && !assignment){
+			variableTerm=terms[1];
+			constantTerm=terms[0];
 			return true;
-		if(terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==NUMERIC_CONSTANT && !assignment)
+		}
+		if(terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==NUMERIC_CONSTANT && !assignment){
+			variableTerm=terms[0];
+			constantTerm=terms[1];
 			return true;
+		}
 		return false;
 	}
 

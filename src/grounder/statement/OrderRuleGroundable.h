@@ -109,8 +109,8 @@ public:
 	virtual void update(Atom* atomAdded, unsigned originalPosition){updateVariableSelectivity(atomAdded,originalPosition);};
 	virtual bool setAtomSearcher(Atom* atom, unsigned orginalPosition,unsigned newPosition);
 protected:
-	void computeVariablesDomains();
-	void updateVariableSelectivity(Atom* atomAdded, unsigned atomPos);
+	virtual void computeVariablesDomains();
+	virtual void updateVariableSelectivity(Atom* atomAdded, unsigned atomPos);
 	map_term<unsigned> variablesDomains;
 	map_term<double> variablesSelectivities;
 
@@ -243,6 +243,27 @@ public:
 	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition, int size=-1);
 };
 
+class CombinedCriterionComparisonsEstimation : public CombinedCriterion {
+public:
+	CombinedCriterionComparisonsEstimation(Rule* rule):CombinedCriterion(rule){}
+	CombinedCriterionComparisonsEstimation(Rule* rule,Priority p):CombinedCriterion(rule,p){}
+	virtual ~CombinedCriterionComparisonsEstimation(){}
+	virtual double assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition, int size=-1);
+protected:
+	void computeBuiltInsComparisonDependencies();
+	void updateVariableSelectivity(Atom* atomAdded, unsigned atomPos);
+
+	double computeSelectivityLessComparison(Atom* atom, unsigned termPos, Term* constant, Atom* builtIn);
+	double computeSelectivityGreaterComparison(Atom* atom, unsigned termPos, Term* constant, Atom* builtIn);
+	double computeSelectivityEqualConstantComparison(Atom* atom, unsigned termPos, Term* constant);
+	double computeSelectivityUnequalConstantComparison(Atom* atom, unsigned termPos, Term* constant);
+
+	double computeSelectivityEqualVariableComparison(Atom* atom1, Atom* atom2, unsigned termPos1, unsigned termPos2);
+	double basicFormulaLinearInterpolation(double numValues, double constant, double max, double min);
+	unordered_multimap<unsigned, unsigned> atomsBuiltInsComparisonsDependencies;
+	map_term<double> variablesComparisonsSelectivities;
+};
+
 /**
  * Return the instance of OrderRuleGroundable based on the Option parameter
  */
@@ -279,7 +300,7 @@ public:
 				return new CombinedCriterion5(rule);
 				break;
 			default:
-				return new CombinedCriterion(rule);
+				return new CombinedCriterionComparisonsEstimation(rule);
 				break;
 		}
 	}
