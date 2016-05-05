@@ -77,7 +77,9 @@ StatementAtomMapping::~StatementAtomMapping() {}
 void DependencyGraph::addInDependency(Rule* r) {
 	// Temporary set of predicates
 	unordered_set<index_object> head_predicateVisited;
-	unordered_set<index_object> body_predicateVisited;
+	unordered_set<index_object> body_predicateVisited_positive;
+	unordered_set<index_object> body_predicateVisited_negative;
+
 
 
 
@@ -108,8 +110,8 @@ void DependencyGraph::addInDependency(Rule* r) {
 
 						for(auto pred_body:(*body_it)->getPredicates()){
 							// Check if the predicate in the head has been visited
-							if(!body_predicateVisited.count(pred_body->getIndex())){
-								body_predicateVisited.insert(pred_body->getIndex());
+							if(!body_predicateVisited_positive.count(pred_body->getIndex())){
+								body_predicateVisited_positive.insert(pred_body->getIndex());
 								addEdge(pred_body->getIndex(), pred_head->getIndex(),1);
 								addPositiveEdge=true;
 							}
@@ -120,8 +122,8 @@ void DependencyGraph::addInDependency(Rule* r) {
 
 						for(auto pred_body:(*body_it)->getPredicates()){
 							// Check if the predicate in the head has been visited
-							if(!body_predicateVisited.count(pred_body->getIndex())){
-								body_predicateVisited.insert(pred_body->getIndex());
+							if(!body_predicateVisited_negative.count(pred_body->getIndex())){
+								body_predicateVisited_negative.insert(pred_body->getIndex());
 								if(!(*body_it)->isAggregateAtom())
 									addEdge(pred_body->getIndex(), pred_head->getIndex(),-1);
 								else{
@@ -142,7 +144,8 @@ void DependencyGraph::addInDependency(Rule* r) {
 					addEdge(pred_head->getIndex(), pred_head->getIndex(),1);
 			}
 			//Set all predicate in the body as unvisited, and then continue with the next atom
-			body_predicateVisited.clear();
+			body_predicateVisited_negative.clear();
+			body_predicateVisited_positive.clear();
 		}
 	}
 
@@ -249,7 +252,6 @@ void DependencyGraph::addEdge(index_object pred_body, index_object pred_head, in
 		index_j = predicateIndexGMap.size();
 		predicateIndexGMap.insert( { pred_head, index_j });
 	}
-
 	// If add an edge positive with the same predicate not add in stratified
 	// because is only for component, to add rule with not positive atom in body
 	if(!(index_i==index_j && weight>0)){
@@ -340,8 +342,9 @@ void DependencyGraph::calculateUnstratifiedPredicate(unordered_set<index_object>
 					}
 		}
 	}
+//	cerr<<"UNSTRAT PRED "<<endl;
 //		for(auto stratPred:predicateUnstratified){
-//			cout<<"UNDEF "<<stratPred<<endl;
+//			cerr<<"UNDEF "<<stratPred<<endl;
 //		}
 }
 
@@ -652,6 +655,7 @@ bool StatementDependency::magic() {
 	} else if(hasNegativeAtom)
 		cerr<< "Warning: The program contains negative literals.\nThe correctness of Magic Sets is only guaranteed for super-coherent programs."<<endl;
 
+
 	if (errmsg.empty()) {
 
 		bool isGroundQuery = true;
@@ -666,22 +670,11 @@ bool StatementDependency::magic() {
 
 		simplifyMagicRules();
 
-		if(Options::globalOptions()->isPrintRewrittenProgram()){
-			cerr<<"----------MAGIC PROGRAM----------"<<endl;
-			for(auto r:rules){
-				r->print(cerr);
-			}
-			for(auto r:constraints)
-				r->print(cerr);
-
-			cerr<<"----------    END      ----------"<<endl;
-		}
-
 	}
 	else{
 		cerr<<errmsg<<endl;
 		cerr<<"Warning: Magic Sets not applied."<<endl;
-		return false;
+		return true;
 	}
 	return true;
 }
@@ -762,6 +755,17 @@ void StatementDependency::createDependencyGraph(PredicateTable* pt) {
 	unordered_set<index_object> delete_pred;
 	pt->getEdbPredicate(delete_pred);
 	depGraph.deleteVertex(delete_pred);
+
+	if(Options::globalOptions()->isPrintRewrittenProgram()){
+		cerr<<"----------PROGRAM----------"<<endl;
+		for(auto r:rules){
+			r->print(cerr);
+		}
+		for(auto r:constraints)
+			r->print(cerr);
+
+		cerr<<"----------    END      ----------"<<endl;
+	}
 
 }
 
