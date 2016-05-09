@@ -63,6 +63,7 @@ protected:
 	vector<set_term> atomsVariables;
 	const Priority priorities;
 	list<unsigned> atomsToInsert;
+	list<unsigned> atomInserted;
 	/// A map in which for each positive classical literal are stored variables that must be bound
 	/// (for example variables appearing in arith terms)
 	unordered_map<unsigned,set_term> mapPositiveAtomsBoundVariables;
@@ -73,6 +74,7 @@ protected:
 
 	//Set of recursive predicates
 	unordered_set<index_object>* componentPredicateInHead;
+
 
 	void computeDictionaryIntersection(Atom* atom);
 	virtual bool setAtomSearcher(Atom* atom, unsigned orginalPosition,unsigned newPosition){return false;};
@@ -253,13 +255,22 @@ protected:
 	void computeBuiltInsComparisonDependencies();
 	void updateVariableSelectivity(Atom* atomAdded, unsigned atomPos);
 
-	double computeSelectivityLessComparison(Atom* atom, unsigned termPos, Term* constant, Atom* builtIn);
-	double computeSelectivityGreaterComparison(Atom* atom, unsigned termPos, Term* constant, Atom* builtIn);
-	double computeSelectivityEqualConstantComparison(Atom* atom, unsigned termPos, Term* constant);
-	double computeSelectivityUnequalConstantComparison(Atom* atom, unsigned termPos, Term* constant);
+	double basicFormulaLinearInterpolation(double numValues, double constant, double max, double min);
+
+	double computeSelectivityLessComparison(Atom* atom, unsigned termPos, int constant, Atom* builtIn);
+	double computeSelectivityGreaterComparison(Atom* atom, unsigned termPos, int constant, Atom* builtIn);
+	double computeSelectivityEqualConstantComparison(Atom* atom, unsigned termPos, int constant);
+	double computeSelectivityUnequalConstantComparison(Atom* atom, unsigned termPos, int constant);
+
+	double estimateIntersection(Predicate* p1, unsigned pos1, Predicate* p2, unsigned pos2, bool max);
+
+	void findTheBindingPredicate(Term* variable, pair<Predicate*,unsigned>& pair);
+	void findTheBindingPredicateBegin(Term* variable, pair<Predicate*,unsigned>& pair);
 
 	double computeSelectivityEqualVariableComparison(Atom* atom1, Atom* atom2, unsigned termPos1, unsigned termPos2);
-	double basicFormulaLinearInterpolation(double numValues, double constant, double max, double min);
+
+	double evaluateComparisonSelectivity(Atom* atom,unsigned originalPosition,unsigned i, Term* var, bool begin=false);
+
 	unordered_multimap<unsigned, unsigned> atomsBuiltInsComparisonsDependencies;
 	map_term<double> variablesComparisonsSelectivities;
 };

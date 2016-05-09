@@ -209,17 +209,17 @@ public:
 		return false;
 	}
 
-	virtual bool isComparisonBuiltIn(Term*& variableTerm, Term*& constantTerm) const{
-//		if(terms[0]->getType()==VARIABLE && terms[1]->getType()==VARIABLE && !assignment)
-//			return true;
+	virtual bool isComparisonBuiltIn() const{
 		if(terms[0]->getType()==TermType::NUMERIC_CONSTANT && terms[1]->getType()==VARIABLE && !assignment){
-			variableTerm=terms[1];
-			constantTerm=terms[0];
 			return true;
 		}
 		if(terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==NUMERIC_CONSTANT && !assignment){
-			variableTerm=terms[0];
-			constantTerm=terms[1];
+			return true;
+		}
+		if(terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==VARIABLE && !assignment){
+			return true;
+		}
+		if(terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==VARIABLE && !assignment){
 			return true;
 		}
 		return false;
