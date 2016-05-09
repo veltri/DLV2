@@ -764,6 +764,9 @@ void StatementDependency::createDependencyGraph(PredicateTable* pt) {
 		for(auto r:constraints)
 			r->print(cerr);
 
+		for(auto r:weak)
+			r->print(cerr);
+
 		cerr<<"----------    END      ----------"<<endl;
 	}
 

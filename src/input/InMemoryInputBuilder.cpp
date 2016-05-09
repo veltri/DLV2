@@ -427,6 +427,7 @@ void InMemoryInputBuilder::newTerm(char* value)
 
 void InMemoryInputBuilder::onTerm(char* value) {
 	if(foundASafetyError) return;
+	cout<<"VALUE "<<value<<endl;
 	newTerm(value);
 }
 
@@ -507,22 +508,34 @@ void InMemoryInputBuilder::onTermRange(char* lowerBound, char* upperBound) {
 
 void InMemoryInputBuilder::onArithmeticOperation(char arithOperator) {
 	if(foundASafetyError) return;
+	cout<<"OPERATOR "<<arithOperator<<endl;
 	auto second_last=--(--terms_parsered.end());
+	auto last=(--terms_parsered.end());
 	Term *arithTerm=nullptr;
 	if((*second_last)->getType()!=TermType::ARITH){
 		//First occurrence of arithmetic
 		arithTerm=new ArithTerm;
 		arithTerm->addTerm(*second_last);
-		arithTerm->addTerm(*(++second_last));
+		arithTerm->addTerm(*(last));
 		arithTerm->setOperator(ArithTerm::getOperatorName(arithOperator));
 		termTable->addTerm(arithTerm);
 
-	}else{
+	}else if((*last)->getType()!=TermType::ARITH){
 		ArithTerm *arithCasted=dynamic_cast<ArithTerm*>(*second_last);
 		arithTerm = new ArithTerm(*arithCasted);
 		arithTerm->addTerm(terms_parsered.back());
 		arithTerm->setOperator(ArithTerm::getOperatorName(arithOperator));
 		termTable->addTerm(arithTerm);
+	}else if((*last)->getType()==TermType::ARITH && (*second_last)->getType()==TermType::ARITH){
+		ArithTerm *arithCasted=dynamic_cast<ArithTerm*>(*second_last);
+		arithTerm =new ArithTerm(*arithCasted);
+		ArithTerm *lastArithCasted=dynamic_cast<ArithTerm*>(*last);
+		arithTerm->setOperator(ArithTerm::getOperatorName(arithOperator));
+		arithTerm->addTerm(lastArithCasted->getTerm(0));
+		for(unsigned i=1;i<lastArithCasted->getTermsSize();i++){
+			arithTerm->addTerm(lastArithCasted->getTerm(i));
+			arithTerm->setOperator(lastArithCasted->getOperator(i-1));
+		}
 	}
 
 	terms_parsered.pop_back();
