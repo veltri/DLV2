@@ -427,7 +427,6 @@ void InMemoryInputBuilder::newTerm(char* value)
 
 void InMemoryInputBuilder::onTerm(char* value) {
 	if(foundASafetyError) return;
-	cout<<"VALUE "<<value<<endl;
 	newTerm(value);
 }
 
@@ -508,9 +507,9 @@ void InMemoryInputBuilder::onTermRange(char* lowerBound, char* upperBound) {
 
 void InMemoryInputBuilder::onArithmeticOperation(char arithOperator) {
 	if(foundASafetyError) return;
-	cout<<"OPERATOR "<<arithOperator<<endl;
 	auto second_last=--(--terms_parsered.end());
 	auto last=(--terms_parsered.end());
+
 	Term *arithTerm=nullptr;
 	if((*second_last)->getType()!=TermType::ARITH){
 		//First occurrence of arithmetic
