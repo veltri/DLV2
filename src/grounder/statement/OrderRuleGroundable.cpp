@@ -134,6 +134,7 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchTy
 			computeDictionaryIntersection(atom);
 		variablesInTheBody.insert(atomsVariables[*bestAtom].begin(),atomsVariables[*bestAtom].end());
 		atomsToInsert.erase(bestAtom);
+		atomInserted.push_back(*bestAtom);
 	}
 
 	if(!Options::globalOptions()->isDisabledAnonymousFilter())
@@ -1140,32 +1141,31 @@ double CombinedCriterionComparisonsEstimation::basicFormulaLinearInterpolation(d
 	return (numValues-1)*(constant-min)/(max-min);
 }
 
-double CombinedCriterionComparisonsEstimation::computeSelectivityLessComparison(Atom* atom, unsigned termPos, Term* constant, Atom* builtIn){
+double CombinedCriterionComparisonsEstimation::computeSelectivityLessComparison(Atom* atom, unsigned termPos, int constant, Atom* builtIn){
 	PredicateInformation* pF=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateInformation();
-	if(pF->getMax(termPos)<constant->getConstantValue())
+	if(pF->getMax(termPos)<constant)
 		return pF->getSelectivity(termPos);
-	if(pF->getMin(termPos)>constant->getConstantValue())
+	if(pF->getMin(termPos)>=constant)
 		return 0;
-	return basicFormulaLinearInterpolation(pF->getSelectivity(termPos),constant->getConstantValue(),pF->getMax(termPos),pF->getMin(termPos));
+	return basicFormulaLinearInterpolation(pF->getSelectivity(termPos),constant,pF->getMax(termPos),pF->getMin(termPos));
 }
 
-double CombinedCriterionComparisonsEstimation::computeSelectivityGreaterComparison(Atom* atom, unsigned termPos, Term* constant, Atom* builtIn){
+double CombinedCriterionComparisonsEstimation::computeSelectivityGreaterComparison(Atom* atom, unsigned termPos, int constant, Atom* builtIn){
 	PredicateInformation* pF=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateInformation();
-//	return (1+double(pF->getSelectivity(termPos)-1)*(constant->getConstantValue()-pF->getMin(termPos))/(pF->getMax(termPos)-pF->getMin(termPos)));
-	if(pF->getMax(termPos)<constant->getConstantValue())
+	if(pF->getMax(termPos)<=constant)
 		return 0;
-	if(pF->getMin(termPos)>constant->getConstantValue())
+	if(pF->getMin(termPos)>constant)
 		return pF->getSelectivity(termPos);
-	double lessSelectivity=basicFormulaLinearInterpolation(pF->getSelectivity(termPos),constant->getConstantValue(),pF->getMax(termPos),pF->getMin(termPos));
+	double lessSelectivity=basicFormulaLinearInterpolation(pF->getSelectivity(termPos),constant,pF->getMax(termPos),pF->getMin(termPos));
 	return pF->getSelectivity(termPos)-lessSelectivity;
 }
 
-double CombinedCriterionComparisonsEstimation::computeSelectivityEqualConstantComparison(Atom* atom, unsigned termPos, Term* constant){
+double CombinedCriterionComparisonsEstimation::computeSelectivityEqualConstantComparison(Atom* atom, unsigned termPos, int constant){
 	PredicateInformation* pF=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateInformation();
 	return 1/pF->getSelectivity(termPos);
 }
 
-double CombinedCriterionComparisonsEstimation::computeSelectivityUnequalConstantComparison(Atom* atom, unsigned termPos, Term* constant){
+double CombinedCriterionComparisonsEstimation::computeSelectivityUnequalConstantComparison(Atom* atom, unsigned termPos, int constant){
 	PredicateInformation* pF=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateInformation();
 	return pF->getSelectivity(termPos)-computeSelectivityEqualConstantComparison(atom,termPos,constant);
 }
@@ -1176,10 +1176,134 @@ double CombinedCriterionComparisonsEstimation::computeSelectivityEqualVariableCo
 	return 1/max(pF1->getSelectivity(termPos1),pF2->getSelectivity(termPos2));
 }
 
+void CombinedCriterionComparisonsEstimation::findTheBindingPredicate(Term* variable, pair<Predicate*,unsigned>& pair){
+	for(unsigned atom_pos:atomInserted){
+		if(atomsVariables[atom_pos].count(variable)){
+			Atom* atom=rule->getAtomInBody(atom_pos);
+			for(unsigned i=0;i<atom->getTermsSize();++i){
+				Term* t=atom->getTerm(i);
+				if(t->getType()==VARIABLE && t->getIndex()==variable->getIndex()){
+					pair.first=atom->getPredicate();
+					pair.second=i;
+				}
+			}
+		}
+	}
+	pair.first=0;
+	pair.second=0;
+}
+
+double CombinedCriterionComparisonsEstimation::estimateIntersection(Predicate* p1, unsigned pos1, Predicate* p2, unsigned pos2, bool max){
+//	PredicateInformation* pF1=predicateExtTable->getPredicateExt(p1)->getPredicateInformation();
+	PredicateInformation* pF2=predicateExtTable->getPredicateExt(p2)->getPredicateInformation();
+//	return basicFormulaLinearInterpolation(pF1->getSelectivity(pos1),pF2->getMax(pos2),pF1->getMax(pos1),pF1->getMin(pos1));
+	if(max)
+		return pF2->getMax(pos2);
+	return pF2->getMin(pos2);
+}
+
+double CombinedCriterionComparisonsEstimation::evaluateComparisonSelectivity(Atom* atom, unsigned originalPosition, unsigned i, Term* var, bool begin){
+		double selectivityComparison=-1;
+		auto pairIt=atomsBuiltInsComparisonsDependencies.equal_range(originalPosition);
+		for(auto it=pairIt.first;it!=pairIt.second;++it){
+			if(!atomsVariables[it->second].count(var)) continue;
+			BuiltInAtom* builtIn=(dynamic_cast< BuiltInAtom* >(rule->getAtomInBody(it->second)));
+//			builtIn->print(cerr);cerr<<endl;
+			int value=0;
+			pair<Predicate*, unsigned> bindingPredicate={0,0};
+			bool evaluableFirstTerm=false;
+			bool evaluableSecondTerm=false;
+			if(builtIn->getTerm(0)->getType()==VARIABLE && builtIn->getTerm(1)->getType()==VARIABLE){
+				if(begin){
+					unsigned atom_pos=0;
+					for(auto it=rule->getBeginBody();it!=rule->getEndBody()&&atom_pos<originalPosition;++it,++atom_pos){
+						if(atomsVariables[atom_pos].count(builtIn->getTerm(0))){
+							Atom* atom=rule->getAtomInBody(atom_pos);
+							for(unsigned i=0;i<atom->getTermsSize();++i){
+								Term* t=atom->getTerm(i);
+								if(t->getType()==VARIABLE && t->getIndex()==builtIn->getTerm(0)->getIndex()){
+									bindingPredicate.first=atom->getPredicate();
+									bindingPredicate.second=i;
+									evaluableFirstTerm=true;
+									break;
+								}
+							}
+						}
+						else if(atomsVariables[atom_pos].count(builtIn->getTerm(1))){
+							Atom* atom=rule->getAtomInBody(atom_pos);
+							for(unsigned i=0;i<atom->getTermsSize();++i){
+								Term* t=atom->getTerm(i);
+								if(t->getType()==VARIABLE && t->getIndex()==builtIn->getTerm(1)->getIndex()){
+									bindingPredicate.first=atom->getPredicate();
+									bindingPredicate.second=i;
+									evaluableSecondTerm=true;
+									break;
+								}
+							}
+						}
+					}
+				}
+				else{
+					if(variablesInTheBody.count(builtIn->getTerm(0))){
+						findTheBindingPredicate(builtIn->getTerm(0),bindingPredicate);
+						evaluableFirstTerm=true;
+					}
+					else if(variablesInTheBody.count(builtIn->getTerm(1))){
+						findTheBindingPredicate(builtIn->getTerm(1),bindingPredicate);
+						evaluableSecondTerm=true;
+					}
+				}
+			}
+			else if(builtIn->getTerm(0)->getType()==VARIABLE && builtIn->getTerm(1)->getType()==NUMERIC_CONSTANT){
+				value=builtIn->getTerm(1)->getConstantValue();
+			}
+			else if(builtIn->getTerm(1)->getType()==VARIABLE && builtIn->getTerm(0)->getType()==NUMERIC_CONSTANT){
+				value=builtIn->getTerm(0)->getConstantValue();
+			}
+			if(builtIn->isVariableLessConstant() || builtIn->isConstantGreaterVariable()
+					|| (builtIn->isVariableLessVariable() && evaluableSecondTerm)  || (builtIn->isVariableGreaterVariable() && evaluableFirstTerm) ){
+				if(bindingPredicate.first!=0 && (evaluableFirstTerm || evaluableSecondTerm))
+					value=estimateIntersection(atom->getPredicate(),i,bindingPredicate.first,bindingPredicate.second,true);
+				selectivityComparison=computeSelectivityLessComparison(atom,i,value,builtIn);
+			}
+			else if(builtIn->isVariableLessOrEqConstant() || builtIn->isConstantGreaterOrEqVariable()
+					|| (builtIn->isVariableLessOrEqVariable() && evaluableSecondTerm)  || (builtIn->isVariableGreaterOrEqVariable() && evaluableFirstTerm) ){
+				if(bindingPredicate.first!=0 && (evaluableFirstTerm || evaluableSecondTerm))
+					value=estimateIntersection(atom->getPredicate(),i,bindingPredicate.first,bindingPredicate.second,true);
+				selectivityComparison=computeSelectivityLessComparison(atom,i,value,builtIn);
+			}
+			else if(builtIn->isVariableGreaterConstant() || builtIn->isConstantLessVariable()
+					|| (builtIn->isVariableGreaterVariable() && evaluableSecondTerm)  || (builtIn->isVariableLessVariable() && evaluableFirstTerm) ){
+				if(bindingPredicate.first!=0 && (evaluableFirstTerm || evaluableSecondTerm))
+					value=estimateIntersection(bindingPredicate.first,bindingPredicate.second,atom->getPredicate(),i,false);
+				selectivityComparison=computeSelectivityGreaterComparison(atom,i,value,builtIn);
+			}
+			else if(builtIn->isVariableGreaterOrEqConstant() || builtIn->isConstantLessOrEqVariable()
+					|| (builtIn->isVariableGreaterOrEqVariable() && evaluableSecondTerm)  || (builtIn->isVariableLessOrEqVariable() && evaluableFirstTerm) ){
+				if(bindingPredicate.first!=0 && (evaluableFirstTerm || evaluableSecondTerm))
+					value=estimateIntersection(bindingPredicate.first,bindingPredicate.second,atom->getPredicate(),i,false);
+				selectivityComparison=computeSelectivityGreaterComparison(atom,i,value,builtIn);
+			}
+			else if(builtIn->isVariableEqualConstantNotAssignment() || builtIn->isConstantEqualVariableNotAssignment()
+					|| (builtIn->isVariableEqualVariableNotAssignment() && (evaluableSecondTerm || evaluableFirstTerm)))
+				selectivityComparison=computeSelectivityEqualConstantComparison(atom,i,value);
+			else if(builtIn->isVariableUnequalConstant() || builtIn->isConstantUnequalVariable()
+					|| (builtIn->isVariableUnequalVariable() && (evaluableSecondTerm || evaluableFirstTerm)))
+				selectivityComparison=computeSelectivityUnequalConstantComparison(atom,i,value);
+//					else if(builtIn->isVariableEqualVariableNotAssignment()){
+//						selectivityComparison=computeSelectivityEqualVariableComparison(atom,i);
+//						break;
+//					}
+		}
+//		cerr<<"Sel Comp: "<<selectivityComparison<<endl;
+		return selectivityComparison;
+}
+
+
 double CombinedCriterionComparisonsEstimation::assignWeightPositiveClassicalLit(Atom* atom, unsigned originalPosition, int size){
 	if(variablesDomains.empty()){
-		computeVariablesDomains();
 		computeBuiltInsComparisonDependencies();
+		computeVariablesDomains();
 	}
 
 	if(size==-1)
@@ -1190,49 +1314,22 @@ double CombinedCriterionComparisonsEstimation::assignWeightPositiveClassicalLit(
 	long double prodSelectivity_b=1;
 	long unsigned prodDomains_b=1;
 	set_term variablesFound;
+	double selectivity_product=1;
 	for(unsigned i=0;i<atom->getTermsSize();++i){
 		Term* var=atom->getTerm(i);
 		if(var->getType()==TermType::VARIABLE){
 			if(!variablesFound.insert(var).second) continue;
+			double selectivityComparison=evaluateComparisonSelectivity(atom,originalPosition,i,var);
+			if(selectivityComparison>=0)
+				selectivity_product*=selectivityComparison;
+			else
+				selectivity_product*=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateInformation()->getSelectivity(i);
 			if(variablesInTheBody.count(var)){
-				double selectivityComparison=-1;
-				auto pairIt=atomsBuiltInsComparisonsDependencies.equal_range(originalPosition);
-				for(auto it=pairIt.first;it!=pairIt.second;++it){
-					BuiltInAtom* builtIn=(dynamic_cast< BuiltInAtom* >(rule->getAtomInBody(it->second)));
-					if(builtIn->isVariableLessConstant())
-						selectivityComparison=computeSelectivityLessComparison(atom,i,builtIn->getTerm(1),builtIn);
-					else if(builtIn->isConstantGreaterVariable())
-						selectivityComparison=computeSelectivityLessComparison(atom,i,builtIn->getTerm(0),builtIn);
-					else if(builtIn->isVariableLessOrEqConstant())
-						selectivityComparison=computeSelectivityLessComparison(atom,i,builtIn->getTerm(1),builtIn);
-					else if(builtIn->isConstantGreaterOrEqVariable())
-						selectivityComparison=computeSelectivityLessComparison(atom,i,builtIn->getTerm(0),builtIn);
-					else if(builtIn->isVariableGreaterConstant())
-						selectivityComparison=computeSelectivityGreaterComparison(atom,i,builtIn->getTerm(1),builtIn);
-					else if(builtIn->isConstantLessVariable())
-						selectivityComparison=computeSelectivityGreaterComparison(atom,i,builtIn->getTerm(0),builtIn);
-					else if(builtIn->isVariableGreaterOrEqConstant())
-						selectivityComparison=computeSelectivityGreaterComparison(atom,i,builtIn->getTerm(1),builtIn);
-					else if(builtIn->isConstantLessOrEqVariable())
-						selectivityComparison=computeSelectivityGreaterComparison(atom,i,builtIn->getTerm(0),builtIn);
-					else if(builtIn->isVariableEqualConstantNotAssignment())
-						selectivityComparison=computeSelectivityEqualConstantComparison(atom,i,builtIn->getTerm(1));
-					else if(builtIn->isConstantEqualVariableNotAssignment())
-						selectivityComparison=computeSelectivityEqualConstantComparison(atom,i,builtIn->getTerm(0));
-					else if(builtIn->isVariableUnequalConstant())
-						selectivityComparison=computeSelectivityUnequalConstantComparison(atom,i,builtIn->getTerm(1));
-					else if(builtIn->isConstantUnequalVariable())
-						selectivityComparison=computeSelectivityUnequalConstantComparison(atom,i,builtIn->getTerm(0));
-//					else if(builtIn->isVariableEqualVariableNotAssignment()){
-//						selectivityComparison=computeSelectivityEqualVariableComparison(atom,i);
-//						break;
-//					}
-				}
 				prodSelectivity_a*=variablesSelectivities[var]/variablesDomains[var];
 				prodDomains_a*=variablesDomains[var];
 				if(selectivityComparison>=0){
 					variablesComparisonsSelectivities[var]=selectivityComparison;
-					prodSelectivity_b=selectivityComparison;
+					prodSelectivity_b*=selectivityComparison;
 				}
 				else
 					prodSelectivity_b*=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateInformation()->getSelectivity(i);
@@ -1253,9 +1350,9 @@ double CombinedCriterionComparisonsEstimation::assignWeightPositiveClassicalLit(
 	double sel_a=size*prodSelectivity_a/prodDomains_a;
 	double sel_b=prodSelectivity_b/prodDomains_b;
 
-//	atom->print();cout<<" ";
-//	cout<<sel_a<<" "<<sel_b<<" "<<endl;
-	return sel_a*sel_b;
+//	atom->print(cerr);cerr<<endl;
+//	cerr<<sel_a*sel_b*selectivity_product<<endl;
+	return sel_a*sel_b*selectivity_product;
 }
 
 void CombinedCriterionComparisonsEstimation::computeBuiltInsComparisonDependencies() {
@@ -1270,8 +1367,7 @@ void CombinedCriterionComparisonsEstimation::computeBuiltInsComparisonDependenci
 					for(auto it2=rule->getBeginBody();it2!=rule->getEndBody();++it2,++j){
 						Atom* atom2=*it2;
 						if(atom2->isBuiltIn()){
-							Term* variableTerm,*constantTerm;
-							if(atom2->isComparisonBuiltIn(variableTerm,constantTerm) && variableTerm->getIndex()==term->getIndex()){
+							if(atom2->isComparisonBuiltIn() && (atom2->getTerm(0)->getIndex()==term->getIndex() || atom2->getTerm(1)->getIndex()==term->getIndex())){
 								atomsBuiltInsComparisonsDependencies.insert({k,j});
 							}
 						}
@@ -1280,6 +1376,14 @@ void CombinedCriterionComparisonsEstimation::computeBuiltInsComparisonDependenci
 			}
 		}
 	}
+
+//	for(auto e:atomsBuiltInsComparisonsDependencies){
+//		rule->getAtomInBody(e.first)->print(cerr);
+//		cerr<<" ";
+//		rule->getAtomInBody(e.second)->print(cerr);
+//		cerr<<endl;
+//	}
+
 }
 
 void CombinedCriterionComparisonsEstimation::updateVariableSelectivity(Atom* atomAdded, unsigned atomPos) {
