@@ -547,14 +547,10 @@ Term* AggregateAtom::changeInStandardFormatGuard(Term* guard) {
 		TermTable::getInstance()->addTerm(t);
 	}
 	if (guard->getType() == TermType::VARIABLE) {
-		vector<Operator> operators;
-		operators.push_back(Operator::PLUS);
-		vector<Term*> terms;
-		terms.push_back(guard);
 		Term* one_term = new NumericConstantTerm(false, 1);
 		TermTable::getInstance()->addTerm(one_term);
-		terms.push_back(one_term);
-		t = new ArithTerm(false, operators, terms);
+
+		t = new ArithTerm(false, guard,one_term,Operator::PLUS);
 		TermTable::getInstance()->addTerm(t);
 	}
 	return t;

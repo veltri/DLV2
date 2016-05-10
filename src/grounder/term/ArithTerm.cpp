@@ -10,67 +10,105 @@
 
 #include "../hash/HashString.h"
 #include "../hash/HashVecInt.h"
+#include <stack>
+#include "../../util/VecStack.h"
 
 namespace DLV2{
 
 namespace grounder{
 
-Term* ArithTerm::calculate() {
-	int result = terms[0]->getConstantValue();
-	for (unsigned int i = 1; i < terms.size(); i++) {
-		if(terms[i]->getType()==NUMERIC_CONSTANT){
-			unsigned int value=terms[i]->getConstantValue();
-			if (operators[i-1] == Operator::PLUS)
-				result += value;
-			else if (operators[i-1] == Operator::MINUS)
-				result -= value;
-			else if (operators[i-1] == Operator::DIV){
+Term* ArithTerm::calculate(vector<Term*>& terms) {
+	VecStack<int> s;
+	s.reserve(operators.size());
+	for(auto op:operators){
+		if(!op.second){
+			if(terms[op.first]->getType()!=NUMERIC_CONSTANT)cerr<<"WARNING: Arithmetic term with non numeric constant "<<endl;
+			int constant=terms[op.first]->getConstantValue();
+			s.push(constant);
+		}else{
+			int c1=s.pop();
+			int c2=s.pop();
+			Operator operat=unsignedToOperator(op.first);
+			int result=0;
+			if (operat == Operator::PLUS)
+				result = c2+c1;
+			else if (operat == Operator::MINUS)
+				result =c2-c1;
+			else if (operat == Operator::DIV){
 				//FIXME For not stop the program division by 0 is 0
-				if(value != 0)
-					result /= value;
+				if(c1 != 0)
+					result = c2/c1;
 				else
 					result = 0;
-			}else if (operators[i-1] == Operator::TIMES)
-				result *= value;
+			}else if (operat == Operator::TIMES)
+				result = c2*c1;
+			s.push(result);
 		}
 	}
-
+	int result = s.pop();
 	Term *constantTerm=new NumericConstantTerm(result<0,result);
-	TermTable::getInstance()->addTerm(constantTerm);
 	return constantTerm;
+
 }
 
+
 LINE ArithTerm::transformToLineEq(){
-	LINE A=terms[0]->transformToLineEq();
-	for (unsigned int i = 1; i < terms.size(); i++) {
-			if (operators[i-1] == Operator::PLUS)
-				A=A+terms[i]->transformToLineEq();
-			else if (operators[i-1] == Operator::MINUS)
-				A=A-terms[i]->transformToLineEq();
-			else if (operators[i-1] == Operator::DIV)
-				A=A/terms[i]->transformToLineEq();
-			else if (operators[i-1] == Operator::TIMES)
-				A=A*terms[i]->transformToLineEq();
+	stack<LINE> s;
+	for(auto op:operators){
+		if(!op.second){
+			s.push(terms[op.first]->transformToLineEq());
+		}else{
+			LINE c1=s.top();
+			s.pop();
+			LINE c2=s.top();
+			s.pop();
+			Operator operat=unsignedToOperator(op.first);
+			LINE result;
+			if (operat == Operator::PLUS)
+				result = c2+c1;
+			else if (operat == Operator::MINUS)
+				result =c2-c1;
+			else if (operat == Operator::DIV){
+				//FIXME For not stop the program division by 0 is 0
+				result = c2/c1;
+			}else if (operat == Operator::TIMES)
+				result = c2*c1;
+			s.push(result);
 		}
-	return A;
+	}
+	return s.top();
 }
 
 size_t ArithTerm::hash() {
-	vector<size_t> hashVec(terms.size()+operators.size());
+	vector<size_t> hashVec(terms.size()+(operators.size()*2));
 	hashVec[0]=terms[0]->getIndex();
-	for(unsigned int i=0;i<operators.size();i++){
-		hashVec[i*2+1]=operators[i];
-		hashVec[i*2+2]=terms[i+1]->getIndex();
+	for(auto o:operators){
+		if(!o.second)
+			hashVec.push_back(terms[o.first]->getIndex());
+		else
+			hashVec.push_back(o.first);
 	}
 	return HashVecInt::getHashVecInt()->computeHashSize_T(hashVec);
 }
 
 void ArithTerm::print(ostream& stream) {
-	for (unsigned int i = 0; i < terms.size() - 1; i++) {
-		terms[i]->print(stream);
-		stream  << getNameOperator(operators[i]);
+	stack<string> expression;
+	for(auto op:operators){
+		if(!op.second){
+			stringstream ss;
+			terms[op.first]->print(ss);
+			expression.push(ss.str());
+		}else{
+			string s1=expression.top();
+			expression.pop();
+			string s2=expression.top();
+			expression.pop();
+			Operator operat=unsignedToOperator(op.first);
+			expression.push("("+s2+getNameOperator(operat)+s1+")");
+		}
 	}
-	terms[terms.size() - 1]->print(stream);
+
+	stream<<expression.top();
 }
 
 string ArithTerm::getNameOperator(Operator op) {
@@ -102,7 +140,7 @@ Operator ArithTerm::getOperatorName(char op) {
 	if(operators.size()!=term.getSizeOperator())return false;
 	if(terms.size()!=term.getTermsSize())return false;
 	for(unsigned int i=0;i<operators.size();i++)
-		if(operators[i]!=term.getOperator(i))
+		if(operators[i].first!=term.getOperator(i).first || operators[i].second!=term.getOperator(i).second)
 			return false;
 	for(unsigned int i=0;i<terms.size();i++)
 		if(terms[i]->getIndex()!=term.getTerm(i)->getIndex())
@@ -137,27 +175,46 @@ int ArithTerm::substituteAndCalculate(var_assignment& substritutionTerm){
 		subTerms[i]=terms[i]->substitute(substritutionTerm);
 	}
 
-	int result = subTerms[0]->getConstantValue();
-	for (unsigned int i = 1; i < subTerms.size(); i++) {
-		if(subTerms[i]->getType()==NUMERIC_CONSTANT){
-			unsigned int value=subTerms[i]->getConstantValue();
-			if (operators[i-1] == Operator::PLUS)
-				result += value;
-			else if (operators[i-1] == Operator::MINUS)
-				result -= value;
-			else if (operators[i-1] == Operator::DIV){
-				//FIXME For not stop the program division by 0 is 0
-				if(value != 0)
-					result /= value;
-				else
-					result = 0;
-			}else if (operators[i-1] == Operator::TIMES)
-				result *= value;
-		}
-	}
+	int result = calculate(subTerms)->getConstantValue();
 	return result;
 }
 
+void ArithTerm::addArithTerm(Term* arith,Term* term,Operator op){
+	if(term->getType()!=ARITH){
+		arith->addTerm(term);
+		arith->addOperator(op);
+		return;
+	}
+	for(unsigned i=0;i<term->getSizeOperator();i++){
+		auto oop=term->getOperator(i);
+		if(!oop.second)
+			arith->addTerm(term->getTerm(oop.first));
+		else
+			arith->addOperator(unsignedToOperator(oop.first));
+	}
+	arith->addOperator(op);
+
+}
+
+Operator ArithTerm::unsignedToOperator(unsigned op){
+	switch (op) {
+		case 0:
+			return PLUS;
+			break;
+		case 1:
+			return MINUS;
+			break;
+		case 2:
+			return DIV;
+			break;
+		case 3:
+			return TIMES;
+			break;
+		default:
+			return PLUS;
+			break;
+	}
+}
 
 };
 

@@ -37,7 +37,8 @@ bool queryFound=false;
 
 
 %type <integer> terms 
-%type <single_char> arithop
+%type <single_char> arithop1
+%type <single_char> arithop2
 %type <string> identifier
 
 %token <string> SYMBOLIC_CONSTANT NUMBER VARIABLE STRING DIRECTIVE_NAME DIRECTIVE_VALUE
@@ -360,12 +361,16 @@ binop
     | rightwardop
     ;       
          
-arithop   
+    
+arithop1   
     : PLUS  { $$ = '+'; } 
     | DASH  { $$ = '-'; }      
-    | TIMES { $$ = '*'; }
+    ;   
+   
+arithop2   
+    : TIMES { $$ = '*'; }
     | SLASH { $$ = '/'; }
-    ;      
+    ;   
     
 term_ 
     : identifier 
@@ -405,12 +410,20 @@ term_
     ;
 
 term
-    : term_ {}
-    | term arithop term_ 
+    : factor
+    | term arithop1 factor 
         { 
             director.getBuilder()->onArithmeticOperation($2); 
         }
     ;        
+
+factor
+	: term_ {}
+	| factor arithop2 factor
+	    { 
+            director.getBuilder()->onArithmeticOperation($2); 
+        }
+ 	;
 
 basic_term : ground_term {}
        | variable_term {}

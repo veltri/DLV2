@@ -472,18 +472,12 @@ void InMemoryInputBuilder::onTermDash() {
 		if(oldTerm->getType()==NUMERIC_CONSTANT)
 			newTerm=new NumericConstantTerm(false,oldTerm->getConstantValue()*(-1));
 		else if(oldTerm->getType()==ARITH){
-			vector<Operator> op;
-			for(unsigned i=0;i<oldTerm->getSizeOperator();i++)op.push_back(oldTerm->getOperator(i));
-			op.push_back(TIMES);
-
-			vector<Term*> terms;
-			for(unsigned i=0;i<oldTerm->getTermsSize();i++)terms.push_back(oldTerm->getTerm(i));
-			terms.push_back(termTable->term_minus_one);
-			newTerm = new ArithTerm(false,op,terms);
+			ArithTerm *arithCasted=dynamic_cast<ArithTerm*>(oldTerm);
+			newTerm = new ArithTerm(*arithCasted);
+			newTerm-> addTerm(termTable->term_minus_one);
+			newTerm->addOperator(Operator::TIMES);
 		}else{
-			vector<Operator> op(1,TIMES);
-			vector<Term*> terms={oldTerm,termTable->term_minus_one};
-			newTerm = new ArithTerm(false,op,terms);
+			newTerm = new ArithTerm(false,oldTerm,termTable->term_minus_one,TIMES);
 		}
 		TermTable::getInstance()->addTerm(newTerm);
 		terms_parsered.pop_back();
@@ -507,39 +501,32 @@ void InMemoryInputBuilder::onTermRange(char* lowerBound, char* upperBound) {
 
 void InMemoryInputBuilder::onArithmeticOperation(char arithOperator) {
 	if(foundASafetyError) return;
-	auto second_last=--(--terms_parsered.end());
-	auto last=(--terms_parsered.end());
-
+	auto last=terms_parsered[terms_parsered.size()-1];
+	auto secondLast=terms_parsered[terms_parsered.size()-2];
 	Term *arithTerm=nullptr;
-	if((*second_last)->getType()!=TermType::ARITH){
+	if(secondLast->getType()!=TermType::ARITH && last->getType()!=TermType::ARITH){
 		//First occurrence of arithmetic
 		arithTerm=new ArithTerm;
-		arithTerm->addTerm(*second_last);
-		arithTerm->addTerm(*(last));
-		arithTerm->setOperator(ArithTerm::getOperatorName(arithOperator));
-		termTable->addTerm(arithTerm);
+		arithTerm->addTerm(secondLast);
+		arithTerm->addTerm(last);
 
-	}else if((*last)->getType()!=TermType::ARITH){
-		ArithTerm *arithCasted=dynamic_cast<ArithTerm*>(*second_last);
-		arithTerm = new ArithTerm(*arithCasted);
-		arithTerm->addTerm(terms_parsered.back());
-		arithTerm->setOperator(ArithTerm::getOperatorName(arithOperator));
-		termTable->addTerm(arithTerm);
-	}else if((*last)->getType()==TermType::ARITH && (*second_last)->getType()==TermType::ARITH){
-		ArithTerm *arithCasted=dynamic_cast<ArithTerm*>(*second_last);
-		arithTerm =new ArithTerm(*arithCasted);
-		ArithTerm *lastArithCasted=dynamic_cast<ArithTerm*>(*last);
-		arithTerm->setOperator(ArithTerm::getOperatorName(arithOperator));
-		arithTerm->addTerm(lastArithCasted->getTerm(0));
-		for(unsigned i=1;i<lastArithCasted->getTermsSize();i++){
-			arithTerm->addTerm(lastArithCasted->getTerm(i));
-			arithTerm->setOperator(lastArithCasted->getOperator(i-1));
+		arithTerm->addOperator(ArithTerm::getOperatorName(arithOperator));
+	}else{
+		if(secondLast->getType()==TermType::ARITH){
+			ArithTerm * arithCasted=dynamic_cast<ArithTerm*>(secondLast);
+			arithTerm = new ArithTerm(*arithCasted);
+		}else{
+			arithTerm=new ArithTerm;
+			arithTerm->addTerm(secondLast);
 		}
+		ArithTerm::addArithTerm(arithTerm,last,ArithTerm::getOperatorName(arithOperator));
 	}
+	termTable->addTerm(arithTerm);
 
 	terms_parsered.pop_back();
 	terms_parsered.pop_back();
 	terms_parsered.push_back(arithTerm);
+
 }
 
 void InMemoryInputBuilder::onWeightAtLevels(int nWeight, int nLevel,

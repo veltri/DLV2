@@ -33,6 +33,8 @@ enum Operator {
 	PLUS=0, MINUS=1, DIV=2, TIMES=3
 };
 
+using OperandOperator = pair<unsigned,bool>;
+
 enum TermType{
 	NUMERIC_CONSTANT=0,STRING_CONSTANT,SYMBOLIC_CONSTANT,VARIABLE,ARITH,FUNCTION,ANONYMOUS
 };
@@ -84,7 +86,9 @@ public:
 	///Return the size of the operators in arith term
 	virtual unsigned int getSizeOperator()const{return 0;}
 	///Return the operator with index i
-	virtual Operator getOperator(int i)const{return Operator::PLUS;}
+	virtual OperandOperator getOperator(int i)const{return {0,0};}
+	///Return true if the arith term is minus one
+	virtual bool checkArithIsMinusOne(){return false;};
 
 	///Return the type of term
 	virtual TermType getType() const {return TermType::NUMERIC_CONSTANT;};
@@ -142,7 +146,7 @@ public:
 	///Remove last index of a term
 	virtual void popTerm(){};
 	/// Set operator for arithmetic Term
-	virtual void setOperator(Operator op){};
+	virtual void addOperator(Operator op){};
 	/// Calculate the value for arithmetic term and return the ID of the result term
 	virtual Term* calculate(){return this;};
 	/// If the term is variable insert the variables in the set
