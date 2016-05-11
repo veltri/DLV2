@@ -66,9 +66,10 @@ public:
 	};
 
 	///Calculate the value of the expression with the value in the terms vector
-	Term* calculate(vector<Term*>& vt);
+	int calculateValue(vector<Term*>& vt);
 	Term* calculate(){
-		Term *constantTerm=calculate(terms);
+		int result=calculateValue(terms);
+		Term *constantTerm=new NumericConstantTerm( result<0,result);
 		TermTable::getInstance()->addTerm(constantTerm);
 		return constantTerm;
 	}

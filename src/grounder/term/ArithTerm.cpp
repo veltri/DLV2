@@ -17,7 +17,7 @@ namespace DLV2{
 
 namespace grounder{
 
-Term* ArithTerm::calculate(vector<Term*>& terms) {
+int ArithTerm::calculateValue(vector<Term*>& terms) {
 	VecStack<int> s;
 	s.reserve(operators.size());
 	for(auto op:operators){
@@ -46,9 +46,7 @@ Term* ArithTerm::calculate(vector<Term*>& terms) {
 		}
 	}
 	int result = s.pop();
-	Term *constantTerm=new NumericConstantTerm(result<0,result);
-	return constantTerm;
-
+	return result;
 }
 
 
@@ -175,8 +173,7 @@ int ArithTerm::substituteAndCalculate(var_assignment& substritutionTerm){
 		subTerms[i]=terms[i]->substitute(substritutionTerm);
 	}
 
-	int result = calculate(subTerms)->getConstantValue();
-	return result;
+	return calculateValue(subTerms);
 }
 
 void ArithTerm::addArithTerm(Term* arith,Term* term,Operator op){
