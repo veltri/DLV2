@@ -1321,9 +1321,7 @@ double CombinedCriterionComparisonsEstimation::assignWeightPositiveClassicalLit(
 			if(!variablesFound.insert(var).second) continue;
 			double selectivityComparison=evaluateComparisonSelectivity(atom,originalPosition,i,var);
 			if(selectivityComparison>=0)
-				selectivity_product*=selectivityComparison;
-			else
-				selectivity_product*=predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateInformation()->getSelectivity(i);
+				selectivity_product*=(selectivityComparison/predicateExtTable->getPredicateExt(atom->getPredicate())->getPredicateInformation()->getSelectivity(i));
 			if(variablesInTheBody.count(var)){
 				prodSelectivity_a*=variablesSelectivities[var]/variablesDomains[var];
 				prodDomains_a*=variablesDomains[var];
