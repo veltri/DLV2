@@ -133,8 +133,8 @@ vector<unsigned> OrderRuleGroundable::order(vector<vector<pair<unsigned,SearchTy
 		if(Options::globalOptions()->isEnabledDictionaryIntersection() && atom->isClassicalLiteral() && !atom->isNegative())
 			computeDictionaryIntersection(atom);
 		variablesInTheBody.insert(atomsVariables[*bestAtom].begin(),atomsVariables[*bestAtom].end());
-		atomsToInsert.erase(bestAtom);
 		atomInserted.push_back(*bestAtom);
+		atomsToInsert.erase(bestAtom);
 	}
 
 	if(!Options::globalOptions()->isDisabledAnonymousFilter())
