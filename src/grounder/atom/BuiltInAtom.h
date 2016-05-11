@@ -88,15 +88,12 @@ public:
 	virtual bool isAssignment(){return assignment;};
 	virtual void setAssignment(bool assignment){this->assignment=assignment;};
 
-	bool checkArithIsMinusOne(Term* term){
-		return term->checkArithIsMinusOne();
-	}
 
 	virtual bool plusMinusBuiltin(){
 		//Check if is X=Y*-1
-		if(terms[0]->getType()==ARITH && terms[1]->getType()!=ARITH && checkArithIsMinusOne(terms[0]))
+		if(terms[0]->getType()==ARITH && terms[1]->getType()!=ARITH && terms[0]->checkArithIsMinusOne())
 			return true;
-		else if(terms[1]->getType()==ARITH && terms[0]->getType()!=ARITH && checkArithIsMinusOne(terms[1]))
+		else if(terms[1]->getType()==ARITH && terms[0]->getType()!=ARITH && terms[1]->checkArithIsMinusOne())
 			return true;
 
 
