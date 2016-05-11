@@ -141,7 +141,7 @@ Operator ArithTerm::getOperatorName(char op) {
 		if(operators[i].first!=term.getOperator(i).first || operators[i].second!=term.getOperator(i).second)
 			return false;
 	for(unsigned int i=0;i<terms.size();i++)
-		if(terms[i]->getIndex()!=term.getTerm(i)->getIndex())
+		if(terms[i]!=term.getTerm(i))
 			return false;
 
 	return true;
@@ -154,11 +154,19 @@ Term* ArithTerm::substitute(var_assignment& substritutionTerm) {
 
 	TermTable *termTable=TermTable::getInstance();
 	vector<Term*> subTerms(terms.size());
+	bool findVariable=false;
 	for(unsigned int i=0;i<terms.size();i++){
 		Term* sub_term=terms[i]->substitute(substritutionTerm);
+		if(!findVariable && !sub_term->isGround())
+			findVariable=true;
 		subTerms[i]=sub_term;
 	}
-
+	if(!findVariable){
+		int result=calculateValue(subTerms);
+		Term *constantTerm=new NumericConstantTerm( result<0,result);
+		TermTable::getInstance()->addTerm(constantTerm);
+		return constantTerm;
+	}
 	Term *newTerm=new ArithTerm(negative,operators,subTerms);
 	termTable->addTerm(newTerm);
 	return  newTerm;
