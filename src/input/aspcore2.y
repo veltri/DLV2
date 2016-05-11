@@ -373,17 +373,7 @@ arithop2
     ;   
     
 term_ 
-    : identifier 
-        { 
-            director.getBuilder()->onTerm($1); 
-            delete[] $1;
-        }
-    | NUMBER  
-        { 
-            director.getBuilder()->onTerm($1); 
-            delete[] $1;
-        }
-    | ANON_VAR 
+    :  ANON_VAR 
         { 
             director.getBuilder()->onUnknownVariable(); 
         }
@@ -399,27 +389,49 @@ term_
             delete[] $1;
             delete[] $3;
         }
-    | PARAM_OPEN term PARAM_CLOSE 
-        { 
-            director.getBuilder()->onTermParams(); 
-        }
     | DASH term 
         { 
             director.getBuilder()->onTermDash(); 
         }
     ;
 
+term__ 
+    : 
+    identifier 
+        { 
+            director.getBuilder()->onTerm($1); 
+            delete[] $1;
+        }
+    | NUMBER  
+        { 
+            director.getBuilder()->onTerm($1); 
+            delete[] $1;
+        }
+    | PARAM_OPEN term PARAM_CLOSE 
+        { 
+            director.getBuilder()->onTermParams(); 
+        }
+    ;
+
 term
-    : factor
-    | term arithop1 factor 
+    : term_ {}
+	| expr
+	;
+	
+
+expr
+	: 
+	factor
+	| expr arithop1 factor 
         { 
             director.getBuilder()->onArithmeticOperation($2); 
         }
     ;        
 
 factor
-	: term_ {}
-	| factor arithop2 factor
+	:
+	term__ {}
+	| factor arithop2 term__
 	    { 
             director.getBuilder()->onArithmeticOperation($2); 
         }
