@@ -210,11 +210,19 @@ void InMemoryInputBuilder::onRule() {
 			vector<vector<Atom*>> bodyExpanded;
 			if(currentRule->getSizeBody()>0) expandRulePart(currentRule->getBeginBody(),currentRule->getEndBody(), bodyExpanded);
 			for(auto head: headExpanded){
-				if(bodyExpanded.size()>0)
-					for(auto body: bodyExpanded) createRule(&head,&body);
+				if(bodyExpanded.size()>0){
+					for(auto body: bodyExpanded)
+						createRule(&head,&body);
+				}
 				else
 					createRule(&head);
 			}
+			for(auto body: bodyExpanded)
+				for(auto a:body)
+					delete a;
+			for(auto head: headExpanded)
+				for(auto a:head)
+					delete a;
 			currentRule->clear();
 		}
 		else{
@@ -836,8 +844,14 @@ void InMemoryInputBuilder::addRule(Rule* rule) {
 
 void InMemoryInputBuilder::createRule(vector<Atom*>* head, vector<Atom*>* body) {
 	Rule* rule=new Rule;
-	if(head!=0) rule->setHead(*head);
-	if(body!=0) rule->setBody(*body);
+	if(head!=0){
+		for(auto a:*head)
+			rule->addInHead(a->clone());
+	}
+	if(body!=0){
+		for(auto a:*body)
+			rule->addInBody(a->clone());
+	}
 	addRule(rule);
 }
 
