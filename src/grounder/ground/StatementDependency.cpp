@@ -110,7 +110,7 @@ void DependencyGraph::addInDependency(Rule* r) {
 
 						for(auto pred_body:(*body_it)->getPredicates()){
 							// Check if the predicate in the head has been visited
-							if(!body_predicateVisited_positive.count(pred_body->getIndex())){
+							if(!body_predicateVisited_positive.count(pred_body->getIndex()) && !pred_body->isEdb()){
 								body_predicateVisited_positive.insert(pred_body->getIndex());
 								addEdge(pred_body->getIndex(), pred_head->getIndex(),1);
 								addPositiveEdge=true;
@@ -122,7 +122,7 @@ void DependencyGraph::addInDependency(Rule* r) {
 
 						for(auto pred_body:(*body_it)->getPredicates()){
 							// Check if the predicate in the head has been visited
-							if(!body_predicateVisited_negative.count(pred_body->getIndex())){
+							if(!body_predicateVisited_negative.count(pred_body->getIndex()) && !pred_body->isEdb()){
 								body_predicateVisited_negative.insert(pred_body->getIndex());
 								if(!(*body_it)->isAggregateAtom())
 									addEdge(pred_body->getIndex(), pred_head->getIndex(),-1);
@@ -165,21 +165,21 @@ void DependencyGraph::addInDependency(Rule* r) {
 
 void DependencyGraph::deleteVertex(unordered_set<index_object>& delete_pred) {
 
-	while (delete_pred.size() > 0) {
-		// Boost actually re-indexes the vertices after one vertex has been deleted.
-		// So it is needed to find again the new vertex index for each predicate.
-		index_object current_pred = *delete_pred.begin();
-		boost::graph_traits<Graph>::vertex_iterator vi, vi_end, next;
-		tie(vi, vi_end) = boost::vertices(depGraph);
-		for (next = vi; vi != vi_end; vi = next) {
-			++next;
-			if (current_pred == depGraph[*vi].pred_id) {
-				remove_vertex(*vi, depGraph);
-				break;
-			}
-		}
-		delete_pred.erase(current_pred);
-	}
+//	while (delete_pred.size() > 0) {
+//		// Boost actually re-indexes the vertices after one vertex has been deleted.
+//		// So it is needed to find again the new vertex index for each predicate.
+//		index_object current_pred = *delete_pred.begin();
+//		boost::graph_traits<Graph>::vertex_iterator vi, vi_end, next;
+//		tie(vi, vi_end) = boost::vertices(depGraph);
+//		for (next = vi; vi != vi_end; vi = next) {
+//			++next;
+//			if (current_pred == depGraph[*vi].pred_id) {
+//				remove_vertex(*vi, depGraph);
+//				break;
+//			}
+//		}
+//		delete_pred.erase(current_pred);
+//	}
 }
 
 void DependencyGraph::printFile(string fileGraph) {
@@ -752,9 +752,9 @@ void StatementDependency::createDependencyGraph(PredicateTable* pt) {
 		}
 		depGraph.addInDependency(rule);
 	}
-	unordered_set<index_object> delete_pred;
-	pt->getEdbPredicate(delete_pred);
-	depGraph.deleteVertex(delete_pred);
+//	unordered_set<index_object> delete_pred;
+//	pt->getEdbPredicate(delete_pred);
+//	depGraph.deleteVertex(delete_pred);
 
 	if(Options::globalOptions()->isPrintRewrittenProgram()){
 		cerr<<"----------PROGRAM----------"<<endl;
