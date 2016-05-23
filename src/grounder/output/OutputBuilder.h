@@ -36,7 +36,11 @@ public:
     virtual void onFact(Atom* atom)=0;
     virtual void onEnd(){};
 
-    virtual void appendToStreamAtomTable(Atom* atom){};
+    virtual void appendToStreamAtomTable(Atom* atom, bool fact=false){};
+
+	virtual void setAtomToFilter(Atom* atomToFilter){};
+
+	virtual void clearStreamAtomTable(){}
 
     virtual ~OutputBuilder(){};
 

@@ -32,11 +32,14 @@ public:
 	 */
 	ClassicalLiteral(Predicate* predicate, vector<Term*> &terms, bool hasMinus, bool negative): Atom(terms), predicate(predicate), hasMinus(hasMinus), negative(negative), fact(false) {};
 
+	ClassicalLiteral(Predicate* predicate, bool hasMinus, bool negative, bool fact): Atom(), predicate(predicate), hasMinus(hasMinus), negative(negative), fact(fact) {};
+
 	ClassicalLiteral(Predicate* predicate, bool hasMinus, bool negative): Atom(), predicate(predicate), hasMinus(hasMinus), negative(negative), fact(false) {};
 
 	Atom* clone() {
-		Atom* atom = new ClassicalLiteral(this->predicate,this->hasMinus,this->negative);
+		Atom* atom = new ClassicalLiteral(this->predicate,this->hasMinus,this->negative,this->fact);
 		atom->setTerms(this->terms);
+		atom->setIndex(this->getIndex());
 		return atom;
 	};
 

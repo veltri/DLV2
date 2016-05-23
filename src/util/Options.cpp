@@ -66,6 +66,26 @@ namespace DLV2
 #define OPTIONID_outputFormat ('z' + 40)
 #define OPTIONID_textual ('z' + 41)
 #define OPTIONID_instantiationProcedure ('z' + 42)
+#define OPTIONID_positiveOrderingProcedure ('z' + 43)
+#define OPTIONID_enableDictionaryIntersection ('z' + 44)
+#define OPTIONID_ruleTime ('z' + 45)
+#define OPTIONID_checkFactDuplicate ('z' + 46)
+#define OPTIONID_rewriteArith ('z' + 47)
+#define OPTIONID_anonymousFilter ('z' + 48)
+#define OPTIONID_predicateToFilter ('z' + 49)
+#define OPTIONID_compactFacts ('z' + 50)
+#define OPTIONID_gstats ('z' + 51)
+#define OPTIONID_project ('z' + 52)
+#define OPTIONID_FB ('z' + 53)
+#define OPTIONID_FC ('z' + 54)
+#define OPTIONID_OMSM ('z' + 55)
+
+
+
+
+
+
+
 
 
 };
@@ -116,7 +136,18 @@ Options::Options():
 		printRewrittenProgram(false),
 		rewritingType(NATIVE_CHOICE),
 		outputFormat(OUTPUT_NUMERIC),
-		instantiationProcedure(BACKJUMPING)
+		instantiationProcedure(BACKJUMPING),
+		positiveOrderingProcedure(DLV_ORDERING),
+		enabledDictionaryIntersection(false),
+		ruleTime(false),
+		checkFactDuplicate(false),
+		rewriteArith(false),
+		disabledAnonymousFilter(false),
+		compactFacts(false),
+		printGroundStats(0),
+		rewProject(1),
+		optionFrontend(0),
+		magicRewriting(true)
 {
 
 }
@@ -137,8 +168,18 @@ Options::Options(
 		printRewrittenProgram(o.printRewrittenProgram),
 		rewritingType(o.rewritingType),
 		outputFormat(o.outputFormat),
-		instantiationProcedure(o.instantiationProcedure)
-
+		instantiationProcedure(o.instantiationProcedure),
+		positiveOrderingProcedure(o.positiveOrderingProcedure),
+		enabledDictionaryIntersection(o.enabledDictionaryIntersection),
+		ruleTime(false),
+		checkFactDuplicate(false),
+		rewriteArith(false),
+		disabledAnonymousFilter(false),
+		compactFacts(true),
+		printGroundStats(0),
+		rewProject(1),
+		optionFrontend(0),
+		magicRewriting(true)
 {
 
 }
@@ -181,21 +222,34 @@ Options::init(
 
 		{"hashtype",required_argument, NULL, OPTIONID_hashType },
 		{"indextype",required_argument,NULL,OPTIONID_indexType},
-		{"predindexterm",required_argument, NULL, OPTIONID_predIndexTerm},
-		{"predindextype",required_argument, NULL, OPTIONID_predIndexType},
-		{"nofacts",no_argument, NULL, OPTIONID_nofacts},
-		{"printRewrite",no_argument, NULL, OPTIONID_printRewrite},
-		{"rewritingtype",required_argument, NULL, OPTIONID_rewritingType},
-		{"outputformat",required_argument, NULL, OPTIONID_outputFormat},
+		{"pred-index-term",required_argument, NULL, OPTIONID_predIndexTerm},
+		{"pred-index-type",required_argument, NULL, OPTIONID_predIndexType},
+		{"no-facts",no_argument, NULL, OPTIONID_nofacts},
+		{"print-rewrite",no_argument, NULL, OPTIONID_printRewrite},
+		{"rewriting-type",required_argument, NULL, OPTIONID_rewritingType},
+		{"output-format",required_argument, NULL, OPTIONID_outputFormat},
 		{"t",no_argument, NULL, OPTIONID_textual},
 		{"instantiate",required_argument, NULL, OPTIONID_instantiationProcedure},
+		{"positive-ordering",required_argument, NULL, OPTIONID_positiveOrderingProcedure},
+		{"dictionary-intersection",no_argument, NULL, OPTIONID_enableDictionaryIntersection},
+		{"rule-time",no_argument, NULL, OPTIONID_ruleTime},
+		{"check-facts-duplication",no_argument, NULL, OPTIONID_checkFactDuplicate},
+		{"rewrite-arith",no_argument, NULL, OPTIONID_rewriteArith},
+		{"no-anonymous-filter",no_argument, NULL, OPTIONID_anonymousFilter},
+		{"filter",required_argument, NULL, OPTIONID_predicateToFilter},
+		{"compact-facts",required_argument, NULL, OPTIONID_compactFacts},
+		{"gstats",required_argument, NULL, OPTIONID_gstats},
+		{"project",required_argument, NULL, OPTIONID_project},
+		{"FC",no_argument, NULL, OPTIONID_FC},
+		{"FB",no_argument, NULL, OPTIONID_FB},
+		{"OMS-",no_argument, NULL, OPTIONID_OMSM},
 
-        // Required at end of array. 
+		// Required at end of array.
         { NULL, 0, NULL, 0 }
     };
   
     do{
-        // The function getopt_long() stores the option index here.
+        // The function getopt_long() stores the opoptionFrontendtion index here.
         int optionIndex = 0;
         
         code = getopt_long (argc, argv, shortOptions, longOptions, &optionIndex);
@@ -274,7 +328,8 @@ Options::init(
 
             case OPTIONID_indexType:
             	indexType = atoi(optarg);
-                assert_msg((indexType>=DEFAULT && indexType<=DOUBLEMAP),"Index type not supported");
+            	if(indexType==MAP_DICTIONARY_INTERSECTION) Options::globalOptions()->setEnabledDictionaryIntersection(true);
+                assert_msg((indexType>=DEFAULT && indexType<=MAP_HISTORY_VECTOR),"Index type not supported");
                 break;
 
             case OPTIONID_predIndexTerm:
@@ -310,6 +365,58 @@ Options::init(
             case OPTIONID_instantiationProcedure:
             	instantiationProcedure=atoi(optarg);
 				break;
+
+            case OPTIONID_positiveOrderingProcedure:
+            	positiveOrderingProcedure=atoi(optarg);
+				break;
+
+            case OPTIONID_enableDictionaryIntersection:
+            	enabledDictionaryIntersection=true;
+				break;
+
+            case OPTIONID_ruleTime:
+            	ruleTime=true;
+				break;
+
+            case OPTIONID_checkFactDuplicate:
+            	checkFactDuplicate=true;
+				break;
+
+            case OPTIONID_rewriteArith:
+            	rewriteArith=true;
+				break;
+
+            case OPTIONID_anonymousFilter:
+            	disabledAnonymousFilter=true;
+				break;
+
+            case OPTIONID_predicateToFilter:
+            	predicateToFilter.append(optarg);
+				break;
+
+            case OPTIONID_compactFacts:
+            	compactFacts=true;
+				break;
+
+            case OPTIONID_gstats:
+            	printGroundStats=atoi(optarg);
+				break;
+
+            case OPTIONID_project:
+            	rewProject=atoi(optarg);
+				break;
+
+            case OPTIONID_FB:
+            	optionFrontend = FRONTEND_BRAVE;
+				break;
+
+            case OPTIONID_FC:
+            	optionFrontend = FRONTEND_CAUTIOUS;
+				break;
+            case OPTIONID_OMSM:
+            	magicRewriting = false;
+				break;
+
 
             default:
                 ErrorMessage::errorGeneric( "This option is not supported." );
@@ -348,7 +455,6 @@ int Options::getPredicateIndexTerm(const string& predicate){
 int Options::getPredicateIndexType(const string& predicate){
 	if(predicatesIndexTypeMap.count(predicate)){
 		unsigned type=predicatesIndexTypeMap[predicate];
-		assert_msg((type>=DEFAULT && type<=HASHSET),"Index type not supported");
 		return type;
 	}
 	return -1;

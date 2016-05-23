@@ -9,6 +9,7 @@
 #define	UTILS_H
 
 #include <string>
+#include <regex>
 
 namespace DLV2
 {
@@ -113,6 +114,17 @@ namespace DLV2
 			for(auto element:set1)
 				if(!set2.count(element))
 					difference_set.insert(element);
+        }
+
+        ///Split a string respect a char c and return the splitted string in a vector
+        static std::vector<std::string> split(const std::string& input, const char c) {
+        	std::vector<std::string> elems;
+        	std::stringstream ss(input);
+            std::string item;
+            while (std::getline(ss, item, c)) {
+                elems.push_back(item);
+            }
+            return elems;
         }
     };
     

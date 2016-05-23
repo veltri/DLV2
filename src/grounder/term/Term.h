@@ -18,6 +18,7 @@
 #include "../hash/Hashable.h"
 #include "../../util/Constants.h"
 #include "../table/AdvancedArray.h"
+#include "../../util/Equation.h"
 
 using namespace std;
 
@@ -31,6 +32,8 @@ namespace grounder{
 enum Operator {
 	PLUS=0, MINUS=1, DIV=2, TIMES=3
 };
+
+using OperandOperator = pair<unsigned,bool>;
 
 enum TermType{
 	NUMERIC_CONSTANT=0,STRING_CONSTANT,SYMBOLIC_CONSTANT,VARIABLE,ARITH,FUNCTION,ANONYMOUS
@@ -66,8 +69,6 @@ public:
 
 	virtual bool isRange() const {return false;}
 
-	virtual Term* clone(){return nullptr;};
-
 	///Return the negation of the term
 	bool isNegative(){return negative;};
 	///Set the negation of the term
@@ -85,7 +86,9 @@ public:
 	///Return the size of the operators in arith term
 	virtual unsigned int getSizeOperator()const{return 0;}
 	///Return the operator with index i
-	virtual Operator getOperator(int i)const{return Operator::PLUS;}
+	virtual OperandOperator getOperator(int i)const{return {0,0};}
+	///Return true if the arith term is minus one
+	virtual bool checkArithIsMinusOne(){return false;};
 
 	///Return the type of term
 	virtual TermType getType() const {return TermType::NUMERIC_CONSTANT;};
@@ -116,6 +119,8 @@ public:
 	bool isTermMin() const;
 	bool isTermZero() const;
 
+	virtual void getVariablesInArith(set_term& vars){};
+
 	///Check if one or both terms are term max or term min and behaves as the operator >
 	///If checkEqual is true it behaves as the operator >=
 	///Returns 1 or 0 if one of the two terms is the max or the min (according to the comparison)
@@ -134,16 +139,20 @@ public:
 		return 2;
 	}
 
+	virtual int substituteAndCalculate(var_assignment& substritutionTerm){return 0;}
+
 	///Add the index of a composite term
 	virtual void addTerm(Term* termIndex){};
 	///Remove last index of a term
 	virtual void popTerm(){};
 	/// Set operator for arithmetic Term
-	virtual void setOperator(Operator op){};
+	virtual void addOperator(Operator op){};
 	/// Calculate the value for arithmetic term and return the ID of the result term
 	virtual Term* calculate(){return this;};
 	/// If the term is variable insert the variables in the set
-	virtual void getVariable(set_term& variables){void(0);};
+	virtual void getVariable(set_term& variables){};
+	/// If the term is variable insert the variables in the vector of variable
+	virtual void getVariable(vector<Term*>& variables){};
 	/// If the term is ground insert the term in the setr
 	virtual void getGroundTerm(set_term& variables){void(0);};
 	/// Substitute the term with the given terms and return the term of substitute term
@@ -156,6 +165,14 @@ public:
 	inline virtual index_object getLocalVariableIndex()const{return 0;};
 	///Set the local index of the variable in the rule
 	inline virtual void setLocalVariableIndex(index_object index){};
+	//Transform the arith term in LINE struct for the evaluation of the equation
+	virtual LINE transformToLineEq(){return LINE();};
+
+	virtual bool containsVariable(Term* t){
+		set_term variables;
+		getVariable(variables);
+		return variables.count(t);
+	}
 
 	virtual ~Term(){};
 protected:

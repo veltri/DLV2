@@ -16,22 +16,43 @@ namespace DLV2{
 
 namespace grounder{
 
+bool BuiltInAtom::calculateVariableInAssignment(Term* firstTerm, Term* secondTerm, var_assignment& substitutionTerm) {
+	// If there is equal and variable assign that value
+	if(firstTerm->getType()==TermType::VARIABLE){
+		substitutionTerm[firstTerm->getLocalVariableIndex()]=secondTerm->calculate();
+		return true;
+	}
+	if(secondTerm->getType()==TermType::VARIABLE){
+		substitutionTerm[secondTerm->getLocalVariableIndex()]=firstTerm->calculate();
+		return true;
+	}
+//	cerr<<"EVALUATE ";firstTerm->print(cerr);cerr<<" ";secondTerm->print(cerr);cerr<<endl;
+	LINE A=firstTerm->transformToLineEq(),B=secondTerm->transformToLineEq();
 
+	VAR x= A.evaluate(B);
+	int result=x.i;
+
+	Term *constantTerm=new NumericConstantTerm(result<0,result);
+	TermTable::getInstance()->addTerm(constantTerm);
+	set_term variables;
+	firstTerm->getVariablesInArith(variables);
+	secondTerm->getVariablesInArith(variables);
+//	cerr<<"RESULT ";(*variables.begin())->print(cerr);cerr<<" "<<result<<endl;
+	substitutionTerm[(*variables.begin())->getLocalVariableIndex()]=constantTerm;
+
+	return true;
+}
+
+//TODO - This method have to be removed, use only groundAndEvaluate
 bool BuiltInAtom::evaluate(var_assignment& substitutionTerm){
 	Term* firstTerm=terms[0];
 	Term* secondTerm=terms[1];
 
 	// If there is equal and variable assign that value
 	if(assignment){
-		if(firstTerm->getType()==TermType::VARIABLE || secondTerm->getType()!=TermType::VARIABLE ){
-			substitutionTerm[firstTerm->getLocalVariableIndex()]=secondTerm->calculate();
-			return true;
-		}if(firstTerm->getType()!=TermType::VARIABLE || secondTerm->getType()==TermType::VARIABLE ){
-			substitutionTerm[secondTerm->getLocalVariableIndex()]=firstTerm->calculate();
-			return true;
-	    }
-	}
+		return calculateVariableInAssignment(firstTerm,	secondTerm, substitutionTerm) ;
 
+	}
 
 	if(binop==Binop::EQUAL)
 		return firstTerm->getIndex()==secondTerm->getIndex();
@@ -47,6 +68,53 @@ bool BuiltInAtom::evaluate(var_assignment& substitutionTerm){
 		return *firstTerm>=*secondTerm;
 
 	return false;
+}
+
+bool BuiltInAtom::groundAndEvaluate(var_assignment& substitutionTerm){
+	// If there is equal and variable assign that value
+	if(assignment){
+		Term* firstTerm=terms[0]->substitute(substitutionTerm);
+		Term* secondTerm=terms[1]->substitute(substitutionTerm);
+		return calculateVariableInAssignment(firstTerm,	secondTerm, substitutionTerm) ;
+	}
+	Term* firstTerm=nullptr;
+	Term* secondTerm=nullptr;
+	bool deleteFirst=false;
+	bool deleteSecond=false;
+	if(terms[0]->getType()!=ARITH){
+		firstTerm=terms[0]->substitute(substitutionTerm);
+		firstTerm=firstTerm->calculate();
+	}else{
+		firstTerm=new NumericConstantTerm(false,terms[0]->substituteAndCalculate(substitutionTerm));
+		deleteFirst=true;
+	}
+	if(terms[1]->getType()!=ARITH){
+		secondTerm=terms[1]->substitute(substitutionTerm);
+		secondTerm=secondTerm->calculate();
+	}else{
+		secondTerm=new NumericConstantTerm(false,terms[1]->substituteAndCalculate(substitutionTerm));
+		deleteSecond=true;
+
+	}
+
+	bool eval=false;
+	if(binop==Binop::EQUAL)
+		eval= *firstTerm==*secondTerm;
+	else if(binop==Binop::UNEQUAL)
+		eval= !(*firstTerm==*secondTerm);
+	else if(binop==Binop::LESS)
+		eval= *firstTerm<*secondTerm;
+	else if(binop==Binop::LESS_OR_EQ)
+		eval= *firstTerm<=*secondTerm;
+	else if(binop==Binop::GREATER)
+		eval= *firstTerm>*secondTerm;
+	else if(binop==Binop::GREATER_OR_EQ)
+		eval= *firstTerm>=*secondTerm;
+
+	if(deleteFirst)delete firstTerm;
+	if(deleteSecond)delete secondTerm;
+
+	return eval;
 }
 
 size_t BuiltInAtom::hash(){
@@ -93,8 +161,9 @@ void BuiltInAtom::substitute(var_assignment& substitutionTerm,Atom*& templateAto
 		templateAtom=new BuiltInAtom(binop,negative,terms_substitute,assignment);
 	}
 	else
-		for(unsigned int i=0;i<terms.size();i++)
+		for(unsigned int i=0;i<terms.size();i++){
 			templateAtom->setTerm(i,terms[i]->substitute(substitutionTerm));
+		}
 };
 
 };

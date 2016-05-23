@@ -14,6 +14,16 @@
 namespace DLV2 {
 namespace grounder {
 
+class PartialOrders {
+public:
+	PartialOrders(Rule* rule): rule(rule){};
+	void checkIfPresentPartialOrders();
+private:
+	Rule* rule;
+	void containsFunctionalTerms(Atom* atom1,Atom* atom2);
+	void containsABuiltIAssignmentVariable(Atom* atom1,Atom* atom2);
+};
+
 class OrderRule {
 private:
 	Rule* rule;
@@ -22,7 +32,11 @@ private:
 	list<unsigned> negativeAtoms;
 	list<unsigned> positiveAtoms;
 	list<unsigned> aggregatesAtoms;
+	list<unsigned> positiveAtomsToBeBound;
 	unordered_map<unsigned,set_term> mapAtomsVariables;
+	/// A map in which for each positive classical literal are stored variables that must be bound
+	/// (for example variables appearing in arith terms)
+	unordered_map<unsigned,set_term> mapPositiveAtomsBoundVariables;
 	vector<Atom*> orderedBody;
 	map_term<unsigned> mapVariablesAtoms;
 	vector<unordered_set<unsigned>> bindAtomsDependency;
@@ -36,6 +50,11 @@ private:
 	void checkBuiltInSafety(bool& firstSafe, Term* firstTerm,Term*& bindVariable);
 	void foundAnAssigment(Atom* atom, Term* bindVariable, unsigned pos);
 	bool checkHeadSafety();
+	bool checkWeakSafety();
+	vector<Atom*> rewriteArith(Atom* current_atom,
+			unordered_map<Term*, Term*, IndexForTable<Term>, IndexForTable<Term> >& arithRewrited);
+	bool unlockAtomWithArith(list<unsigned>& atoms);
+
 
 public:
 	OrderRule(Rule* r);

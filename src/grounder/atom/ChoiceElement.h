@@ -12,6 +12,7 @@
 #include <vector>
 #include "Atom.h"
 #include "Predicate.h"
+#include "algorithm"
 
 using namespace std;
 
@@ -49,6 +50,7 @@ public:
 	}
 	//Add an atom to the choice element
 	void add(Atom* atom){choiceElement.push_back(atom);}
+	void addAsAtoms(const vector<Atom*>& atoms) {choiceElement.insert(choiceElement.end(),atoms.begin(),atoms.end());}
 
 	///Return the predicates of naf literal in choice element
 	set_predicate getPredicateInNaf();
@@ -56,8 +58,15 @@ public:
 	///Return the positive predicates of naf literal in choice element
 	set_predicate getPredicatePositiveInNaf();
 
+	///Return the negative predicates of naf literal in choice element
+	set_predicate getPredicateNegativeInNaf();
+
 	///Return the variable in naf literal
 	set_term getVariableInNaf();
+
+	bool haveOnlyEqualBuiltin();
+
+	bool isBodyChoiceIsSolved();
 
 	bool operator==(const ChoiceElement& choiceElement)const;
 

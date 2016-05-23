@@ -29,13 +29,14 @@ using std::string;
 using std::vector;
 using std::stringstream;
 
+
 /*
  * The tracing macros are expanded only if TRACE_OFF is not defined.
  * The tracing structures are defined only if TRACE_OFF is not defined.
  */
 #ifndef TRACE_ON
     #define trace_tag( stream, type, level )
-    #define trace( type, level, msg, ... )
+    #define trace_( type, level, msg, ... )
     #define traceIf( type, level, condition, msg, ... )
     #define setTraceLevel( type, level )
     #define trace_msg( type, level, msg )
@@ -48,7 +49,7 @@ using std::stringstream;
             stream <<  " "; \
         for( unsigned __indent_Level__ = 1; __indent_Level__ < level; ++__indent_Level__ ) \
             stream << "    ";
-    #define trace( type, level, msg, ... ) \
+    #define trace_( type, level, msg, ... ) \
         if( DLV2::Options::traceLevels.types[ DLV2::Options::traceLevels.type() ].second >= level ) \
         { \
             trace_tag( cerr, type, level ); \
@@ -56,7 +57,7 @@ using std::stringstream;
         }
     #define traceIf( type, level, condition, msg, ... ) \
         if( condition ) \
-            trace( type, level, msg, ##__VA_ARGS__ )
+            trace_( type, level, msg, ##__VA_ARGS__ )
     #define setTraceLevel( type, level ) \
 		DLV2::Options::traceLevels.types[ DLV2::Options::traceLevels.type() ].second = level
     #define trace_msg( type, level, msg ) {\
@@ -91,6 +92,8 @@ class TraceLevels
         unsigned weakconstraints() { return 3; }
         unsigned backjumping() { return 4; }
         unsigned backtracking() { return 5; }
+        unsigned recursion() { return 6; }
+
 
 
     private:
@@ -100,11 +103,13 @@ class TraceLevels
 TraceLevels::TraceLevels()
 {
     types.push_back( pair< string, unsigned >( "parser", 0 ) );
-    types.push_back( pair< string, unsigned >( "grounding", 2 ) );
+    types.push_back( pair< string, unsigned >( "grounding", 0 ) );
     types.push_back( pair< string, unsigned >( "aggregates", 0 ) );
     types.push_back( pair< string, unsigned >( "weakconstraints", 0 ) );
     types.push_back( pair< string, unsigned >( "backjumping", 0 ) );
     types.push_back( pair< string, unsigned >( "backtracking", 0 ) );
+    types.push_back( pair< string, unsigned >( "recursion", 0 ) );
+
 
 }
 

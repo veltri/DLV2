@@ -19,6 +19,11 @@ namespace DLV2{
 
 namespace grounder{
 
+///Specify the type of the element in the aggregate.
+enum ElementType{
+	POSITIVE,NEGATIVE,MIXED,EMPTY
+};
+
 
 /**
  * This class implements an aggregate atom extending atom
@@ -72,6 +77,7 @@ public:
 
 		return atom;
 	};
+
 
 	///This method compute the resulting hash a classical atom using its terms
 	size_t hash() ;
@@ -183,7 +189,7 @@ public:
 	virtual bool isAssignment(){return assignment;};
 	virtual void setAssignment(bool assignment){this->assignment=assignment;};
 
-	set_term getSharedVariable(vector<Atom*>::iterator begin,vector<Atom*>::iterator end,bool alsoGuards);
+	set_term getSharedVariable(vector<Atom*>::iterator begin,vector<Atom*>::iterator end);
 
 	virtual void getUnsolvedPredicateVariable(set_term& vars);
 
@@ -257,6 +263,21 @@ private:
 
 	///Get the sum of undef and true evaluation with sum and count, the maximum between undef and true with max,the minimun between undef and true with min
 	Term* getCheckValue();
+
+	///Contains information used for possible simplification during the evaluation of the sum aggregate
+	struct SumCheckInfo{
+
+		SumCheckInfo():elemType(EMPTY),findUndefInSum(false),negativeSumValue(0){}
+
+		///Used for the final evaluation of the aggregate sum. Is the type of the element undefined in the aggregate
+		ElementType elemType;
+
+		/// True if in the sum aggregate there are an a undefined aggregate element
+		bool findUndefInSum;
+
+		///Sum of the negative weight of the elements in the sum aggregate
+		int negativeSumValue;
+	} sumCheckInfo;
 
 };
 

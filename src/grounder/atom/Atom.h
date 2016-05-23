@@ -14,12 +14,12 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+
+#include "../table/HistoryStructure.h"
 #include "AggregateElement.h"
 #include "ChoiceElement.h"
 #include "../table/TermTable.h"
 #include "Predicate.h"
-
-
 
 using namespace std;
 
@@ -77,6 +77,10 @@ public:
 	///If the guard is true add also the variable in the guard
 	virtual const set_term getVariable(bool guard=true);
 
+	///Return the term of variable present in the Atom in a vector
+	virtual const vector<Term*> getVectorVariable();
+
+
 	/// Return true if is ground, each term is constant term
 	virtual bool isGround(){
 		for(auto term:terms)
@@ -97,6 +101,10 @@ public:
 			if(term->contain(TermType::ANONYMOUS))return true;
 		return false;
 	};
+
+	bool hasPredicate()const{
+		return getPredicate()!=nullptr;
+	}
 
 	/******** Methods useful for ClassicalLiteral ********/
 	/**
@@ -144,9 +152,14 @@ public:
 	///This method evaluate the truth value of the built-in atom, if there is bind variable
 	/// and equal then assign that value for the bind variable
 	virtual bool evaluate(var_assignment& substritutionTerm ){return false;};
+	///This method is like the evaluate but first substitute the variable in the builtin
+	virtual bool groundAndEvaluate(var_assignment& substitutionTerm){return false;}
 	///Return true if the built in assign value in term, else compare the variable like ==
 	virtual bool isAssignment(){return false;};
 	virtual void setAssignment(bool assigment){};
+	//Return true if the builtin not contains in the operator of Airth term a DIV or a TIMES and not contain function
+	virtual bool plusMinusBuiltin(){return true;};
+	virtual bool isComparisonBuiltIn() const{return false;}
 	/*****************************************************/
 
 	/******** Methods useful for AggregateAtom ********/
@@ -224,7 +237,7 @@ public:
 	 ///The function return true if we can simplify and set alwaysTrue true if the aggregate is always true else false if is always false
 	virtual bool checkAggregateCountNegativeGuard(bool& alwaysTrue)const{return false;};
 
-	virtual set_term getSharedVariable(vector<Atom*>::iterator begin,vector<Atom*>::iterator end,bool alsoGuards){return set_term();};
+	virtual set_term getSharedVariable(vector<Atom*>::iterator begin,vector<Atom*>::iterator end){return set_term();};
 	/// Set the aggregate atom to standard format:
 	/// - if it has an EQUAL binop, its first binop is set to EQUAL
 	/// - else the first binop is LESS_EQUAL and the second LESS
@@ -290,10 +303,18 @@ protected:
 };
 
 using AtomTable = hashSet<Atom> ;
+///Vector of Atom
+//using AtomVector = vector<Atom*>;
+///Vector used for the recursion
+using AtomHistoryVector = HistoryVector<Atom*>;
 
-};
 
-};
+///An unordered multimap of Atom
+using Multimap_Atom = unordered_multimap<index_object, Atom*>;
+
+
+
+}}
 
 #endif /* ATOM_H_ */
 

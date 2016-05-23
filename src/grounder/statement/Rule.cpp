@@ -14,6 +14,38 @@ namespace DLV2{
 
 namespace grounder{
 
+//-------------------------------RuleInformation---------------------
+
+void RuleInformation::computeOutputVariables(Rule* rule) {
+	for (auto it=rule->getBeginHead();it!=rule->getEndHead(); ++it) {
+		Atom* atom=*it;
+		const set_term& variables=atom->getVariable();
+		outputVariables.insert(variables.begin(),variables.end());
+	}
+	unsigned position=0;
+	for (auto it=rule->getBeginBody();it!=rule->getEndBody(); ++it,++position) {
+		Atom* atom=*it;
+		const set_term& variablesInAtom=atom->getVariable();
+		if(atom->isClassicalLiteral()){
+			if(!atom->getPredicate()->isSolved()){
+				outputVariables.insert(variablesInAtom.begin(),variablesInAtom.end());
+			}
+		}
+		else if(atom->isAggregateAtom()){
+			set_term variablesUnsolved;
+			atom->getUnsolvedPredicateVariable(variablesUnsolved);
+			outputVariables.insert(variablesUnsolved.begin(),variablesUnsolved.end());
+			if(!variablesUnsolved.empty()){
+				set_term guards=atom->getGuardVariable();
+				outputVariables.insert(guards.begin(),guards.end());
+			}
+		}
+	}
+}
+
+
+// ------------------------------Rule---------------------------------
+
 set_predicate Rule::calculatePredicate(vector<Atom*>& atoms,bool checkNegative,bool negative){
 	set_predicate predicates;
 	for (auto atom:atoms)
@@ -39,7 +71,9 @@ unordered_set<index_object> Rule::calculatePredicateIndex(vector<Atom*>& atoms,b
 void Rule::print(ostream& stream){
 
 	//Print for debug
-	if(!ground){printNonGround(stream);return;}
+	if(!ground){
+		printNonGround(stream);return;
+	}
 	unsigned int i=0;
 	bool firstAtomPrinted=false;
 	for (auto atom:head) {
@@ -169,73 +203,127 @@ void Rule::setUnsolvedPredicates() {
 	}
 }
 
-//FIXME TODO
-void Rule::sortPositiveLiteralInBody(vector<vector<unsigned>>& predicate_searchInsert_table,vector<unsigned>& originalOrderMapping) {
-	vector<Atom*> newBody;
-	newBody.reserve(body.size());
-
-	vector<int> sizeExtensions;
-	sizeExtensions.reserve(body.size());
-
-	for(unsigned i=0;i<body.size();++i){
-		Atom* atom=body[i];
-		if(atom->isClassicalLiteral() && !atom->isNegative()){
-			unsigned extensionSize=INT_MAX;
-			for(auto table:predicate_searchInsert_table[head.size()+i]){
-				unsigned size=PredicateExtTable::getInstance()->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(table);
-				if(size<extensionSize)
-					extensionSize=size;
+void Rule::computeVariablesLocalIndices() {
+	set_term variableLocalIndex;
+	for(auto atom:body){
+		for(auto term:atom->getVariable()){
+			if(!variableLocalIndex.count(term)){
+				term->setLocalVariableIndex(variableLocalIndex.size()+1);
+				variableLocalIndex.insert(term);
+				trace_action_tag(grounding,1,
+					cerr<<"VARIABLE-INDEX : ";term->print(cerr);cerr<<" = "<<term->getLocalVariableIndex()<<endl;
+				);
 			}
-//			unsigned extensionSize=0;
-//			for(auto table:predicate_searchInsert_table[head.size()+i]){
-//				extensionSize+=PredicateExtTable::getInstance()->getPredicateExt(atom->getPredicate())->getPredicateExtentionSize(table);
-//			}
-			sizeExtensions.push_back(extensionSize);
-		}
-		else
-			sizeExtensions.push_back(-1);
-		newBody.push_back(atom);
-	}
-
-	bool sort=true;
-	while(sort){
-		sort=false;
-		for(unsigned i=0;i<body.size()-1;++i){
-			Atom* atom1=newBody[i];
-			Atom* atom2=newBody[i+1];
-			bool atom1Positive=atom1->isClassicalLiteral() && !atom1->isNegative();
-			bool atom2Positive=atom2->isClassicalLiteral() && !atom2->isNegative();
-			if(atom1Positive && atom2Positive && sizeExtensions[i] > sizeExtensions[i+1]){
-				newBody[i]=atom2;
-				newBody[i+1]=atom1;
-
-				unsigned otmp=originalOrderMapping[i];
-				originalOrderMapping[i]=originalOrderMapping[i+1];
-				originalOrderMapping[i+1]=otmp;
-
-				int ttmp=sizeExtensions[i];
-				sizeExtensions[i]=sizeExtensions[i+1];
-				sizeExtensions[i+1]=ttmp;
-
-				vector<unsigned> vtmp=predicate_searchInsert_table[head.size()+i];
-				predicate_searchInsert_table[head.size()+i]=predicate_searchInsert_table[head.size()+i+1];
-				predicate_searchInsert_table[head.size()+i+1]=vtmp;
-
-				sort=true;
+			else{
+				if(atom->isClassicalLiteral() && !atom->isNegative()){
+					ruleInformation.insertJoinVariable(term);
+					trace_action_tag(grounding,1,
+							cerr<<"JOIN VARIABLE : ";term->print(cerr);cerr<<endl;
+					);
+				}
 			}
 		}
 	}
-	body=newBody;
+	if(head.size()==1 && head[0]->isChoice()){
+		for(unsigned i=0;i<head[0]->getChoiceElementsSize();++i){
+			ChoiceElement* choiceEl=head[0]->getChoiceElement(i);
+			if(choiceEl->getSize()>1){
+				for(unsigned j=1;j<choiceEl->getSize();++j){
+					Atom* atom=choiceEl->getAtom(j);
+					for(auto term:atom->getVariable()){
+						if(!variableLocalIndex.count(term)){
+							term->setLocalVariableIndex(variableLocalIndex.size()+1);
+							variableLocalIndex.insert(term);
+							trace_action_tag(grounding,1,
+								cerr<<"VARIABLE-INDEX: ";term->print(cerr);cerr<<" = "<<term->getLocalVariableIndex()<<endl;
+							);
+						}
+					}
+				}
+			}
+		}
+	}
 
-//	cout<<"ORDERED BODY: ";
-//	for(unsigned i=0;i<body.size();++i){
-//		body[i]->print();
-//		cout<<" "<<sizeExtensions[i]<<" "<<originalOrderMapping[i];
-//		cout<<" --- ";
-//	}
-//	cout<<endl;
-
+	this->variablesSize=variableLocalIndex.size()+1;
 }
+
+Rule* Rule::clone() {
+	Rule *newRule=new Rule;
+	for(auto atom:head)
+		newRule->addInHead(atom->clone());
+
+	for(auto atom:body)
+		newRule->addInBody(atom->clone());
+
+	return newRule;
+}
+
+// ******************************* WeakConstraint *****************************************
+
+void WeakConstraint::print(ostream& stream){
+	//Print for debug
+	if(!ground){printNonGround(stream);return;}
+	bool firstAtomPrinted=false;
+	stream<<":~";
+	unsigned int i=0;
+	for (auto atom:body) {
+		if(firstAtomPrinted && !simplifiedBody[i])
+			stream<<";";
+		if(!simplifiedBody[i]){
+			atom->print(stream);
+			if(!firstAtomPrinted)
+				firstAtomPrinted=true;
+		}
+		i++;
+	}
+	stream<<". [";
+	if(weight!=nullptr)
+		weight->print(stream);
+	stream<<"@";
+	if(level!=nullptr)
+		level->print(stream);
+	for(unsigned i=0;i<label.size();i++){
+		stream<<",";
+		label[i]->print(stream);
+	}
+	stream<<"]"<<endl;
+}
+
+void WeakConstraint::printNonGround(ostream& stream){
+	stream<<":~";
+	for(unsigned i=0;i<body.size();i++){
+		if(i!=0)stream<<",";
+		body[i]->print(stream);
+	}
+	stream<<". [";
+	if(weight!=nullptr)
+		weight->print(stream);
+	stream<<"@";
+	if(level!=nullptr)
+		level->print(stream);
+	for(unsigned i=0;i<label.size();i++){
+		stream<<",";
+		label[i]->print(stream);
+	}
+	stream<<"]"<<endl;
+}
+
+
+
+tupleWeak WeakConstraint::groundWeightLevel(var_assignment& current_assignment){
+	tupleWeak groundSquare;
+	get<0>(groundSquare)=weight->substitute(current_assignment)->calculate();
+	get<1>(groundSquare)=level->substitute(current_assignment)->calculate();
+	for(auto t:label)
+		get<2>(groundSquare).push_back(t->substitute(current_assignment)->calculate());
+
+	return groundSquare;
+}
+
+
+
+
+
 
 }
 }

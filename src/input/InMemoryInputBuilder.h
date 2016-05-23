@@ -23,6 +23,7 @@
 #include "../grounder/table/PredicateTable.h"
 #include "../grounder/statement/InputRewriter.h"
 #include "../grounder/statement/Rule.h"
+#include "../grounder/exception/SafetyExceptionGrounder.h"
 
 using namespace std;
 
@@ -80,7 +81,27 @@ public:
     virtual void onAggregateElement() ;
     virtual void onAggregate( bool naf = false ) ;
 
+    virtual void onAnnotationRuleOrdering(char* annotation);
+    virtual void onAnnotationRuleAtomIndexedArgument(char* annotation);
+    virtual void onAnnotationRuleAtomIndexedLiteral(bool naf = false);
+    virtual void onAnnotationPartialOrdering(bool global=false);
+    virtual void onAnnotationRulePartialOrderingBefore(bool naf = false);
+    virtual void onAnnotationRulePartialOrderingAfter(bool naf = false);
+    virtual void onAnnotationAggregateRulePartialOrderingAfter(bool naf = false);
+    virtual void onAnnotationAggregateRulePartialOrderingBefore(bool naf = false);
+
+    virtual void onAnnotationGlobalOrdering(char* annotation);
+    virtual void onAnnotationGlobalAtomIndexedArgument(char* annotation);
+    virtual void onAnnotationGlobalAtomIndexedLiteral(bool naf = false);
+    virtual void onAnnotationGlobalPartialOrderingBefore(bool naf = false);
+    virtual void onAnnotationGlobalPartialOrderingAfter(bool naf = false);
+    virtual void onAnnotationAggregateGlobalPartialOrderingAfter(bool naf = false);
+    virtual void onAnnotationAggregateGlobalPartialOrderingBefore(bool naf = false);
+
     void newTerm(char*);
+
+	static bool isFoundASafetyError() { return foundASafetyError; }
+	static const string& getSafetyErrorMessage() { return safetyErrorMessage; }
 
 private:
 
@@ -95,6 +116,7 @@ private:
 	InputRewriter* inputRewriter;
 
 	vector<Term*> terms_parsered;
+
 
 	bool foundARangeAtomInCurrentRule;
 
@@ -112,7 +134,23 @@ private:
 
 	ChoiceElement* currentChoiceElement;
 
- 	void addRule(Rule* rule);
+	Term* weight;
+
+	Term* level;
+
+	bool hiddenNewPredicate;
+
+	int currentRuleOrdering;
+	vector<Atom*> currentRuleAtomsIndexed;
+	vector<vector<unsigned>> currentRuleAtomsIndexedArguments;
+	vector<vector<Atom*>> currentRuleAtomsBefore;
+	vector<vector<Atom*>> currentRuleAtomsAfter;
+	vector<Atom*> annotationsAtomsToDelete;
+
+	vector<Atom*> globalAtomsIndexed;
+	vector<vector<unsigned>> globalAtomsIndexedArguments;
+
+	void addRule(Rule* rule);
  	void createRule(vector<Atom*>* head, vector<Atom*>* body=0);
 	void createFact(Atom* fact);
 
@@ -122,12 +160,22 @@ private:
 	void expandAtoms(const vector<vector<Atom*>>& atoms, vector<Atom*>& currentAtoms, vector<vector<Atom*>>& atomsExpanded, unsigned currentPosition);
 	void expandRulePart(vector<Atom*>::const_iterator start, vector<Atom*>::const_iterator end, vector<vector<Atom*> >& atomsExpanded);
 	void expandRangeAtom(Atom* fact, vector<Atom*>& atomExpanded);
-	void rewriteAggregate(Rule* rule);
+	void rewriteAggregate(Rule* rule,bool clear=true);
 
 	void rewriteChoice(Rule* rule);
-	void manageSimpleRule(Rule* rule);
+	void manageSimpleRule(Rule* rule,bool clear=true);
 
-	void safetyError(bool condition,string message);
+	static bool currentRuleIsUnsafe;
+	static bool foundASafetyError;
+	static void safetyError(bool condition, Rule* rule);
+	void clearAnnotationsSetting();
+	void manageRuleAnnotations(Rule* currentRule,bool rewritedRule=false);
+	void projectionRewrite(Rule* rule);
+
+	bool projectAtom;
+
+	static string safetyErrorMessage;
+
 };
 
 } /* namespace grounder */

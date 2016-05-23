@@ -26,11 +26,15 @@
 using namespace std;
 using namespace DLV2::DB;
 
+#ifdef STATIC
+
+#else
+
 // Initialize singleton
 DBConnection* DBConnection::instance = NULL;
 
-DBConnection* 
-DBConnection::globalDBConnection() 
+DBConnection*
+DBConnection::globalDBConnection()
 {
     if( instance == NULL )
     {
@@ -77,9 +81,9 @@ DBConnection::connect(
     sourceString.append("DSN=").append(source).
         append(";UID=").append(user).
         append(";PWD=").append(pwd).append(";");
-    
+
     SQLRETURN retCode;
-    try 
+    try
     {
         // Allocate environment handle
         retCode = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &hEnv);
@@ -87,12 +91,12 @@ DBConnection::connect(
             throw SQLException(SQL_HANDLE_ENV,hEnv);
 
         // Set the ODBC version environment attribute
-        retCode = SQLSetEnvAttr(hEnv, SQL_ATTR_ODBC_VERSION, (SQLPOINTER*)SQL_OV_ODBC3, 0); 
+        retCode = SQLSetEnvAttr(hEnv, SQL_ATTR_ODBC_VERSION, (SQLPOINTER*)SQL_OV_ODBC3, 0);
         if( !SQL_SUCCEEDED(retCode) )
             throw SQLException(SQL_HANDLE_ENV,hEnv);
 
         // Allocate connection handle
-        retCode = SQLAllocHandle(SQL_HANDLE_DBC, hEnv, &hDBc); 
+        retCode = SQLAllocHandle(SQL_HANDLE_DBC, hEnv, &hDBc);
         if( !SQL_SUCCEEDED(retCode) )
             throw SQLException(SQL_HANDLE_DBC,hDBc);
 
@@ -100,20 +104,20 @@ DBConnection::connect(
         retCode = SQLSetConnectAttr(hDBc, SQL_LOGIN_TIMEOUT, (SQLPOINTER)5, 0);
         if( !SQL_SUCCEEDED(retCode) )
             throw SQLException(SQL_HANDLE_DBC,hDBc);
-        
+
         // Connect to the datasource
         retCode = SQLDriverConnect(
-            hDBc, 
-            NULL, 
-            (SQLCHAR*)sourceString.c_str(), 
+            hDBc,
+            NULL,
+            (SQLCHAR*)sourceString.c_str(),
             sourceString.size(),
             NULL,
-            0, 
+            0,
             NULL,
             SQL_DRIVER_NOPROMPT);
         if( !SQL_SUCCEEDED(retCode) )
             throw SQLException(SQL_HANDLE_DBC,hDBc);
-        
+
         connected = true;
     }
     catch( SQLException& exception )
@@ -137,23 +141,23 @@ DBConnection::disconnect()
     assert_msg( connected, "You have to first connect to a datasource." );
     SQLRETURN retCode;
     try{
-        // Free handles, and disconnect.   
-        if (hDBc) { 
+        // Free handles, and disconnect.
+        if (hDBc) {
             retCode = SQLDisconnect(hDBc);
             if( !SQL_SUCCEEDED(retCode) )
                 throw SQLException(SQL_HANDLE_DBC,hDBc);
             connected = false;
-            
+
             retCode = SQLFreeHandle(SQL_HANDLE_DBC, hDBc);
             if( !SQL_SUCCEEDED(retCode) )
                 throw SQLException(SQL_HANDLE_DBC,hDBc);
-            hDBc = NULL; 
+            hDBc = NULL;
         }
-        if (hEnv) { 
+        if (hEnv) {
             retCode = SQLFreeHandle(SQL_HANDLE_ENV, hEnv);
             if( !SQL_SUCCEEDED(retCode) )
                 throw SQLException(SQL_HANDLE_DBC,hEnv);
-            hEnv = NULL; 
+            hEnv = NULL;
         }
         if( instance != NULL )
             delete instance;
@@ -174,7 +178,7 @@ DBConnection::disconnect()
 }
 
 void
-DBConnection::setAutoCommit( 
+DBConnection::setAutoCommit(
     bool autoCommit ) const
 {
     assert_msg( connected, "You have to first connect to a datasource." );
@@ -184,7 +188,7 @@ DBConnection::setAutoCommit(
             retCode = SQLSetConnectAttr(hDBc,SQL_ATTR_AUTOCOMMIT,(SQLPOINTER)SQL_AUTOCOMMIT_ON,0);
         else
             retCode = SQLSetConnectAttr(hDBc,SQL_ATTR_AUTOCOMMIT,(SQLPOINTER)SQL_AUTOCOMMIT_OFF,0);
-        
+
         if( !SQL_SUCCEEDED(retCode) )
             throw SQLException(SQL_HANDLE_DBC,hDBc);
     }
@@ -200,7 +204,7 @@ DBConnection::setAutoCommit(
             ErrorMessage::errorDBConnection(Msg);
         else
             ErrorMessage::errorDBConnection("Unknown error");
-    }    
+    }
 }
 
 void
@@ -216,11 +220,11 @@ DBConnection::executeSQLStatement(
         retCode = SQLAllocHandle(SQL_HANDLE_STMT, hDBc, &hStmt);
         if( !SQL_SUCCEEDED(retCode) )
             throw SQLException(SQL_HANDLE_STMT,hStmt);
-        
+
         retCode = SQLExecDirect(hStmt,(SQLCHAR*)sql.c_str(),SQL_NTS);
         if( !SQL_SUCCEEDED(retCode) )
             throw SQLException(SQL_HANDLE_STMT,hStmt);
-        
+
         retCode = SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
         if( !SQL_SUCCEEDED(retCode) )
             throw SQLException(SQL_HANDLE_STMT,hStmt);
@@ -263,7 +267,7 @@ DBConnection::commit() const
             ErrorMessage::errorDBConnection(Msg);
         else
             ErrorMessage::errorDBConnection("Unknown error");
-    }    
+    }
 }
 
 void
@@ -289,7 +293,7 @@ DBConnection::rollback() const
             ErrorMessage::errorDBConnection(Msg);
         else
             ErrorMessage::errorDBConnection("Unknown error");
-    }    
+    }
 }
 
 string*
@@ -652,3 +656,4 @@ DBConnection::retrieveNextTableTimestamp(
     }
     return nextId;
 }
+#endif

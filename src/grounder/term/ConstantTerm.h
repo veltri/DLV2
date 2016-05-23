@@ -50,7 +50,6 @@ class NumericConstantTerm: public ConstantTerm{
 public:
 	NumericConstantTerm(bool negative,int n): ConstantTerm(negative), numeric_constant(n){};
 
-	virtual Term* clone(){return new NumericConstantTerm(negative,numeric_constant);};
 
 	virtual bool operator==(const Term& term) const {return (TermType::NUMERIC_CONSTANT==term.getType() && this->numeric_constant==term.getConstantValue());}
 
@@ -69,6 +68,11 @@ public:
 	virtual string getName() const {return boost::lexical_cast<string>(numeric_constant);}
 	virtual void print(ostream& stream=cout) {stream<<numeric_constant;}
 	void setNegative(bool n){numeric_constant=-numeric_constant;};
+
+	virtual LINE transformToLineEq(){
+		LINE A(numeric_constant);
+		return A;
+	}
 
 private:
 	int numeric_constant;

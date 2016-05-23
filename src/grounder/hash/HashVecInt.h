@@ -95,6 +95,8 @@ public:
 	}
 
 	inline size_t computeHashTerm(const vector<Term*> & values){
+		if(values.empty())
+			return 0;
 		size_t seed=values[0]->getIndex();
 		for(unsigned i=1;i<values.size();i++)
 			boost::hash_combine(seed,values[i]->getIndex());
@@ -128,6 +130,30 @@ public:
 	    size_t seed=31;
 		for(unsigned i=0;i<values.size();i++)
 			seed ^= hasher(values[i]->getIndex()) + 0x9e3779b9 + (seed<<6) + (seed>>2);
+		return seed;
+	}
+
+};
+
+class DLVHashVecInt : public HashVecInt{
+public:
+	inline size_t computeHash(const vector<index_object> & values){
+	    size_t seed=values[0];
+		for(unsigned i=1;i<values.size();i++)
+			seed = seed*5+values[i];
+		return seed;
+	}
+	inline size_t computeHashSize_T(const vector<size_t> & values){
+	    size_t seed=values[0];
+		for(unsigned i=1;i<values.size();i++)
+			seed = seed*5+values[i];
+		return seed;
+	}
+
+	inline size_t computeHashTerm(const vector<Term*> & values){
+	    size_t seed=values[0]->getIndex();
+		for(unsigned i=1;i<values.size();i++)
+			seed = seed*5+values[i]->getIndex();
 		return seed;
 	}
 

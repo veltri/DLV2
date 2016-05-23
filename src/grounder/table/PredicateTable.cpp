@@ -34,6 +34,11 @@ void PredicateTable::getEdbPredicate(unordered_set<index_object>& edb_pred) {
 			edb_pred.insert(p->getIndex());
 }
 
+void PredicateTable::getPredicateName(unordered_set<string>& names) {
+	for (auto p : predicate_set.flyweight_set)
+		names.insert(p->getName());
+}
+
 };
 
 };

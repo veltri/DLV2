@@ -19,6 +19,9 @@
 #include "NonGroundSimplifier.h"
 #include "../output/NumericOutputBuilder.h"
 #include "../exception/ConstrainException.h"
+#include "../statement/RuleStatistics.h"
+#include "../statement/InputRewriter.h"
+
 
 
 using namespace std;
@@ -43,22 +46,23 @@ public:
 	 */
 	ProgramGrounder() :
 		predicateTable(PredicateTable::getInstance()), predicateExtTable(PredicateExtTable::getInstance()),
-		statementDependency(StatementDependency::getInstance()), termsMap(TermTable::getInstance()),outputBuilder(OutputBuilder::getInstance()){
+		statementDependency(StatementDependency::getInstance()), termsMap(TermTable::getInstance()),outputBuilder(OutputBuilder::getInstance()),iteration(0),
+		rstats(RuleStatistics::getInstance()),printRuleTime(Options::globalOptions()->getRuleTime()),printStats(Options::globalOptions()->getPrintGroundStats()!=0){
 	};
 
-	///This method executes the overall grounding process
+	/// This method executes the overall grounding process
 	virtual void ground();
 
 	/// This method executes the grounding of a rule
 	/// @param r The rule to be grounded
 	/// @parm isRecursive If the rule is recursive
 	/// @param firstIteraction If it is the first iteration or not (useful for recursive rules)
-	bool groundRule(Rule* r);
+	bool groundRule(Rule* r, unordered_set<index_object>* componentPredicateInHead=nullptr);
 
 	///Printer method
 	void print() {	statementDependency->print();};
 
-	//Printer method for facts
+	/// Printer method for facts
 	void printFact() {	predicateExtTable->print(FACT);};
 
 	/// Return the InstanceTable
@@ -69,6 +73,11 @@ public:
 
 	/// Return the PredicateTable
 	PredicateTable* getPredicateTable() {return predicateTable;};
+
+	bool isNotEmptyPredExt(Predicate* pred,unsigned table);
+	bool isNotEmptyPredExt(Predicate* pred,unsigned table,SearchType type);
+
+
 
 	///Destructor
 	virtual ~ProgramGrounder();
@@ -85,18 +94,25 @@ protected:
 	///Output builder
 	OutputBuilder *outputBuilder;
 
+
 //	///The set of grounder rules
 //	GroundedRules groundedRule;
 //	/// Manage the output and simplification
 //	ProgramEvaluator evaluator;
 
-	/// For each predicate in the current rule this vector stores the table of insert for the atom in head and
+
+	/// For each predicate in the current rule this vector stores the tables of insert for the atom in head and
 	/// searching table for the predicate in the body
-	vector<vector<unsigned>> predicate_searchInsert_table;
+	vector<vector<pair<unsigned,SearchType>>> predicate_searchInsert_table;
+
+	/// For each predicate in the current rule this vector stores the atom searchers of insertion and look-up for head atoms and
+	/// the atom searchers of look-up for body atoms
+	vector<vector<vector<IndexingStructure*>>> predicate_searchInsert_atomSearcher;
+
 	///The NonGroundSimplifier object
 	NonGroundSimplifier nonGroundSimplificator;
 
-	void swapInDelta(Rule* r);
+	void swapInDelta(Rule* r,set_predicate &predicateEvaluated);
 
 	/* Initialize the vector of predicate_searchInsert_table with:
 	 * 		Atom in head: if is recursive predicate DELTA table else NOFACT table
@@ -109,9 +125,8 @@ protected:
 	/// Based on the sequence of searching table set the table to search and insert for grounding process
 	bool nextSearchInsertPredicate(Rule* rule,unordered_set<index_object>& componentPredicateInHead,unsigned token,const vector<unsigned>& originalOrderBody);
 
-
 	/// Initialization of grounding rule r
-	virtual void inizialize(Rule* rule) = 0;
+	virtual void inizialize(Rule* rule, unordered_set<index_object>* componentPredicateInHead) = 0;
 	/// Return true if exist a match with the current atom and current assignment
 	virtual bool match() = 0;
 	/// Next atom in the rule, if is last return false else true
@@ -134,11 +149,56 @@ protected:
 	///		-If it was not derived, then (since is false) the atom is true, so it can be simplified
 	void substituteIndicesInRulesWithPossibleUndefAtoms();
 
+	virtual bool isCartesianProductRule(Rule *r){return false;}
+	virtual bool groundCartesian(Rule *r,unordered_set<index_object>* componentPredicateInHead)=0;
+
+	///This method creates a default atom searcher for each predicate occurring in the head and the body of the current rule.
+	///In particular it creates an atom searcher on FACT and NOFACT tables for every predicate,
+	///and for recursive predicates it creates an atom searcher also for DELTA and NEXTDELTA tables.
+	void setDefaultAtomSearchers(Rule* r, unordered_set<index_object>* componentPredicateInHead);
+
+	///Utility method for setDefaultAtomSearchers
+	virtual void createAtomSearchersForPredicateBody(unsigned position, unsigned atomPos, Predicate* predicate, unordered_set<index_object>* componentPredicateInHead){};
+	///Utility method for setDefaultAtomSearchers
+	virtual void createAtomSearchersForPredicateHead(unsigned position, unsigned choiceElementPos, Predicate* predicate, unordered_set<index_object>* componentPredicateInHead, bool firstAtom){};
+
+	///For each recursive predicate in the set update the indices corresponding delta and nf table
+	///This function must be called at the beginning of iteration
+	void updateIndiciesHistoryTable(unordered_set<unsigned> recursivePredicate){
+		trace_action_tag(recursion,1,cerr<<"ITERATION "<<iteration<<endl;);
+
+		for(auto p:recursivePredicate){
+			auto predExt=predicateExtTable->getPredicateExt(p);
+			trace_action_tag(recursion,1,cerr<<"Update predicate "<<predExt->getPredicate()->getName()<<endl;);
+			predExt->updateIndiciesTable(NOFACT,iteration);
+			predExt->updateIndiciesTable(FACT,iteration);
+		}
+	}
+
+
+	//Iteration of the current instantiation
+	unsigned iteration;
+
+
+	///Statistic for each rule grounded
+	RuleStatistics* rstats;
+
+	///Print the time spent to ground each single rule
+	bool printRuleTime;
+	///Print the statistics of each rule grounded
+	bool printStats;
+
+
+
 private:
 	///Print the program rule
 	void printProgram(const vector<vector<Rule*> >& exitRules,const vector<vector<Rule*> >& recursiveRules);
 	bool inizializeSearchInsertPredicateBody(Rule* rule);
 	void findRecursivePredicatesInComponentRules(const unordered_set<index_object>& componentPredicateInHead, vector<unsigned>& recursivePredicatesPositions, Rule* rule, vector<unsigned >& orderedBody);
+	void orderPositiveAtomsBody(vector<unsigned>& originalOrderBody,Rule* rule, unordered_set<index_object>* componentPredicateInHead);
+	void orderPositiveAtomsBody(Rule* rule);
+	void projectAtomsInRule(vector<Rule*>& exitRules,vector<Rule*>& recursiveRule,vector<Rule*>& constraint,unordered_set<index_object>& recursivePred,BaseInputRewriter& rewriter);
+
 };
 
 };

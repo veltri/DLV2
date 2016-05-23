@@ -1,5 +1,5 @@
 /*
- * Instance.h
+ * Instance.hMULTIPLE_TERMS
  *
  *  Created on: 24/mar/2014
  *      Author: Jessica
@@ -12,9 +12,11 @@
 
 #include "../../util/Options.h"
 #include "../../util/Assert.h"
-#include "AtomSearcher.h"
+#include "IndexingStructure.h"
 #include "IdGenerator.h"
 #include "../output/OutputBuilder.h"
+#include "../ground/StatementDependency.h"
+#include "../atom/ClassicalLiteral.h"
 
 using namespace std;
 
@@ -44,6 +46,8 @@ public:
 	int getMin(unsigned index) const;
 	void addInDictionary(unsigned position,Term* term);
 	unsigned getSelectivity(unsigned pos)const{return termDictionary[pos].size();}
+	bool isPresent(unsigned position,Term* term)const;
+	const set_term& getDictionary(unsigned i)const {return termDictionary[i];};
 
 private:
 	vector<int> min;
@@ -62,77 +66,99 @@ class PredicateExtension {
 public:
 	///Constructor
 	PredicateExtension(Predicate* predicate, unsigned tableNumber = 2): predicate(predicate), predicateInformation(new PredicateInformation(predicate->getArity())){
-		if(MAX_TABLE_NUMBER){
-			tables.reserve(MAX_TABLE_NUMBER);
-			atomSearchers.reserve(MAX_TABLE_NUMBER);
-		}
+		tables.reserve(MAX_TABLE_NUMBER);
+		atomSearchers.reserve(MAX_TABLE_NUMBER);
 		addTables(tableNumber);
 	}
 
 	///Getter for the predicate
-	Predicate* getPredicate() const {return predicate;}
-
-	///Returns the i-th AtomSeacher in atomSearchers
-	inline AtomSearcher*& getAtomSearcher(unsigned i){
-		if(i>=atomSearchers.size()) setAtomSearchers();
-		return atomSearchers[i];
-	}
+	inline Predicate* getPredicate() const {return predicate;}
 
 	/// Add table and an AtomSearcher
 	void addTables(unsigned numTables=1){
-		for(unsigned i=0;i<numTables;i++)
-			tables.push_back(new AtomVector());
+		for(unsigned i=0;i<numTables;++i){
+			tables.push_back(new AtomHistoryVector());
+			atomSearchers.push_back(new AtomSearcher(tables[i]));
+		}
 	}
 
-	///Add a given atom in specified table
-	bool addAtom(unsigned table, Atom* genericAtom, bool search = false){
-		if(predicate->isSolved() && !genericAtom->isFact()){
-			predicate->setSolved(false);
-		}
-		if(search){
-			if((getAtomSearcher(table)->findGroundAtom(genericAtom))!=nullptr)
-				return false;
-		}
-		if(atomSearchers.size()>table){
-			getAtomSearcher(table)->add(genericAtom);
-		}
-		tables[table]->push_back(genericAtom);
-		predicateInformation->update(genericAtom);
-		if(genericAtom->getIndex()==0) setIndexOfAtom(genericAtom);
-		return true;
+	inline AtomHistoryVector* getTable(unsigned i)const{
+		return tables[i];
 	}
 
-	///Get an atom in specified table
-	Atom* getAtom(unsigned table, Atom* genericAtom){
-		if(tables[table]->size()==0) return nullptr;
-		AtomSearcher* atomSearcher=getAtomSearcher(table);
-		Atom* atomFound=atomSearcher->findGroundAtom(genericAtom);
-		return atomFound;
+	///Returns the i-th AtomSeacher in atomSearchers
+	inline AtomSearcher* getAtomSearcher(unsigned table)const{
+		return atomSearchers[table];
 	}
 
-	///Get a atom searching in all table
-	Atom* getAtom(Atom* genericAtom){
-		for(unsigned i=0;i<tables.size();++i){
-			if(tables[i]->size()==0) continue;
-			Atom* atomFound=getAtom(i,genericAtom);
-			if(atomFound!=nullptr)
-				return atomFound;
-		}
-		return nullptr;
+	IndexingStructure* getIndexingStructure(unsigned table, unsigned indexType, vector<unsigned>* indexingTerms=nullptr){
+		return atomSearchers[table]->getIndexingStructure(indexType,indexingTerms);
+	}
+
+	IndexingStructure* getIndexingStructure(unsigned table, vector<unsigned>* indexingTerms=nullptr){
+//		int indexType=Options::globalOptions()->getPredicateIndexType(predicate->getName());
+//		if(indexType==-1){
+//			if(StatementDependency::getInstance()->isOnlyInHead(predicate->getIndex()) || predicate->getArity()==1)
+//				indexType=HASHSET;
+//			else
+//				indexType=Options::globalOptions()->getIndexType();
+//		}
+//		if(predicate->getArity()==0)
+//			indexType=DEFAULT;
+		return atomSearchers[table]->getIndexingStructure(indexingTerms);
 	}
 
 	///Set the index of the atom with new id if the atom is not yet indexed, and send it to the output builder
 	void setIndexOfAtom(Atom* atom){
-		atom->setIndex(IdGenerator::getInstance()->getNewId(1));
+		if(atom->getPredicate()->isEdb() && Options::globalOptions()->isNofacts())
+			return;
+		if(Options::globalOptions()->isCompactFacts() && !atom->isFact())
+			atom->setIndex(IdGenerator::getInstance()->getNewId(1));
+		else
+			atom->setIndex(IdGenerator::getInstance()->getNewId(1));
 		if(!atom->getPredicate()->isHiddenForPrinting())
-			OutputBuilder::getInstance()->appendToStreamAtomTable(atom);
+			OutputBuilder::getInstance()->appendToStreamAtomTable(atom,atom->isFact());
 	}
 
-	 //Moves the content of the tableFrom (source) to the tableTo (destination)
-	 void swapTables(unsigned tableFrom,unsigned tableTo);
+	///Search the given ground atom in all tables
+	inline Atom* getGroundAtom(Atom* atom){
+		for(unsigned table=0;table<tables.size();++table){
+			IndexingStructure* indexingStructure=atomSearchers[table]->getDefaultIndexingStructure();
+			if(indexingStructure!=nullptr){
+				Atom* atomFound=indexingStructure->find(atom);
+				if(atomFound!=nullptr)
+					return atomFound;
+			}
+		}
+		return nullptr;
+	}
 
-	 //Swap the pointers of the tableFrom (source) to the tableTo (destination)
-	 void swapPointersTables(unsigned tableFrom,unsigned tableTo);
+	void addAtom(Atom* atom, unsigned table){
+		tables[table]->push_back(atom);
+		predicateInformation->update(atom);
+
+		if(predicate->isSolved() && !atom->isFact())
+			predicate->setSolved(false);
+		if(atom->getIndex()==0) setIndexOfAtom(atom);
+	}
+
+	//Moves the content of the tableFrom (source) to the tableTo (destination)
+	void swapTables(unsigned tableFrom,unsigned tableTo);
+
+	//Swap the pointers of the tableFrom (source) to the tableTo (destination)
+	void swapPointersTables(unsigned tableFrom,unsigned tableTo);
+
+	///Update the indicies of Delta and NF table for the recursion
+	void updateIndiciesTable(unsigned table,unsigned iteration){
+		if(tables.size()>table){
+			tables[table]->updateIndices(iteration);
+			trace_action_tag(recursion,1,cerr<<"TABLE "<<table<<" IT: "<<tables[table]->getCurrentIteration()<<" DELTA-INDEX: "<<
+					tables[table]->getDeltaIndexIteration()<<" NF-INDEX: "<<tables[table]->getNFIndexIteration()<<endl;);
+			trace_action_tag(recursion,1,for(unsigned i=0;i<tables[table]->size();i++)(*tables[table])[i]->print(cerr);;cerr<<endl;);
+
+		}
+
+	}
 
 	///Printer method for a single table
 	inline void print(unsigned table){for(auto fact:*tables[table]){cout<<fact->getIndex()<<" ";ClassicalLiteral::print(predicate,fact->getTerms(),false,false,cout);cout<<endl;}}
@@ -147,7 +173,25 @@ public:
 
 	PredicateInformation* getPredicateInformation() const {return predicateInformation;}
 
-	unsigned getPredicateExtentionSize(unsigned table)const{if(table<tables.size()) return tables[table]->size(); return 0;}
+	unsigned getPredicateExtentionSize(unsigned table) const {if(table<tables.size()) return tables[table]->size(); return 0;}
+	unsigned getPredicateExtentionSize() const { unsigned size=0; for(auto table:tables) size+=table->size(); return size;}
+	unsigned getPredicateExtentionSize(unsigned table,SearchType type) const {
+		if(table<tables.size())
+			return tables[table]->size_iteration(type); return 0;
+	}
+	unsigned getPredicateExtentionSize(unsigned table,SearchType type,unsigned iteration) const {
+		if(table<tables.size()) {
+			auto it=tables[table]->getElements(type,iteration);
+			return it.second-it.first;
+		}
+		return 0;
+	}
+
+
+	IndexingStructure* addAtomSearcher(unsigned table, vector<unsigned>* indexingTerms,bool recursive=false);
+	IndexingStructure* addAtomSearcher(unsigned table, unsigned type, vector<unsigned>* indexingTerms,bool recursive=false);
+	IndexingStructure* addFullIndexAtomSearcher(unsigned table, bool recursive=false);
+	IndexingStructure* createAtomSearcher(unsigned table, unsigned indexType,  vector<unsigned>* indexingTerms, bool recursive=false);
 
 private:
 	///The predicate
@@ -155,7 +199,7 @@ private:
 
 	///For each AtomTable in tables is present an AtomSeacher in atomSearchers
 	///The vector of tables
-	vector<AtomVector*> tables;
+	vector<AtomHistoryVector*> tables;
 	///The vector of  AtomSeacher
 	vector<AtomSearcher*> atomSearchers;
 
@@ -163,9 +207,6 @@ private:
 
 	///A PredicateInformation object that stores the information about the max and the min values of each term in the instances of the predicate
 	PredicateInformation* predicateInformation;
-
-	///This method configures the searching strategy for each table
-	void setAtomSearchers();
 
 };
 

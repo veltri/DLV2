@@ -10,22 +10,109 @@
 #include "../../util/Options.h"
 #include "../atom/Choice.h"
 #include "../../util/Utils.h"
+#include "../atom/BuiltInAtom.h"
+#include "GroundingPreferences.h"
 
 namespace DLV2 {
 namespace grounder {
 
+/***************************************************** PartialOrders *******************************************************************/
+
+void PartialOrders::checkIfPresentPartialOrders() {
+	for(auto it=rule->getBeginBody();it!=rule->getEndBody();++it){
+		for(auto it2=it+1;it2!=rule->getEndBody();++it2){
+
+			containsFunctionalTerms(*it,*it2);
+
+			if((*it)->isBuiltIn())
+				containsABuiltIAssignmentVariable(*it,*it2);
+
+		}
+	}
+}
+
+void PartialOrders::containsFunctionalTerms(Atom* atom1, Atom* atom2) {
+	for(unsigned i=0;i<atom1->getTermsSize();++i){
+		Term* term1=atom1->getTerm(i);
+		if(term1->contain(TermType::FUNCTION)){
+			for(unsigned j=0;j<atom2->getTermsSize();++j){
+				Term* term2=atom2->getTerm(j);
+				if(term2->getType()==VARIABLE)
+				{
+					if(term1->containsVariable(term2)){
+						GroundingPreferences::getGroundingPreferences()->addRulePartialOrder(rule);
+						GroundingPreferences::getGroundingPreferences()->addRulePartialOrderAtom(rule,atom2);
+						GroundingPreferences::getGroundingPreferences()->addRulePartialOrderAtom(rule,atom1);
+						return;
+					}
+				}
+			}
+		}
+	}
+}
+
+void PartialOrders::containsABuiltIAssignmentVariable(Atom* atom1, Atom* atom2) {
+}
+
+/***************************************************** OrderRule *******************************************************************/
+
+vector<Atom*> OrderRule::rewriteArith(Atom* current_atom,
+		unordered_map<Term*, Term*, IndexForTable<Term>, IndexForTable<Term> >& arithRewrited) {
+	vector<Atom*> newBuiltins;
+	for (unsigned i = 0; i < current_atom->getTermsSize(); i++) {
+		auto currentTerm = current_atom->getTerm(i);
+		if (currentTerm->getType() == ARITH) {
+			Term* newTerm = nullptr;
+			//Check if is already rewrite
+			if (arithRewrited.count(currentTerm)) {
+				newTerm = arithRewrited[currentTerm];
+			} else {
+				newTerm = TermTable::getInstance()->generateVariableAuxTerm();
+				arithRewrited.insert( { currentTerm, newTerm });
+				newBuiltins.push_back(new BuiltInAtom(Binop::EQUAL, false, newTerm,current_atom->getTerm(i)));
+			}
+			current_atom->setTerm(i, newTerm);
+
+		}
+	}
+	return newBuiltins;
+}
+
 OrderRule::OrderRule(Rule* r):rule(r){
-	unsigned atom_counter=0;
 	bindAtomsDependency.reserve(r->getSizeBody());
 	computeAtomsVariables();
-	for(auto atom=rule->getBeginBody();atom!=rule->getEndBody();++atom,++atom_counter){
+	unordered_map<Term*,Term*,IndexForTable<Term>,IndexForTable<Term>> arithRewrited;
+	for(unsigned atom_counter=0;atom_counter<rule->getSizeBody();++atom_counter){
 		bindAtomsDependency.push_back(unordered_set<unsigned>());
-		Atom* current_atom=*atom;
+		Atom* current_atom=rule->getAtomInBody(atom_counter);
 		if(current_atom->isClassicalLiteral()){
 			if(current_atom->isNegative())
 				negativeAtoms.push_back(atom_counter);
-			else
-				positiveAtoms.push_back(atom_counter);
+			else{
+				/// Find for each positive classical literal the variables that must be bound
+				/// (for example variables appearing in arith terms)
+				bool mustBeBound=false;
+				if(Options::globalOptions()->getRewriteArith()){
+					vector<Atom*> newBuiltins=rewriteArith(current_atom, arithRewrited);
+					for(auto newBuiltin:newBuiltins){
+						rule->addInBody(newBuiltin);
+					}
+					if(!newBuiltins.empty())
+						mapAtomsVariables[atom_counter]=current_atom->getVariable();
+				}else{
+					mapPositiveAtomsBoundVariables.insert({atom_counter,set_term()});
+					for(auto v:current_atom->getTerms()){
+						v->getVariablesInArith(mapPositiveAtomsBoundVariables[atom_counter]);
+						if(mapPositiveAtomsBoundVariables[atom_counter].size()>0 && !mustBeBound){
+							positiveAtomsToBeBound.push_back(atom_counter);
+							mustBeBound=true;
+						}
+					}
+				}
+
+
+				if(!mustBeBound) positiveAtoms.push_back(atom_counter);
+			}
 		}
 		else if(current_atom->isBuiltIn())
 			 builtInAtoms.push_back(atom_counter);
@@ -35,6 +122,10 @@ OrderRule::OrderRule(Rule* r):rule(r){
 }
 
 bool OrderRule::order() {
+
+	PartialOrders p(rule);
+	p.checkIfPresentPartialOrders();
+
 	// A first attempt to order the body ignoring cyclic dependencies
 	// by iterating the atoms in the body and resolving their dependencies when are not cyclic
 	while(positiveAtoms.size()>0){
@@ -43,32 +134,35 @@ bool OrderRule::order() {
 		addSafeVariablesInAtom(current_atom, atom_counter);
 		positiveAtoms.pop_front();
 		unlockAtoms(positiveAtoms);
-		unlockAtoms(negativeAtoms);
+		unlockAtoms(positiveAtomsToBeBound);
 		unlockAtoms(builtInAtoms);
+		unlockAtoms(negativeAtoms);
 	}
 
 	// Second, solve the cyclic dependencies
-	while(builtInAtoms.size()>0 || negativeAtoms.size()>0 || aggregatesAtoms.size()>0){
+	while(builtInAtoms.size()>0 || negativeAtoms.size()>0 || aggregatesAtoms.size()>0 || positiveAtomsToBeBound.size()>0){
 		unsigned sizeBuiltIns=builtInAtoms.size();
 		unsigned sizeNegatives=negativeAtoms.size();
-		unlockAtoms(negativeAtoms);
+		unsigned sizePositivesToBeBound=positiveAtomsToBeBound.size();
 		unlockAtoms(builtInAtoms);
-		if(builtInAtoms.size()==sizeBuiltIns && sizeNegatives==negativeAtoms.size()){
+		unlockAtoms(negativeAtoms);
+		unlockAtoms(positiveAtomsToBeBound);
+		if(positiveAtomsToBeBound.size()==sizePositivesToBeBound && builtInAtoms.size()==sizeBuiltIns && sizeNegatives==negativeAtoms.size()){
 			unsigned sizeAggregates=aggregatesAtoms.size();
 			unlockAtoms(aggregatesAtoms);
-			if(aggregatesAtoms.size()==sizeAggregates){
-				for(auto b:orderedBody){
-					b->print();
-					cout<<endl;
-				}
+			if(aggregatesAtoms.size()==sizeAggregates && !unlockAtomWithArith(positiveAtomsToBeBound)){
 				return false;
 			}
 		}
 	}
 
+
 	// Finally, set the ordered body as the body of the rule
 	rule->setBody(orderedBody);
 
+	//If is a weak contraint check the variable in the level weight and label
+	if(rule->isWeakConstraint() && !checkWeakSafety())
+		return false;
 	// Check head safety once that the safe variables are known
 	return checkHeadSafety();
 
@@ -76,21 +170,37 @@ bool OrderRule::order() {
 
 bool OrderRule::checkHeadSafety(){
 	set_term variableToCheck;
-	for(auto atom=rule->getBeginHead();atom!=rule->getEndHead();++atom){
-		const set_term& tempVariables=(*atom)->getVariable();
-		variableToCheck.insert(tempVariables.begin(),tempVariables.end());
-	}
-	if(rule->isChoiceRule()){
+	if(!rule->isChoiceRule()){
+		for(auto atom=rule->getBeginHead();atom!=rule->getEndHead();++atom){
+			const set_term& tempVariables=(*atom)->getVariable();
+			variableToCheck.insert(tempVariables.begin(),tempVariables.end());
+		}
+	}else{
 		Choice* choice=dynamic_cast<Choice*> (*rule->getBeginHead());
-		set_term variables=choice->getVariableToSave();
-		variableToCheck.insert(variables.begin(),variables.end());
+		variableToCheck=choice->getVariableToSave();
+
 	}
+
 	if(safeVariables.size()<variableToCheck.size())
 		return false;
 	for(auto variable:variableToCheck)
 		if(!safeVariables.count(variable))
 			return false;
+
 	return true;
+}
+
+bool OrderRule::checkWeakSafety(){
+	set_term variableToCheck;
+	if(rule->getLevel()!=nullptr)
+		rule->getLevel()->getVariable(variableToCheck);
+
+	if(rule->getWeight()!=nullptr)
+		rule->getWeight()->getVariable(variableToCheck);
+	for(auto term:rule->getLabel())
+		term->getVariable(variableToCheck);
+
+	return Utils::isContained(variableToCheck,safeVariables);
 }
 
 void OrderRule::addSafeVariablesInAtom(Atom* atom, unsigned pos) {
@@ -117,14 +227,51 @@ void OrderRule::foundAnAssigment(Atom* atom, Term* bindVariable, unsigned pos) {
 	}
 }
 
+bool OrderRule::unlockAtomWithArith(list<unsigned>& atoms) {
+	list<unsigned>::iterator atomUnlocked=atoms.end();
+	unordered_map<Term*, Term*, IndexForTable<Term>, IndexForTable<Term> > arithRewrited;
+	unsigned atom_counter=0;
+	for(auto it=atoms.begin();it!=atoms.end();++it,atom_counter++){
+		Atom* atom=rule->getAtomInBody(*it);
+		set_term variables=mapAtomsVariables[*it];
+		if(atom->isClassicalLiteral() && !atom->isNegative()){
+			if(mapPositiveAtomsBoundVariables[*it].size()>0){
+				addSafeVariablesInAtom(atom,*it);
+				auto newBuiltins=rewriteArith(atom,arithRewrited);
+				for(auto newBuiltin:newBuiltins){
+					newBuiltin->setAssignment(true);
+					orderedBody.push_back(newBuiltin);
+				}
+				if(!newBuiltins.empty()){
+					mapAtomsVariables[atom_counter]=atom->getVariable();
+				}
+				atomUnlocked=it;
+				break;
+			}
+		}
+	}
+	if(atomUnlocked==atoms.end())
+		return false;
+	atoms.erase(atomUnlocked);
+	return true;
+}
+
 void OrderRule::unlockAtoms(list<unsigned>& atoms) {
 	vector<list<unsigned>::iterator> atomsUnlocked;
 	for(auto it=atoms.begin();it!=atoms.end();++it){
 		Atom* atom=rule->getAtomInBody(*it);
 		set_term variables=mapAtomsVariables[*it];
-		if(atom->isClassicalLiteral() && !atom->isNegative() && Utils::isContained(variables,safeVariables)){
-			orderedBody.push_back(atom);
-			atomsUnlocked.push_back(it);
+		if(atom->isClassicalLiteral() && !atom->isNegative()){
+			if(Utils::isContained(variables,safeVariables)){
+				orderedBody.push_back(atom);
+				atomsUnlocked.push_back(it);
+			}
+			else if(mapPositiveAtomsBoundVariables[*it].size()>0){
+				if(Utils::isContained(mapPositiveAtomsBoundVariables[*it],safeVariables)){
+					atomsUnlocked.push_back(it);
+					addSafeVariablesInAtom(atom,*it);
+				}
+			}
 		}
 		// If the atom is negative or is not an assignment or is an aggregate
 		// then if every variable is safe, the atom is safe
@@ -155,6 +302,7 @@ void OrderRule::unlockAtoms(list<unsigned>& atoms) {
 				atomsUnlocked.push_back(it);
 				orderedBody.push_back(atom);
 				foundAnAssigment(atom, bindVariable,*it);
+				atom->setAssignment(true);
 			}
 		}
 	}
@@ -168,7 +316,11 @@ void OrderRule::computeAtomsVariables() {
 		if (!atom->isAggregateAtom())
 			mapAtomsVariables.insert( { i, atom->getVariable() });
 		else{
-			mapAtomsVariables.insert( { i, atom->getSharedVariable(rule->getBeginBody(),rule->getEndBody(),true) });
+			mapAtomsVariables.insert( { i, atom->getSharedVariable(rule->getBeginBody(),rule->getEndBody()) });
+			if(atom->isNegative() || atom->getFirstBinop()!=EQUAL){
+				set_term guards=atom->getGuardVariable();
+				mapAtomsVariables[i].insert(guards.begin(),guards.end());
+			}
 		}
 	}
 }
@@ -220,3 +372,4 @@ vector<pair<unsigned int, Atom*>> OrderRule::getAtomsFromWhichDepends(unsigned a
 
 } /* namespace grounder */
 } /* namespace DLV2 */
+

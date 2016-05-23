@@ -25,12 +25,35 @@ set_predicate ChoiceElement::getPredicateInNaf() {
 set_predicate ChoiceElement::getPredicatePositiveInNaf() {
 	set_predicate predicates;
 	for(unsigned i=1;i<choiceElement.size();i++)
-		if(!choiceElement[i]->isNegative()){
+		if(!choiceElement[i]->isNegative() && choiceElement[i]->isClassicalLiteral()){
 			Predicate* predicate=choiceElement[i]->getPredicate();
 			predicates.insert(predicate);
 		}
 
 	return predicates;
+}
+
+set_predicate ChoiceElement::getPredicateNegativeInNaf() {
+	set_predicate predicates;
+	for(unsigned i=1;i<choiceElement.size();i++)
+		if(choiceElement[i]->isNegative()){
+			Predicate* predicate=choiceElement[i]->getPredicate();
+			predicates.insert(predicate);
+		}
+
+	return predicates;
+}
+
+bool ChoiceElement::haveOnlyEqualBuiltin(){
+	return choiceElement.size()==2 && choiceElement[1]->isBuiltIn() && choiceElement[1]->getBinop()==EQUAL;
+}
+
+bool ChoiceElement::isBodyChoiceIsSolved(){
+	for(unsigned i=1;i<choiceElement.size();i++){
+		if(choiceElement[i]->isClassicalLiteral() &&  !choiceElement[i]->getPredicate()->isSolved())
+			return false;
+	}
+	return true;
 }
 
 set_term ChoiceElement::getVariableInNaf() {

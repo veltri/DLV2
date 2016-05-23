@@ -21,7 +21,7 @@ void Atom::ground(var_assignment& substritutionTerm,Atom*& templateAtom){
 
 	for(unsigned int i=0;i<templateAtom->getTermsSize();i++){
 		Term* term=templateAtom->getTerm(i);
-		if(term->isGround() && term->contain(TermType::ARITH))
+		if(term->contain(TermType::ARITH) && term->isGround())
 			/// Calculate the value of arithmetic term and add in terms table
 			templateAtom->setTerm(i,term->calculate());
 	}
@@ -33,7 +33,12 @@ const set_term Atom::getVariable(bool guard){
 	getVariables(this,variables);
 	return variables;
 }
-
+const vector<Term*> Atom::getVectorVariable(){
+	vector<Term*> variables;
+	for(auto term:getTerms())
+		term->getVariable(variables);
+	return variables;
+}
 void Atom::getVariables(Atom* atom,set_term& variables){
 	for(auto term:atom->getTerms())
 		term->getVariable(variables);

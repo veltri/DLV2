@@ -11,18 +11,34 @@
 namespace DLV2 {
 namespace grounder {
 
+
 void NumericOutputBuilder::onRule(Rule* rule) {
 //	cout<<"RULE ";
 //	rule->print();
-	if(rule->isAStrongConstraint())
+	if(rule->isAStrongConstraint()){
 		onConstraint(rule);
+	}else if(rule->isWeakConstraint()){
+		int level=rule->getLevel()->getConstantValue();
+		unsigned idHead= rewriteBodyInAux(rule);
+		if(levelWeak.count(level)){
+			(*levelWeak[level]).second.push_back(make_tuple(idHead,rule->getWeight()->getConstantValue(),rule->getLabel()));
+		}else{
+			list<id_weight_label> list(1,make_tuple(idHead,rule->getWeight()->getConstantValue(),rule->getLabel()));
+			pair_level_tuple_list pair={level,list};
+			weakLevelConstraints.push_back(pair);
+			levelWeak[level]=prev(weakLevelConstraints.end());
+		}
+	}
+	else if(Options::globalOptions()->isCompactFacts() && rule->getSizeHead()==1 && rule->getAtomInHead(0)->getIndex()==0){
+		onFact(rule->getAtomInHead(0));
+	}
 	else{
 		onHead(rule->getHead());
 		onBody(rule);
+		printf("\n");
 	}
-	cout<<endl;
 	if(printStream){
-		cout<<stream.str();
+		printf("%s",stream.str().c_str());
 		stream.str("");
 		printStream=false;
 	}
@@ -35,7 +51,8 @@ void NumericOutputBuilder::onQuery() {
 }
 
 void NumericOutputBuilder::onHeadAtom(Atom* atom) {
-	cout<<"1 ";onClassicalLiteral(atom);
+	printf("1 ");
+	onClassicalLiteral(atom);
 }
 
 void NumericOutputBuilder::onHead(const vector<Atom*>& head) {
@@ -49,8 +66,9 @@ void NumericOutputBuilder::onHead(const vector<Atom*>& head) {
 }
 
 void NumericOutputBuilder::onConstraint(Rule* rule){
-	cout<<"1 1 ";
+	printf("1 1 ");
 	onBody(rule);
+	printf("\n");
 }
 
 
@@ -69,27 +87,27 @@ void NumericOutputBuilder::onBody(Rule *rule) {
 			negative.push_back(atom);
 	}
 
-	cout<<negative.size()+positive.size()<<" "<<negative.size()<<" ";
+	printf("%lu %lu ",negative.size()+positive.size(),negative.size());
 	for(auto& atom:negative)
 		if(atom->isAggregateAtom()){
 			unsigned agg_pred=onAggregate(atom);
-			cout<<agg_pred<<" ";
+			printf("%d ",agg_pred);
 		}else
 			onClassicalLiteral(atom);
 	for(auto& atom:positive)
 		if(atom->isAggregateAtom()){
 			unsigned agg_pred=onAggregate(atom);
-			cout<<agg_pred<<" ";
+			printf("%d ",agg_pred);
 		}else
 			onClassicalLiteral(atom);
 }
 
 void NumericOutputBuilder::onClassicalLiteral(Atom* atom) {
-	cout<<atom->getIndex()<<" ";
+	printf("%d ",atom->getIndex());
 }
 
 void NumericOutputBuilder::onChoiceAtom(Atom* atom) {
-	cout<<"3 "<<atom->getChoiceElementsSize()<<" ";
+	printf("3 %d ",atom->getChoiceElementsSize());
 	for(unsigned i=0;i<atom->getChoiceElementsSize();i++)
 		onClassicalLiteral(atom->getChoiceElement(i)->getFirstAtom());
 }
@@ -109,7 +127,7 @@ unsigned NumericOutputBuilder::printCountSumAggregate(Atom* atom) {
 	unsigned pred_first_binop=0,pred_second_binop=0;
 	//TODO we can optimize scan the aggregate one time also if there is two guard, saving the body of the rule in string
 	if(atom->getFirstBinop()!=NONE_OP){
-		unsigned bound=atom->getFirstGuard()->getConstantValue();
+		int bound=atom->getFirstGuard()->getConstantValue();
 		if(atom->getFirstBinop()==LESS)bound++;
 		if(atom->getAggregateFunction()==COUNT)
 			pred_first_binop=onConstraintRule(atom,bound);
@@ -117,7 +135,7 @@ unsigned NumericOutputBuilder::printCountSumAggregate(Atom* atom) {
 			pred_first_binop=onWeightRule(atom,bound);
 	}
 	if(atom->getSecondBinop()!=NONE_OP || atom->getFirstBinop()==EQUAL){
-		unsigned bound;
+		int bound;
 		if(atom->getFirstBinop()==EQUAL)
 			bound=atom->getFirstGuard()->getConstantValue()+1;
 		else
@@ -137,7 +155,7 @@ unsigned NumericOutputBuilder::printCountSumAggregate(Atom* atom) {
 }
 
 void NumericOutputBuilder::onDisjunctionAtom(const vector<Atom*>& head) {
-	cout<<"8 "<<head.size()<<" ";
+	printf("8 %lu ",head.size());
 	for(auto& atom:head)
 		onClassicalLiteral(atom);
 }
@@ -145,13 +163,30 @@ void NumericOutputBuilder::onDisjunctionAtom(const vector<Atom*>& head) {
 void NumericOutputBuilder::onAggregateElement(Atom* atom) {
 }
 
-void NumericOutputBuilder::onFact(Atom* atom) {
-	onHeadAtom(atom);cout<<"0 0"<<endl;
+void NumericOutputBuilder::handleCompactFactsPrinting(Atom* atom) {
+	stringstream tmp;
+	ClassicalLiteral::print(atom->getPredicate(), atom->getTerms(), false,
+			false, tmp);
+	if (streamCompactFactsNumericTableTmp.str().size() + tmp.str().size() > SIZE_COMPACT_FACTS) {
+		streamCompactFacts << "1 " << idCompactFacts << " 0 0" << endl;
+		idCompactFacts = IdGenerator::getInstance()->getNewId(1);
+		streamCompactFactsNumericTable << streamCompactFactsNumericTableTmp.str() << endl;
+		streamCompactFactsNumericTableTmp.str("");
+		streamCompactFactsNumericTableTmp << idCompactFacts;
+	}
 }
 
-unsigned NumericOutputBuilder::onWeightRule(Atom* aggregateAtom, unsigned bound) {
+void NumericOutputBuilder::onFact(Atom* atom) {
+	if(!Options::globalOptions()->isCompactFacts()){
+		onHeadAtom(atom);
+		printf("0 0\n");
+		return;
+	}
+	handleCompactFactsPrinting(atom);
+}
+
+unsigned NumericOutputBuilder::onWeightRule(Atom* aggregateAtom, int bound) {
 	unsigned pred_id=IdGenerator::getInstance()->getNewId(1);
-	stream<<"5 "<<pred_id<<" "<<bound<<" ";
 	unsigned body_size=aggregateAtom->getAggregateElementsSize();
 	vector<Atom*> negative,positive;
 	vector<int> weight_negative,weight_positive;
@@ -163,16 +198,19 @@ unsigned NumericOutputBuilder::onWeightRule(Atom* aggregateAtom, unsigned bound)
 	for(unsigned i=0;i<aggregateAtom->getAggregateElementsSize();i++){
 		AggregateElement *element=aggregateAtom->getAggregateElement(i);
 		atom=element->getNafLiteral(0);
-		if(!atom->isNegative()){
+		int weight=element->getTerm(0)->getConstantValue();
+		if(!atom->isNegative() && weight>=0){
 			positive.push_back(atom);
-			weight_positive.push_back(element->getTerm(0)->getConstantValue());
+			weight_positive.push_back(weight);
 		}else{
 			negative.push_back(atom);
-			weight_negative.push_back(element->getTerm(0)->getConstantValue());
+			unsigned absweight=abs(weight);
+			weight_negative.push_back(absweight);
+			if(weight<0)bound+=absweight;
 		}
 	}
 
-	stream<<negative.size()+positive.size()<<" "<<negative.size()<<" ";
+	stream<<"5 "<<pred_id<<" "<<bound<<" "<<negative.size()+positive.size()<<" "<<negative.size()<<" ";
 	for(auto& atom:negative)
 		stream<<atom->getIndex()<<" ";
 	for(auto& atom:positive)
@@ -209,9 +247,9 @@ unsigned NumericOutputBuilder::onConstraintRule(Atom* aggregateAtom,unsigned bou
 	stream<<negative.size()+positive.size()<<" "<<negative.size()<<" "<<bound<<" ";
 	for(auto& atom:negative)
 		stream<<atom->getIndex()<<" ";
-	for(auto& atom:positive)
+	for(auto& atom:positive) {
 		stream<<atom->getIndex()<<" ";
-
+	}
 	stream<<endl;
 	return pred_id;
 }
@@ -328,15 +366,164 @@ unsigned NumericOutputBuilder::printMaxMinAggregate(Atom* atom) {
 	return index_aggregate;
 }
 
-void NumericOutputBuilder::onEnd() {
-	cout<<"0"<<endl;
-//	PredicateExtTable::getInstance()->print();
-	cout<<streamAtomTable.str();
-	cout<<"0"<<endl<<"B+"<<endl<<"0"<<endl<<"B-"<<endl<<"1"<<endl<<"0"<<endl<<"1"<<endl;
+void NumericOutputBuilder::printWeak(){
+
+	weakLevelConstraints.sort([](const pair_level_tuple_list& l1,const pair_level_tuple_list& l2){
+		return l1.first < l2.first;
+	});
+
+	for(auto list:weakLevelConstraints){
+		printWeakAtLevel(list.second);
+	}
+
 }
 
-void NumericOutputBuilder::appendToStreamAtomTable(Atom* atom) {
-	streamAtomTable<<atom->getIndex()<<" ";ClassicalLiteral::print(atom->getPredicate(),atom->getTerms(),false,false,streamAtomTable);streamAtomTable<<endl;
+
+
+void NumericOutputBuilder::printWeakAtLevel(list<id_weight_label>& listOfWeak){
+
+	auto hash=[](const pair<int,vector<Term*>>& ele){
+		size_t seed=3;
+		seed^= (ele.first + 0x9e3779b9 + (seed<<6) + (seed>>2));
+		for(auto t:ele.second)
+			seed ^= t->getIndex() + 0x9e3779b9 + (seed<<6) + (seed>>2);
+		return seed;
+	};
+	auto equal=[](const pair<int,vector<Term*>>& ele1,const pair<int,vector<Term*>>& ele2){
+		if(ele1.first!=ele2.first)return false;
+		if(ele1.second.size()!=ele2.second.size())return false;
+		for(unsigned i=0;i<ele1.second.size();i++)
+			if(ele1.second[i]->getIndex()!=ele2.second[i]->getIndex())
+				return false;
+		return true;
+	};
+
+
+
+	unordered_map<pair<int,vector<Term*>>,unsigned,decltype(hash),decltype(equal)> weightLabel(1,hash,equal);
+	vector<vector<id_weight_label>> weaks;
+	for(auto idWeightLabel:listOfWeak){
+		pair<int,vector<Term*>> pair={get<1>(idWeightLabel),get<2>(idWeightLabel)};
+		auto it=weightLabel.find(pair);
+		if(it!=weightLabel.end())
+			weaks[it->second].push_back(idWeightLabel);
+		else{
+			weightLabel.insert({pair,weaks.size()});
+			weaks.emplace_back(1,idWeightLabel);
+		}
+	}
+
+//	cout<<"LEVEL "<<listOfWeak.front()->getLevelInt()<<endl;
+//	for(auto& p:weaks){
+//		cout<<"BLOCK"<<endl;
+//		for(auto& w:p){
+//			w->print();
+//		}
+//		cout<<endl;
+//	}
+	stringstream atomsId;
+	stringstream weightAtomsId;
+	for(unsigned i=0;i<weaks.size();i++){
+		if(i!=0)atomsId<<" ";
+		if(weaks[i].size()==1)
+			atomsId<<get<0>(weaks[i][0]);
+		else{
+			vector<unsigned> aux;
+			for(auto weak:weaks[i])
+				aux.push_back(get<0>(weak));
+			atomsId<<createMultipleRule(aux);
+		}
+		weightAtomsId<<" "<<get<1>(weaks[i][0]);
+	}
+	printf("6 0 %lu 0 %s%s\n",weaks.size(),atomsId.str().c_str(),weightAtomsId.str().c_str());
+}
+
+unsigned NumericOutputBuilder::rewriteBodyInAux(Rule* rule) {
+	unsigned body_size=rule->getSizeBody();
+	vector<Atom*> negative,positive;
+	negative.reserve(body_size);
+	positive.reserve(body_size);
+	Atom* firstPrinted=nullptr;
+	Atom *atom;
+	for(unsigned i=0;i<body_size;i++){
+		if(rule->isAtomToSimplifyInBody(i))continue;
+		atom=rule->getAtomInBody(i);
+		if(!atom->isNegative())
+			positive.push_back(atom);
+		else
+			negative.push_back(atom);
+		if(firstPrinted==nullptr)firstPrinted=atom;
+	}
+	if(positive.size()==1 && negative.size()==0){
+		if(firstPrinted->isAggregateAtom())
+			return onAggregate(firstPrinted);
+		else{
+			return firstPrinted->getIndex();
+		}
+	}
+
+	unsigned index_head=IdGenerator::getInstance()->getNewId(1);
+	printf("1 %d %lu %lu ",index_head,negative.size()+positive.size(),negative.size());
+	for(auto& atom:negative)
+		if(atom->isAggregateAtom()){
+			unsigned agg_pred=onAggregate(atom);
+			printf("%d ",agg_pred);
+		}else
+			onClassicalLiteral(atom);
+	for(auto& atom:positive)
+		if(atom->isAggregateAtom()){
+			unsigned agg_pred=onAggregate(atom);
+			printf("%d ",agg_pred);
+		}else
+			onClassicalLiteral(atom);
+	printf("\n");
+	return index_head;
+}
+
+unsigned NumericOutputBuilder::createMultipleRule(vector<unsigned>& idatoms){
+	unsigned index_head=IdGenerator::getInstance()->getNewId(1);
+	for(auto id:idatoms)
+		printf("1 %d 1 0 %d\n",index_head,id);
+	return index_head;
+}
+
+void NumericOutputBuilder::onEnd() {
+	if(weakLevelConstraints.size()>0)
+		printWeak();
+
+	if(Options::globalOptions()->isCompactFacts() && streamCompactFactsNumericTableTmp.str().size()>to_string(idCompactFacts).size())
+		printf("%s 1 %d 0 0\n",streamCompactFacts.str().c_str(),idCompactFacts);
+
+	//Print atom filtered
+	if(atomToFilter!=nullptr){
+		Predicate *predicate=atomToFilter->getPredicate();
+		auto atomInTable=PredicateExtTable::getInstance()->getPredicateExt(predicate)->addAtomSearcher(FACT,MAP,nullptr)->find(atomToFilter);
+		if(atomInTable==nullptr)
+			atomInTable=PredicateExtTable::getInstance()->getPredicateExt(predicate)->addAtomSearcher(NOFACT,MAP,nullptr)->find(atomToFilter);
+
+		if(atomInTable!=nullptr)
+			{streamAtomTable<<atomInTable->getIndex()<<" ";ClassicalLiteral::print(atomInTable->getPredicate(),atomInTable->getTerms(),false,false,streamAtomTable);streamAtomTable<<endl;}
+
+
+	}
+	printf("0\n%s",streamAtomTable.str().c_str());
+	if(Options::globalOptions()->isCompactFacts() && streamCompactFactsNumericTableTmp.str().size()>to_string(idCompactFacts).size()){
+		printf("%s%s",streamCompactFactsNumericTable.str().c_str(),streamCompactFactsNumericTableTmp.str().c_str());
+	}
+	printf("0\nB+\n0\nB-\n1\n0\n1\n");
+}
+
+void NumericOutputBuilder::appendToStreamAtomTable(Atom* atom, bool fact) {
+	if(Options::globalOptions()->isCompactFacts() && fact){
+		stringstream tmp;
+		ClassicalLiteral::print(atom->getPredicate(),atom->getTerms(),false,false,tmp);
+		streamCompactFactsNumericTableTmp<<" "<<tmp.str()<<".";
+		return;
+	}
+	if(!atom->getPredicate()->isHiddenForPrinting() && atomToFilter==nullptr){
+		streamAtomTable<<atom->getIndex()<<" ";ClassicalLiteral::print(atom->getPredicate(),atom->getTerms(),false,false,streamAtomTable);streamAtomTable<<endl;
+	}
+
 }
 
 

@@ -205,10 +205,15 @@ DLV2Facade::solve()
     	else
     		grounder =  new DLV2::grounder::BackJumpingGrounder();
 
-
-    	grounder->ground();
-    	delete grounder;
-
+    	if(!DLV2::grounder::InMemoryInputBuilder::isFoundASafetyError()){
+    		grounder->ground();
+    		delete grounder;
+    	}
+    	else{
+			delete grounder;
+			cout<<DLV2::grounder::InMemoryInputBuilder::getSafetyErrorMessage()<<endl;
+//    		throw DLV2::grounder::SafetyExceptionGrounder(DLV2::grounder::InMemoryInputBuilder::getSafetyErrorMessage());
+    	}
     }
 
     if( getOptions().getPrintStatistics() )

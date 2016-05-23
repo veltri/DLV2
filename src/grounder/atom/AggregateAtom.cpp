@@ -245,13 +245,34 @@ ResultEvaluation AggregateAtom::partialEvaluateMin() {
 ResultEvaluation AggregateAtom::partialEvaluateSum() {
 	Atom *lastAtom=aggregateElements.back()->getNafLiteral(0);
 	Term* term=aggregateElements.back()->getTerms().front();
-	if(!lastAtom->isFact() && term->getType()==NUMERIC_CONSTANT){
-		undefAtomEvaluation=undefAtomEvaluation->sum(term);
-		return UNDEF;
+	bool isNumeric=term->getType()==NUMERIC_CONSTANT;
+
+	if(isNumeric){
+
+		bool positive=(term->getConstantValue())>=0;
+		if(!positive)
+			sumCheckInfo.negativeSumValue+=term->getConstantValue();
+
+		if(!lastAtom->isFact()){
+			if(sumCheckInfo.elemType!=MIXED){
+				ElementType& elemType=sumCheckInfo.elemType;
+				if(elemType==EMPTY)
+					elemType=(positive)?POSITIVE:NEGATIVE;
+				else if(elemType==POSITIVE && !positive)
+					elemType=MIXED;
+				else if(elemType==NEGATIVE && positive)
+					elemType=MIXED;
+			}
+
+
+			undefAtomEvaluation=undefAtomEvaluation->sum(term);
+			sumCheckInfo.findUndefInSum=true;
+			return UNDEF;
+		}
+
+		partialEvaluation=partialEvaluation->sum(term);
 	}
 
-	if(term->getType()==NUMERIC_CONSTANT)
-		partialEvaluation=partialEvaluation->sum(term);
 
 	if(PredicateExtTable::getInstance()->getPredicateExt(lastAtom->getPredicate())->getPredicateInformation()->isOnlyPositive()){
 		if(checkOperator(firstGuard,firstBinop,EQUAL,GREATER,false))
@@ -382,40 +403,97 @@ ResultEvaluation AggregateAtom::finalEvaluateMin() {
 }
 
 ResultEvaluation AggregateAtom::finalEvaluateSum() {
-	if(checkOperator(firstGuard,firstBinop,EQUAL,LESS,true) || checkOperator(firstGuard,firstBinop,EQUAL,GREATER,false))
-		return UNSATISFY;
 
-	if(undefAtomEvaluation->getIndex()==TermTable::getInstance()->term_zero->getIndex() && checkOperator(firstGuard,firstBinop,EQUAL,EQUAL,false))
-		return SATISFY;
+	//If the aggregate is defined or contain only positive atoms
+	//If the aggregate is defined we can check the value also if the aggregate contain negative number because we know the
+	//exact value.
+	if(!sumCheckInfo.findUndefInSum || sumCheckInfo.elemType==POSITIVE){
 
-	if(checkOperator(firstGuard,firstBinop,LESS_OR_EQ,LESS,true))
-		return UNSATISFY;
-	if(checkOperator(firstGuard,firstBinop,LESS,LESS_OR_EQ,true))
-		return UNSATISFY;
+		if(checkOperator(firstGuard,firstBinop,EQUAL,LESS,true) || checkOperator(firstGuard,firstBinop,EQUAL,GREATER,false))
+			return UNSATISFY;
 
-	if(checkOperator(secondGuard,secondBinop,LESS,GREATER_OR_EQ,false))
-		return UNSATISFY;
-	if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,GREATER,false))
-		return UNSATISFY;
+		if(!sumCheckInfo.findUndefInSum && checkOperator(firstGuard,firstBinop,EQUAL,EQUAL,false))
+			return SATISFY;
 
-	if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
-		return SATISFY;
-	if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS,GREATER,false))
-		return SATISFY;
+		if(checkOperator(firstGuard,firstBinop,LESS_OR_EQ,LESS,true))
+			return UNSATISFY;
+		if(checkOperator(firstGuard,firstBinop,LESS,LESS_OR_EQ,true))
+			return UNSATISFY;
 
-	if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS,LESS,true))
-		return SATISFY;
-	if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,true))
-		return SATISFY;
+		if(checkOperator(secondGuard,secondBinop,LESS,GREATER_OR_EQ,false))
+			return UNSATISFY;
+		if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,GREATER,false))
+			return UNSATISFY;
 
-	if(checkOperator(secondGuard,secondBinop,LESS,LESS,true) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
-		return SATISFY;
-	if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,true) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
-		return SATISFY;
-	if(checkOperator(secondGuard,secondBinop,LESS,LESS,true) && checkOperator(firstGuard,firstBinop,LESS,GREATER,false))
-		return SATISFY;
-	if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,true) && checkOperator(firstGuard,firstBinop,LESS,GREATER,false))
-		return SATISFY;
+		if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
+			return SATISFY;
+		if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS,GREATER,false))
+			return SATISFY;
+
+		if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS,LESS,true))
+			return SATISFY;
+		if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,true))
+			return SATISFY;
+
+		if(checkOperator(secondGuard,secondBinop,LESS,LESS,true) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
+			return SATISFY;
+		if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,true) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,false))
+			return SATISFY;
+		if(checkOperator(secondGuard,secondBinop,LESS,LESS,true) && checkOperator(firstGuard,firstBinop,LESS,GREATER,false))
+			return SATISFY;
+		if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,true) && checkOperator(firstGuard,firstBinop,LESS,GREATER,false))
+			return SATISFY;
+
+
+	}else if(sumCheckInfo.elemType==NEGATIVE){
+
+		if(checkOperator(firstGuard,firstBinop,EQUAL,LESS,false))
+			return UNSATISFY;
+
+		if(checkOperator(firstGuard,firstBinop,LESS_OR_EQ,LESS,false))
+			return UNSATISFY;
+		if(checkOperator(firstGuard,firstBinop,LESS,LESS_OR_EQ,false))
+			return UNSATISFY;
+
+		if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,true))
+			return SATISFY;
+		if(secondBinop==NONE_OP && checkOperator(firstGuard,firstBinop,LESS,GREATER,true))
+			return SATISFY;
+
+		if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS,LESS,false))
+			return SATISFY;
+		if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,false))
+			return SATISFY;
+
+		if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS,GREATER_OR_EQ,true))
+			return UNSATISFY;
+		if(firstBinop==NONE_OP && checkOperator(secondGuard,secondBinop,LESS_OR_EQ,GREATER,true))
+			return UNSATISFY;
+
+		if(checkOperator(secondGuard,secondBinop,LESS,LESS,false) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,true))
+			return SATISFY;
+		if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,false) && checkOperator(firstGuard,firstBinop,LESS_OR_EQ,GREATER_OR_EQ,true))
+			return SATISFY;
+		if(checkOperator(secondGuard,secondBinop,LESS,LESS,false) && checkOperator(firstGuard,firstBinop,LESS,GREATER,true))
+			return SATISFY;
+		if(checkOperator(secondGuard,secondBinop,LESS_OR_EQ,LESS_OR_EQ,false) && checkOperator(firstGuard,firstBinop,LESS,GREATER,true))
+			return SATISFY;
+	}
+
+	//Avoid negative guard if the sum of the negative weight in the aggregate are less of the guard
+	if(firstBinop!=NONE_OP)
+		if(firstGuard->getConstantValue()<0 && ((firstGuard->getConstantValue())-(sumCheckInfo.negativeSumValue))<0){
+			if(secondBinop==NONE_OP)
+				return SATISFY;
+			else{
+				firstBinop=NONE_OP;
+				firstGuard=nullptr;
+			}
+		}
+	if(secondBinop!=NONE_OP)
+		if(secondGuard->getConstantValue()<0 && ((secondGuard->getConstantValue())-(sumCheckInfo.negativeSumValue))<0)
+			return UNSATISFY;
+
 
 	if(isAnAssigment()) findUndefAtoms();
 	return UNDEF;
@@ -426,7 +504,7 @@ void AggregateAtom::print(ostream& stream) {
 	if(negative)
 		stream<<"not ";
 	if(firstGuard!=nullptr){
-		firstGuard->print();
+		firstGuard->print(stream);
 		stream<<getBinopToStrng(firstBinop);
 	}
 	stream<<"#";
@@ -451,7 +529,7 @@ void AggregateAtom::print(ostream& stream) {
 		stream<<":";first=true;
 		for(auto& naf:element->getNafLiterals()){
 			if(!first)stream<<",";else first=false;
-			naf->print();
+			naf->print(stream);
 		}
 		first=true;
 	}
@@ -469,14 +547,10 @@ Term* AggregateAtom::changeInStandardFormatGuard(Term* guard) {
 		TermTable::getInstance()->addTerm(t);
 	}
 	if (guard->getType() == TermType::VARIABLE) {
-		vector<Operator> operators;
-		operators.push_back(Operator::PLUS);
-		vector<Term*> terms;
-		terms.push_back(guard);
 		Term* one_term = new NumericConstantTerm(false, 1);
 		TermTable::getInstance()->addTerm(one_term);
-		terms.push_back(one_term);
-		t = new ArithTerm(false, operators, terms);
+
+		t = new ArithTerm(false, guard,one_term,Operator::PLUS);
 		TermTable::getInstance()->addTerm(t);
 	}
 	return t;
@@ -539,10 +613,11 @@ void AggregateAtom::changeInStandardFormat() {
 //	}
 }
 
-set_term AggregateAtom::getSharedVariable(vector<Atom*>::iterator begin,vector<Atom*>::iterator end,bool alsoGuards) {
+set_term AggregateAtom::getSharedVariable(vector<Atom*>::iterator begin,vector<Atom*>::iterator end) {
+	//TODO Check if guards are considered
 	set_term sharedTerms;
-	if(alsoGuards && (negative || firstBinop!=EQUAL))
-		sharedTerms=getGuardVariable();
+//	if(alsoGuards && (negative || firstBinop!=EQUAL))
+//		sharedTerms=getGuardVariable();
 	set_term terms=getVariable();
 	for(auto atom=begin;atom!=end;++atom){
 		Atom* current_atom=*atom;
@@ -565,7 +640,11 @@ set_term AggregateAtom::getSharedVariable(vector<Atom*>::iterator begin,vector<A
 }
 
 bool AggregateAtom::isAllAggregateTermShared(vector<Atom*>::iterator begin,vector<Atom*>::iterator end) {
-	set_term shared_variable=getSharedVariable(begin,end,false);
+	set_term shared_variable=getSharedVariable(begin,end);
+	if(negative || firstBinop!=EQUAL){
+		set_term guards=getGuardVariable();
+		shared_variable.insert(guards.begin(),guards.end());
+	}
 	for(auto element:aggregateElements){
 		if(!element->isAllAggregateTermShared(shared_variable))
 			return false;

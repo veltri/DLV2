@@ -106,6 +106,64 @@ namespace DLV2
 			return instantiationProcedure;
 		}
 
+		unsigned getPositiveOrderingProcedure() const {
+			return positiveOrderingProcedure;
+		}
+
+		bool isEnabledDictionaryIntersection() const {
+			return enabledDictionaryIntersection;
+		}
+
+		void setEnabledDictionaryIntersection(bool enableDictionaryIntersection) {
+			this->enabledDictionaryIntersection = enableDictionaryIntersection;
+		}
+
+		bool getRuleTime(){
+			return ruleTime;
+		}
+
+		bool getCheckFactDuplicate(){
+			return checkFactDuplicate;
+		}
+
+		bool getRewriteArith(){
+			return rewriteArith;
+		}
+
+		string getPredicateToFilter(){return predicateToFilter;}
+
+		bool isDisabledAnonymousFilter() const {
+			return disabledAnonymousFilter;
+		}
+
+		void setDisabledAnonymousFilter(bool disabledAnonymousFilter) {
+			this->disabledAnonymousFilter = disabledAnonymousFilter;
+		}
+
+		unsigned getPrintGroundStats(){
+			return printGroundStats;
+		}
+
+	bool isCompactFacts() const {
+		return compactFacts;
+	}
+
+	void setCompactFacts(bool compactFacts) {
+		this->compactFacts = compactFacts;
+	}
+
+	unsigned getRewProject(){
+		return rewProject;
+	}
+
+	unsigned getOptionFrontend() const{
+		return optionFrontend;
+	}
+
+	bool rewriteMagic(){
+		return magicRewriting;
+	}
+
     private:
 
         static Options* instance;
@@ -169,6 +227,30 @@ namespace DLV2
     	unsigned outputFormat;
 
     	unsigned instantiationProcedure;
+
+    	unsigned positiveOrderingProcedure;
+
+    	bool enabledDictionaryIntersection;
+
+    	bool ruleTime;
+
+    	bool checkFactDuplicate;
+
+    	bool rewriteArith;
+
+    	bool disabledAnonymousFilter;
+
+    	string predicateToFilter;
+
+    	bool compactFacts;
+
+    	unsigned printGroundStats;
+
+    	unsigned rewProject;
+
+        unsigned optionFrontend;
+
+        bool magicRewriting;
     };
     
 };

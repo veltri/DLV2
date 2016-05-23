@@ -89,10 +89,21 @@ namespace grounder{
 	#define MULTIMAP 2
 	#define HASHSET 3
 	#define DOUBLEMAP 4
+	#define MAP_DICTIONARY_INTERSECTION 5
+	#define MAP_VECTOR 6
+	#define MAP_HISTORY_VECTOR 7
+	#define SINGLE_ARG_FULL 8
+	#define DEFAULT_RECURSIVE 9
+	#define MAP_PAIR_HISTORY_VECTOR 10
+	#define DOUBLEMAP_PAIR 11
+	#define MULTIPLE_TERMS 12
+	#define HISTORY_HASHSET 13
+
 
 	#define NATIVE_CHOICE 0
 	#define DISJUNCTION 1
 	#define NATIVE_CHOICE2 2
+	#define COMPACT_NATIVE_CHOICE 3
 
 	#define OUTPUT_NUMERIC 0
 	#define OUTPUT_TEXTUAL 1
@@ -102,6 +113,24 @@ namespace grounder{
 
 	#define ARRAY_SIZE 64
 	#define ATOMS_IN_RULE 32
+
+	#define NO_ORDERING 0
+	#define DLV_ORDERING 1
+	#define INDEXING_ORDERING 2
+	#define DLV_INDEXING_ORDERING 3
+	#define DLV_BINDER_ORDERING 4
+	#define DLV_BINDER_INDEXING_BOUND_ATOMS_ORDERING 5
+	#define BINDER_ORDERING 6
+	#define DLV_ORDERING_FUNCTION 7
+	#define DLV_ORDERING_VARS_OCCURENCIES 8
+	#define DLV_ORDERING_COMPARISONS_ESTIMATION 9
+
+	#define STATS_RAW 1
+	#define STATS_INTERACTIVE 2
+
+
+	#define FRONTEND_BRAVE 1
+	#define FRONTEND_CAUTIOUS 2
 
 	typedef unsigned index_object;
 

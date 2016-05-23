@@ -95,15 +95,23 @@ const set_term Choice::getVariable(bool guard) {
 
 set_term Choice::getVariableToSave(){
 	set_term terms_variable;
+	set_term variableSafe;
 	for(auto choice_element:choiceElements){
 		for(unsigned i=0;i<choice_element->getSize();++i)
 		{
-			if(i==0 || choice_element->getAtom(i)->isNegative()){
-				const set_term& variables=choice_element->getAtom(i)->getVariable();
+			Atom* atom=choice_element->getAtom(i);
+			if(i==0 || atom->isNegative()){
+				const set_term& variables=atom->getVariable();
 				terms_variable.insert(variables.begin(),variables.end());
+			}
+			if(i>0 && !atom->isNegative() && atom->isClassicalLiteral()){
+				const set_term& variables=atom->getVariable();
+				for(auto var:variables)
+					terms_variable.erase(var);
 			}
 		}
 	}
+
 	set_term guardTerms=getGuardVariable();
 	terms_variable.insert(guardTerms.begin(), guardTerms.end());
 	return terms_variable;

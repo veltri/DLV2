@@ -2,9 +2,9 @@
 # use 
 #   $ make BUILD=release 
 # to compile different binaries
-BUILD = debug
+BUILD = release
 cxxflags.debug = \
- -Wall -std=c++11 -g -DDEBUG_ATOM_SEARCHER
+ -Wall -std=c++11 -g3
 linkflags.debug = \
  -lm
 cxxflags.trace = \
@@ -12,17 +12,13 @@ cxxflags.trace = \
 linkflags.trace = \
  -lm
 cxxflags.release = \
- -Wall -std=c++11 -O3
+ -Wall -std=c++11 -O3 -DSTATIC
 linkflags.release = \
- -lm
+ -lm -static
 cxxflags.gprof = \
- -Wall -std=c++11 -g -pg
- linkflags.gprof = \
+ -Wall -std=c++11 -DNDEBUG -O3 -g -pg
+linkflags.gprof = \
  -lm -g -pg
-cxxflags.valgrind = \
- -Wall -std=c++11 -g 
- linkflags.valgrind = \
- -lm -g
 cxxflags.stats = \
  -Wall -std=c++11 -DNDEBUG -DSTATS_ON -O3
 linkflags.stats = \
@@ -61,7 +57,7 @@ CXX = $(GCC)
 CXXFLAGS = $(cxxflags.$(BUILD))
 LINK = $(GCC)
 LINKFLAGS = $(linkflags.$(BUILD))
-LIBS = -lodbc
+LIBS = -lodbc -lncurses -ltinfo
 
 SRCS = $(shell find $(SOURCE_DIR) -name '*.cpp')
 
@@ -78,7 +74,7 @@ $(BUILD_DIR)/%.d: $(SOURCE_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -MM -MT '$(@:.d=.o)' $< -MF $@
 	
 $(BINARY): $(OBJS) $(DEPS)
-	$(LINK) $(LINKFLAGS) $(OBJS) $(LIBS) -o $(BINARY)
+	$(LINK) $(LINKFLAGS) $(OBJS) $(LIBS) -o $(BINARY) 
 
 static: $(OBJS) $(DEPS)
 	$(LINK) $(LINKFLAGS) $(OBJS) $(LIBS) -static -o $(BINARY)

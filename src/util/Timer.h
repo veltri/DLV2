@@ -34,7 +34,7 @@ public:
 
 	}
 
-	void start(){
+	inline void start(){
 		temp_clock=clock();
 	}
 
@@ -58,7 +58,7 @@ public:
 		}
 	}
 
-	clock_t stop(){
+	inline clock_t stop(){
 		return (clock()-temp_clock);
 	}
 
@@ -98,12 +98,26 @@ public:
 		cerr<<((double) CLOCKS_PER_SEC)<<endl;
 	}
 
+	static void printTimeElapsed(clock_t time, ostream& stream){
+		stream<<"TIME: \t"<<((time)/(double) CLOCKS_PER_SEC)<<endl;
+		stream<<"----------------------"<<endl;
+	}
+
+	void printSumTime(ostream& stream){
+		stream<<"SUM TIME: \t"<<((sum_time)/(double) CLOCKS_PER_SEC)<<endl;
+		stream<<"----------------------"<<endl;
+	}
+
+	inline void sumTime(clock_t time){
+		timer_instance->sum_time+=time;
+	}
 
 private:
-	Timer(){};
+	Timer():sum_time(0),temp_clock(0){};
 
 	static Timer* timer_instance;
 
+	clock_t sum_time;
 
 	clock_t temp_clock;
 	unordered_map<string,clock_t> map_clock;

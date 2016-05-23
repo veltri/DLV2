@@ -44,6 +44,8 @@ public:
 	bool isInHead(index_object p);
 	bool isInBody(index_object p);
 
+	void clear(){headMap.clear();bodyMap.clear();}
+
 	virtual ~StatementAtomMapping();
 private:
 	//The unordered multimap containing the maps between predicates and rules in which they appear in the head
@@ -79,7 +81,7 @@ public:
 	void calculateStrongComponent(unordered_map<index_object, unsigned int> &componentDepependency);
 
 	// It  calculate the predicate with negation recursive not stratified
-	void calculateUnstritifiedPredicate(unordered_set<index_object>& predicateUnstratified);
+	void calculateUnstratifiedPredicate(unordered_set<index_object>& predicateUnstratified);
 
 	/// This method adds an edge in the dependency graph between the two predicate given
 	void addEdge(index_object pred_body, index_object pred_head, int weight);
@@ -95,7 +97,7 @@ public:
 private:
 	/// The Dependency Graph
 	Graph depGraph;
-	/// The Stratified Graph
+	/// The Stratified Graphquery=currentAtom;
 	WeightGraph stratifiedGraph;
 	/// The map that containing as keys indices of the predicate,
 	/// and as values indices of the vertex in the dependency graph
@@ -159,6 +161,11 @@ public:
 	/// stores their mapping, and updates the dependency graph properly according this mapping
 	void addRuleMapping(Rule *r);
 
+	void addAtomMappingAndSetEdb(Rule *r);
+
+	void simplifyMagicRules();
+
+
 	/// This method creates the dependency graph
 	void createDependencyGraph(PredicateTable* pt);
 	/// This method creates the components graph
@@ -196,7 +203,10 @@ public:
 	vector<Rule*>::iterator getBeginConstraints(){return constraints.begin();}
 	vector<Rule*>::iterator getEndConstraints(){return constraints.end();}
 
+	const vector<Rule*>& getWeakContraints(){return weak;}
 
+	Rule* getWeakContraint(unsigned i){return weak[i];}
+	unsigned getWeakContraintsSize(){return weak.size();}
 
 	bool isOnlyInHead(index_object predicate){
 		return (!statementAtomMapping.isInBody(predicate));
@@ -204,6 +214,10 @@ public:
 
 	bool isOnlyInBody(index_object predicate){
 		return (!statementAtomMapping.isInHead(predicate));
+	}
+
+	void addQueryAtom(Atom* query){
+		this->query.push_back(query);
 	}
 
 	///Printer method
@@ -216,18 +230,29 @@ public:
 		for(Rule* r:constraints)
 			clearRule(r);
 
+		for(Rule* r:weak)
+			clearRule(r);
+
+		for(auto a:query)
+			delete a;
 	}
 
 	void clearRule(Rule *r){
-		r->deleteBody([](Atom* atom){
-			return 2;
-		});
-		if(!r->isAStrongConstraint())
-			r->deleteHead([](Atom* atom){
-				return 2;
-			});
+		r->free();
 
 		delete r;
+	}
+
+	void aggregateFound(){
+		hasAggregate=true;
+	}
+
+	void choiceFound(){
+		hasChoice=true;
+	}
+
+	void negativeAtomFound(){
+		hasNegativeAtom=true;
 	}
 
 	static StatementDependency* getInstance();
@@ -236,7 +261,7 @@ private:
 
 	static StatementDependency* statementDependency;
 
-	StatementDependency(){};
+	StatementDependency():hasAggregate(false),hasChoice(false),hasNegativeAtom(false),isQueryGround(true){};
 
 	/// The Dependency Graph
 	DependencyGraph depGraph;
@@ -248,6 +273,19 @@ private:
 	vector<Rule*> rules;
 	/// The vector of contraints composing the program
 	vector<Rule*> constraints;
+	/// The vector of weak contraints composing the program
+	vector<Rule*> weak;
+	///Vector of query atoms
+	vector<Atom*> query;
+
+	bool hasAggregate;
+
+	bool hasChoice;
+
+	bool hasNegativeAtom;
+
+	bool isQueryGround;
+
 	/// This method checks if a rule is a recursive rule or an exit rule
 	/// An rule occurring in a component is recursive if there is a predicate belonging
 	/// to the component in its positive body, otherwise it is said to be an exit rule.
@@ -256,6 +294,9 @@ private:
 	/// @retval true If the rule is an exit rule
 	/// @retval false If the rule is a recursive rule
 	bool checkIfExitRule(unsigned int component, Rule* rule);
+
+	bool HandleQuery(unsigned &queryConstraints);
+	bool magic();
 };
 
 }

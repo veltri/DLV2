@@ -19,15 +19,180 @@ namespace DLV2{
 
 namespace grounder{
 
+///Tuple for the grounding part of the weak: Weight,Level, Terms (the label of the weak)
+using tupleWeak = tuple<Term*,Term*,vector<Term*>>;
+
+class Rule;
+
+
+/**
+ * This struct contain the information used for the match of atoms. Bound contain the index of term total bound. Bind the index of term
+ * bind. Builtin the builtin atom that can be evaluated while we check the match of the atom. VarUsedInBuiltin the variable binded of the atom that we
+ * match shared with one builtin in vector builtin. Other the functional atoms, arith term and variable binded in the atom that compare two times.
+ **/
+struct MatchInformation{
+	vector<unsigned> bound;
+	//CAN BE OPTIMIZED with vector<unisnged>
+	vector<pair<unsigned,unsigned>> bind;
+	vector<pair<unsigned,unsigned>> varUsedInBuiltin;
+	vector<Atom*> builtin;
+	vector<unsigned> other;
+	vector<unsigned> dictionaryIntersection;
+};
+
+///RuleInformation contain the information of rule relative:
+///		- The number of the variable in the body of the rule
+///		- The intersection of the dictionary for each positive classical literal
+class RuleInformation{
+
+public:
+
+	set_term::const_iterator getDictionaryIntersectionBegin(index_object index)const{
+		return dictionaryIntersection[index].begin();
+	}
+	set_term::const_iterator getDictionaryIntersectionEnd(index_object index)const{
+		return dictionaryIntersection[index].end();
+	}
+
+	set_term::iterator getDictionaryIntersectionBegin(index_object index){
+		return dictionaryIntersection[index].begin();
+	}
+	set_term::iterator getDictionaryIntersectionEnd(index_object index){
+		return dictionaryIntersection[index].end();
+	}
+
+	void removeInDictionaryIntersection(set_term::iterator& it,index_object index){
+		it=dictionaryIntersection[index].erase(it);
+	}
+
+	void insertInDictionaryIntersection(index_object index,Term* term){
+		dictionaryIntersection[index].insert(term);
+		dictionaryIntersectionCreation[index]=true;
+	}
+
+	void insertInDictionaryIntersection(index_object index,const set_term& set){
+		dictionaryIntersection[index].insert(set.begin(),set.end());
+		dictionaryIntersectionCreation[index]=true;
+	}
+
+	void setDictionaryIntersectionSize(unsigned size){
+		dictionaryIntersection.resize(size);
+		dictionaryIntersectionCreation.resize(size,false);
+	}
+
+	void clearDictionaryIntersection(){
+		dictionaryIntersection.clear();
+		dictionaryIntersectionCreation.clear();
+	}
+
+	inline bool countInDictionaryIntersection(index_object index,Term* term)const{
+		return dictionaryIntersection[index].count(term);
+	}
+
+	inline unsigned getDictionaryIntersectionSize(index_object index)const{
+		return dictionaryIntersection[index].size();
+	}
+
+
+	inline bool isCreatedDictionaryIntersection(index_object index)const{
+		if(index>=dictionaryIntersectionCreation.size())
+			return false;
+		return dictionaryIntersectionCreation[index];
+	}
+
+	inline void addBounderBuiltin(unsigned i,Atom *builtin){
+		if(i>=bounderBuiltins.size())
+			bounderBuiltins.resize(i+1);
+		bounderBuiltins[i].push_back(builtin);
+	}
+
+	inline void clearBounderBuiltin(){
+		bounderBuiltins.clear();
+	}
+
+	inline const vector<Atom*>& getBounderBuiltin(unsigned i)const{
+		return bounderBuiltins[i];
+	}
+
+	inline bool isBounderBuiltin(unsigned i)const{
+		if(i>=bounderBuiltins.size() || bounderBuiltins[i].empty())
+			return false;
+		return true;
+	}
+
+
+	void print()const{
+		cerr<<"Dictionary Intersection"<<endl;
+		for(unsigned i=0;i<dictionaryIntersectionCreation.size();++i){
+			if(dictionaryIntersectionCreation[i]){
+				for(auto t:joinVariables)
+					if(t->getLocalVariableIndex()==i)
+					{
+						t->print(cerr);cerr<<" --> ";
+						break;
+					}
+				for(auto t:dictionaryIntersection[i]){
+					t->print(cerr);cerr<<" ";
+				}
+				cerr<<endl;
+			}
+		}
+	}
+
+	void insertJoinVariable(Term* term) {joinVariables.insert(term);}
+
+	bool isAJoinVariable(Term* term) const {return joinVariables.count(term);}
+
+	void computeOutputVariables(Rule* rule);
+
+	bool isAnOutputVariable(Term* term, Rule* rule){
+		if(outputVariables.empty())
+			computeOutputVariables(rule);
+		return outputVariables.count(term);
+	}
+
+	set_term& getOutputVariables(Rule* rule){
+		if(outputVariables.empty())
+			computeOutputVariables(rule);
+		return outputVariables;
+	}
+
+	const MatchInformation& getMatchInformation(unsigned indexAtom,unsigned subAtom=0)const{
+		return atomMatchInformation[indexAtom][subAtom];
+	}
+
+	void addMatchInformation(MatchInformation& matchInfo,unsigned indexAtom){
+		atomMatchInformation[indexAtom].push_back(matchInfo);
+	}
+
+	void clearAndResizeMatchInfo(unsigned size){
+		atomMatchInformation.clear();
+		atomMatchInformation.resize(size);
+	}
+
+private:
+	vector<set_term> dictionaryIntersection;
+	vector<bool> dictionaryIntersectionCreation;
+	set_term joinVariables;
+	vector<vector<Atom*>> bounderBuiltins;
+	/// The set of variables appearing in the head of the current rule
+	set_term outputVariables;
+	/// For each atom a vector of match information. If is classical literal the vector contain exactly one matchInformation, if is
+	/// an aggregate atom contain a matchInreturn r->;formation for each aggregate element
+	vector<vector<MatchInformation>> atomMatchInformation;
+};
+
+
+
 /**
  * @brief This class represents a rule with its body and head atoms
  */
 
 class Rule : public Indexable {
 public:
-	Rule():Indexable(), ground(false), simplifiedHead(0), simplifiedBody(0), mustBeRewritedForAggregates(false)  {};
-	Rule(bool g):Indexable(), ground(g), simplifiedHead(0), simplifiedBody(0), mustBeRewritedForAggregates(false) {};
-	Rule(bool g, unsigned sizeHead, unsigned sizeBody) : Indexable(), ground(g), simplifiedHead(0), simplifiedBody(0), mustBeRewritedForAggregates(false) {
+	Rule():Indexable(), ground(false), simplifiedHead(0), simplifiedBody(0), mustBeRewritedForAggregates(false),variablesSize(0)  {};
+	Rule(bool g):Indexable(), ground(g), simplifiedHead(0), simplifiedBody(0), mustBeRewritedForAggregates(false),variablesSize(0) {};
+	Rule(bool g, unsigned sizeHead, unsigned sizeBody) : Indexable(), ground(g), simplifiedHead(0), simplifiedBody(0), mustBeRewritedForAggregates(false),variablesSize(0) {
 		if(ground){
 			simplifiedHead=new bool[sizeHead];
 			simplifiedBody=new bool[sizeBody];
@@ -46,6 +211,20 @@ public:
 
 	///Getter method for body atoms
 	const vector<Atom*>& getBody() const {return body;}
+
+	vector<Atom*> getClonedBody()const{
+		vector<Atom*> atoms;
+		for(auto atom:body)
+			atoms.push_back(atom->clone());
+		return atoms;
+	}
+
+	vector<Atom*> getClonedHead()const{
+		vector<Atom*> atoms;
+		for(auto atom:head)
+			atoms.push_back(atom->clone());
+		return atoms;
+	}
 	///Setter method for body atoms
 	void setBody(const vector<Atom*>& body) {this->body = body;}
 	///Getter method for head atoms
@@ -53,8 +232,11 @@ public:
 	///Setter method for head atoms
 	void setHead(const vector<Atom*>& head) {this->head = head;}
 
+	///Clone a non ground rule
+	Rule* clone();
+
 	///This method returns true if it is a strong constrain
-	bool isAStrongConstraint(){return head.empty();}
+	virtual bool isAStrongConstraint(){return head.empty();}
 	///This method returns true if it is a fact
 	bool isAFact(){return body.empty() && head.size()==1 && head[0]->isClassicalLiteral();}
 
@@ -121,8 +303,18 @@ public:
 	///This method remove all the atoms in the body and in the head
 	void clear(){head.clear();body.clear();};
 
+	virtual void free(){
+		deleteBody([](Atom* atom){
+			return 2;
+		});
+		if(!isAStrongConstraint())
+			deleteHead([](Atom* atom){
+				return 2;
+			});
+	}
+
 	///Printer method
-	void print(ostream& stream=cout);
+	virtual void print(ostream& stream=cout);
 
 	/** @brief Equal-to operator for rules
 	 *  @details Two rules are equal if they have the same atoms in the body and in the head regardless the order in which they appear
@@ -147,7 +339,7 @@ public:
 	void setMustBeRewritedForAggregates(bool mustBeRewritedForAggregates) {	this->mustBeRewritedForAggregates = mustBeRewritedForAggregates;}
 	
 	///Return true if is a choice rule
-	bool isChoiceRule() const{ return (head.size()>0 && head[0]->isChoice());}
+	bool isChoiceRule() const{ return (head.size()==1 && head[0]->isChoice());}
 
 	void deleteBody(function<int(Atom*)> f);
 
@@ -157,9 +349,92 @@ public:
 
 	void setUnsolvedPredicates();
 
-	void sortPositiveLiteralInBody(vector<vector<unsigned>>& predicate_searchInsert_table,vector<unsigned>& originalOrderMapping);
+	void computeVariablesLocalIndices();
 
-private:
+	inline unsigned getVariablesSize() const {
+		return variablesSize;
+	}
+
+	virtual bool isWeakConstraint(){
+		return false;
+	}
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreturn-type"
+	virtual const vector<Term*>& getLabel() const {}
+#pragma GCC diagnostic pop
+	virtual unsigned getLevelInt(){return 0;}
+	virtual Term* getLevel() const {	return nullptr;}
+	virtual Term* getWeight() const {return nullptr;}
+	virtual void setWeightLevelLabel(tupleWeak&& tp){};
+	virtual tupleWeak groundWeightLevel(var_assignment& current_assignment){return make_tuple(nullptr,nullptr,vector<Term*>());
+	}
+
+	//-----------------Rule Information Interface -------------------------------
+
+	set_term::const_iterator getDictionaryIntersectionBegin(index_object index) const {
+		return ruleInformation.getDictionaryIntersectionBegin(index);
+	}
+	set_term::const_iterator  getDictionaryIntersectionEnd(index_object index) const{
+		return ruleInformation.getDictionaryIntersectionEnd(index);
+	}
+
+	set_term::iterator getDictionaryIntersectionBegin(index_object index) {
+		return ruleInformation.getDictionaryIntersectionBegin(index);
+	}
+	set_term::iterator  getDictionaryIntersectionEnd(index_object index) {
+		return ruleInformation.getDictionaryIntersectionEnd(index);
+	}
+
+	void removeInDictionaryIntersection(set_term::iterator& it,index_object index){
+		ruleInformation.removeInDictionaryIntersection(it,index);
+	}
+
+	const RuleInformation& getRuleInformation(){
+		return ruleInformation;
+	}
+
+	void insertInDictionaryIntersection(index_object index,Term* term){
+		ruleInformation.insertInDictionaryIntersection(index,term);
+	}
+
+	void insertInDictionaryIntersection(index_object index,const set_term& set){
+		ruleInformation.insertInDictionaryIntersection(index,set);
+	}
+
+	void setDictionaryIntersectionSize(unsigned size){
+		ruleInformation.setDictionaryIntersectionSize(size);
+	}
+
+	void clearDictionaryIntersection(){
+		ruleInformation.clearDictionaryIntersection();
+	}
+
+	inline void addBounderBuiltin(unsigned i,Atom *builtin){
+		ruleInformation.addBounderBuiltin(i,builtin);
+	}
+
+	inline void clearBounderBuiltin(){
+		ruleInformation.clearBounderBuiltin();
+	}
+
+	bool isAnOutputVariable(Term* term){
+		return ruleInformation.isAnOutputVariable(term,this);
+	}
+
+	set_term& getOutputVariables() {
+		return ruleInformation.getOutputVariables(this);
+	}
+
+	void addMatchInformation(MatchInformation& matchInfo,unsigned indexAtom){
+		ruleInformation.addMatchInformation(matchInfo,indexAtom);
+	}
+
+	void clearAndResizeMatchInfo(unsigned size){
+		ruleInformation.clearAndResizeMatchInfo(size);
+	}
+
+protected:
 
 	/// Return the predicate in atoms vector, if checkNegative is true compare the negative of atom with the parameter
 	/// else insert the predicate
@@ -180,9 +455,80 @@ private:
 	///An array containing true at a position in the body if that atom has to be simplified, false otherwise
 	bool* simplifiedBody;
 
-	void printNonGround(ostream& stream=cout);
+	virtual void printNonGround(ostream& stream=cout);
 
 	bool mustBeRewritedForAggregates;
+
+	RuleInformation ruleInformation;
+
+	unsigned variablesSize;
+
+};
+
+
+
+class WeakConstraint : public Rule{
+public:
+
+
+	WeakConstraint():weight(nullptr),level(nullptr),levelInt(0){}
+
+	WeakConstraint(const vector<Atom*>& body,Term* weight, Term* level,const vector<Term*>& terms):weight(weight),level((level==nullptr)?TermTable::getInstance()->term_zero:level),label(terms),levelInt(0){
+		this->body=body;
+	}
+
+	WeakConstraint(bool g, unsigned sizeBody,const vector<Atom*>& body,Term* weight, Term* level,const vector<Term*>& terms):Rule(g,0,sizeBody),weight(weight),level((level==nullptr)?TermTable::getInstance()->term_zero:level),label(terms),levelInt((g)?level->getConstantValue():0){
+		this->body=body;
+	}
+
+	WeakConstraint(bool g, unsigned sizeBody,Term* weight, Term* level,const vector<Term*>& terms):Rule(g,0,sizeBody),weight(weight),level((level==nullptr)?TermTable::getInstance()->term_zero:level),label(terms),levelInt((g)?level->getConstantValue():0){
+	}
+
+	virtual bool isWeakConstraint(){return true;}
+
+	const vector<Term*>& getLabel() const {return label;}
+
+	void setLabel(const vector<Term*>& label) {	this->label = move(label);}
+
+	Term* getLevel() const {	return level;}
+
+	unsigned getLevelInt(){return levelInt;}
+
+	void setLevel(Term* level) {	this->level = level;}
+
+	Term* getWeight() const {return weight;}
+
+	void setWeight(Term* weight) {this->weight = weight;}
+
+	virtual void print(ostream& stream=cout);
+
+	bool isAStrongConstraint(){return false;}
+
+	void printNonGround(ostream& stream=cout);
+
+	virtual void setWeightLevelLabel(tupleWeak&& groundWeightLevelLabel){
+		weight=get<0>(groundWeightLevelLabel);
+		level=get<1>(groundWeightLevelLabel);
+		label=move(get<2>(groundWeightLevelLabel));
+	};
+
+	virtual void free(){
+		deleteBody([](Atom* atom){
+			return 2;
+		});
+	}
+
+
+	///Ground the Weight, the level and the label of the weak and return with the tuple
+	tupleWeak groundWeightLevel(var_assignment& current_assignment);
+
+private:
+	Term* weight;
+	Term* level;
+
+	vector<Term*> label;
+
+	unsigned levelInt;
 };
 
 

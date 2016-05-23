@@ -17,7 +17,9 @@
 #include "../../util/Utils.h"
 
 #include "../table/PredicateExtension.h"
-
+#include "../statement/InputRewriter.h"
+#include "../../input/InMemoryInputBuilder.h"
+#include "RewriteMagic.h"
 namespace DLV2{
 
 
@@ -73,10 +75,11 @@ StatementAtomMapping::~StatementAtomMapping() {}
  */
 
 void DependencyGraph::addInDependency(Rule* r) {
-
 	// Temporary set of predicates
 	unordered_set<index_object> head_predicateVisited;
-	unordered_set<index_object> body_predicateVisited;
+	unordered_set<index_object> body_predicateVisited_positive;
+	unordered_set<index_object> body_predicateVisited_negative;
+
 
 
 
@@ -107,8 +110,8 @@ void DependencyGraph::addInDependency(Rule* r) {
 
 						for(auto pred_body:(*body_it)->getPredicates()){
 							// Check if the predicate in the head has been visited
-							if(!body_predicateVisited.count(pred_body->getIndex())){
-								body_predicateVisited.insert(pred_body->getIndex());
+							if(!body_predicateVisited_positive.count(pred_body->getIndex())){
+								body_predicateVisited_positive.insert(pred_body->getIndex());
 								addEdge(pred_body->getIndex(), pred_head->getIndex(),1);
 								addPositiveEdge=true;
 							}
@@ -119,8 +122,8 @@ void DependencyGraph::addInDependency(Rule* r) {
 
 						for(auto pred_body:(*body_it)->getPredicates()){
 							// Check if the predicate in the head has been visited
-							if(!body_predicateVisited.count(pred_body->getIndex())){
-								body_predicateVisited.insert(pred_body->getIndex());
+							if(!body_predicateVisited_negative.count(pred_body->getIndex())){
+								body_predicateVisited_negative.insert(pred_body->getIndex());
 								if(!(*body_it)->isAggregateAtom())
 									addEdge(pred_body->getIndex(), pred_head->getIndex(),-1);
 								else{
@@ -141,7 +144,8 @@ void DependencyGraph::addInDependency(Rule* r) {
 					addEdge(pred_head->getIndex(), pred_head->getIndex(),1);
 			}
 			//Set all predicate in the body as unvisited, and then continue with the next atom
-			body_predicateVisited.clear();
+			body_predicateVisited_negative.clear();
+			body_predicateVisited_positive.clear();
 		}
 	}
 
@@ -248,7 +252,6 @@ void DependencyGraph::addEdge(index_object pred_body, index_object pred_head, in
 		index_j = predicateIndexGMap.size();
 		predicateIndexGMap.insert( { pred_head, index_j });
 	}
-
 	// If add an edge positive with the same predicate not add in stratified
 	// because is only for component, to add rule with not positive atom in body
 	if(!(index_i==index_j && weight>0)){
@@ -284,7 +287,7 @@ void DependencyGraph::calculateStrongComponent(unordered_map<index_object, unsig
 }
 
 
-void DependencyGraph::calculateUnstritifiedPredicate(unordered_set<index_object>& predicateUnstratified){
+void DependencyGraph::calculateUnstratifiedPredicate(unordered_set<index_object>& predicateUnstratified){
 	using namespace boost;
 
 	//Calculate the cycle in stratifiedGraph and verify thath not exist recursion and negation, if exist
@@ -339,8 +342,9 @@ void DependencyGraph::calculateUnstritifiedPredicate(unordered_set<index_object>
 					}
 		}
 	}
+//	cerr<<"UNSTRAT PRED "<<endl;
 //		for(auto stratPred:predicateUnstratified){
-//			cout<<"UNDEF "<<stratPred<<endl;
+//			cerr<<"UNDEF "<<stratPred<<endl;
 //		}
 }
 
@@ -366,7 +370,7 @@ void ComponentGraph::addEdge(index_object pred_body, index_object pred_head, int
 void ComponentGraph::createComponent(DependencyGraph &depGraph,
 		StatementAtomMapping &statementAtomMapping) {
 	depGraph.calculateStrongComponent(componentDependency);
-	depGraph.calculateUnstritifiedPredicate(predicateUnstratified);
+	depGraph.calculateUnstratifiedPredicate(predicateUnstratified);
 
 
 	// For each component create a vertex in a graph
@@ -407,6 +411,28 @@ void ComponentGraph::createComponent(DependencyGraph &depGraph,
 				}
 
 
+			}
+
+			if(r->getSizeHead()>0){
+				auto head_atom=r->getAtomInHead(0);
+				if( head_atom->isChoice()){
+					for(unsigned i=0;i<head_atom->getChoiceElementsSize();i++){
+						for(auto pred_body:head_atom->getChoiceElement(i)->getPredicatePositiveInNaf()){
+							index_object index_pred_body = pred_body->getIndex();
+							if (statementAtomMapping.isInHead(index_pred_body)) {
+								addEdge(index_pred_body, pred_head, 1);
+
+							}
+						}
+						for(auto pred_body:head_atom->getChoiceElement(i)->getPredicateNegativeInNaf()){
+							index_object index_pred_body = pred_body->getIndex();
+							if (statementAtomMapping.isInHead(index_pred_body)) {
+								addEdge(index_pred_body, pred_head, -1);
+
+							}
+						}
+					}
+				}
 			}
 
 		}
@@ -594,24 +620,155 @@ void ComponentGraph::computeAllPossibleOrdering(vector<vector<unsigned int>>& co
  */
 
 void StatementDependency::addRuleMapping(Rule* r) {
+	unsigned index=constraints.size()+weak.size()+rules.size();
+	r->setIndex(index);
 	if(r->isAStrongConstraint()){
 		constraints.push_back(r);
 		statementAtomMapping.addRule(r);
+	}else if(r->isWeakConstraint()){
+		weak.push_back(r);
 	}else{
+		addAtomMappingAndSetEdb(r);
+		rules.push_back(r);
+	}
+}
+
+bool StatementDependency::magic() {
+	string errmsg;
+	unsigned queryConstraints = 0;
+	HandleQuery(queryConstraints);
+	if(!Options::globalOptions()->rewriteMagic())return true;
+	if (query.empty()) {
+		errmsg = "Warning: No query supplied.";
+	} else if (constraints.size() > queryConstraints) {
+		errmsg = "The program contains integrity constraints.";
+	} else if (weak.size() > 0) {
+		errmsg = "Warning: The program contains weak constraints.";
+	} else if (hasAggregate) {
+		errmsg = "Warning: The program contains aggregates.";
+//	} else if (Options::globalOptions()->getOptionFrontend() != FRONTEND_CAUTIOUS
+//	&& Options::globalOptions()->getOptionFrontend() != FRONTEND_BRAVE) {
+//		errmsg = "Neither brave nor cautious reasoning was specified.";
+//		return false;
+	} else if (rules.empty()) {
+		errmsg = "Warning: IDB is empty or has become empty due to optimizations.";
+	} else if(hasNegativeAtom)
+		cerr<< "Warning: The program contains negative literals.\nThe correctness of Magic Sets is only guaranteed for super-coherent programs."<<endl;
+
+
+	if (errmsg.empty()) {
+
+		bool isGroundQuery = true;
+		for (auto atom : query)
+			if (!atom->isGround()) {
+				isGroundQuery = false;
+				break;
+			}
+		RewriteMagic rewriteMagic(rules, constraints, weak, &query,
+				isGroundQuery);
+		rewriteMagic.rewrite(isGroundQuery);
+
+		simplifyMagicRules();
+
+	}
+	else{
+		cerr<<errmsg<<endl;
+		cerr<<"Warning: Magic Sets not applied."<<endl;
+		return true;
+	}
+	return true;
+}
+
+void StatementDependency::simplifyMagicRules(){
+
+	//Check if the magic rewriting create a fact rule
+	for(unsigned i=0;i<rules.size();i++){
+		Rule *rule=rules[i];
+		if(rule->isAFact()){
+			Atom *fact=rule->getAtomInHead(0);
+
+			fact->setFact(true);
+			Predicate* predicate = fact->getPredicate();
+//			IndexingStructure* atomSearcher=nullptr;
+//			PredicateExtTable::getInstance()->getPredicateExt(predicate)->getAtomSearcher(FACT);
+//			if(Options::globalOptions()->getCheckFactDuplicate())
+//				atomSearcher=instancesTable->getPredicateExt(predicate)->addAtomSearcher(FACT,HASHSET,nullptr);
+//			if(atomSearcher==nullptr || atomSearcher->find(fact)==nullptr){
+			PredicateExtTable::getInstance()->getPredicateExt(predicate)->addAtom(fact,FACT);
+//				if (!Options::globalOptions()->isNofacts()) {
+					OutputBuilder::getInstance()->onFact(fact);
+//				}
+			delete rule;
+			rules.erase(rules.begin()+i);
+		}
+	}
+
+	//Check duplicate rule
+	for(unsigned i=0;i<rules.size();i++){
+
+		for(unsigned j=i+1;j<rules.size();j++){
+			if(*rules[i]==*rules[j]){
+				rules[j]->free();
+				delete rules[j];
+				rules.erase(rules.begin()+j);
+				j--;
+			}
+		}
+
+	}
+
+}
+
+void StatementDependency::addAtomMappingAndSetEdb(Rule *r){
+	if(!r->isAStrongConstraint() && !r->isWeakConstraint()){
 		set_predicate pred_head=r->getPredicateInHead();
 		for(auto p:pred_head)p->setIdb();
-		statementAtomMapping.addRule(r);
-		rules.push_back(r);
-		r->setIndex(rules.size()-1);
-		depGraph.addInDependency(r);
 	}
+	statementAtomMapping.addRule(r);
 }
 
 void StatementDependency::createDependencyGraph(PredicateTable* pt) {
 
+	bool appliedMagicRewriting=false;
+	if(!query.empty()){
+		appliedMagicRewriting=magic();
+
+		if(appliedMagicRewriting){
+			statementAtomMapping.clear();
+
+			for(unsigned i=0;i<constraints.size();i++){
+				constraints[i]->setIndex(rules.size()+i);
+				addAtomMappingAndSetEdb(constraints[i]);
+			}
+		}
+	}
+
+
+	for(unsigned i=0;i<rules.size();i++){
+		Rule * rule=rules[i];
+		if(appliedMagicRewriting){
+			addAtomMappingAndSetEdb(rule);
+			rule->setIndex(i);
+		}
+		depGraph.addInDependency(rule);
+	}
 	unordered_set<index_object> delete_pred;
 	pt->getEdbPredicate(delete_pred);
 	depGraph.deleteVertex(delete_pred);
+
+	if(Options::globalOptions()->isPrintRewrittenProgram()){
+		cerr<<"----------PROGRAM----------"<<endl;
+		for(auto r:rules){
+			r->print(cerr);
+		}
+		for(auto r:constraints)
+			r->print(cerr);
+
+		for(auto r:weak)
+			r->print(cerr);
+
+		cerr<<"----------    END      ----------"<<endl;
+	}
 
 }
 
@@ -675,8 +832,10 @@ void StatementDependency::createComponentGraphAndComputeAnOrdering(vector<vector
 				/// For each rule classify it as exit or recursive
 				for(Rule* r: componentsRules){
 					if(addedRules.insert(r->getIndex()).second){
-						if(checkIfExitRule(comp,r))
+						if(checkIfExitRule(comp,r)){
 							exitRules[i].push_back(r);
+						}
+
 						else{
 							recursiveRules[i].push_back(r);
 							for(auto p:r->getPredicateInHead()){
@@ -736,7 +895,8 @@ void StatementDependency::print() {
 //			depGraph.printFile(fileDGraph);
 //	}
 //	if (Config::getInstance()->isComponent()) {
-//		if (strcmp(fileCGraph.c_str(), "CG") == 0)
+//		if (strcmp(fileCGraph.c_str(), "C
+//	G") == 0)
 //			compGraph.print();
 //		else
 //			compGraph.printFile(fileCGraph);
@@ -756,7 +916,165 @@ StatementDependency* StatementDependency::getInstance(){
 }
 
 
+/** creates appropriate constraints for implementing queries efficiently
+  * Note: Error messages are not terminated by newline, since it is expected
+  *       that some other message (indicating how the program will proceed)
+  *       is printed immediately afterwards.
+  * @param queryConstraints the number of constraints introduced by this query
+  * @return false if some error occurred
+  */
+ bool StatementDependency::HandleQuery(unsigned &queryConstraints)
+     {
+     if( query.empty() )
+         {
+         // No query has been specified, but one is required when brave
+         // or cautious reasoning are requested.
+    	 if( Options::globalOptions()->getOptionFrontend() == FRONTEND_BRAVE
+             || Options::globalOptions()->getOptionFrontend() == FRONTEND_CAUTIOUS )
+             {
+             cerr << "No query supplied. Cannot continue." << endl;
+             return false;
+             }
+         else
+             return true;
+         }
 
-};
+//        if( TraceLevel >= 1 )
+//            cdebug << "Handling Query " << *Query << "?" << endl;
 
-};
+     set_term variables;
+
+     // Make one pass through the query, checking whether it is ground
+     // or not and looking for the maximum variable index.
+     for( vector<Atom*>::const_iterator i=query.begin();
+          i != query.end();
+          i++ )
+         {
+         if( ! (*i)->isGround() )
+             {
+             isQueryGround=false;
+
+             set_term vars=(*i)->getVariable();
+             variables.insert(vars.begin(),vars.end());
+//                for( vector<Term*>::const_iterator j=(*i)->getTerms().begin();
+//                     j != (*i)->getTerms().end();
+//                     j++ )
+//                    if( (*j)->getType()==VARIABLE )
+//                        maxVar=max(maxVar,j->getVar());
+//                    else if( j->isComplex() )
+//                        {
+//                        set<TERM> vars;
+//                        j->getComplexTerm().getComplexVars(vars);
+//                        for( set<TERM>::const_iterator v = vars.begin();
+//                             v != vars.end(); v++ )
+//                            maxVar=max(maxVar,v->getVar());
+//                        }
+                }
+         }
+
+
+     if( Options::globalOptions()->getOptionFrontend() == FRONTEND_CAUTIOUS )
+         {
+
+         if( isQueryGround )
+             {
+             // We do cautious reasoning and have a ground query.
+
+             // The query is treated as an internal constraint.
+             // Example: a, not b ?
+             //  becomes :- a, not b.
+             //
+             // If a model is computed, this means that this model did not
+             // violate the constraint, i.e. at least one of the query's
+             // literals is false in this model.  This model can be seen as
+             // a witness that the query is not true in all possible models.
+             //
+             // If no model is computed, the query is cautiously true.
+
+             // Create a constraint containing exactly the query
+             // conjunction and mark it as internal.
+         	Rule *c=new Rule;
+         	for(auto atom:query)
+         		c->addInBody(atom->clone());
+//         	c->setBody(query);
+            constraints.push_back(c);
+            queryConstraints++;
+
+//             if( TraceLevel >= 1 )
+//                 cdebug << "                " << c << endl;
+             }
+         }
+     else if( Options::globalOptions()->getOptionFrontend() == FRONTEND_BRAVE )
+         {
+         // We either do brave reasoning, or just have a query without
+         // reasoning (possibly coming from a frontend).  For now, we
+         // forbid the latter for non-ground queries.
+         if( Options::globalOptions()->getOptionFrontend() != FRONTEND_BRAVE  &&  ! isQueryGround )
+             {
+             cerr << "Non-ground queries are only supported with brave and "
+                     "cautious reasoning." << endl;
+             return false;
+             }
+
+         // Each ground literal in the query is transformed into a constraint,
+         // which we add to the program (marked as internal).
+         // Example: a, not b? becomes :- not a.
+         //                            :- b.
+         for( vector<Atom*>::const_iterator i=query.begin();
+              i != query.end();
+              i++ )
+             if( (*i)->isGround() )
+                 {
+                 Rule *c=new Rule;
+                 Atom *newAtom=(*i)->clone();
+                 newAtom->setNegative(!((*i)->isNegative()));
+                 c->addInBody(newAtom);
+                 constraints.push_back(c);
+                 queryConstraints++;
+
+//                 if( TraceLevel >= 1 )
+//                     cdebug << "                " << c << endl;
+                 }
+         }
+
+     // If the query is non-ground, we need to create a new "query rule" with
+     // the query in the body, and initialize the interpretation that will
+     // hold the union or intersection, respectively, of all models found.
+     if( ! isQueryGround )
+         {
+//         TERMS t;
+//         for(unsigned i=0; i <= maxVar; i++)
+//             t.push_back( TERM(i) );
+
+    	 Rule *newRule=new Rule;
+//    	 for(auto q:query)
+//    		 newRule->addInBody(q->clone());
+    	 for(auto atom:query)
+    		 newRule->addInBody(atom->clone());
+//    	newRule->setBody(query);
+    	string name=PREDNAME_QUERY;
+		Predicate *newPred=new Predicate(name,variables.size(),false);
+		PredicateTable::getInstance()->insertPredicate(newPred);
+		PredicateExtTable::getInstance()->addPredicateExt(newPred);
+		newPred->setHiddenForPrinting(false);
+		vector<Term*> terms;
+		for(auto t:variables)terms.push_back(t);
+    	 newRule->addInHead(new ClassicalLiteral(newPred,terms,false,false));
+
+//         DISJUNCTION head;
+//         head.add( ATOM(PREDNAME_QUERY,&t,PREDICATE_NAMES::typeQuery) );
+//         IDB.push_back( RULE(&head,Query) );
+
+//         if( TraceLevel >= 1 )
+//             cdebug << "Adding rule for non-ground query: "
+//                    << IDB.back() << endl;
+//         assert( IDB.back().isSafe() );
+		 rules.push_back(newRule);
+         }
+     return true;
+     }
+
+
+
+}
+}

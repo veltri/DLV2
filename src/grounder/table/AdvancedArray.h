@@ -18,6 +18,8 @@ public:
 
 	AdvancedArray():chooseStaticArray(true){}
 
+	AdvancedArray(const AdvancedArray& array):chooseStaticArray(array.chooseStaticArray),staticArray(array.staticArray),dynamicArray(array.dynamicArray){};
+
 	inline void setSize(unsigned size){
 		if(size<S)
 			chooseStaticArray=true;

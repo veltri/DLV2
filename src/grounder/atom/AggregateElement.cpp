@@ -35,7 +35,7 @@ namespace grounder{
 	set_term AggregateElement::getSafeVariable() {
 		set_term safeVars;
 		for(auto atom:nafLiterals)
-			if(!atom->isNegative())
+			if(!atom->isNegative() && ! atom->isBuiltIn())
 				for(auto variable:atom->getVariable())
 					safeVars.insert(variable);
 		return safeVars;
@@ -44,17 +44,24 @@ namespace grounder{
 	set_term AggregateElement::getUnsafeVariable() {
 		set_term safeVars=getSafeVariable();
 		set_term unsafeVars;
-		for(auto atom:nafLiterals)
-			if(atom->isNegative())
+		for(auto atom:nafLiterals){
+			set_term variableInArith;
+			for(auto t:atom->getTerms())t->getVariablesInArith(variableInArith);
+			if(variableInArith.size()>0)unsafeVars.insert(variableInArith.begin(),variableInArith.end());
+			if(atom->isNegative() || atom->isBuiltIn()){
 				for(auto variable:atom->getVariable())
 					if(!safeVars.count(variable))
 						unsafeVars.insert(variable);
+			}
+		}
+
 		return unsafeVars;
 	}
 
 	void AggregateElement::getPredicates(set_predicate& predicates)const{
 		for(auto atom:nafLiterals){
-			predicates.insert(atom->getPredicate());
+			if(atom->isClassicalLiteral())
+				predicates.insert(atom->getPredicate());
 		}
 	}
 
@@ -63,7 +70,7 @@ namespace grounder{
 			if(term->isGround())continue;
 			bool ok=false;
 			for(auto atom:nafLiterals){
-				if(atom->getVariable().count(term)){
+				if(((atom->isClassicalLiteral() && !atom->isNegative()) || atom->getBinop()==Binop::EQUAL)  && atom->getVariable().count(term)){
 					ok=true;
 				}
 			}
@@ -80,11 +87,14 @@ namespace grounder{
 			if(terms[i]->getIndex()!=element.terms[i]->getIndex())
 				return false;
 		for(unsigned i=0;i<nafLiterals.size();i++)
-			if(!(nafLiterals[i]==nafLiterals[i]))
+			if(!(*nafLiterals[i]==*element.nafLiterals[i]))
 				return false;
 
+
 		return true;
-	}
+}
+
+
 
 bool AggregateElement::isAllAggregateTermShared(set_term& shared_variable)const{
 	for(auto term:terms){

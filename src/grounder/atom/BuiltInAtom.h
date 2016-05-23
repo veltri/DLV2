@@ -72,6 +72,10 @@ public:
 	///This method evaluate the truth value of the built-in atom
 	bool evaluate(var_assignment& substritutionTerm);
 
+	///This method first substitute the terms and after evaluate the truth value of the built-in atom
+	bool groundAndEvaluate(var_assignment& substitutionTerm);
+
+
 	/// Return true if is BuiltInAtom
 	virtual bool isBuiltIn()const{return true;};
 
@@ -84,8 +88,134 @@ public:
 	virtual bool isAssignment(){return assignment;};
 	virtual void setAssignment(bool assignment){this->assignment=assignment;};
 
+
+	virtual bool plusMinusBuiltin(){
+		//Check if is X=Y*-1
+		if(terms[0]->getType()==ARITH && terms[1]->getType()!=ARITH && terms[0]->checkArithIsMinusOne())
+			return true;
+		else if(terms[1]->getType()==ARITH && terms[0]->getType()!=ARITH && terms[1]->checkArithIsMinusOne())
+			return true;
+
+
+		for(unsigned i=0;i<terms.size();i++){
+			Term *t=terms[i];
+			if(t->getType()==FUNCTION)return false;
+			for(unsigned j=0;j<t->getSizeOperator();j++)
+				if(t->getOperator(j).second && (t->getOperator(j).first==DIV || t->getOperator(j).first==TIMES))
+					return false;
+		}
+		return true;
+	}
+
 	///Destructor
 	~BuiltInAtom() {};
+
+	bool isVariableLessConstant() const{
+		if(binop==Binop::LESS && terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==TermType::NUMERIC_CONSTANT)
+			return true;
+		return false;
+	}
+	bool isConstantLessVariable() const{
+		if(binop==Binop::LESS && terms[1]->getType()==TermType::VARIABLE && terms[0]->getType()==TermType::NUMERIC_CONSTANT)
+			return true;
+		return false;
+	}
+	bool isVariableLessOrEqConstant() const{
+		if(binop==Binop::LESS_OR_EQ && terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==TermType::NUMERIC_CONSTANT)
+			return true;
+		return false;
+	}
+	bool isConstantLessOrEqVariable() const{
+		if(binop==Binop::LESS_OR_EQ && terms[1]->getType()==TermType::VARIABLE && terms[0]->getType()==TermType::NUMERIC_CONSTANT)
+			return true;
+		return false;
+	}
+	bool isVariableGreaterConstant() const{
+		if(binop==Binop::GREATER && terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==TermType::NUMERIC_CONSTANT)
+			return true;
+		return false;
+	}
+	bool isConstantGreaterVariable() const{
+		if(binop==Binop::GREATER && terms[1]->getType()==TermType::VARIABLE && terms[0]->getType()==TermType::NUMERIC_CONSTANT)
+			return true;
+		return false;
+	}
+	bool isVariableGreaterOrEqConstant() const{
+		if(binop==Binop::GREATER_OR_EQ && terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==TermType::NUMERIC_CONSTANT)
+			return true;
+		return false;
+	}
+	bool isConstantGreaterOrEqVariable() const{
+		if(binop==Binop::GREATER_OR_EQ && terms[1]->getType()==TermType::VARIABLE && terms[0]->getType()==TermType::NUMERIC_CONSTANT)
+			return true;
+		return false;
+	}
+	bool isVariableEqualConstantNotAssignment() const{
+		if(binop==Binop::EQUAL && !assignment && terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==TermType::NUMERIC_CONSTANT)
+			return true;
+		return false;
+	}
+	bool isConstantEqualVariableNotAssignment() const{
+		if(binop==Binop::EQUAL && !assignment && terms[1]->getType()==TermType::VARIABLE && terms[0]->getType()==TermType::NUMERIC_CONSTANT)
+			return true;
+		return false;
+	}
+	bool isVariableUnequalConstant() const{
+		if(binop==Binop::UNEQUAL && terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==TermType::NUMERIC_CONSTANT)
+			return true;
+		return false;
+	}
+	bool isConstantUnequalVariable() const{
+		if(binop==Binop::UNEQUAL && terms[1]->getType()==TermType::VARIABLE && terms[0]->getType()==TermType::NUMERIC_CONSTANT)
+			return true;
+		return false;
+	}
+	bool isVariableLessVariable() const{
+		if(binop==Binop::LESS && terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==TermType::VARIABLE)
+			return true;
+		return false;
+	}
+	bool isVariableLessOrEqVariable() const{
+		if(binop==Binop::LESS_OR_EQ && terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==TermType::VARIABLE)
+			return true;
+		return false;
+	}
+	bool isVariableGreaterVariable() const{
+		if(binop==Binop::GREATER && terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==TermType::VARIABLE)
+			return true;
+		return false;
+	}
+	bool isVariableGreaterOrEqVariable() const{
+		if(binop==Binop::GREATER_OR_EQ && terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==TermType::VARIABLE)
+			return true;
+		return false;
+	}
+	bool isVariableEqualVariableNotAssignment() const{
+		if(binop==Binop::EQUAL && !assignment && terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==TermType::VARIABLE)
+			return true;
+		return false;
+	}
+	bool isVariableUnequalVariable() const{
+		if(binop==Binop::UNEQUAL && terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==TermType::VARIABLE)
+			return true;
+		return false;
+	}
+
+	virtual bool isComparisonBuiltIn() const{
+		if(terms[0]->getType()==TermType::NUMERIC_CONSTANT && terms[1]->getType()==VARIABLE && !assignment){
+			return true;
+		}
+		if(terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==NUMERIC_CONSTANT && !assignment){
+			return true;
+		}
+		if(terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==VARIABLE && !assignment){
+			return true;
+		}
+		if(terms[0]->getType()==TermType::VARIABLE && terms[1]->getType()==VARIABLE && !assignment){
+			return true;
+		}
+		return false;
+	}
 
 private:
 	///Binary operation @see Binop
@@ -94,6 +224,8 @@ private:
 	bool negative;
 	//Is true if the built-in assigns value to a term, false if it is a comparison (like ==)
 	bool assignment;
+
+	bool calculateVariableInAssignment(Term* firstTerm,	Term* secondTerm, var_assignment& substitutionTerm);
 };
 
 };

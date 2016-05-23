@@ -20,7 +20,6 @@ class IdGenerator {
 public:
 	virtual ~IdGenerator(){};
 
-
 	unsigned getNewId(unsigned id=0){
 		return ++(idGenerators[id]);
 	}

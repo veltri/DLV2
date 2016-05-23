@@ -52,13 +52,24 @@ namespace DLV2
             std::cout << separator << std::endl;
 
             std::cout << "Grounder options                         " << std::endl << std::endl;
-            std::cout << "--hashtype                               - Set the hash type of objects. Possible values: STL_HASH=0, BOOST_HASH=1, JAVA_HASH=2, MUR_HASH=3, PERL_DJ=4, PERL_B=5." << std::endl;
-            std::cout << "--indextype                              - Set the index table of object. Possible values: DEFAULT=0, MAP=1, MULTIMAP=2, HASHSET=3, DOUBLEMAP=4." << std::endl;
-            std::cout << "--predindexterm                          - Set on which term predicates have to be indexed. Example: -i p=2,a=3" << std::endl;
-            std::cout << "--predindextype                          - Set the index type for the given predicates. Example: --predindextype=p=1,a=2" << std::endl;
-            std::cout << "--rewritingtype                          - Set the rewriting type of the choice: 0:Native choice with all atoms in the body of the choice; 2:Rewriting with disjunction.3: Native choice avoiding unnecessary atoms in the body. " << std::endl;
-            std::cout << "--printRewrite                           - Print the rewrited program." << std::endl;
-            std::cout << "--outputformat                           - Set the output format: 0=NUmeric, 1=Textual." << std::endl;
+            std::cout << "--no-facts							- Suppress the printing of EDB." << std::endl;
+            std::cout << "--filter                              - Filter the specified predicate with the specified arity. Example: --filter=p1/2,p2/3" << std::endl;
+            std::cout << "--hash-type                           - Set the hash type of objects. Possible values: STL_HASH=0, BOOST_HASH=1, JAVA_HASH=2, MUR_HASH=3, PERL_DJ=4, PERL_B=5." << std::endl;
+            std::cout << "--index-type                          - Set the index table of object. Possible values: DEFAULT=0, MAP=1, MULTIMAP=2, HASHSET=3, DOUBLEMAP=4." << std::endl;
+            std::cout << "--pred-index-type                     - Set the index type for the given predicates. Example: --pred-index-type=p=1,a=2" << std::endl;
+            std::cout << "--pred-index-type                     - Set the index type for the given predicates. Example: --pred-index-type=p=1,a=2" << std::endl;
+            std::cout << "--rewriting-type                      - Set the rewriting type of the choice: 0:Native choice with all atoms in the body of the choice; 2:Rewriting with disjunction.3: Native choice avoiding unnecessary atoms in the body. " << std::endl;
+            std::cout << "--print-rewrite                       - Print the rewrited program." << std::endl;
+            std::cout << "--output-format                       - Set the output format: 0=NUmeric, 1=Textual." << std::endl;
+            std::cout << "--positive-ordering                   - 0=NO ORDERING, 1=COMBINED." << std::endl;
+            std::cout << "--rule-time                           - Print the time of instantiation of single rule" << std::endl;
+            std::cout << "--check-facts-duplication             - Remove the facts duplicates" << std::endl;
+            std::cout << "--rewrite-arith                       - Rewrite the Arith Term in Builtin Atom" << std::endl;
+            std::cout << "--no-anonymous-filter                 - Disable the filter of the anonymous variable" << std::endl;
+            std::cout << "--compact-facts                       - Assign the fact atom a unique index" << std::endl;
+            std::cout << "--gstats                              - Display statistc of time and rule produced of the the program. Possible values = Text based:1, Interactive Console:2" << std::endl;
+            std::cout << "--project                             - Project atom with irrelevant variables, Possible values = 1 rewrite ever, 2 rewrite only the unsolved predicate." << std::endl;
+
             std::cout << separator << std::endl;
 
 

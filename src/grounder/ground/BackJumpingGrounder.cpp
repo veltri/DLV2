@@ -12,6 +12,7 @@ namespace DLV2 {
 namespace grounder {
 
 bool BackJumpingGrounder::back() {
+
 	direction=0;
 	callFoundAssignment = false;
 	if (index_current_atom <  0)
@@ -67,10 +68,10 @@ bool BackJumpingGrounder::nextMatch() {
 	return BackTrackingGrounder::nextMatch();
 }
 
-void BackJumpingGrounder::inizialize(Rule* rule) {
+void BackJumpingGrounder::inizialize(Rule* rule, unordered_set<index_object>* componentPredicateInHead) {
 	trace_msg(backjumping,1,"---> INIZIALIZE");
 
-	BackTrackingGrounder::inizialize(rule);
+	BackTrackingGrounder::inizialize(rule,componentPredicateInHead);
 
 	closestSuccessfulBinder_index=-1;
 	current_status=SUCCESSFULL;
@@ -79,54 +80,70 @@ void BackJumpingGrounder::inizialize(Rule* rule) {
 	historyBackOutputVars.setSize(currentRule->getSizeBody(),-2);
 	historyBackFromSolutionFound=-2;
 
-	variablesBinder.setSize(current_assignment.size(),0);
-	for(unsigned i=0;i<atoms_bind_variables.size();++i){
-		for(auto var:atoms_bind_variables[i])
-			variablesBinder[var]=i;
-	}
-
+	outputVariables=&(rule->getOutputVariables());
 	atomsVariables.clear();
 
 	failureMap.resize(current_assignment.size(),false);
-
-	outputVariables.clear();
-	for (auto it=currentRule->getBeginHead();it!=currentRule->getEndHead(); ++it) {
-		Atom* atom=*it;
-		const set_term& variables=atom->getVariable();
-		outputVariables.insert(variables.begin(),variables.end());
-	}
-	for (auto it=currentRule->getBeginBody();it!=currentRule->getEndBody(); ++it) {
+	unsigned position=0;
+	for (auto it=currentRule->getBeginBody();it!=currentRule->getEndBody(); ++it,++position) {
 		Atom* atom=*it;
 		const set_term& variablesInAtom=atom->getVariable();
 		atomsVariables.push_back(variablesInAtom);
-		if(atom->isClassicalLiteral() && !atom->getPredicate()->isSolved()){
-			outputVariables.insert(variablesInAtom.begin(),variablesInAtom.end());
-		}
-		else if(atom->isAggregateAtom()){ //&& atom->isAssignment()
-			set_term variablesUnsolved;
-			atom->getUnsolvedPredicateVariable(variablesUnsolved);
-			outputVariables.insert(variablesUnsolved.begin(),variablesUnsolved.end());
-			if(!variablesUnsolved.empty()){
-				set_term guards=atom->getGuardVariable();
-				outputVariables.insert(guards.begin(),guards.end());
-			}
+		if(atom->isClassicalLiteral()){
+			//Add also the variable in the builtin that the atom evaluate inside the matchTerm
+			if(!matchBuiltin[position].empty())
+				for(auto builtinAtom:matchBuiltin[position]){
+					auto variablesInBuiltIn=builtinAtom->getVariable();
+					atomsVariables[position].insert(variablesInBuiltIn.begin(),variablesInBuiltIn.end());
+				}
 		}
 	}
 
+	if(!Options::globalOptions()->isDisabledAnonymousFilter()){
+		position=0;
+		for (auto it=currentRule->getBeginBody();it!=currentRule->getEndBody(); ++it,++position) {
+			Atom* atom=*it;
+			if(atom->isClassicalLiteral() && atom->getPredicate()->isSolved()){
+				outputVariablesInAtoms[position].reserve(atom->getTermsSize());
+				for(unsigned i=0;i<atom->getTermsSize();++i){
+					if(!atom->getTerm(i)->contain(TermType::ANONYMOUS)){
+						outputVariablesInAtoms[position].push_back(i);
+					}
+	//				set_term variables;
+	//				atom->getTerm(i)->getVariable(variables);
+	//				bool isBinder=false;
+	//				for(auto v:variables){
+	//					if(variablesBinder[v->getLocalVariableIndex()]==position)
+	//						isBinder=true;
+	//				}
+	//				if(isBinder && !Utils::isDisjoint(variables,outputVariables)){
+	//					outputVariablesInAtoms[position].push_back(i);
+	//				}
+				}
+				if(outputVariablesInAtoms[position].size()==atom->getPredicate()->getArity())
+					outputVariablesInAtoms[position].clear();
+			}
+		}
+//		position=0;
+//		for (auto it=currentRule->getBeginBody();it!=currentRule->getEndBody(); ++it,++position) {
+//			if(outputVariablesInAtoms[position].size()>0){
+//				cerr<<"---> Binder: ";(*it)->print(cerr);cerr<<" ";
+//				for(auto i:outputVariablesInAtoms[position]){
+//					cerr<<i<<" ";
+//				}
+//				cerr<<endl;
+//			}
+//		}
+	}
 
 
-	trace_action_tag(backjumping,1,
-		cerr<<"OUTPUT VARIABLES: ";
-		for(auto var: outputVariables){
-			var->print(cerr);cerr<<" ";
-		}
-		cerr<<endl;);
-	trace_action_tag(backjumping,1,cerr<<"VARIABLES BINDER: ";
-		for(unsigned i=0;i<currentRule->getSizeBody();++i){
-			cerr<<variablesBinder[i]<<" ";
-		}
-		cerr<<endl;
-	);
+//	trace_action_tag(backjumping,1,
+//		cerr<<"OUTPUT VARIABLES: ";
+//		for(auto var: outputVariables){
+//			var->print(cerr);cerr<<" ";
+//		}
+//		cerr<<endl;);
+
 }
 
 void BackJumpingGrounder::closestBinder( int literal_pos, const set_term& variables,int& positionCB, bool includeCurrentLiteral) {
@@ -159,10 +176,10 @@ void BackJumpingGrounder::backFromSolutionFound() {
 	else{
 		vector<Atom*>::iterator closestBinder_it;
 		int closestBinder_pos;
-		closestBinder(index_current_atom,outputVariables,closestBinder_pos,true);
+		closestBinder(index_current_atom,*outputVariables,closestBinder_pos,true);
 		historyBackFromSolutionFound=closestBinder_pos;
 		index_current_atom=closestBinder_pos;
-		closestBinder(index_current_atom,outputVariables,closestSuccessfulBinder_index,false);
+		closestBinder(index_current_atom,*outputVariables,closestSuccessfulBinder_index,false);
 		if(index_current_atom>=0)
 			historyBackOutputVars[index_current_atom]=closestSuccessfulBinder_index;
 	}
@@ -193,6 +210,7 @@ void BackJumpingGrounder::backFromFirstMatch() {
 	trace_msg(backjumping,1,"CURRENT ATOM "<<index_current_atom);
 }
 
+
 bool BackJumpingGrounder::match() {
 	trace_msg(backjumping,1,"---> MATCH");
 	bool result = true;
@@ -207,10 +225,12 @@ bool BackJumpingGrounder::match() {
 		const set_term& vars=atomsVariables[index_current_atom];
 		for(auto var:vars)
 			failureMap[var->getLocalVariableIndex()]=true;
+
 	}
 	else{
 		for(auto var: atoms_bind_variables[index_current_atom])
 			failureMap[var]=false;
+
 	}
 
 	trace_msg(backjumping,1,"MATCH RESULT: "<<result);
@@ -252,7 +272,7 @@ void BackJumpingGrounder::backFromNextMatch() {
 			closestSuccessfulBinder_index=it;
 		}
 		else{
-			closestBinder(index_current_atom,outputVariables,closestSuccessfulBinder_index,false);
+			closestBinder(index_current_atom,*outputVariables,closestSuccessfulBinder_index,false);
 			historyBackOutputVars[index_current_atom]=closestSuccessfulBinder_index;
 		}
 	}
