@@ -838,11 +838,13 @@ BitMap::arraybits BitMap::doAndOfBitsIndexing(Atom* atom){
 	}
 //	cout<<"VECTOR"<<endl;
 //	for(unsigned j=0;j<bits.size();j++){
+//		cout<<"[ ";
 //		for(unsigned k=0;k<bits[j].size();k++){
 //			unsigned pos=j*N+k;
 //			if(pos>=table->size())break;
 //			cout<<bits[j][k]<<" = ";(*table)[pos]->print();cout<<" ";
 //		}
+//		cout<<"] ";
 //	}
 //	cout<<endl;
 	return bits;
