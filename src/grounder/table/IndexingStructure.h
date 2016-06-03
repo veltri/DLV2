@@ -99,9 +99,7 @@ class BitMapIterator : public GeneralIterator{
 	static constexpr unsigned N=BITMAP_ARRAYSIZE;
 	using bitsetN = bitset<N>;
 public:
-	BitMapIterator(vector<bitsetN>& vecbits,AtomHistoryVector& table):vecbits(move(vecbits)),table(table),bucket(0),position(0){
-		findPosition();
-	};
+	BitMapIterator(vector<bitsetN>& vecbits,AtomHistoryVector& table):vecbits(move(vecbits)),table(table),bucket(0),position(0){findPosition();};
 	BitMapIterator(AtomHistoryVector& table):vecbits(),table(table),bucket(0),position(0){};
 
 	inline void findPosition(){
@@ -110,9 +108,7 @@ public:
 				if(vecbits[bucket][position]){
 					return;
 				}
-
 			}
-			position=0;
 		}
 	}
 
