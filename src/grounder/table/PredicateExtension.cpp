@@ -56,10 +56,6 @@ IndexingStructure* PredicateExtension::createAtomSearcher(unsigned table, unsign
 	case (HISTORY_HASHSET):
 		indexingStructure = new HistoryUnorderedSet(tables[table]);
 		break;
-	case (BITMAP):
-		indexingStructure = new BitMap(tables[table],*indexingTerms);
-		break;
-
 
 	default:
 			indexingStructure = new IndexingStructure(tables[table]);

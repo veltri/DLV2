@@ -98,7 +98,6 @@ namespace grounder{
 	#define DOUBLEMAP_PAIR 11
 	#define MULTIPLE_TERMS 12
 	#define HISTORY_HASHSET 13
-	#define BITMAP 14
 
 
 	#define NATIVE_CHOICE 0
@@ -132,8 +131,6 @@ namespace grounder{
 
 	#define FRONTEND_BRAVE 1
 	#define FRONTEND_CAUTIOUS 2
-
-	#define BITMAP_ARRAYSIZE 64
 
 	typedef unsigned index_object;
 
