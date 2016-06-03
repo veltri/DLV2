@@ -289,6 +289,9 @@ public:
 			case NO_ORDERING:
 				return nullptr;
 				break;
+			case DLV_ORDERING:
+				return new CombinedCriterion(rule);
+				break;
 			case INDEXING_ORDERING:
 				return new SemiJoinIndexingArgumentsOrderRuleGroundable(rule);
 				break;
@@ -314,14 +317,15 @@ public:
 				return new CombinedCriterionComparisonsEstimation(rule);
 				break;
 			default:
-				return new CombinedCriterion(rule);
+				return new CombinedCriterionComparisonsEstimation(rule);
 				break;
 		}
 	}
 	static bool isAValidOrderingType(unsigned orderingType){
 		if(orderingType==NO_ORDERING || orderingType==DLV_ORDERING || orderingType==INDEXING_ORDERING || orderingType==DLV_INDEXING_ORDERING
 			|| orderingType==DLV_BINDER_ORDERING || orderingType==DLV_BINDER_INDEXING_BOUND_ATOMS_ORDERING
-			|| orderingType==BINDER_ORDERING || orderingType==DLV_ORDERING_FUNCTION || orderingType==DLV_ORDERING_VARS_OCCURENCIES)
+			|| orderingType==BINDER_ORDERING || orderingType==DLV_ORDERING_FUNCTION || orderingType==DLV_ORDERING_VARS_OCCURENCIES
+			|| orderingType==DLV_ORDERING_COMPARISONS_ESTIMATION )
 			return true;
 		return false;
 	}
