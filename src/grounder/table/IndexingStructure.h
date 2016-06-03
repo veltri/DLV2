@@ -13,6 +13,7 @@
 #include "../../util/Constants.h"
 #include "../statement/Rule.h"
 #include "AdvancedArray.h"
+#include <bitset>
 
 using namespace std;
 
@@ -93,6 +94,41 @@ private:
 	unsigned currentIterator;
 };
 
+
+class BitMapIterator : public GeneralIterator{
+	static constexpr unsigned N=BITMAP_ARRAYSIZE;
+	using bitsetN = bitset<N>;
+public:
+	BitMapIterator(vector<bitsetN>& vecbits,AtomHistoryVector& table):vecbits(move(vecbits)),table(table),bucket(0),position(0){
+		findPosition();
+	};
+	BitMapIterator(AtomHistoryVector& table):vecbits(),table(table),bucket(0),position(0){};
+
+	inline void findPosition(){
+		for(;bucket<vecbits.size();bucket++){
+			for(;position<N;position++){
+				if(vecbits[bucket][position]){
+					return;
+				}
+
+			}
+			position=0;
+		}
+	}
+
+	inline void next(){
+		position++;
+		findPosition();
+	}
+	virtual bool isDone(){return bucket>=vecbits.size();}
+	virtual Atom* currentItem(){return table[bucket*N+position];}
+private:
+	vector<bitsetN> vecbits;
+	AtomHistoryVector& table;
+	unsigned bucket;
+	unsigned position;
+};
+
 struct HashVectorOfTerms{
 	inline size_t operator()(const vector<index_object>& obj) const {
 		return HashVecInt::getHashVecInt()->computeHash(obj);
@@ -105,6 +141,8 @@ struct HashVectorOfTerms{
 		return true;
 	}
 };
+
+
 
 
 
@@ -385,6 +423,44 @@ public:
 	}
 private:
 	unordered_map<pair<index_object,index_object>,AtomTable,HashPair<index_object>,HashPair<index_object>> indexingStructure;
+};
+
+/**
+ * BitMap Index: For each indexing term create an unordered map of term and bitstring. A bitstring is a sequence of bit with length equal to a predicate extension. A key in the unordered
+ * map <term,bitstring> represent all atom that contain the ground term in the position of the specific indexing.
+ *
+ **/
+class BitMap : public IndexingStructure {
+public:
+	static constexpr unsigned N=BITMAP_ARRAYSIZE;
+	using bitsetN = bitset<N>;
+	using arraybits = vector<bitsetN>;
+	using MapTermBits = unordered_map<index_object,arraybits>;
+	BitMap(AtomHistoryVector* table, vector<unsigned>& indexingTerm): IndexingStructure(table,indexingTerm){
+		unsigned max=0;
+		for(auto i:indexingTerms)if(i>max)max=i;
+		vectorOfIndexingStructure.resize(max+1);
+	};
+	void add(Atom* atom);
+	Atom* find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification={ALL,0});
+	void clear(){IndexingStructure::clear(); vectorOfIndexingStructure.clear();};
+	virtual void update();
+	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg=0);
+	virtual unsigned getType(){return BITMAP;};
+	virtual bool isEqual(unsigned type, vector<unsigned>* indexingTerms){
+		if(indexingTerms!=nullptr){
+			if(type==BITMAP){
+				if(this->indexingTerms.size()!=indexingTerms->size())
+					return false;
+				return equal(this->indexingTerms.begin(),this->indexingTerms.end(),indexingTerms->begin());
+			}
+		}
+		return false;
+	}
+private:
+	vector<MapTermBits> vectorOfIndexingStructure;
+	arraybits doAndOfBitsIndexing(Atom*);
+	vector<unsigned> indexingTermCreated;
 };
 
 /**
