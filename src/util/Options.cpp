@@ -137,7 +137,7 @@ Options::Options():
 		rewritingType(NATIVE_CHOICE),
 		outputFormat(OUTPUT_NUMERIC),
 		instantiationProcedure(BACKJUMPING),
-		positiveOrderingProcedure(DLV_ORDERING),
+		positiveOrderingProcedure(DLV_ORDERING_COMPARISONS_ESTIMATION),
 		enabledDictionaryIntersection(false),
 		ruleTime(false),
 		checkFactDuplicate(false),
