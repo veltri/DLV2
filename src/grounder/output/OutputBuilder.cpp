@@ -20,6 +20,9 @@ OutputBuilder* OutputBuilder::getInstance() {
 			case OUTPUT_TEXTUAL:
 				outputBuilder=new TextualOutputBuilder;
 				break;
+			case OUTPUT_QUERY_TEXTUAL:
+				outputBuilder=new QueryTextualOutputBuilder;
+				break;
 			default:
 				outputBuilder=new NumericOutputBuilder;
 				break;

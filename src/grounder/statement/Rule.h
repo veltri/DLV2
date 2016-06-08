@@ -316,6 +316,16 @@ public:
 	///Printer method
 	virtual void print(ostream& stream=cout);
 
+	///Return true if the rule is the answer to the query
+	bool isQueryRule(const Predicate* queryPredicate) const{
+		//The comparison is between predicate pointer because we know that
+		//predicate is a flyweight
+		if(head.size()!=1)return false;
+		Predicate *p=head[0]->getPredicate();
+		if(p==nullptr)return false;
+		return p==queryPredicate;
+	};
+
 	/** @brief Equal-to operator for rules
 	 *  @details Two rules are equal if they have the same atoms in the body and in the head regardless the order in which they appear
 	 */

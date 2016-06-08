@@ -125,7 +125,6 @@ public:
 	/// This method compute all possible orderings among components
 	void computeAllPossibleOrdering(vector<vector<unsigned int>>& componentsOrderings);
 
-	bool isPredicateNotStratified(index_object predicate);
 
 	///Getter for the components mapping
 	const unordered_map<index_object, unsigned int>& getComponent() const {	return componentDependency;}
@@ -135,6 +134,13 @@ public:
 	///Printer method (on standard output)
 	void print();
 
+	///Return true is the program is not stratified
+	bool hasPredicateNotStratified(){return predicateUnstratified.size()>=1;}
+
+	///Return true if the predicate is not stratified
+	bool isPredicateNotStratified(index_object predicate){
+		return predicateUnstratified.count(predicate);
+	}
 
 private:
 	/// The Component Graph
@@ -255,13 +261,29 @@ public:
 		hasNegativeAtom=true;
 	}
 
+	void disjunctionFound(){
+		hasDisjunction=true;
+	}
+
+	vector<Atom*>& getQueryAtoms(){
+		return query;
+	}
+
+	bool queryGround(){
+		return isQueryGround;
+	}
+
+	bool isQueryEvaluable(){
+		return !(hasChoice || hasDisjunction || compGraph.hasPredicateNotStratified() || query.empty());
+	}
+
 	static StatementDependency* getInstance();
 
 private:
 
 	static StatementDependency* statementDependency;
 
-	StatementDependency():hasAggregate(false),hasChoice(false),hasNegativeAtom(false),isQueryGround(true){};
+	StatementDependency():hasAggregate(false),hasChoice(false),hasNegativeAtom(false),isQueryGround(true),hasDisjunction(false){};
 
 	/// The Dependency Graph
 	DependencyGraph depGraph;
@@ -284,7 +306,10 @@ private:
 
 	bool hasNegativeAtom;
 
+
 	bool isQueryGround;
+
+	bool hasDisjunction;
 
 	/// This method checks if a rule is a recursive rule or an exit rule
 	/// An rule occurring in a component is recursive if there is a predicate belonging

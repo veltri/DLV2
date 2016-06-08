@@ -79,6 +79,7 @@ namespace DLV2
 #define OPTIONID_FB ('z' + 53)
 #define OPTIONID_FC ('z' + 54)
 #define OPTIONID_OMSM ('z' + 55)
+#define OPTIONID_EQ ('z' + 56)
 
 
 
@@ -147,7 +148,8 @@ Options::Options():
 		printGroundStats(0),
 		rewProject(1),
 		optionFrontend(0),
-		magicRewriting(true)
+		magicRewriting(true),
+		evaluateQuery(false)
 {
 
 }
@@ -179,7 +181,8 @@ Options::Options(
 		printGroundStats(0),
 		rewProject(1),
 		optionFrontend(0),
-		magicRewriting(true)
+		magicRewriting(true),
+		evaluateQuery(false)
 {
 
 }
@@ -243,6 +246,7 @@ Options::init(
 		{"FC",no_argument, NULL, OPTIONID_FC},
 		{"FB",no_argument, NULL, OPTIONID_FB},
 		{"OMS-",no_argument, NULL, OPTIONID_OMSM},
+		{"query",no_argument, NULL, OPTIONID_EQ},
 
 		// Required at end of array.
         { NULL, 0, NULL, 0 }
@@ -417,6 +421,10 @@ Options::init(
             	magicRewriting = false;
 				break;
 
+            case OPTIONID_EQ:
+            	evaluateQuery = true;
+            	outputFormat=OUTPUT_QUERY_TEXTUAL;
+				break;
 
             default:
                 ErrorMessage::errorGeneric( "This option is not supported." );

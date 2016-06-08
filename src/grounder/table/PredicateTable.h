@@ -46,6 +46,15 @@ public:
 
 	const set_predicate& getPredicateTrueNegated(){return predicate_true_negated;}
 
+	Predicate* getQueryPredicate(){
+		Predicate *qp=nullptr;
+		for(auto predicate:predicate_set.flyweight_set){
+			if(predicate->getName()==PREDNAME_QUERY)
+				return predicate;
+		}
+		return qp;
+	}
+
 	void print(){predicate_set.print();}
 
 	void setAllPredicateHidden(){

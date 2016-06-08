@@ -164,6 +164,10 @@ namespace DLV2
 		return magicRewriting;
 	}
 
+	bool isEvaluateQuery(){
+		return evaluateQuery;
+	}
+
     private:
 
         static Options* instance;
@@ -251,6 +255,9 @@ namespace DLV2
         unsigned optionFrontend;
 
         bool magicRewriting;
+
+        bool evaluateQuery;
+
     };
     
 };

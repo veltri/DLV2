@@ -19,18 +19,43 @@ public:
 	virtual ~TextualOutputBuilder(){};
 
     virtual void onRule(Rule *rule);
-    virtual void onWeakConstraint();
-    virtual void onQuery();
-    virtual void onHeadAtom(Atom * atom);
-    virtual void onDisjunctionAtom(const vector<Atom*>& head);
-    virtual void onConstraint(Rule* rule);
-    virtual void onHead(const vector<Atom*>& head);
-    virtual void onBody(Rule *rule);
-    virtual void onClassicalLiteral(Atom *atom);
-    virtual void onChoiceAtom(Atom *atom);
-    virtual unsigned onAggregate(Atom *atom);
-    virtual void onAggregateElement(Atom *atom);
+    void onWeakConstraint();
+    void onQuery();
+    void onHeadAtom(Atom * atom);
+    void onDisjunctionAtom(const vector<Atom*>& head);
+    void onConstraint(Rule* rule);
+    void onHead(const vector<Atom*>& head);
+    void onBody(Rule *rule);
+    void onClassicalLiteral(Atom *atom);
+    void onChoiceAtom(Atom *atom);
+    unsigned onAggregate(Atom *atom);
+    void onAggregateElement(Atom *atom);
     virtual void onFact(Atom* atom);
+
+};
+
+class QueryTextualOutputBuilder : public TextualOutputBuilder {
+public:
+	QueryTextualOutputBuilder():enablePrint(false){}
+
+	void onRule(Rule *rule){
+		if(enablePrint)
+			rule->print();
+	}
+
+    void setEnablePrint(bool enable){
+    	enablePrint=enable;
+    }
+
+    void onFact(Atom* atom){
+    	if(enablePrint){
+    		atom->print();cout<<"."<<endl;
+    	}
+    }
+
+
+private:
+    bool enablePrint;
 
 };
 

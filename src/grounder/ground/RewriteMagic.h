@@ -15,7 +15,6 @@ namespace DLV2 {
 namespace grounder {
 
 #define MAGIC_PREFIX "magic#"
-#define PREDNAME_QUERY "#query"
 
 //bool subsumption(const Rule*, vector<Rule*>&);
 

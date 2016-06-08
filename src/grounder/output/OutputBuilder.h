@@ -44,6 +44,8 @@ public:
 
     virtual ~OutputBuilder(){};
 
+    virtual void setEnablePrint(bool enable){}
+
     static OutputBuilder* getInstance();
     static void freeInstance(){delete outputBuilder;}
 

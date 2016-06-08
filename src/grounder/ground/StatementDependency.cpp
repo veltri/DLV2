@@ -441,9 +441,7 @@ void ComponentGraph::createComponent(DependencyGraph &depGraph,
 
 }
 
-bool ComponentGraph::isPredicateNotStratified(index_object predicate){
-	return predicateUnstratified.count(predicate);
-}
+
 
 void ComponentGraph::printFile(string fileGraph) {
 
@@ -637,6 +635,23 @@ bool StatementDependency::magic() {
 	string errmsg;
 	unsigned queryConstraints = 0;
 	HandleQuery(queryConstraints);
+
+	//If the option evaluate query is enabled but the program is not stratified,contains choice , disjunction
+	//or not contain a query then we enable the printing and print all the fact
+	if(Options::globalOptions()->isEvaluateQuery()){
+		if(!isQueryEvaluable() || constraints.size() > queryConstraints){
+			if(hasChoice || hasDisjunction || compGraph.hasPredicateNotStratified())
+				cerr<<"Warning: The program is not stratified or contains disjunction, choice."<<endl;
+			if(query.empty())
+				cerr<<"Warning: The program not contains a query."<<endl;
+			if(constraints.size() > queryConstraints)
+				cerr<<"Warning: The program contains integrity constraints."<<endl;
+			cerr<<"Warning: The evaluation of the query is not applied"<<endl;
+			OutputBuilder::getInstance()->setEnablePrint(true);
+			PredicateExtTable::getInstance()->printFacts();
+		}
+	}
+
 	if(!Options::globalOptions()->rewriteMagic())return true;
 	if (query.empty()) {
 		errmsg = "Warning: No query supplied.";
@@ -654,7 +669,6 @@ bool StatementDependency::magic() {
 		errmsg = "Warning: IDB is empty or has become empty due to optimizations.";
 	} else if(hasNegativeAtom)
 		cerr<< "Warning: The program contains negative literals.\nThe correctness of Magic Sets is only guaranteed for super-coherent programs."<<endl;
-
 
 	if (errmsg.empty()) {
 
@@ -730,7 +744,7 @@ void StatementDependency::addAtomMappingAndSetEdb(Rule *r){
 void StatementDependency::createDependencyGraph(PredicateTable* pt) {
 
 	bool appliedMagicRewriting=false;
-	if(!query.empty()){
+	if(!query.empty() || Options::globalOptions()->isEvaluateQuery()){
 		appliedMagicRewriting=magic();
 
 		if(appliedMagicRewriting){
@@ -1036,6 +1050,7 @@ StatementDependency* StatementDependency::getInstance(){
 //                     cdebug << "                " << c << endl;
                  }
          }
+
 
      // If the query is non-ground, we need to create a new "query rule" with
      // the query in the body, and initialize the interpretation that will

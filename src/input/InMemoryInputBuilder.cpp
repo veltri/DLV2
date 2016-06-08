@@ -820,6 +820,10 @@ void InMemoryInputBuilder::manageSimpleRule(Rule* rule,bool clear) {
 		statementDependency->addRuleMapping(rule);
 		return;
 	}
+
+	if(rule->getSizeHead()>1)
+		statementDependency->disjunctionFound();
+
 	//Do projection rewriting for each rule parsered
 	projectionRewrite(rule);
 

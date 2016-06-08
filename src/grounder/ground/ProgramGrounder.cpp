@@ -179,6 +179,9 @@ void ProgramGrounder::ground() {
 
 	trace_msg(grounding,1,"Grounding Starts Now.");
 
+	bool printOnlyQuery=Options::globalOptions()->isEvaluateQuery();
+	Predicate *queryPredicate = predicateTable->getQueryPredicate();
+
 	// Ground each module according to the ordering:
 	// For each component, each rule is either recursive or exit,
 	// Exit rules are grounded just once, while recursive rules are grounded until no more knowledge is derived
@@ -201,6 +204,12 @@ void ProgramGrounder::ground() {
 			}
 			trace_action_tag(grounding,1,cerr<<"Grounding Exit Rule: ";rule->print(cerr););
 			orderPositiveAtomsBody(rule);
+
+			//If we have to print only the query we have to enable the output builder
+			//if the rule is a query rule (constains the answer to the query)
+			if(printOnlyQuery && rule->isQueryRule(queryPredicate))
+				outputBuilder->setEnablePrint(true);
+
 			groundRule(rule);
 
 #ifdef DEBUG_RULE_TIME
@@ -388,6 +397,21 @@ void ProgramGrounder::ground() {
 	if(printStats)
 		rstats->printStats();
 
+	//If we have to print only the result of the query but the query is ground, then we have to search
+	// in the predicate extension if the ground query is true
+	if(printOnlyQuery && statementDependency->queryGround() && statementDependency->isQueryEvaluable()){
+		bool answer=true;
+		for(auto &atom:statementDependency->getQueryAtoms()){
+			if(predicateExtTable->getPredicateExt(atom->getPredicate())->getGroundAtom(atom)==nullptr){
+				answer=false;
+				break;
+			}
+		}
+		if(answer)
+			for(auto &atom:statementDependency->getQueryAtoms()){
+				atom->print();cout<<"."<<endl;
+			}
+	}
 
 
 //	Timer::getInstance()->printSumTime(cerr);

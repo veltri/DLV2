@@ -187,6 +187,13 @@ public:
 		return 0;
 	}
 
+	inline void printFacts(){
+		OutputBuilder *out=OutputBuilder::getInstance();
+		for(unsigned table=0;table<tables.size();table++)
+			for(auto fact:*tables[table])
+				out->onFact(fact);
+	}
+
 
 	IndexingStructure* addAtomSearcher(unsigned table, vector<unsigned>* indexingTerms,bool recursive=false);
 	IndexingStructure* addAtomSearcher(unsigned table, unsigned type, vector<unsigned>* indexingTerms,bool recursive=false);
@@ -247,6 +254,11 @@ public:
 	void print(unsigned table) {for (auto& i : predicateExtTable) if(!(i.second->getPredicate()->isHiddenForPrinting())) i.second->print(table);};
 
 	void print(){ for (auto& i : predicateExtTable) if(!(i.second->getPredicate()->isHiddenForPrinting())) i.second->print();}
+
+	void printFacts(){
+		for(auto& it:predicateExtTable)
+			it.second->printFacts();
+	}
 
 	///Destructor
 	~PredicateExtTable(){for(auto pair_predExt:predicateExtTable) delete pair_predExt.second;};

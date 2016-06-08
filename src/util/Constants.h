@@ -107,6 +107,7 @@ namespace grounder{
 
 	#define OUTPUT_NUMERIC 0
 	#define OUTPUT_TEXTUAL 1
+	#define OUTPUT_QUERY_TEXTUAL 2
 
 	#define BACKTRACKING 0
 	#define BACKJUMPING 1
@@ -131,6 +132,9 @@ namespace grounder{
 
 	#define FRONTEND_BRAVE 1
 	#define FRONTEND_CAUTIOUS 2
+
+	#define PREDNAME_QUERY "#query"
+
 
 	typedef unsigned index_object;
 
