@@ -19,6 +19,7 @@
 #include "../../util/Constants.h"
 #include "../table/AdvancedArray.h"
 #include "../../util/Equation.h"
+#include <cstring>
 
 using namespace std;
 
@@ -173,6 +174,8 @@ public:
 		getVariable(variables);
 		return variables.count(t);
 	}
+
+	virtual void substitute(Term* t,Term* t1){}
 
 	virtual ~Term(){};
 protected:

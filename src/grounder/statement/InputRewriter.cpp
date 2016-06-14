@@ -14,7 +14,9 @@
 namespace DLV2 {
 namespace grounder {
 
-const string AUXILIARY="aux";
+const string AUXILIARY="#aux";
+
+const string AUXILIARY_VAR="X";
 
 const string SEPARATOR="_";
 
@@ -61,97 +63,136 @@ void BaseInputRewriter::projectAtoms(Rule*& rule, vector<Rule*>& ruleRewrited,un
 		varInHead.insert(variables.begin(),variables.end());
 	}
 
+	unsigned int index_atom=0;
+	set_term isolatedVars;
+	for (auto it=rule->getBeginBody();it!=rule->getEndBody(); ++it,++index_atom) {
+		Atom* atom=*it;
+		for (auto term: atomsVariables[index_atom]) {
+			if (varInHead.count(term))
+				continue;
+			if(variablesWeak.count(term))
+				continue;
+
+			bool found = false;
+			for (unsigned i = 0; i < rule->getSizeBody()&&!found; ++i) {
+				if (index_atom != i && atomsVariables[i].count(term)) found = true;
+			}
+			if(found) continue;
+			unsigned count=0;
+			for (unsigned t1 = 0; t1 < atom->getTermsSize()&&!found; ++t1) {
+				Term* term1 = atom->getTerm(t1);
+				if (term1->containsVariable(term)){
+					count++;
+				}
+				if(count>=2) found = true;
+			}
+			if(found) continue;
+
+			if(!found)
+				isolatedVars.insert(term);
+				atom->substitute(term,TermTable::getInstance()->term_anonymous);
+
+		}
+	}
+
 	//For each atom in the body if is a classical literal and not negative, find the term to filter.
 	//A term is filtered if is a variable and not compare in the head of the rule, in some atom in the
 	//body of the rule and also check if the variable compare two or more times in the current atom.
 	// If the atom not contain term to filter we can skip this atom
-	unsigned int index_atom=0;
+	index_atom=0;
 	for(auto it=rule->getBeginBody();it!=rule->getEndBody();++it,++index_atom){
 
 		Atom *atom=rule->getAtomInBody(index_atom);
 		if(!(atom->isClassicalLiteral() && ! atom->isNegative()))continue;
-		bool recursive=(recursivePredicate!=nullptr)?recursivePredicate->count(atom->getPredicate()->getIndex()):false;
-		if(f(atom->getPredicate(),recursive))continue;
-		unordered_set<unsigned> termToFilter;
-		for (unsigned t = 0; t < atom->getTermsSize(); ++t) {
-			Term* term = atom->getTerm(t);
-			if(term->getType()==ANONYMOUS)
-				termToFilter.insert(t);
-			else if (term->getType() == VARIABLE) {
-				if (varInHead.count(term))
-					continue;
-				if(variablesWeak.count(term))
-					continue;
 
-				bool found = false;
-				for (unsigned i = 0; i < rule->getSizeBody()&&!found; ++i) {
-					if (index_atom != i && atomsVariables[i].count(term)) found = true;
-				}
+		if(atom->containsFunctionalTerms()){
+			vector<Term*> terms;
 
-				for (unsigned t1 = 0; t1 < atom->getTermsSize()&&!found; ++t1) {
-					Term* term1 = atom->getTerm(t1);
-					if (t1 != t && term1->containsVariable(term)) found = true;
-				}
-				if (found)	continue;
+			for(auto t: atomsVariables[index_atom])
+				if(!isolatedVars.count(t))
+					terms.push_back(t);
 
-				termToFilter.insert(t);
-			}
-		}
-		if(termToFilter.size()==0)continue;
-		//We have to project the current variable with the variable that are not present in termToFilter.
-		//Then check if the atom is not already projected in previous rule else we create a new predicate and
-		// a new auxiliary rule for the projection.
-
-		vector<Term*> terms;
-		for(unsigned i=0;i<atom->getTermsSize();i++)
-			if(!termToFilter.count(i))
-				terms.push_back(atom->getTerm(i));
-		Atom *projAtom=nullptr;
-		if(projectedAtoms.count(atom->getPredicate())){
-			for(auto& aux:projectedAtoms[atom->getPredicate()]){
-				if(aux.first.size()==termToFilter.size() && Utils::isContained(aux.first,termToFilter)){
-					projAtom=new ClassicalLiteral(aux.second,terms,false,atom->isNegative());
-				}
-			}
-		}
-		if(projAtom==nullptr){
+			Rule* ruleProjection=new Rule(false);
 			unsigned auxNumber=IdGenerator::getInstance()->getNewId();
-			string newName="aux"+to_string(auxNumber);
+			string newName=AUXILIARY+to_string(auxNumber);
 			Predicate *newPred=new Predicate(newName,terms.size());
-			projAtom=new ClassicalLiteral(newPred,terms,false,atom->isNegative());
+			Atom* headAtom=new ClassicalLiteral(newPred,terms,false,atom->isNegative());
 			newPred->setHiddenForPrinting(true);
 			PredicateTable::getInstance()->insertPredicate(newPred);
 			PredicateExtTable::getInstance()->addPredicateExt(newPred);
-
-			projectedAtoms[atom->getPredicate()].push_back({termToFilter,newPred});
-			Rule *newRule=new Rule;
-			vector<Term*> termsInHead;
-			vector<Term*> termsInBody;
-			unordered_map<unsigned,Term*> mapTermVariable;
-			for(unsigned i=0;i<atom->getTermsSize();i++){
-				if(termToFilter.count(i))continue;
-				string name="X"+to_string(i);
-				Term* newTerm =TermTable::getInstance()->generateNewVariable(name);
-				termsInHead.push_back(newTerm);
-				mapTermVariable[i]=newTerm;
+			ruleProjection->addInHead(headAtom);
+			ruleProjection->addInBody(atom);
+			ruleProjection->print(cerr);
+			rule->setAtomInBody(index_atom,headAtom->clone());
+			delete atom;
+			continue;
+		}
+		else{
+	//		bool recursive=(recursivePredicate!=nullptr)?recursivePredicate->count(atom->getPredicate()->getIndex()):false;
+	//		if(f(atom->getPredicate(),recursive))continue;
+			unordered_set<unsigned> termToFilter;
+			for (unsigned t = 0; t < atom->getTermsSize(); ++t) {
+				Term* term = atom->getTerm(t);
+				if(term->getType()==ANONYMOUS)
+					termToFilter.insert(t);
 			}
-			for(unsigned i=0;i<atom->getTermsSize();i++){
+			if(termToFilter.size()==0)continue;
+
+			//We have to project the current variable with the variable that are not present in termToFilter.
+			//Then check if the atom is not already projected in previous rule else we create a new predicate and
+			// a new auxiliary rule for the projection.
+
+			vector<Term*> terms;
+			for(unsigned i=0;i<atom->getTermsSize();i++)
 				if(!termToFilter.count(i))
-					termsInBody.push_back(mapTermVariable[i]);
-				else{
-					string name="X"+to_string(i);
+					terms.push_back(atom->getTerm(i));
+			Atom *projAtom=nullptr;
+			if(projectedAtoms.count(atom->getPredicate())){
+				for(auto& aux:projectedAtoms[atom->getPredicate()]){
+					if(aux.first.size()==termToFilter.size() && Utils::isContained(aux.first,termToFilter)){
+						projAtom=new ClassicalLiteral(aux.second,terms,false,atom->isNegative());
+					}
+				}
+			}
+			if(projAtom==nullptr){
+				unsigned auxNumber=IdGenerator::getInstance()->getNewId();
+				string newName=AUXILIARY+to_string(auxNumber);
+				Predicate *newPred=new Predicate(newName,terms.size());
+				projAtom=new ClassicalLiteral(newPred,terms,false,atom->isNegative());
+				newPred->setHiddenForPrinting(true);
+				PredicateTable::getInstance()->insertPredicate(newPred);
+				PredicateExtTable::getInstance()->addPredicateExt(newPred);
+
+				projectedAtoms[atom->getPredicate()].push_back({termToFilter,newPred});
+				Rule *newRule=new Rule;
+				vector<Term*> termsInHead;
+				vector<Term*> termsInBody;
+				unordered_map<unsigned,Term*> mapTermVariable;
+				for(unsigned i=0;i<atom->getTermsSize();i++){
+					if(termToFilter.count(i))continue;
+					string name=AUXILIARY_VAR+to_string(i);
 					Term* newTerm =TermTable::getInstance()->generateNewVariable(name);
-					termsInBody.push_back(newTerm);
+					termsInHead.push_back(newTerm);
+					mapTermVariable[i]=newTerm;
+				}
+				for(unsigned i=0;i<atom->getTermsSize();i++){
+					if(!termToFilter.count(i))
+						termsInBody.push_back(mapTermVariable[i]);
+					else{
+						string name=AUXILIARY_VAR+to_string(i);
+						Term* newTerm =TermTable::getInstance()->generateNewVariable(name);
+						termsInBody.push_back(newTerm);
+					}
+
 				}
 
+				newRule->addInHead(new ClassicalLiteral(projAtom->getPredicate(),termsInHead,false,false));
+				newRule->addInBody(new ClassicalLiteral(atom->getPredicate(),termsInBody,false,false));
+				ruleRewrited.push_back(newRule);
 			}
-
-			newRule->addInHead(new ClassicalLiteral(projAtom->getPredicate(),termsInHead,false,false));
-			newRule->addInBody(new ClassicalLiteral(atom->getPredicate(),termsInBody,false,false));
-			ruleRewrited.push_back(newRule);
+			rule->setAtomInBody(index_atom,projAtom);
+			delete atom;
 		}
-		rule->setAtomInBody(index_atom,projAtom);
-		delete atom;
 	}
 }
 
