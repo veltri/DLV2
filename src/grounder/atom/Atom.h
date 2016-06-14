@@ -313,6 +313,12 @@ public:
 			}
 	}
 
+	virtual bool containsArithTerms(){
+		for(auto term:terms)
+			if(term->contain(TermType::ARITH))return true;
+		return false;
+	}
+
 protected:
 	vector<Term*> terms;
 };
