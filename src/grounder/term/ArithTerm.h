@@ -111,6 +111,7 @@ public:
 
 	};
 
+	vector<Term*>& getTerms(){return terms;};
 
 
 	virtual bool operator==(const Term& term)const;

@@ -106,6 +106,8 @@ public:
 		return true;
 	};
 
+	virtual vector<Term*>& getTerms(){};
+
 
 	virtual bool operator>(const Term& term)const{return false;};
 	virtual bool operator>=(const Term& term)const{return false;};

@@ -729,11 +729,12 @@ void InMemoryInputBuilder::rewriteAggregate(Rule* rule,bool clear) {
 		return;
 	}
 
-	projectionRewrite(rule);
 
 	OrderRule orderRule(rule);
 	bool isSafe = orderRule.order();
 	safetyError(isSafe,rule);
+
+	projectionRewrite(rule);
 
 	for(auto& v:currentRuleAtomsBefore){
 		for(unsigned i=0;i<v.size();++i){
@@ -773,13 +774,12 @@ void InMemoryInputBuilder::rewriteAggregate(Rule* rule,bool clear) {
 	inputRewriter->translateAggregate(rule, rules, &orderRule);
 
 	for (auto r : rules) {
-		{
-			projectionRewrite(r);
-		}
 		OrderRule orderR(r);
 		isSafe = orderR.order();
 		if (!isSafe)
 			safetyError(isSafe,r);
+
+		projectionRewrite(r);
 		statementDependency->addRuleMapping(r);
 		manageRuleAnnotations(r);
 	}
@@ -824,12 +824,17 @@ void InMemoryInputBuilder::manageSimpleRule(Rule* rule,bool clear) {
 	if(rule->getSizeHead()>1)
 		statementDependency->disjunctionFound();
 
-	//Do projection rewriting for each rule parsered
-	projectionRewrite(rule);
+	//First push in the atom assignment builtin that not contain arithmetic terms
+	inputRewriter->pushBuiltin(rule);
+
 
 	OrderRule orderRule(rule);
 	bool isSafe = orderRule.order();
 	safetyError(isSafe,rule);
+
+	//Do projection rewriting for each rule parsered
+	projectionRewrite(rule);
+
 	statementDependency->addRuleMapping(rule);
 	rule->setUnsolvedPredicates();
 	manageRuleAnnotations(rule);

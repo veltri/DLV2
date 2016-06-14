@@ -196,6 +196,56 @@ void BaseInputRewriter::projectAtoms(Rule*& rule, vector<Rule*>& ruleRewrited,un
 	}
 }
 
+void BaseInputRewriter::pushBuiltin(Rule*& rule){
+
+	if(rule->isChoiceRule())return;
+	for(auto& atom:rule->getBody())if(atom->isAggregateAtom())return;
+
+	function<void(Term *& t, Term * var, Term * sub)> subFunction;
+	subFunction=[&subFunction](Term *& t, Term * var, Term * sub){
+		auto type=t->getType();
+		if(type!=FUNCTION && type!=ARITH){
+			if(t->getIndex()==var->getIndex())
+				t=sub;
+			return;
+		}
+		for(auto& term:t->getTerms())
+			subFunction(term,var,sub);
+	};
+	auto termToFilter=[](Term *t){
+		return t->getType()==VARIABLE || t->getType()==FUNCTION || t->getType()==NUMERIC_CONSTANT || t->getType()==STRING_CONSTANT ||  t->getType()==SYMBOLIC_CONSTANT;
+	};
+
+	for(unsigned i=0;i<rule->getSizeBody();i++){
+		auto atom=rule->getAtomInBody(i);
+		if(atom->isBuiltIn() && atom->getBinop()==EQUAL ){
+			Term *var=nullptr;
+			Term *toSub=nullptr;
+			if(atom->getTerm(0)->getType()==VARIABLE && termToFilter(atom->getTerm(1))){
+				var=atom->getTerm(0);
+				toSub=atom->getTerm(1);
+			}
+			else if(atom->getTerm(1)->getType()==VARIABLE && termToFilter(atom->getTerm(0))){
+				var=atom->getTerm(1);
+				toSub=atom->getTerm(0);
+			}
+			if(var==nullptr || toSub==nullptr)continue;
+			for(auto atom2:rule->getBody())
+				if(atom2->isClassicalLiteral() || atom2->isBuiltIn())
+					for(auto& t:atom2->getTerms())
+						subFunction(t,var,toSub);
+			for(auto atom2:rule->getHead())
+				if(atom2->isClassicalLiteral())
+					for(auto& t:atom2->getTerms())
+						subFunction(t,var,toSub);
+
+			rule->removeInBody(i);
+			delete atom;
+		}
+	}
+}
+
+
 void BaseInputRewriter::translateAggregate(Rule* r, vector<Rule*>& ruleRewrited, OrderRule* orderRule) {
 
 	/// First, auxiliary rules for aggregates elements are generated

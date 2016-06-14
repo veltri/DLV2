@@ -71,6 +71,7 @@ public:
 			term->getGroundTerm(variables);
 	};
 
+	vector<Term*>& getTerms(){return terms;};
 
 
 	virtual bool operator==(const Term& term) const;
