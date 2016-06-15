@@ -106,7 +106,7 @@ void BackJumpingGrounder::inizialize(Rule* rule, unordered_set<index_object>* co
 			if(atom->isClassicalLiteral() && atom->getPredicate()->isSolved()){
 				outputVariablesInAtoms[position].reserve(atom->getTermsSize());
 				for(unsigned i=0;i<atom->getTermsSize();++i){
-					if(!atom->getTerm(i)->contain(TermType::ANONYMOUS)){
+					if(!atom->getTerm(i)->getType()==TermType::ANONYMOUS){
 						outputVariablesInAtoms[position].push_back(i);
 					}
 	//				set_term variables;
