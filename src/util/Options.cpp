@@ -202,50 +202,51 @@ Options::init(
     const struct option longOptions[] = 
     {    
         /* INPUT OPTIONS */
-        { "aspcore2strict", no_argument, NULL, OPTIONID_aspcore2strict },
-        { "inmemory", no_argument, NULL, OPTIONID_inmemory },
-        { "dlvdb", no_argument, NULL, OPTIONID_dlvdb },
-        { "test-parser", no_argument, NULL, OPTIONID_testparser },
-
-        /* OUTPUT OPTIONS */
-        { "silent", no_argument, NULL, OPTIONID_silent },
-        { "printprogram", no_argument, NULL, OPTIONID_printprogram },
-        { "selector", required_argument, NULL, OPTIONID_selector },
-        { "printdepgraph", no_argument, NULL, OPTIONID_printdepgraph },
-        { "stats", no_argument, NULL, OPTIONID_printstatistics },
+//        { "aspcore2strict", no_argument, NULL, OPTIONID_aspcore2strict },
+//        { "inmemory", no_argument, NULL, OPTIONID_inmemory },
+//        { "dlvdb", no_argument, NULL, OPTIONID_dlvdb },
+//        { "test-parser", no_argument, NULL, OPTIONID_testparser },
+//
+//        /* OUTPUT OPTIONS */
+    	  { "silent", no_argument, NULL, OPTIONID_silent },
+//        { "printprogram", no_argument, NULL, OPTIONID_printprogram },
+//        { "selector", required_argument, NULL, OPTIONID_selector },
+//        { "printdepgraph", no_argument, NULL, OPTIONID_printdepgraph },
+//        { "stats", no_argument, NULL, OPTIONID_printstatistics },
 
         /* GENERIC OPTIONS */
         { "help", no_argument, NULL, OPTIONID_help },
         { "stdin", no_argument, NULL, OPTIONID_stdin },
         
         /* DB OPTIONS */
-        { "db-source", required_argument, NULL, OPTIONID_datasource },
-        { "db-user", required_argument, NULL, OPTIONID_username },
-        { "db-pwd", required_argument, NULL, OPTIONID_password },
+//        { "db-source", required_argument, NULL, OPTIONID_datasource },
+//        { "db-user", required_argument, NULL, OPTIONID_username },
+//        { "db-pwd", required_argument, NULL, OPTIONID_password },
 
-		{"hashtype",required_argument, NULL, OPTIONID_hashType },
-		{"indextype",required_argument,NULL,OPTIONID_indexType},
-		{"pred-index-term",required_argument, NULL, OPTIONID_predIndexTerm},
-		{"pred-index-type",required_argument, NULL, OPTIONID_predIndexType},
+		/* GROUNDER */
 		{"no-facts",no_argument, NULL, OPTIONID_nofacts},
-		{"print-rewrite",no_argument, NULL, OPTIONID_printRewrite},
-		{"rewriting-type",required_argument, NULL, OPTIONID_rewritingType},
 		{"output-format",required_argument, NULL, OPTIONID_outputFormat},
+		{"print-rewriting",no_argument, NULL, OPTIONID_printRewrite},
+//		{"hashtype",required_argument, NULL, OPTIONID_hashType },
+//		{"index-type",required_argument,NULL,OPTIONID_indexType},
+		{"indexing",required_argument, NULL, OPTIONID_predIndexTerm},
+//		{"pred-index-type",required_argument, NULL, OPTIONID_predIndexType},
+		{"rewriting",required_argument, NULL, OPTIONID_rewritingType},
 		{"t",no_argument, NULL, OPTIONID_textual},
 		{"instantiate",required_argument, NULL, OPTIONID_instantiationProcedure},
-		{"positive-ordering",required_argument, NULL, OPTIONID_positiveOrderingProcedure},
-		{"dictionary-intersection",no_argument, NULL, OPTIONID_enableDictionaryIntersection},
-		{"rule-time",no_argument, NULL, OPTIONID_ruleTime},
-		{"check-facts-duplication",no_argument, NULL, OPTIONID_checkFactDuplicate},
-		{"rewrite-arith",no_argument, NULL, OPTIONID_rewriteArith},
-		{"no-anonymous-filter",no_argument, NULL, OPTIONID_anonymousFilter},
+		{"ordering",required_argument, NULL, OPTIONID_positiveOrderingProcedure},
+		{"align-dictionaries",no_argument, NULL, OPTIONID_enableDictionaryIntersection},
+		{"time",no_argument, NULL, OPTIONID_ruleTime},
+		{"check-edb-duplication",no_argument, NULL, OPTIONID_checkFactDuplicate},
+		{"rewrite-arith-terms",no_argument, NULL, OPTIONID_rewriteArith},
+		{"no-isolated-filter",no_argument, NULL, OPTIONID_anonymousFilter},
 		{"filter",required_argument, NULL, OPTIONID_predicateToFilter},
-		{"compact-facts",required_argument, NULL, OPTIONID_compactFacts},
-		{"gstats",required_argument, NULL, OPTIONID_gstats},
-		{"project",required_argument, NULL, OPTIONID_project},
+//		{"compact-facts",required_argument, NULL, OPTIONID_compactFacts},
+		{"gstats",no_argument, NULL, OPTIONID_gstats},
+		{"no-projection",no_argument, NULL, OPTIONID_project},
 		{"FC",no_argument, NULL, OPTIONID_FC},
 		{"FB",no_argument, NULL, OPTIONID_FB},
-		{"OMS-",no_argument, NULL, OPTIONID_OMSM},
+		{"no-OMS",no_argument, NULL, OPTIONID_OMSM},
 		{"query",no_argument, NULL, OPTIONID_EQ},
 
 		// Required at end of array.
@@ -263,22 +264,22 @@ Options::init(
             case -1:
                 // All the lines were parsed
                 break;
-            case OPTIONID_aspcore2strict:
-                aspCore2Strict = true;
-                break;
-            
-            case OPTIONID_inmemory:
-                inputPolicy = BUILDER_IN_MEMORY;
-                break;
-                
-            case OPTIONID_dlvdb:     
-                inputPolicy = BUILDER_DLV_DB;
-                break;
-                
-            case OPTIONID_testparser:
-                inputPolicy = BUILDER_EMPTY;
-                printStatistics = true;
-                break;
+//            case OPTIONID_aspcore2strict:
+//                aspCore2Strict = true;
+//                break;
+//
+//            case OPTIONID_inmemory:
+//                inputPolicy = BUILDER_IN_MEMORY;
+//                break;
+//
+//            case OPTIONID_dlvdb:
+//                inputPolicy = BUILDER_DLV_DB;
+//                break;
+//
+//            case OPTIONID_testparser:
+//                inputPolicy = BUILDER_EMPTY;
+//                printStatistics = true;
+//                break;
                 
             case OPTIONID_silent:
                 outputPolicy = OUTPUT_SILENT;
@@ -403,11 +404,11 @@ Options::init(
 				break;
 
             case OPTIONID_gstats:
-            	printGroundStats=atoi(optarg);
+            	printGroundStats=1;
 				break;
 
             case OPTIONID_project:
-            	rewProject=atoi(optarg);
+            	rewProject=false;
 				break;
 
             case OPTIONID_FB:
