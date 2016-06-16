@@ -90,6 +90,15 @@ public:
 	///Destructor
 	virtual ~ClassicalLiteral() {};
 
+	virtual void substituteVarWithAnonymous(Term* t){
+		for(unsigned i=0;i<terms.size();++i){
+			if(t->getType()==VARIABLE && t->getIndex()==terms[i]->getIndex())
+				setTerm(i,TermTable::getInstance()->term_anonymous);
+			else if(terms[i]->contain(TermType::FUNCTION))
+				terms[i]->substitute(t,TermTable::getInstance()->term_anonymous);
+		}
+	}
+
 private:
 	///Index of the predicate
 	Predicate* predicate;

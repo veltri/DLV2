@@ -94,15 +94,7 @@ public:
 			t->getVariablesInArith(vars);
 	}
 
-	virtual void substitute(Term* t,Term* t1){
-		for(unsigned i=0;i<terms.size();++i){
-			if(t->getIndex()==terms[i]->getIndex())
-				terms[i]=t1;
-			else if(terms[i]->contain(TermType::FUNCTION)){
-				terms[i]->substitute(t,t1);
-			}
-		}
-	}
+	virtual void substituteVarWithAnonymous(Term* t,Term* t1){}
 
 private:
 	/**

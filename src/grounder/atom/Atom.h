@@ -304,14 +304,7 @@ public:
 	//Check if two atoms are completely equal (checking also negation as failure, and strong negation)
 	virtual bool equal(const Atom& atom) const {return (*this)==atom;}
 
-	virtual void substitute(Term* t, Term* t1){
-		for(unsigned i=0;i<terms.size();++i)
-			if(t->getIndex()==terms[i]->getIndex())
-				setTerm(i,t);
-			else if(terms[i]->contain(TermType::FUNCTION)){
-				terms[i]->substitute(t,t1);
-			}
-	}
+	virtual void substituteVarWithAnonymous(Term* t){}
 
 	virtual bool containsArithTerms(){
 		for(auto term:terms)

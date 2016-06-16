@@ -74,10 +74,14 @@ void BaseInputRewriter::projectAtoms(Rule*& rule, vector<Rule*>& ruleRewrited,un
 				continue;
 
 			bool found = false;
-			for (unsigned i = 0; i < rule->getSizeBody()&&!found; ++i) {
-				if (index_atom != i && atomsVariables[i].count(term)) found = true;
+			for (unsigned i = 0; i < rule->getSizeBody(); ++i) {
+				if (index_atom != i && atomsVariables[i].count(term)) {
+					found = true;
+					break;
+				}
 			}
 			if(found) continue;
+
 			unsigned count=0;
 			for (unsigned t1 = 0; t1 < atom->getTermsSize()&&!found; ++t1) {
 				Term* term1 = atom->getTerm(t1);
@@ -88,10 +92,8 @@ void BaseInputRewriter::projectAtoms(Rule*& rule, vector<Rule*>& ruleRewrited,un
 			}
 			if(found) continue;
 
-			if(!found)
-				isolatedVars.insert(term);
-				atom->substitute(term,TermTable::getInstance()->term_anonymous);
-
+			isolatedVars.insert(term);
+			atom->substituteVarWithAnonymous(term);
 		}
 	}
 
