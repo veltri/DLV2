@@ -106,8 +106,10 @@ public:
 		return true;
 	};
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreturn-type"
 	virtual vector<Term*>& getTerms(){};
-
+#pragma GCC diagnostic pop
 
 	virtual bool operator>(const Term& term)const{return false;};
 	virtual bool operator>=(const Term& term)const{return false;};

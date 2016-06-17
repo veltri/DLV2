@@ -970,7 +970,7 @@ void InMemoryInputBuilder::onAnnotationRuleAtomIndexedArgument(char* annotation)
 		return;
 	}
 	argument=atoi(annotation);
-	if(argument>=0 && argument<currentRuleAtomsIndexed.back()->getPredicate()->getArity())
+	if(argument>=0 && unsigned(argument)<currentRuleAtomsIndexed.back()->getPredicate()->getArity())
 		currentRuleAtomsIndexedArguments.back().push_back(argument);
 	else{
 		cerr<<"--> Warning : The arguments specified for the atom ";currentRuleAtomsIndexed.back()->print(cerr);cerr<<" are not valid."<<endl;
@@ -1021,7 +1021,7 @@ void InMemoryInputBuilder::onAnnotationGlobalAtomIndexedArgument(char* annotatio
 		return;
 	}
 	argument=atoi(annotation);
-	if(argument>=0 && argument<globalAtomsIndexed.back()->getPredicate()->getArity()){
+	if(argument>=0 && unsigned(argument)<globalAtomsIndexed.back()->getPredicate()->getArity()){
 		globalAtomsIndexedArguments.back().push_back(argument);
 		GroundingPreferences::getGroundingPreferences()->addGlobalAtomIndexingSetting(globalAtomsIndexed.back(),globalAtomsIndexedArguments.back());
 	}

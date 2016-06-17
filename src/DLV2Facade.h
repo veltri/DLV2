@@ -36,7 +36,7 @@ namespace DLV2
 
     class DLV2Facade {
     public:
-        DLV2Facade() : options(*Options::globalOptions()), builder(NULL) { }
+        DLV2Facade() : options(*Options::globalOptions()), builder(NULL), parserDuration(0) { }
         ~DLV2Facade();
 
         void parseOptions( int, char* const* );
