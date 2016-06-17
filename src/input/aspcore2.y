@@ -713,10 +713,8 @@ rule_indexing_arguments
 		director.getBuilder()->onAnnotationRuleAtomIndexedArgument($1);
         delete[] $1;
 	}
-	| NUMBER COMMA NUMBER {
-		director.getBuilder()->onAnnotationRuleAtomIndexedArgument($1);
+	| rule_indexing_arguments COMMA NUMBER {
 		director.getBuilder()->onAnnotationRuleAtomIndexedArgument($3);
-        delete[] $1;
         delete[] $3;
 	}
 	;
@@ -737,10 +735,8 @@ global_indexing_arguments
 		director.getBuilder()->onAnnotationGlobalAtomIndexedArgument($1);
         delete[] $1;
 	}
-	| NUMBER COMMA NUMBER {
-		director.getBuilder()->onAnnotationGlobalAtomIndexedArgument($1);
+	| global_indexing_arguments COMMA NUMBER {
 		director.getBuilder()->onAnnotationGlobalAtomIndexedArgument($3);
-        delete[] $1;
         delete[] $3;
 	}
 	;

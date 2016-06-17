@@ -1,4 +1,4 @@
-/* A Bison parser, made by GNU Bison 3.0.  */
+/* A Bison parser, made by GNU Bison 3.0.2.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
@@ -44,7 +44,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "3.0"
+#define YYBISON_VERSION "3.0.2"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -93,11 +93,11 @@ bool queryFound=false;
 
 #line 95 "src/input/aspcore2_parser.hpp" /* yacc.c:339  */
 
-# ifndef YY_NULL
+# ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
-#   define YY_NULL nullptr
+#   define YY_NULLPTR nullptr
 #  else
-#   define YY_NULL 0
+#   define YY_NULLPTR 0
 #  endif
 # endif
 
@@ -316,11 +316,30 @@ typedef short int yytype_int16;
 # endif
 #endif
 
-#ifndef __attribute__
-/* This feature is available in gcc versions 2.5 and later.  */
-# if (! defined __GNUC__ || __GNUC__ < 2 \
-      || (__GNUC__ == 2 && __GNUC_MINOR__ < 5))
-#  define __attribute__(Spec) /* empty */
+#ifndef YY_ATTRIBUTE
+# if (defined __GNUC__                                               \
+      && (2 < __GNUC__ || (__GNUC__ == 2 && 96 <= __GNUC_MINOR__)))  \
+     || defined __SUNPRO_C && 0x5110 <= __SUNPRO_C
+#  define YY_ATTRIBUTE(Spec) __attribute__(Spec)
+# else
+#  define YY_ATTRIBUTE(Spec) /* empty */
+# endif
+#endif
+
+#ifndef YY_ATTRIBUTE_PURE
+# define YY_ATTRIBUTE_PURE   YY_ATTRIBUTE ((__pure__))
+#endif
+
+#ifndef YY_ATTRIBUTE_UNUSED
+# define YY_ATTRIBUTE_UNUSED YY_ATTRIBUTE ((__unused__))
+#endif
+
+#if !defined _Noreturn \
+     && (!defined __STDC_VERSION__ || __STDC_VERSION__ < 201112)
+# if defined _MSC_VER && 1200 <= _MSC_VER
+#  define _Noreturn __declspec (noreturn)
+# else
+#  define _Noreturn YY_ATTRIBUTE ((__noreturn__))
 # endif
 #endif
 
@@ -558,11 +577,11 @@ static const yytype_uint16 yyrline[] =
      591,   592,   596,   600,   607,   611,   618,   622,   623,   628,
      635,   640,   645,   650,   658,   659,   663,   664,   665,   669,
      670,   674,   675,   676,   680,   684,   688,   695,   702,   707,
-     712,   716,   725,   729,   736,   740,   749,   753,   760,   764,
-     768,   772,   776,   783,   787,   791,   795,   799,   806,   810,
-     814,   818,   822,   829,   833,   837,   841,   845,   852,   853,
-     857,   858,   862,   863,   867,   868,   872,   878,   884,   886,
-     891,   893
+     712,   716,   723,   727,   734,   738,   745,   749,   756,   760,
+     764,   768,   772,   779,   783,   787,   791,   795,   802,   806,
+     810,   814,   818,   825,   829,   833,   837,   841,   848,   849,
+     853,   854,   858,   859,   863,   864,   868,   874,   880,   882,
+     887,   889
 };
 #endif
 
@@ -613,7 +632,7 @@ static const char *const yytname[] =
   "global_atoms_annotation_before", "rule_atoms_annotation_after",
   "global_atoms_annotation_after", "annotation_rule_partial_order_begin",
   "annotation_global_partial_order_begin", "annotation_rule_partial_order",
-  "annotation_global_partial_order", YY_NULL
+  "annotation_global_partial_order", YY_NULLPTR
 };
 #endif
 
@@ -645,43 +664,43 @@ static const yytype_uint16 yytoknum[] =
      STATE-NUM.  */
 static const yytype_int16 yypact[] =
 {
-     350,  -301,  -301,     8,  -301,  -301,    25,     6,    14,  -301,
-      38,    43,  -301,   194,  -301,   124,   278,   124,   194,   103,
-     156,  -301,   420,  -301,    67,    70,  -301,   135,  -301,  -301,
-     148,  -301,  -301,   283,    -1,    68,   486,   391,  -301,   420,
-     231,   411,   151,  -301,  -301,  -301,  -301,   147,   171,  -301,
-    -301,   184,  -301,   198,   210,   215,   230,  -301,  -301,  -301,
-    -301,   552,   232,   222,  -301,  -301,  -301,  -301,  -301,   283,
-     225,  -301,   225,   112,  -301,   225,    49,  -301,  -301,   283,
-     234,   124,   238,   240,    15,  -301,   250,  -301,   252,  -301,
-    -301,   268,  -301,    62,  -301,  -301,   411,  -301,   288,  -301,
-      50,   278,  -301,  -301,  -301,  -301,  -301,  -301,  -301,  -301,
+     350,  -301,  -301,     8,  -301,  -301,    25,    38,    43,  -301,
+      66,    71,  -301,   194,  -301,   124,    92,   124,   194,   119,
+     156,  -301,   420,  -301,   153,   122,  -301,   167,  -301,  -301,
+     180,  -301,  -301,   283,    -1,   115,   486,   391,  -301,   420,
+     231,   411,   151,  -301,  -301,  -301,  -301,   155,   192,  -301,
+    -301,   223,  -301,   233,   242,   258,   266,  -301,  -301,  -301,
+    -301,   552,   249,   234,  -301,  -301,  -301,  -301,  -301,   283,
+     225,  -301,   225,   112,  -301,   225,   142,  -301,  -301,   283,
+     248,   124,   257,   267,    15,  -301,   273,  -301,   269,  -301,
+    -301,   280,  -301,    62,  -301,  -301,   411,  -301,   288,  -301,
+      50,    92,  -301,  -301,  -301,  -301,  -301,  -301,  -301,  -301,
     -301,  -301,  -301,  -301,  -301,   149,  -301,  -301,   149,   339,
-     295,  -301,  -301,  -301,  -301,  -301,   129,   221,  -301,   261,
-     263,   264,   269,  -301,   283,  -301,  -301,   194,   253,   124,
+     303,  -301,  -301,  -301,  -301,  -301,   221,   260,  -301,   271,
+     274,   293,   295,  -301,   283,  -301,  -301,   194,   253,   124,
      259,   323,  -301,  -301,  -301,   124,  -301,  -301,   124,   124,
-    -301,  -301,  -301,   190,  -301,   124,   278,   283,    85,   339,
-     272,   309,  -301,  -301,  -301,   289,   278,  -301,  -301,    30,
-    -301,    68,  -301,  -301,  -301,    63,  -301,  -301,   274,   280,
-     293,   297,   334,   140,   348,   160,  -301,  -301,  -301,  -301,
-    -301,  -301,  -301,  -301,  -301,  -301,  -301,  -301,  -301,   354,
+    -301,  -301,  -301,   190,  -301,   124,    92,   283,    85,   339,
+     277,   307,  -301,  -301,  -301,   296,    92,  -301,  -301,    30,
+    -301,   115,  -301,  -301,  -301,    63,  -301,  -301,   297,   309,
+     315,   316,   356,   140,   357,   160,  -301,  -301,  -301,  -301,
+    -301,  -301,  -301,  -301,  -301,  -301,  -301,  -301,  -301,   358,
       -4,  -301,  -301,  -301,    34,  -301,    88,  -301,  -301,   124,
-     212,   310,  -301,   283,    94,   124,  -301,  -301,  -301,   283,
-     522,   124,   318,   320,   321,   324,  -301,   326,   212,  -301,
-     317,  -301,   330,   212,  -301,   328,  -301,    85,   190,   190,
+     212,   314,  -301,   283,    94,   124,  -301,  -301,  -301,   283,
+     522,   124,   324,   326,   327,   329,  -301,   333,   212,  -301,
+     328,  -301,   341,   212,  -301,   330,  -301,    85,   190,   190,
     -301,  -301,  -301,    85,  -301,    83,  -301,  -301,   473,   483,
-     493,   542,   343,  -301,   353,   352,  -301,   362,   332,  -301,
-    -301,  -301,  -301,  -301,   124,   124,   344,   552,  -301,  -301,
-    -301,   333,   347,   552,  -301,  -301,  -301,   335,   351,   552,
-    -301,  -301,  -301,   340,   358,   552,  -301,  -301,  -301,   342,
-     359,  -301,   363,  -301,   365,    85,   361,   368,  -301,  -301,
-    -301,   473,   369,  -301,  -301,   483,   370,  -301,  -301,   493,
-     371,  -301,  -301,   542,   379,   372,   389,  -301,   124,  -301,
-     381,  -301,   392,  -301,   388,  -301,   414,   427,   431,   361,
-     394,   395,   398,   400,   399,   403,   404,   408,   412,   417,
-     418,   421,   451,   425,   461,   429,   483,   473,   542,   493,
-    -301,   441,  -301,   443,   430,   432,   438,   439,  -301,  -301,
-     433,   452,   453,   462,   474,   479,   480,   481,  -301,  -301,
+     493,   542,   355,  -301,   365,   362,  -301,   366,   335,  -301,
+    -301,  -301,  -301,  -301,   124,   124,   352,   552,  -301,  -301,
+    -301,   340,   351,   552,  -301,  -301,  -301,   359,   360,   552,
+    -301,  -301,  -301,   361,   364,   552,  -301,  -301,  -301,   363,
+     370,  -301,   375,  -301,   376,    85,   371,   379,  -301,  -301,
+    -301,   473,   380,  -301,  -301,   483,   381,  -301,  -301,   493,
+     384,  -301,  -301,   542,   385,   367,   396,  -301,   124,  -301,
+     399,  -301,   418,  -301,   422,  -301,   421,   397,   441,   371,
+     406,   407,   410,   412,  -301,     1,  -301,    52,   413,   417,
+     424,   426,   425,   455,   430,   458,   483,   473,   542,   493,
+     373,  -301,   443,  -301,   429,   432,   438,   439,  -301,  -301,
+     434,   452,   453,   462,   474,   479,   480,   481,  -301,  -301,
     -301,  -301
 };
 
@@ -725,7 +744,7 @@ static const yytype_uint8 yydefact[] =
        0,   183,     0,   181,     0,   185,     0,     0,     0,    25,
        0,     0,     0,     0,   150,     0,   154,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-     151,     0,   155,     0,     0,     0,     0,     0,   148,   149,
+       0,   151,     0,   155,     0,     0,     0,     0,   148,   149,
        0,     0,     0,     0,     0,     0,     0,     0,   188,   189,
      190,   191
 };
@@ -733,13 +752,13 @@ static const yytype_uint8 yydefact[] =
   /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int16 yypgoto[] =
 {
-    -301,  -301,  -301,   153,  -301,   -17,  -301,   -15,  -301,  -301,
-    -301,  -301,  -301,  -301,   292,   413,   356,  -301,  -301,  -301,
-    -156,   384,   416,     0,    13,  -144,  -301,  -231,   -65,   -32,
-    -301,  -301,  -301,   407,    23,  -301,   422,   300,  -301,  -301,
+    -301,  -301,  -301,   238,  -301,   -17,  -301,   -15,  -301,  -301,
+    -301,  -301,  -301,  -301,   292,   415,   369,  -301,  -301,  -301,
+    -156,   377,   427,     0,    13,  -144,  -301,  -231,   -65,   -32,
+    -301,  -301,  -301,   394,    23,  -301,   416,   299,  -301,  -301,
     -301,    -8,  -301,  -301,  -301,  -301,  -301,  -301,  -301,  -301,
-    -301,  -301,   447,   448,  -301,   -27,   -63,   -48,   144,  -301,
-     294,  -301,   491,  -301,     5,  -301,  -301,  -301,  -301,  -301,
+    -301,  -301,   442,   447,  -301,   -27,   -63,   -48,   144,  -301,
+     294,  -301,   495,  -301,     5,  -301,  -301,  -301,  -301,  -301,
     -301,  -301,  -301,  -301,  -301,  -301,  -301,  -301,  -301,  -301,
     -289,  -300,  -280,  -271,  -301,  -301,  -301,  -301
 };
@@ -767,56 +786,56 @@ static const yytype_int16 yytable[] =
      145,   206,   319,    30,   149,   214,   145,   269,   275,   281,
      287,   141,    29,    33,   124,   321,   237,    96,   148,    87,
       89,   148,   113,    52,   135,    30,    51,    29,    82,    29,
-      90,    29,   325,    53,   156,    33,   238,   125,   114,   357,
-      30,    54,    30,     2,    30,     4,     5,   157,   355,   156,
+      90,    29,   325,   342,   156,    33,   238,   125,   114,   357,
+      30,   343,    30,     2,    30,     4,     5,   157,   355,   156,
       33,   133,    33,   239,    33,     2,   354,     4,     5,   186,
-     269,   187,   219,    83,   275,    55,   240,   356,   281,   163,
-      56,   259,   287,   165,   134,    88,   188,   262,     2,     3,
-       4,     5,    88,    88,    97,   106,    29,   108,    98,   166,
-     168,   220,   116,   117,    90,    19,   162,   172,    92,    30,
+     269,   187,   219,    83,   275,    53,   240,   356,   281,   163,
+      54,   259,   287,   165,   134,    88,   188,   262,     2,     3,
+       4,     5,    88,    88,   344,     2,    29,     4,     5,   166,
+     168,   220,   345,    55,    90,    19,   162,   172,    56,    30,
      172,    83,   161,   221,    87,   275,   269,   287,   281,    33,
-     296,    14,    15,   263,    99,   209,   241,     2,     3,     4,
+     296,    14,    15,   263,    92,   209,   241,     2,     3,     4,
        5,    83,   244,   264,    17,   265,   210,    83,   221,   317,
-      83,    83,   176,     2,   221,     4,     5,    83,    88,   178,
-     179,    83,     2,   170,     4,     5,    94,   105,    88,   107,
+      83,    83,   176,     2,   221,     4,     5,    83,    88,   116,
+     117,    83,     2,   170,     4,     5,    94,   105,    88,   107,
       14,    15,   190,     2,     7,     4,     5,     8,   191,    87,
-       9,   192,   193,    81,   329,    88,   101,    88,   176,    89,
-     102,   213,   176,   229,   126,   234,    15,   209,   128,   166,
-     121,   228,   122,   194,   195,   196,   197,     2,     3,     4,
-       5,    83,    88,    57,    58,    59,    60,    83,   127,   166,
-     133,   233,   129,    83,   142,     2,   143,     4,     5,   146,
-      88,   270,   276,   282,   288,    88,   198,   130,   253,   131,
+       9,   192,   193,    81,   329,    88,    99,    88,   176,    89,
+      97,   213,   176,   229,    98,   234,    15,   209,   106,   166,
+     108,   228,   126,   194,   195,   196,   197,     2,     3,     4,
+       5,    83,    88,    57,    58,    59,    60,    83,   101,   166,
+     133,   233,   102,    83,   142,     2,   143,     4,     5,   146,
+      88,   270,   276,   282,   288,    88,   198,   128,   253,   127,
       14,    15,   242,   256,    57,    58,    59,    60,   245,   199,
-     300,   180,   181,    17,   247,    61,   304,   132,   268,   274,
-     280,   286,   308,    10,    11,    12,    83,    83,   312,   136,
+     300,   178,   179,    17,   247,    61,   304,   129,   268,   274,
+     280,   286,   308,    10,    11,    12,    83,    83,   312,   130,
      213,   166,  -103,  -103,  -103,  -103,   213,   299,  -107,  -107,
-    -107,  -107,   137,   303,   270,   153,   154,   155,   276,   307,
-     158,     2,   282,     4,     5,   311,   288,   176,   297,   159,
-     134,     2,     3,     4,     5,   160,   134,    57,    58,    59,
-      60,   268,   134,   177,   182,   274,   183,   184,   134,   280,
-      83,   215,   185,   286,   217,   164,   218,   222,   213,   276,
-     270,   288,   282,   223,    14,    15,   103,   104,   105,   106,
-     107,   108,  -111,  -111,  -111,  -111,   224,    17,   226,    61,
-     225,   176,     2,     3,     4,     5,   274,   268,   286,   280,
-      -3,     1,   231,     2,     3,     4,     5,     6,   236,   248,
-     243,   249,   250,     7,   252,   251,     8,   254,   255,     9,
-     291,   292,    10,    11,    12,    14,    15,   174,   257,   293,
-     294,    13,   295,   301,   298,   305,    14,    15,    81,   302,
-     309,    16,   313,   306,     2,     3,     4,     5,   120,    17,
-     310,   314,   330,    18,     7,    19,   315,     8,   316,   332,
-       9,   221,   331,   327,     2,     3,     4,     5,   318,   320,
-     322,   324,    13,     2,     3,     4,     5,    14,    15,   326,
-     328,   334,    16,     7,   333,   336,     8,   338,   339,     9,
-      17,   340,    13,   341,    18,   343,    19,    14,    15,   342,
-     345,    13,    16,   346,   344,   350,    14,    15,   347,   348,
-      17,    16,   349,   351,    18,   352,    19,   353,   358,    17,
-     359,   364,   360,    18,   361,    19,     2,     3,     4,     5,
+    -107,  -107,   131,   303,   270,   121,   136,   122,   276,   307,
+     180,   181,   282,   132,   137,   311,   288,   176,   297,   153,
+     134,     2,     3,     4,     5,   154,   134,    57,    58,    59,
+      60,   268,   134,   158,   155,   274,   159,   160,   134,   280,
+      83,   177,   217,   286,   182,   164,   215,   183,   213,   276,
+     270,   288,   282,   218,    14,    15,   103,   104,   105,   106,
+     107,   108,  -111,  -111,  -111,  -111,   184,    17,   185,    61,
+     222,   176,     2,     3,     4,     5,   274,   268,   286,   280,
+      -3,     1,   223,     2,     3,     4,     5,     6,   224,   225,
+     226,   231,   236,     7,   243,   248,     8,   249,   250,     9,
+     251,   252,    10,    11,    12,    14,    15,   174,   254,   255,
+     257,    13,   291,   292,   294,   295,    14,    15,    81,   293,
+     301,    16,   298,   302,     2,     3,     4,     5,   120,    17,
+     358,   334,   306,    18,     7,    19,   310,     8,   327,   305,
+       9,   309,   314,   313,     2,     3,     4,     5,   315,   316,
+     330,   221,    13,     2,     3,     4,     5,    14,    15,   318,
+     320,   322,    16,     7,   324,   326,     8,   328,   331,     9,
+      17,   333,    13,   332,    18,   336,    19,    14,    15,   338,
+     339,    13,    16,   340,   346,   341,    14,    15,   347,   351,
+      17,    16,   353,   350,    18,   348,    19,   349,   352,    17,
+     359,   360,   364,    18,   361,    19,     2,     3,     4,     5,
      362,   363,    57,    58,    59,    60,     2,     3,     4,     5,
      365,   366,    57,    58,    59,    60,     2,     3,     4,     5,
      367,   368,    57,    58,    59,    60,   369,   370,   371,    14,
-      15,   246,   207,   -57,   169,   -57,   167,   -57,   -57,    14,
-      15,   189,    17,   119,   267,   173,   151,   152,   -57,    14,
-      15,   123,    17,   261,   273,     0,   -57,   171,   260,     0,
+      15,   246,   173,   -57,   189,   -57,   169,   -57,   -57,    14,
+      15,   151,    17,   119,   267,   207,   152,   167,   -57,    14,
+      15,   171,    17,   261,   273,   123,   -57,   260,     0,     0,
      -57,     0,    17,     0,   279,     2,     3,     4,     5,     0,
        0,    57,    58,    59,    60,     2,     3,     4,     5,     0,
        0,    57,    58,    59,    60,   -75,   -75,   -75,   -75,   -75,
@@ -832,56 +851,56 @@ static const yytype_int16 yycheck[] =
       73,   155,   301,     0,    79,   159,    79,   248,   249,   250,
      251,    69,    22,     0,    41,   305,    30,    22,    76,    16,
       17,    79,    33,     8,    61,    22,    28,    37,    15,    39,
-      17,    41,   313,    37,    29,    22,    50,    42,    49,   349,
-      37,    37,    39,     3,    41,     5,     6,    42,   347,    29,
+      17,    41,   313,    42,    29,    22,    50,    42,    49,   349,
+      37,    50,    39,     3,    41,     5,     6,    42,   347,    29,
       37,    61,    39,    29,    41,     3,   346,     5,     6,   134,
      301,   134,    42,    81,   305,    37,    42,   348,   309,    96,
       37,   237,   313,    98,    61,    93,   134,   243,     3,     4,
-       5,     6,   100,   101,    27,    46,    96,    48,    31,    49,
-     100,    38,    34,    35,    81,    55,    93,   115,     5,    96,
+       5,     6,   100,   101,    42,     3,    96,     5,     6,    49,
+     100,    38,    50,    37,    81,    55,    93,   115,    37,    96,
      118,   119,    50,    50,   101,   346,   347,   348,   349,    96,
-     264,    36,    37,    40,    54,   157,    38,     3,     4,     5,
+     264,    36,    37,    40,     5,   157,    38,     3,     4,     5,
        6,   139,    38,    50,    49,    52,    51,   145,    50,   295,
-     148,   149,   119,     3,    50,     5,     6,   155,   156,    20,
-      21,   159,     3,     4,     5,     6,     0,    45,   166,    47,
+     148,   149,   119,     3,    50,     5,     6,   155,   156,    34,
+      35,   159,     3,     4,     5,     6,     0,    45,   166,    47,
       36,    37,   139,     3,    13,     5,     6,    16,   145,   156,
-      19,   148,   149,    49,   318,   183,    41,   185,   155,   166,
-      32,   158,   159,   183,    37,   185,    37,   219,     4,    49,
-      37,    51,    39,     3,     4,     5,     6,     3,     4,     5,
-       6,   209,   210,     9,    10,    11,    12,   215,    37,    49,
-     210,    51,    14,   221,    70,     3,    72,     5,     6,    75,
-     228,   248,   249,   250,   251,   233,    36,    17,   228,    14,
+      19,   148,   149,    49,   318,   183,    54,   185,   155,   166,
+      27,   158,   159,   183,    31,   185,    37,   219,    46,    49,
+      48,    51,    37,     3,     4,     5,     6,     3,     4,     5,
+       6,   209,   210,     9,    10,    11,    12,   215,    41,    49,
+     210,    51,    32,   221,    70,     3,    72,     5,     6,    75,
+     228,   248,   249,   250,   251,   233,    36,     4,   228,    37,
       36,    37,   209,   233,     9,    10,    11,    12,   215,    49,
-     267,    20,    21,    49,   221,    51,   273,    17,   248,   249,
-     250,   251,   279,    22,    23,    24,   264,   265,   285,    27,
+     267,    20,    21,    49,   221,    51,   273,    14,   248,   249,
+     250,   251,   279,    22,    23,    24,   264,   265,   285,    17,
      237,    49,     9,    10,    11,    12,   243,   267,     9,    10,
-      11,    12,    50,   273,   301,    41,    38,    37,   305,   279,
-      30,     3,   309,     5,     6,   285,   313,   264,   265,    37,
-     267,     3,     4,     5,     6,    27,   273,     9,    10,    11,
-      12,   301,   279,     8,    43,   305,    43,    43,   285,   309,
-     318,    39,    43,   313,     5,    27,    27,    43,   295,   346,
-     347,   348,   349,    43,    36,    37,    43,    44,    45,    46,
-      47,    48,     9,    10,    11,    12,    43,    49,     4,    51,
+      11,    12,    14,   273,   301,    37,    27,    39,   305,   279,
+      20,    21,   309,    17,    50,   285,   313,   264,   265,    41,
+     267,     3,     4,     5,     6,    38,   273,     9,    10,    11,
+      12,   301,   279,    30,    37,   305,    37,    27,   285,   309,
+     318,     8,     5,   313,    43,    27,    39,    43,   295,   346,
+     347,   348,   349,    27,    36,    37,    43,    44,    45,    46,
+      47,    48,     9,    10,    11,    12,    43,    49,    43,    51,
       43,   318,     3,     4,     5,     6,   346,   347,   348,   349,
-       0,     1,     4,     3,     4,     5,     6,     7,     4,    41,
-      50,    41,    41,    13,    38,    41,    16,    50,    38,    19,
-      27,    18,    22,    23,    24,    36,    37,    38,    50,    27,
-      18,    31,    50,    50,    40,    50,    36,    37,    49,    42,
-      50,    41,    50,    42,     3,     4,     5,     6,     7,    49,
-      42,    42,    21,    53,    13,    55,    43,    16,    43,    21,
-      19,    50,    20,    41,     3,     4,     5,     6,    50,    50,
-      50,    50,    31,     3,     4,     5,     6,    36,    37,    50,
-      41,     4,    41,    13,    20,     4,    16,    43,    43,    19,
-      49,    43,    31,    43,    53,    42,    55,    36,    37,    50,
-      42,    31,    41,    41,    50,     4,    36,    37,    41,    41,
-      49,    41,    41,    38,    53,     4,    55,    38,    27,    49,
-      27,    38,    42,    53,    42,    55,     3,     4,     5,     6,
+       0,     1,    43,     3,     4,     5,     6,     7,    43,    43,
+       4,     4,     4,    13,    50,    41,    16,    41,    41,    19,
+      41,    38,    22,    23,    24,    36,    37,    38,    50,    38,
+      50,    31,    27,    18,    18,    50,    36,    37,    49,    27,
+      50,    41,    40,    42,     3,     4,     5,     6,     7,    49,
+      27,     4,    42,    53,    13,    55,    42,    16,    41,    50,
+      19,    50,    42,    50,     3,     4,     5,     6,    43,    43,
+      21,    50,    31,     3,     4,     5,     6,    36,    37,    50,
+      50,    50,    41,    13,    50,    50,    16,    41,    20,    19,
+      49,    20,    31,    21,    53,     4,    55,    36,    37,    43,
+      43,    31,    41,    43,    41,    43,    36,    37,    41,     4,
+      49,    41,     4,    38,    53,    41,    55,    41,    38,    49,
+      27,    42,    38,    53,    42,    55,     3,     4,     5,     6,
       42,    42,     9,    10,    11,    12,     3,     4,     5,     6,
       38,    38,     9,    10,    11,    12,     3,     4,     5,     6,
       38,    27,     9,    10,    11,    12,    27,    27,    27,    36,
-      37,   219,   156,    27,   101,    29,   100,    31,    32,    36,
-      37,   137,    49,    37,    51,   118,    79,    79,    42,    36,
-      37,    40,    49,   239,    51,    -1,    50,   115,   238,    -1,
+      37,   219,   118,    27,   137,    29,   101,    31,    32,    36,
+      37,    79,    49,    37,    51,   156,    79,   100,    42,    36,
+      37,   115,    49,   239,    51,    40,    50,   238,    -1,    -1,
       54,    -1,    49,    -1,    51,     3,     4,     5,     6,    -1,
       -1,     9,    10,    11,    12,     3,     4,     5,     6,    -1,
       -1,     9,    10,    11,    12,    43,    44,    45,    46,    47,
@@ -929,8 +948,8 @@ static const yytype_uint8 yystos[] =
       42,    79,   111,    50,    42,    43,    43,    76,    50,   136,
       50,   138,    50,   137,    50,   139,    50,    41,    41,    81,
       21,    20,    21,    20,     4,   128,     4,   130,    43,    43,
-      43,    43,    50,    42,    50,    42,    41,    41,    41,    41,
-       4,    38,     4,    38,   138,   136,   139,   137,    27,    27,
+      43,    43,    42,    50,    42,    50,    41,    41,    41,    41,
+      38,     4,    38,     4,   138,   136,   139,   137,    27,    27,
       42,    42,    42,    42,    38,    38,    38,    38,    27,    27,
       27,    27
 };
@@ -1267,11 +1286,11 @@ static int
 yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,
                 yytype_int16 *yyssp, int yytoken)
 {
-  YYSIZE_T yysize0 = yytnamerr (YY_NULL, yytname[yytoken]);
+  YYSIZE_T yysize0 = yytnamerr (YY_NULLPTR, yytname[yytoken]);
   YYSIZE_T yysize = yysize0;
   enum { YYERROR_VERBOSE_ARGS_MAXIMUM = 5 };
   /* Internationalized format string. */
-  const char *yyformat = YY_NULL;
+  const char *yyformat = YY_NULLPTR;
   /* Arguments of yyformat. */
   char const *yyarg[YYERROR_VERBOSE_ARGS_MAXIMUM];
   /* Number of reported tokens (one for the "unexpected", one per
@@ -1328,7 +1347,7 @@ yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,
                   }
                 yyarg[yycount++] = yytname[yyx];
                 {
-                  YYSIZE_T yysize1 = yysize + yytnamerr (YY_NULL, yytname[yyx]);
+                  YYSIZE_T yysize1 = yysize + yytnamerr (YY_NULLPTR, yytname[yyx]);
                   if (! (yysize <= yysize1
                          && yysize1 <= YYSTACK_ALLOC_MAXIMUM))
                     return 2;
@@ -1663,7 +1682,7 @@ yyreduce:
         case 7:
 #line 83 "src/input/aspcore2.y" /* yacc.c:1646  */
     { yyerror(director,"Generic error"); }
-#line 1667 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1686 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 13:
@@ -1671,7 +1690,7 @@ yyreduce:
     { 
             director.getBuilder()->onRule(); 
         }
-#line 1675 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1694 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 14:
@@ -1679,7 +1698,7 @@ yyreduce:
     {
             director.getBuilder()->onRule(); 
         }
-#line 1683 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1702 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 15:
@@ -1687,7 +1706,7 @@ yyreduce:
     { 
             director.getBuilder()->onRule(); 
         }
-#line 1691 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1710 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 16:
@@ -1695,7 +1714,7 @@ yyreduce:
     { 
             director.getBuilder()->onConstraint(); 
         }
-#line 1699 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1718 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 17:
@@ -1703,7 +1722,7 @@ yyreduce:
     { 
             director.getBuilder()->onWeakConstraint(); 
         }
-#line 1707 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1726 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 18:
@@ -1714,7 +1733,7 @@ yyreduce:
 			else 
 				{ yyerror(director,"A query has been already found"); }
 		}
-#line 1718 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1737 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 19:
@@ -1722,7 +1741,7 @@ yyreduce:
     {
             director.getBuilder()->onHead();
         }
-#line 1726 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1745 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 20:
@@ -1731,7 +1750,7 @@ yyreduce:
             director.getBuilder()->onChoiceAtom();
             director.getBuilder()->onHead();
         }
-#line 1735 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1754 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 21:
@@ -1739,7 +1758,7 @@ yyreduce:
     {
             director.getBuilder()->onBody();
         }
-#line 1743 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1762 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 22:
@@ -1748,7 +1767,7 @@ yyreduce:
             // There is only the weight. No level and terms.
             director.getBuilder()->onWeightAtLevels(1,0,0); 
         }
-#line 1752 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1771 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 23:
@@ -1757,7 +1776,7 @@ yyreduce:
             // There are also a level and/or some terms.
             // The finalization has been postponed to "level_and_terms".
         }
-#line 1761 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1780 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 24:
@@ -1766,7 +1785,7 @@ yyreduce:
             // There is no terms following the level.
             director.getBuilder()->onWeightAtLevels(1,1,0); 
         }
-#line 1770 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1789 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 25:
@@ -1774,7 +1793,7 @@ yyreduce:
     { 
             director.getBuilder()->onWeightAtLevels(1,1,(yyvsp[0].integer)); 
         }
-#line 1778 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1797 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 26:
@@ -1785,7 +1804,7 @@ yyreduce:
             // weight, should be a term of this list.
             director.getBuilder()->onWeightAtLevels(0,0,(yyvsp[0].integer)+1); 
         }
-#line 1789 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1808 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 27:
@@ -1793,7 +1812,7 @@ yyreduce:
     { 
             director.getBuilder()->onHeadAtom(); 
         }
-#line 1797 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1816 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 28:
@@ -1801,7 +1820,7 @@ yyreduce:
     { 
             director.getBuilder()->onHeadAtom(); 
         }
-#line 1805 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1824 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 29:
@@ -1809,7 +1828,7 @@ yyreduce:
     { 
             director.getBuilder()->onHeadAtom(); 
         }
-#line 1813 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1832 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 30:
@@ -1817,7 +1836,7 @@ yyreduce:
     { 
             director.getBuilder()->onHeadAtom(); 
         }
-#line 1821 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1840 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 31:
@@ -1825,7 +1844,7 @@ yyreduce:
     { 
             director.getBuilder()->onBodyLiteral(); 
         }
-#line 1829 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1848 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 32:
@@ -1833,7 +1852,7 @@ yyreduce:
     { 
             director.getBuilder()->onBodyLiteral(); 
         }
-#line 1837 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1856 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 37:
@@ -1841,7 +1860,7 @@ yyreduce:
     { 
             director.getBuilder()->onChoiceLowerGuard();
         }
-#line 1845 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1864 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 38:
@@ -1849,7 +1868,7 @@ yyreduce:
     { 
             director.getBuilder()->onChoiceUpperGuard();
         }
-#line 1853 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1872 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 41:
@@ -1857,7 +1876,7 @@ yyreduce:
     {
             director.getBuilder()->onChoiceElement(); 
         }
-#line 1861 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1880 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 42:
@@ -1865,7 +1884,7 @@ yyreduce:
     {
             director.getBuilder()->onChoiceElement(); 
         }
-#line 1869 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1888 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 43:
@@ -1873,7 +1892,7 @@ yyreduce:
     {
             director.getBuilder()->onChoiceElementAtom(); 
         }
-#line 1877 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1896 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 44:
@@ -1881,7 +1900,7 @@ yyreduce:
     { 
             director.getBuilder()->onChoiceElementLiteral(); 
         }
-#line 1885 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1904 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 45:
@@ -1889,7 +1908,7 @@ yyreduce:
     {
             director.getBuilder()->onChoiceElementLiteral();
         }
-#line 1893 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1912 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 46:
@@ -1897,7 +1916,7 @@ yyreduce:
     {
             director.getBuilder()->onAggregateNafLiteral();
         }
-#line 1901 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1920 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 47:
@@ -1905,7 +1924,7 @@ yyreduce:
     {
             director.getBuilder()->onAggregateNafLiteral();
         }
-#line 1909 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1928 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 48:
@@ -1913,7 +1932,7 @@ yyreduce:
     { 
             director.getBuilder()->onNafLiteral();
         }
-#line 1917 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1936 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 49:
@@ -1921,7 +1940,7 @@ yyreduce:
     { 
             director.getBuilder()->onNafLiteral(true);
         }
-#line 1925 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1944 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 50:
@@ -1929,7 +1948,7 @@ yyreduce:
     {
             director.getBuilder()->onNafLiteral();
         }
-#line 1933 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1952 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 52:
@@ -1937,7 +1956,7 @@ yyreduce:
     {
             director.getBuilder()->onAggregate();
         }
-#line 1941 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1960 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 53:
@@ -1945,7 +1964,7 @@ yyreduce:
     {
             director.getBuilder()->onAggregate(true);
         }
-#line 1949 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1968 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 54:
@@ -1953,19 +1972,19 @@ yyreduce:
     { 
             director.getBuilder()->onExistentialAtom(); 
         }
-#line 1957 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1976 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 55:
 #line 308 "src/input/aspcore2.y" /* yacc.c:1646  */
     { director.getBuilder()->onAtom(); }
-#line 1963 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1982 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 56:
 #line 309 "src/input/aspcore2.y" /* yacc.c:1646  */
     { director.getBuilder()->onAtom(true); }
-#line 1969 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1988 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 57:
@@ -1974,7 +1993,7 @@ yyreduce:
             director.getBuilder()->onPredicateName((yyvsp[0].string)); 
             delete[] (yyvsp[0].string);
         }
-#line 1978 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 1997 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 58:
@@ -1983,7 +2002,7 @@ yyreduce:
             director.getBuilder()->onPredicateName((yyvsp[-3].string)); 
             delete[] (yyvsp[-3].string);
         }
-#line 1987 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2006 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 59:
@@ -1992,19 +2011,19 @@ yyreduce:
             director.getBuilder()->onPredicateName((yyvsp[-2].string)); 
             delete[] (yyvsp[-2].string);
         }
-#line 1996 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2015 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 60:
 #line 331 "src/input/aspcore2.y" /* yacc.c:1646  */
     { (yyval.integer) = 1; }
-#line 2002 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2021 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 61:
 #line 332 "src/input/aspcore2.y" /* yacc.c:1646  */
     { (yyval.integer) = (yyvsp[-2].integer) + 1; }
-#line 2008 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2027 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 64:
@@ -2012,7 +2031,7 @@ yyreduce:
     {
             director.getBuilder()->onBuiltinAtom();
         }
-#line 2016 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2035 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 65:
@@ -2020,7 +2039,7 @@ yyreduce:
     {
             director.getBuilder()->onEqualOperator();
         }
-#line 2024 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2043 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 66:
@@ -2028,31 +2047,31 @@ yyreduce:
     {
             director.getBuilder()->onUnequalOperator(); 
         }
-#line 2032 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2051 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 70:
 #line 366 "src/input/aspcore2.y" /* yacc.c:1646  */
     { (yyval.single_char) = '+'; }
-#line 2038 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2057 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 71:
 #line 367 "src/input/aspcore2.y" /* yacc.c:1646  */
     { (yyval.single_char) = '-'; }
-#line 2044 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2063 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 72:
 #line 371 "src/input/aspcore2.y" /* yacc.c:1646  */
     { (yyval.single_char) = '*'; }
-#line 2050 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2069 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 73:
 #line 372 "src/input/aspcore2.y" /* yacc.c:1646  */
     { (yyval.single_char) = '/'; }
-#line 2056 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2075 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 74:
@@ -2060,7 +2079,7 @@ yyreduce:
     { 
             director.getBuilder()->onUnknownVariable(); 
         }
-#line 2064 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2083 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 75:
@@ -2069,7 +2088,7 @@ yyreduce:
             director.getBuilder()->onFunction((yyvsp[-3].string), (yyvsp[-1].integer)); 
             delete[] (yyvsp[-3].string);
         }
-#line 2073 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2092 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 76:
@@ -2080,7 +2099,7 @@ yyreduce:
             delete[] (yyvsp[-2].string);
             delete[] (yyvsp[0].string);
         }
-#line 2084 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2103 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 77:
@@ -2088,7 +2107,7 @@ yyreduce:
     { 
             director.getBuilder()->onTermDash(); 
         }
-#line 2092 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2111 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 78:
@@ -2097,7 +2116,7 @@ yyreduce:
             director.getBuilder()->onTerm((yyvsp[0].string)); 
             delete[] (yyvsp[0].string);
         }
-#line 2101 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2120 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 79:
@@ -2106,7 +2125,7 @@ yyreduce:
             director.getBuilder()->onTerm((yyvsp[0].string)); 
             delete[] (yyvsp[0].string);
         }
-#line 2110 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2129 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 80:
@@ -2114,13 +2133,13 @@ yyreduce:
     { 
             director.getBuilder()->onTermParams(); 
         }
-#line 2118 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2137 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 81:
 #line 417 "src/input/aspcore2.y" /* yacc.c:1646  */
     {}
-#line 2124 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2143 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 84:
@@ -2128,13 +2147,13 @@ yyreduce:
     { 
             director.getBuilder()->onArithmeticOperation((yyvsp[-1].single_char)); 
         }
-#line 2132 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2151 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 85:
 #line 433 "src/input/aspcore2.y" /* yacc.c:1646  */
     {}
-#line 2138 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2157 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 86:
@@ -2142,19 +2161,19 @@ yyreduce:
     { 
             director.getBuilder()->onArithmeticOperation((yyvsp[-1].single_char)); 
         }
-#line 2146 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2165 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 87:
 #line 440 "src/input/aspcore2.y" /* yacc.c:1646  */
     {}
-#line 2152 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2171 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 88:
 #line 441 "src/input/aspcore2.y" /* yacc.c:1646  */
     {}
-#line 2158 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2177 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 89:
@@ -2163,7 +2182,7 @@ yyreduce:
             director.getBuilder()->onAggregateGroundTerm((yyvsp[0].string));
             delete[] (yyvsp[0].string);
         }
-#line 2167 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2186 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 90:
@@ -2172,7 +2191,7 @@ yyreduce:
             director.getBuilder()->onAggregateGroundTerm((yyvsp[0].string));
             delete[] (yyvsp[0].string);
         }
-#line 2176 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2195 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 91:
@@ -2181,7 +2200,7 @@ yyreduce:
             director.getBuilder()->onAggregateGroundTerm((yyvsp[0].string));
             delete[] (yyvsp[0].string);
         }
-#line 2185 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2204 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 92:
@@ -2190,7 +2209,7 @@ yyreduce:
             director.getBuilder()->onAggregateGroundTerm((yyvsp[0].string),true);
             delete[] (yyvsp[0].string);
         }
-#line 2194 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2213 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 93:
@@ -2199,7 +2218,7 @@ yyreduce:
             director.getBuilder()->onAggregateVariableTerm((yyvsp[0].string));
             delete[] (yyvsp[0].string);
         }
-#line 2203 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2222 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 94:
@@ -2207,7 +2226,7 @@ yyreduce:
     {
             director.getBuilder()->onAggregateUnknownVariable();
         }
-#line 2211 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2230 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 95:
@@ -2216,7 +2235,7 @@ yyreduce:
             director.getBuilder()->onExistentialVariable((yyvsp[0].string)); 
             delete[] (yyvsp[0].string);
         }
-#line 2220 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2239 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 96:
@@ -2225,25 +2244,25 @@ yyreduce:
             director.getBuilder()->onExistentialVariable((yyvsp[0].string));
             delete[] (yyvsp[0].string);
         }
-#line 2229 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2248 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 97:
 #line 493 "src/input/aspcore2.y" /* yacc.c:1646  */
     { (yyval.string) = (yyvsp[0].string); }
-#line 2235 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2254 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 98:
 #line 494 "src/input/aspcore2.y" /* yacc.c:1646  */
     { (yyval.string) = (yyvsp[0].string); }
-#line 2241 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2260 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 99:
 #line 495 "src/input/aspcore2.y" /* yacc.c:1646  */
     { (yyval.string) = (yyvsp[0].string); }
-#line 2247 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2266 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 100:
@@ -2254,7 +2273,7 @@ yyreduce:
             delete[] (yyvsp[-1].string);
             delete[] (yyvsp[0].string);
         }
-#line 2258 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2277 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 101:
@@ -2265,7 +2284,7 @@ yyreduce:
             delete[] (yyvsp[-1].string);
             delete[] (yyvsp[0].string);
         }
-#line 2269 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2288 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 102:
@@ -2273,7 +2292,7 @@ yyreduce:
     { 
             director.getBuilder()->onAtom(); 
         }
-#line 2277 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2296 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 103:
@@ -2281,7 +2300,7 @@ yyreduce:
     {
             director.getBuilder()->onAggregateLowerGuard();
         }
-#line 2285 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2304 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 104:
@@ -2289,7 +2308,7 @@ yyreduce:
     {
             director.getBuilder()->onAggregateUpperGuard();
         }
-#line 2293 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2312 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 107:
@@ -2297,7 +2316,7 @@ yyreduce:
     {
             director.getBuilder()->onAggregateLowerGuard();
         }
-#line 2301 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2320 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 111:
@@ -2305,7 +2324,7 @@ yyreduce:
     {
             director.getBuilder()->onAggregateLowerGuard();
         }
-#line 2309 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2328 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 113:
@@ -2313,7 +2332,7 @@ yyreduce:
     {
             director.getBuilder()->onAggregateUpperGuard();
         }
-#line 2317 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2336 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 114:
@@ -2321,7 +2340,7 @@ yyreduce:
     {
             director.getBuilder()->onAggregateUpperGuard();
         }
-#line 2325 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2344 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 122:
@@ -2329,7 +2348,7 @@ yyreduce:
     {
             director.getBuilder()->onLessOperator(); 
         }
-#line 2333 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2352 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 123:
@@ -2337,7 +2356,7 @@ yyreduce:
     {
             director.getBuilder()->onLessOrEqualOperator(); 
         }
-#line 2341 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2360 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 124:
@@ -2345,7 +2364,7 @@ yyreduce:
     {
             director.getBuilder()->onGreaterOperator();
         }
-#line 2349 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2368 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 125:
@@ -2353,7 +2372,7 @@ yyreduce:
     {
             director.getBuilder()->onGreaterOrEqualOperator();
         }
-#line 2357 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2376 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 129:
@@ -2361,7 +2380,7 @@ yyreduce:
     {
             director.getBuilder()->onAggregateElement();
         }
-#line 2365 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2384 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 130:
@@ -2370,7 +2389,7 @@ yyreduce:
             director.getBuilder()->onAggregateFunction((yyvsp[0].string));
             delete[] (yyvsp[0].string);
         }
-#line 2374 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2393 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 131:
@@ -2379,7 +2398,7 @@ yyreduce:
             director.getBuilder()->onAggregateFunction((yyvsp[0].string));
             delete[] (yyvsp[0].string);
         }
-#line 2383 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2402 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 132:
@@ -2388,7 +2407,7 @@ yyreduce:
             director.getBuilder()->onAggregateFunction((yyvsp[0].string));
             delete[] (yyvsp[0].string);
         }
-#line 2392 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2411 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 133:
@@ -2397,7 +2416,7 @@ yyreduce:
             director.getBuilder()->onAggregateFunction((yyvsp[0].string));
             delete[] (yyvsp[0].string);
         }
-#line 2401 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2420 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 146:
@@ -2406,7 +2425,7 @@ yyreduce:
 		director.getBuilder()->onAnnotationRuleOrdering((yyvsp[0].string));
         delete[] (yyvsp[0].string);
 	}
-#line 2410 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2429 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 147:
@@ -2415,7 +2434,7 @@ yyreduce:
 		director.getBuilder()->onAnnotationGlobalOrdering((yyvsp[0].string));
         delete[] (yyvsp[0].string);
 	}
-#line 2419 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2438 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 150:
@@ -2424,250 +2443,246 @@ yyreduce:
 		director.getBuilder()->onAnnotationRuleAtomIndexedArgument((yyvsp[0].string));
         delete[] (yyvsp[0].string);
 	}
-#line 2428 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2447 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 151:
 #line 716 "src/input/aspcore2.y" /* yacc.c:1646  */
     {
-		director.getBuilder()->onAnnotationRuleAtomIndexedArgument((yyvsp[-2].string));
 		director.getBuilder()->onAnnotationRuleAtomIndexedArgument((yyvsp[0].string));
-        delete[] (yyvsp[-2].string);
         delete[] (yyvsp[0].string);
 	}
-#line 2439 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2456 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 152:
-#line 726 "src/input/aspcore2.y" /* yacc.c:1646  */
+#line 724 "src/input/aspcore2.y" /* yacc.c:1646  */
     { 
             director.getBuilder()->onAnnotationRuleAtomIndexedLiteral();
         }
-#line 2447 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
-    break;
-
-  case 153:
-#line 730 "src/input/aspcore2.y" /* yacc.c:1646  */
-    { 
-            director.getBuilder()->onAnnotationRuleAtomIndexedLiteral(true);
-        }
-#line 2455 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
-    break;
-
-  case 154:
-#line 736 "src/input/aspcore2.y" /* yacc.c:1646  */
-    {
-		director.getBuilder()->onAnnotationGlobalAtomIndexedArgument((yyvsp[0].string));
-        delete[] (yyvsp[0].string);
-	}
 #line 2464 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
-  case 155:
-#line 740 "src/input/aspcore2.y" /* yacc.c:1646  */
+  case 153:
+#line 728 "src/input/aspcore2.y" /* yacc.c:1646  */
+    { 
+            director.getBuilder()->onAnnotationRuleAtomIndexedLiteral(true);
+        }
+#line 2472 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+    break;
+
+  case 154:
+#line 734 "src/input/aspcore2.y" /* yacc.c:1646  */
     {
-		director.getBuilder()->onAnnotationGlobalAtomIndexedArgument((yyvsp[-2].string));
 		director.getBuilder()->onAnnotationGlobalAtomIndexedArgument((yyvsp[0].string));
-        delete[] (yyvsp[-2].string);
         delete[] (yyvsp[0].string);
 	}
-#line 2475 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2481 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+    break;
+
+  case 155:
+#line 738 "src/input/aspcore2.y" /* yacc.c:1646  */
+    {
+		director.getBuilder()->onAnnotationGlobalAtomIndexedArgument((yyvsp[0].string));
+        delete[] (yyvsp[0].string);
+	}
+#line 2490 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 156:
-#line 750 "src/input/aspcore2.y" /* yacc.c:1646  */
+#line 746 "src/input/aspcore2.y" /* yacc.c:1646  */
     { 
             director.getBuilder()->onAnnotationGlobalAtomIndexedLiteral();
         }
-#line 2483 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2498 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 157:
-#line 754 "src/input/aspcore2.y" /* yacc.c:1646  */
+#line 750 "src/input/aspcore2.y" /* yacc.c:1646  */
     { 
             director.getBuilder()->onAnnotationGlobalAtomIndexedLiteral(true);
         }
-#line 2491 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2506 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 158:
-#line 761 "src/input/aspcore2.y" /* yacc.c:1646  */
+#line 757 "src/input/aspcore2.y" /* yacc.c:1646  */
     { 
             director.getBuilder()->onAnnotationRulePartialOrderingBefore();
         }
-#line 2499 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2514 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 159:
-#line 765 "src/input/aspcore2.y" /* yacc.c:1646  */
+#line 761 "src/input/aspcore2.y" /* yacc.c:1646  */
     { 
             director.getBuilder()->onAnnotationRulePartialOrderingBefore(true);
         }
-#line 2507 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2522 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 160:
-#line 769 "src/input/aspcore2.y" /* yacc.c:1646  */
+#line 765 "src/input/aspcore2.y" /* yacc.c:1646  */
     {
             director.getBuilder()->onAnnotationRulePartialOrderingBefore();
         }
-#line 2515 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2530 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 161:
-#line 773 "src/input/aspcore2.y" /* yacc.c:1646  */
+#line 769 "src/input/aspcore2.y" /* yacc.c:1646  */
     {
            director.getBuilder()->onAnnotationAggregateRulePartialOrderingBefore();
         }
-#line 2523 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2538 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 162:
-#line 777 "src/input/aspcore2.y" /* yacc.c:1646  */
+#line 773 "src/input/aspcore2.y" /* yacc.c:1646  */
     {
             director.getBuilder()->onAnnotationAggregateRulePartialOrderingBefore(true);
         }
-#line 2531 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2546 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 163:
-#line 784 "src/input/aspcore2.y" /* yacc.c:1646  */
+#line 780 "src/input/aspcore2.y" /* yacc.c:1646  */
     { 
             director.getBuilder()->onAnnotationGlobalPartialOrderingBefore();
         }
-#line 2539 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2554 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 164:
-#line 788 "src/input/aspcore2.y" /* yacc.c:1646  */
+#line 784 "src/input/aspcore2.y" /* yacc.c:1646  */
     { 
             director.getBuilder()->onAnnotationGlobalPartialOrderingBefore(true);
         }
-#line 2547 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2562 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 165:
-#line 792 "src/input/aspcore2.y" /* yacc.c:1646  */
+#line 788 "src/input/aspcore2.y" /* yacc.c:1646  */
     {
             director.getBuilder()->onAnnotationGlobalPartialOrderingBefore();
         }
-#line 2555 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2570 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 166:
-#line 796 "src/input/aspcore2.y" /* yacc.c:1646  */
+#line 792 "src/input/aspcore2.y" /* yacc.c:1646  */
     {
            director.getBuilder()->onAnnotationAggregateGlobalPartialOrderingBefore();
         }
-#line 2563 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2578 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 167:
-#line 800 "src/input/aspcore2.y" /* yacc.c:1646  */
+#line 796 "src/input/aspcore2.y" /* yacc.c:1646  */
     {
             director.getBuilder()->onAnnotationAggregateGlobalPartialOrderingBefore(true);
         }
-#line 2571 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2586 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 168:
-#line 807 "src/input/aspcore2.y" /* yacc.c:1646  */
+#line 803 "src/input/aspcore2.y" /* yacc.c:1646  */
     { 
             director.getBuilder()->onAnnotationRulePartialOrderingAfter();
         }
-#line 2579 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2594 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 169:
-#line 811 "src/input/aspcore2.y" /* yacc.c:1646  */
+#line 807 "src/input/aspcore2.y" /* yacc.c:1646  */
     { 
             director.getBuilder()->onAnnotationRulePartialOrderingAfter(true);
         }
-#line 2587 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2602 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 170:
-#line 815 "src/input/aspcore2.y" /* yacc.c:1646  */
+#line 811 "src/input/aspcore2.y" /* yacc.c:1646  */
     {
             director.getBuilder()->onAnnotationRulePartialOrderingAfter();
         }
-#line 2595 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2610 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 171:
-#line 819 "src/input/aspcore2.y" /* yacc.c:1646  */
+#line 815 "src/input/aspcore2.y" /* yacc.c:1646  */
     {
            director.getBuilder()->onAnnotationAggregateRulePartialOrderingAfter();
         }
-#line 2603 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2618 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 172:
-#line 823 "src/input/aspcore2.y" /* yacc.c:1646  */
+#line 819 "src/input/aspcore2.y" /* yacc.c:1646  */
     {
             director.getBuilder()->onAnnotationAggregateRulePartialOrderingAfter(true);
         }
-#line 2611 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2626 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 173:
-#line 830 "src/input/aspcore2.y" /* yacc.c:1646  */
+#line 826 "src/input/aspcore2.y" /* yacc.c:1646  */
     { 
             director.getBuilder()->onAnnotationGlobalPartialOrderingAfter();
         }
-#line 2619 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2634 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 174:
-#line 834 "src/input/aspcore2.y" /* yacc.c:1646  */
+#line 830 "src/input/aspcore2.y" /* yacc.c:1646  */
     { 
             director.getBuilder()->onAnnotationGlobalPartialOrderingAfter(true);
         }
-#line 2627 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2642 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 175:
-#line 838 "src/input/aspcore2.y" /* yacc.c:1646  */
+#line 834 "src/input/aspcore2.y" /* yacc.c:1646  */
     {
             director.getBuilder()->onAnnotationGlobalPartialOrderingAfter();
         }
-#line 2635 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2650 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 176:
-#line 842 "src/input/aspcore2.y" /* yacc.c:1646  */
+#line 838 "src/input/aspcore2.y" /* yacc.c:1646  */
     {
            director.getBuilder()->onAnnotationAggregateGlobalPartialOrderingAfter();
         }
-#line 2643 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2658 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 177:
-#line 846 "src/input/aspcore2.y" /* yacc.c:1646  */
+#line 842 "src/input/aspcore2.y" /* yacc.c:1646  */
     {
             director.getBuilder()->onAnnotationAggregateGlobalPartialOrderingAfter(true);
         }
-#line 2651 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2666 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 186:
-#line 873 "src/input/aspcore2.y" /* yacc.c:1646  */
+#line 869 "src/input/aspcore2.y" /* yacc.c:1646  */
     {
 		director.getBuilder()->onAnnotationPartialOrdering();
 	}
-#line 2659 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2674 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
   case 187:
-#line 879 "src/input/aspcore2.y" /* yacc.c:1646  */
+#line 875 "src/input/aspcore2.y" /* yacc.c:1646  */
     {
 		director.getBuilder()->onAnnotationPartialOrdering(true);
 	}
-#line 2667 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2682 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
     break;
 
 
-#line 2671 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
+#line 2686 "src/input/aspcore2_parser.hpp" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
