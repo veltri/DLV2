@@ -867,6 +867,70 @@ GeneralIterator* MulplipleTermsMap::computeMatchIterator(Atom* templateAtom,
 	return new UnorderedSetIterator(indexingStructure[indices].begin(),indexingStructure[indices].end());
 }
 
+/*************************************************************** Unordered Map of Vectors - History Vector *************************************************************************/
+
+void MulplipleTermsMapHistoryVector::add(Atom* atom) {
+
+}
+
+Atom* MulplipleTermsMapHistoryVector::find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification) {
+	if(lastUpdateIteration!=searchSpecification.second)
+		update(searchSpecification.second);
+
+	vector<index_object> indices=createIndexes(atom);
+	auto find_it=indexingStructure.find(indices);
+	if(find_it==indexingStructure.end())return nullptr;
+	auto& matchingTable=find_it->second;
+	auto it=matchingTable.getElements(searchSpecification.first,searchSpecification.second);
+	for(unsigned i=it.first;i<it.second;i++){
+		if(*(matchingTable[i])==*atom){
+			return matchingTable[i];
+		}
+	}
+	return nullptr;
+}
+
+void MulplipleTermsMapHistoryVector::update(unsigned iteration) {
+	//First update the vector in the index table
+	for(auto& element:indexingStructure)
+		element.second.updateIndices(iteration);
+
+	unsigned deltaIt=table->getDeltaIndexIteration();
+	unsigned nfIt=table->getNFIndexIteration();
+
+	for (;lastUpdate<table->size();++lastUpdate) {
+		Atom *a=(*table)[lastUpdate];
+		vector<index_object> indices=createIndexes(a);
+		if(!indexingStructure.count(indices)){
+			AtomHistoryVector values(iteration);
+//			values.reserve(table->size()/PredicateExtTable::getInstance()->getPredicateExt(predicate)->getPredicateInformation()->getSelectivity(indexingTerm));
+			indexingStructure.insert({indices,values});
+		}
+		auto& values=indexingStructure[indices];
+		if(lastUpdate<nfIt)
+			values.push_back_nf(a);
+		else if(lastUpdate<deltaIt)
+			values.push_back_delta(a);
+		else
+			values.push_back(a);
+	}
+	lastUpdateIteration=iteration;
+}
+
+GeneralIterator* MulplipleTermsMapHistoryVector::computeMatchIterator(Atom* templateAtom,
+		const RuleInformation& ruleInformation,
+		const pair<SearchType, unsigned>& searchSpecification, unsigned arg) {
+	if(lastUpdateIteration!=searchSpecification.second)
+		update(searchSpecification.second);
+	vector<index_object> indices=createIndexes(templateAtom);
+
+	auto find_it = indexingStructure.find(indices);
+	if(find_it==indexingStructure.end())return new VectorIteratorIndex(table->size(),table->size(),table);
+	AtomHistoryVector& matchingTable=find_it->second;
+	auto it=matchingTable.getElements(searchSpecification.first,searchSpecification.second);
+	return new VectorIteratorIndex(it.first,it.second,&matchingTable);
+}
+
 /*************************************************************** Full Index on Single Argument *****************************************************************/
 
 FullIndexingStructure::FullIndexingStructure(AtomHistoryVector* table, Predicate* predicate, AtomSearcher* atomSearcher, bool recursive, unsigned indexType): IndexingStructure(table), predicate(predicate){

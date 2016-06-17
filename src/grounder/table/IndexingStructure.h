@@ -99,10 +99,8 @@ struct HashVectorOfTerms{
 	}
 
 	inline bool operator()(const vector<index_object>& obj1, const vector<index_object>& obj2) const {
-		for(unsigned i=0;i<obj1.size();++i)
-			if(obj1[i]!=obj2[i])
-				return false;
-		return true;
+		if(obj1.size()!=obj2.size())return false;
+		return equal(obj1.begin(),obj1.end(),obj2.begin());
 	}
 };
 
@@ -417,6 +415,47 @@ private:
 	unordered_map<vector<index_object>,AtomTable,HashVectorOfTerms,HashVectorOfTerms> indexingStructure;
 };
 
+/**
+ * This class implements IndexingStructure for recursive predicate and provides a general multiple terms indexing data structure
+ * implemented by means of an unordered map of vectors of terms as indexing data structure (@see Atom.h)
+ *
+ **/
+class MulplipleTermsMapHistoryVector : public IndexingStructure {
+public:
+	MulplipleTermsMapHistoryVector(AtomHistoryVector* table, vector<unsigned>& indexingTerm): IndexingStructure(table,indexingTerm),lastUpdateIteration(0){};
+	void add(Atom* atom);
+	Atom* find(Atom* atom,const pair<SearchType,unsigned>& searchSpecification={ALL,0});
+	void clear(){IndexingStructure::clear(); indexingStructure.clear();};
+	virtual void update(unsigned iteration);
+	virtual GeneralIterator* computeMatchIterator(Atom* templateAtom,const RuleInformation& ruleInformation,const pair<SearchType,unsigned>& searchSpecification,unsigned arg=0);
+	virtual unsigned getType(){return MULTIPLE_TERMS;};
+	virtual bool isEqual(unsigned type, vector<unsigned>* indexingTerms){
+		if(indexingTerms!=nullptr){
+			if(type==MULTIPLE_TERMS_HISTORY_VECTOR){
+				if(indexingTerms->size()!=this->indexingTerms.size())
+					return false;
+				for(unsigned i=0;i<this->indexingTerms.size() ;++i)
+					if(this->indexingTerms[i]!=(*indexingTerms)[i])
+						return false;
+				return true;
+			}
+		}
+		return false;
+	}
+private:
+	unordered_map<vector<index_object>,AtomHistoryVector,HashVectorOfTerms,HashVectorOfTerms> indexingStructure;
+	unsigned lastUpdateIteration;
+
+	inline vector<index_object> createIndexes(Atom* atom){
+		vector<index_object> indices;
+		indices.reserve(indexingTerms.size());
+		for(auto e:indexingTerms)
+			indices.push_back(atom->getTerm(e)->getIndex());
+		return indices;
+
+	}
+
+};
 
 /**
  **/

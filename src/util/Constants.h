@@ -99,6 +99,8 @@ namespace grounder{
 	#define DOUBLEMAP_PAIR 11
 	#define MULTIPLE_TERMS 12
 	#define HISTORY_HASHSET 13
+	#define MULTIPLE_TERMS_HISTORY_VECTOR 13
+
 
 
 	#define NATIVE_CHOICE 0
