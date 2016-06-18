@@ -32,6 +32,8 @@
 #include <unordered_map>
 #include "Constants.h"
 #include "Trace.h"
+#include "../grounder/atom/Predicate.h"
+using namespace std;
 
 namespace DLV2
 {
@@ -82,15 +84,17 @@ namespace DLV2
 
     	const std::string& getPredicatesIndexTerm() const {return predicatesIndexTerm;}
 
-		void setPredicateIndexTerm(const std::string& predIndexTerm) {this->predicatesIndexTerm = predIndexTerm; this->splitOption(predicatesIndexTerm, predicatesIndexTermMap);}
+//		void setPredicateIndexTerm(const std::string& predIndexTerm) {this->predicatesIndexTerm = predIndexTerm; this->splitOption(predicatesIndexTerm, predicatesIndexTermMap);}
 
     	const std::string& getPredicatesIndexType() const {return predicatesIndexType;}
 
-		void setPredicateIndexType(const std::string& predIndexType) {this->predicatesIndexType = predIndexType; this->splitOption(predicatesIndexType, predicatesIndexTypeMap);}
+//		void setPredicateIndexType(const std::string& predIndexType) {this->predicatesIndexType = predIndexType; this->splitOption(predicatesIndexType, predicatesIndexTypeMap);}
 
-    	int getPredicateIndexTerm(const std::string& predicate);
+    	vector<unsigned> getPredicateIndexTerm(grounder::Predicate* predicate);
 
-    	int getPredicateIndexType(const std::string& predicate);
+//    	int getPredicateIndexType(const std::string& predicate);
+
+    	void splitOption();
 
         bool isNofacts() const {return nofacts;}
 
@@ -184,8 +188,6 @@ namespace DLV2
 
         void setAspCore2Strict(bool strict) { aspCore2Strict = strict;	}
 
-    	void splitOption(const std::string& string, std::unordered_map<std::string, unsigned int>& map);
-
         std::vector< const char* > inputFiles;
 
         bool aspCore2Strict;
@@ -217,7 +219,7 @@ namespace DLV2
     	std::string predicatesIndexType;
 
     	///The map containing the mapping between a predicate and the position of its indexing term
-    	std::unordered_map<std::string, unsigned int> predicatesIndexTermMap;
+    	DLV2::grounder::mapIndexingPredicates predicatesIndexTermMap;
 
     	///The map containing the mapping between a predicate and the kind of index to be used
     	std::unordered_map<std::string, unsigned int> predicatesIndexTypeMap;

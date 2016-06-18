@@ -48,6 +48,7 @@ namespace DLV2
             std::cout << "--silent                              - Suppress the startup banner and blank lines." << std::endl;
             std::cout << "--no-facts                            - Suppress the printing of EDB." << std::endl;
             std::cout << "--output-format                       - Set the output format: 0=Numeric, 1=Textual." << std::endl;
+            std::cout << "--t                                   - Print in textual mode." << std::endl;
             std::cout << "--filter                              - Filter the specified predicates with the specified arity. Example: --filter=p1/2,p2/3." << std::endl;
             std::cout << "--print-rewriting                     - Print the rewritten program." << std::endl;
             std::cout << "--query                               - Print the results of the input query." << std::endl;

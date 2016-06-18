@@ -230,7 +230,23 @@ bool GroundingPreferences::checkAtomIndexed(unsigned ruleIndex, Atom* atom, cons
 		}
 		return true;
 	}
-	return false;
+	vector<unsigned> commandLineOtp=Options::globalOptions()->getPredicateIndexTerm(atom->getPredicate());
+	if(commandLineOtp.empty())
+		return false;
+	for(unsigned i=0;i<commandLineOtp.size();++i){
+		bool found=false;
+		for(unsigned j=0;j<possibileArgs.size();++j){
+			if(possibileArgs[j]==commandLineOtp[i]){
+				found=true;
+				break;
+			}
+		}
+		if(!found){
+			cerr<<commandLineOtp[i]<<endl;
+			return false;
+		}
+	}
+	return true;
 }
 
 void GroundingPreferences::checkIfAtomIsPresentInRule(Rule* rule, Atom* atom, vector<unsigned>& positions) {

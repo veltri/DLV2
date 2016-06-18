@@ -67,7 +67,7 @@ IndexingStructure* PredicateExtension::createAtomSearcher(unsigned table, unsign
 IndexingStructure* PredicateExtension::addAtomSearcher(unsigned table, vector<unsigned>* indexingTerms, bool recursive){
 	// Properly set the IndexAtom type
 	if(table<tables.size()){
-		int indexType=Options::globalOptions()->getPredicateIndexType(predicate->getName());
+		int indexType=-1; //Options::globalOptions()->getPredicateIndexType(predicate->getName());
 		if(indexType==-1){
 			if(predicate->getArity()==1 && indexType!=DEFAULT_RECURSIVE ) //StatementDependency::getInstance()->isOnlyInHead(predicate->getIndex()) ||
 				indexType=HASHSET;
@@ -100,7 +100,7 @@ IndexingStructure* PredicateExtension::addAtomSearcher(unsigned table, vector<un
 
 IndexingStructure* PredicateExtension::addFullIndexAtomSearcher(unsigned table, bool recursive) {
 	if(table<tables.size()){
-		int indexType=Options::globalOptions()->getPredicateIndexType(predicate->getName());
+		int indexType=-1; //Options::globalOptions()->getPredicateIndexType(predicate->getName());
 		if(indexType==-1){
 			if(predicate->getArity()==1 && indexType!=DEFAULT_RECURSIVE) //StatementDependency::getInstance()->isOnlyInHead(predicate->getIndex()) ||
 				indexType=HASHSET;

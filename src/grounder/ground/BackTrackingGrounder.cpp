@@ -1392,7 +1392,6 @@ void BackTrackingGrounder::groundChoiceFirstAtom(Atom* firstAtom, unsigned i, bo
 		headGroundAtom->setFact(false);
 		predicateExt1->addAtom(headGroundAtom,predicate_searchInsert_table[0][0].first);
 		ground_choice->addSingleChoiceElement(headGroundAtom);
-
 	}else{
 		searchAtom->print();
 		delete headGroundAtom;

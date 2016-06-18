@@ -48,6 +48,7 @@ public:
 		predicateTable(PredicateTable::getInstance()), predicateExtTable(PredicateExtTable::getInstance()),
 		statementDependency(StatementDependency::getInstance()), termsMap(TermTable::getInstance()),outputBuilder(OutputBuilder::getInstance()),iteration(0),
 		rstats(RuleStatistics::getInstance()),printRuleTime(Options::globalOptions()->getRuleTime()),printStats(Options::globalOptions()->getPrintGroundStats()!=0){
+		Options::globalOptions()->splitOption();
 	};
 
 	/// This method executes the overall grounding process

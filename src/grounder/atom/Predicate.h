@@ -102,6 +102,8 @@ private:
 
 
 typedef hashIndexSet<Predicate> set_predicate;
+typedef unordered_map<Predicate*, vector<unsigned>, IndexForTable<Predicate>,IndexForTable<Predicate>> mapIndexingPredicates;
+
 
 };
 

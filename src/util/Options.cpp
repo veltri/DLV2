@@ -26,6 +26,13 @@
 #include <cstdlib>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/tokenizer.hpp>
+#include <regex>
+#include <stdlib.h>
+#include <string>
+#include "../grounder/table/PredicateTable.h"
+
+using namespace std;
 
 namespace DLV2 
 {
@@ -132,8 +139,6 @@ Options::Options():
 		namedpipe(0),
 		hashType(STL_HASH),
 		indexType(MAP),
-		predicatesIndexTerm(""),
-		predicatesIndexType(""),
 		nofacts(false),
 		printRewrittenProgram(false),
 		rewritingType(NATIVE_CHOICE),
@@ -341,13 +346,13 @@ Options::init(
 
             case OPTIONID_predIndexTerm:
                 predicatesIndexTerm.append(optarg);
-                this->splitOption(predicatesIndexTerm, predicatesIndexTermMap);
+//                this->splitOption();
                 break;
 
-            case OPTIONID_predIndexType:
-				predicatesIndexType.append(optarg);
-				this->splitOption(predicatesIndexType, predicatesIndexTypeMap);
-				break;
+//            case OPTIONID_predIndexType:
+//				predicatesIndexType.append(optarg);
+//				this->splitOption(predicatesIndexType, predicatesIndexTypeMap);
+//				break;
 
             case OPTIONID_nofacts:
             	nofacts=true;
@@ -442,32 +447,75 @@ Options::init(
     }
 }
 
-void Options::splitOption(const std::string& string, std::unordered_map<std::string, unsigned int>& map){
+void Options::splitOption(){
 	// Split the string indexingPreferences and
 	// fill in the map with the indexing strategies for the specified
-	if(string.compare("")!=0){
-		std::stringstream stream(string);
-		std::string segment="";
-		while(getline(stream, segment, ','))
-		{
-			std::vector<std::string> pair_pred_term;
-			boost::split(pair_pred_term, segment, boost::is_any_of("="));
-			map.insert({pair_pred_term[0],boost::lexical_cast<unsigned int>(pair_pred_term[1])});
+	std::regex pred_regex("[a-z]([a-zA-Z0-9_])*\\/([0-9])+\\=\\{(([0-9])+((\\,)|(\\}\\,)|(\\}$)))+");
+	typedef boost::tokenizer<boost::char_separator<char> >tokenizer;
+	if(predicatesIndexTerm.compare("")!=0){
+		boost::char_separator<char> s(";");
+		tokenizer predicated_indexed(predicatesIndexTerm, s);
+		for (tokenizer::iterator it = predicated_indexed.begin();it!= predicated_indexed.end(); ++it){
+			if(std::regex_match((*it), pred_regex)){
+//				cerr<<*it<<endl;
+				boost::char_separator<char> sep("=,{}");
+				tokenizer tokens(*it, sep);
+				grounder::Predicate* predicate=nullptr;
+				for (tokenizer::iterator tok_iter = tokens.begin();tok_iter != tokens.end(); ++tok_iter){
+					unsigned number=0;
+					try
+					{
+						number = boost::lexical_cast<unsigned>(*tok_iter);
+						if(predicate!=nullptr && number>=0 && number<predicate->getArity())
+							predicatesIndexTermMap[predicate].push_back(number);
+					}
+					catch(boost::bad_lexical_cast& e)
+					{
+						std::string pred=*tok_iter;
+						boost::char_separator<char> sep2("/");
+						tokenizer tokens2(pred, sep2);
+						std::string predicateName=*(tokens2.begin());
+						std::string predicateArity=*(++tokens2.begin());
+						unsigned arity=0;
+						try
+						{
+							arity=boost::lexical_cast<unsigned>(predicateArity);
+							grounder::Predicate* p=new grounder::Predicate(predicateName,arity);
+							grounder::PredicateTable::getInstance()->getPredicate(p);
+							predicate=p;
+							if(predicate!=nullptr)
+								predicatesIndexTermMap.insert({predicate,vector<unsigned>()});
+							else continue;
+						}
+						catch(boost::bad_lexical_cast& e){
+							continue;
+						}
+
+						}
+					}
+				}
+			}
 		}
-	}
+
+//		for(auto a:predicatesIndexTermMap){
+//			cerr<<a.first->getName()<<" "<<a.first->getArity()<<endl;
+//			for(auto b:a.second)
+//				cerr<<b<<" ";
+//			cerr<<endl;
+//		}
 }
 
-int Options::getPredicateIndexTerm(const string& predicate){
-	if(predicatesIndexTermMap.count(predicate))
+vector<unsigned> Options::getPredicateIndexTerm(grounder::Predicate* predicate){
+	if(!predicatesIndexTermMap.empty() && predicatesIndexTermMap.count(predicate))
 		return predicatesIndexTermMap[predicate];
-	return -1;
+	return vector<unsigned>();
 }
 
-int Options::getPredicateIndexType(const string& predicate){
-	if(predicatesIndexTypeMap.count(predicate)){
-		unsigned type=predicatesIndexTypeMap[predicate];
-		return type;
-	}
-	return -1;
-}
+//int Options::getPredicateIndexType(const string& predicate){
+//	if(predicatesIndexTypeMap.count(predicate)){
+//		unsigned type=predicatesIndexTypeMap[predicate];
+//		return type;
+//	}
+//	return -1;
+//}
 
